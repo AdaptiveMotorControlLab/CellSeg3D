@@ -8,7 +8,7 @@ import napari
 import numpy as np
 import pandas as pd
 from PIL import Image
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy, QLabel, QFileDialog,
+from qtpy.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy, QLabel, QFileDialog,
                              QTabWidget, QLineEdit, QCheckBox)
 from napari.qt import thread_worker
 from skimage import io
@@ -445,14 +445,14 @@ class App(QTabWidget):
         # self.tab4 = Predicter(self)
 
         # add to tab page
-        self.addTab(self.tab1, "Entrance")
-        self.addTab(self.tab2, "Loader")
+        #self.addTab(self.tab1, "Entrance")
+        #self.addTab(self.tab2, "Loader")
         # self.addTab(self.tab3, "Trainer")
         # self.addTab(self.tab4, "Predicter")
 
-        self.setStyleSheet("QTabWidget::pane { border: 0; }")
-        self.tabBar().hide()
-        self.resize(500, 400)
+        #self.setStyleSheet("QTabWidget::pane { border: 0; }")
+        #self.tabBar().hide()
+        #self.resize(500, 400)
 
 
 def combine_blocks(block1, block2):
