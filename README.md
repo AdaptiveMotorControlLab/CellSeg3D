@@ -13,7 +13,7 @@ Preferences > Python Interpreter > Add > Conda environment > Existing Environmen
 ## Launch annotator 
 
 ```
-python annotator.py
+pip install napari-cellseg-annotator
 ```
 
 
