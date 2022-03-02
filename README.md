@@ -1,4 +1,4 @@
- # Annotator for cell segmentation
+ # Annotator for cell segmentation : NPE2 test
  
 ## Create a new conda environment
 conda create -n naparienv python=3.8 
