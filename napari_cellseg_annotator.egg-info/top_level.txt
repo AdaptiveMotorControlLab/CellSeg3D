@@ -1,1 +1,1 @@
-cellseg_annotator
+napari_cellseg_annotator

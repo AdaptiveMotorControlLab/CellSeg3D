@@ -9,3 +9,6 @@ napari-plugin-engine==0.1.9
 npe2==0.1.2
 napari-svg==0.1.5
 numpy==1.19.5
+pandas==1.2.4
+scikit-image==0.18.1
+tqdm==4.61.0

@@ -6,7 +6,7 @@ import dask_image.imread
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-from PyQt5.QtWidgets import QWidget, QHBoxLayout
+from qtpy.QtWidgets import QWidget, QHBoxLayout
 from pathlib import Path
 from skimage import io
 from skimage.filters import gaussian

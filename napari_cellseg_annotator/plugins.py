@@ -1,4 +1,4 @@
-from annotator import Loader, Trainer, Predicter
+from napari_cellseg_annotator.annotator import Loader, Trainer, Predicter
 
 
 def napari_experimental_provide_dock_widget():

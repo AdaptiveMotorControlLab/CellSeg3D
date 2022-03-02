@@ -1,2 +1,2 @@
 [napari.manifest]
-cellseg-annotator = cellseg_annotator:napari.yaml
+napari-cellseg-annotator = napari_cellseg_annotator:napari.yaml
