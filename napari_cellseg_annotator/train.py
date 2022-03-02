@@ -1,7 +1,5 @@
-from tensorflow.keras.callbacks import CSVLogger
-from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
-
-from models import get_nested_unet
+from keras.callbacks import CSVLogger
+from keras.preprocessing.image import ImageDataGenerator
 
 
 def train_unet(X_train, Y_train, csv_path, model_path, model):

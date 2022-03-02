@@ -12,17 +12,20 @@ from qtpy.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSiz
                              QTabWidget, QLineEdit, QCheckBox)
 from napari.qt import thread_worker
 from skimage import io
-import utils
-from models import get_nested_unet
-from napari_view_simple import launch_viewers
-from predict import predict_3ax, predict_1ax
-from train import train_unet
+from napari_cellseg_annotator import utils
+from napari_cellseg_annotator.models import get_nested_unet
+from napari_cellseg_annotator.napari_view_simple import launch_viewers
+from napari_cellseg_annotator.predict import predict_3ax, predict_1ax
+from napari_cellseg_annotator.train import train_unet
+
 
 
 class Loader(QWidget):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.master = parent
+
+    def __init__(self, parent: 'napari.viewer.Viewer'):
+        super().__init__()
+        #self.master = parent
+        self._viewer = parent
         self.opath = ""
         self.modpath = ""
         self.btn1 = QPushButton('open', self)
@@ -100,9 +103,10 @@ class Loader(QWidget):
 
 
 class Trainer(QWidget):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.master = parent
+    def __init__(self, parent: 'napari.viewer.Viewer'):
+        super().__init__()
+        #self.master = parent
+        self._viewer = parent
         self.opath = ""
         self.labelpath = ""
         self.modelpath = ""
@@ -258,9 +262,10 @@ class Trainer(QWidget):
 
 
 class Predicter(QWidget):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.master = parent
+    def __init__(self, parent: 'napari.viewer.Viewer'):
+        super().__init__()
+        #self.master = parent
+        self._viewer = parent
         self.opath = ""
         self.labelpath = ""
         self.modelpath = ""
@@ -403,8 +408,8 @@ class Predicter(QWidget):
 
 class Entrance(QWidget):
     def __init__(self, parent):
-        super().__init__(parent)
-        self.master = parent
+        super().__init__()
+        #self.master = parent
         self.btn1 = QPushButton('Loader', self)
         # self.btn1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn1.clicked.connect(self.move_to_loader)
@@ -435,12 +440,12 @@ class Entrance(QWidget):
     #     self.master.setCurrentIndex(3)
 
 
-class App(QTabWidget):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("napari launcher")
-        self.tab1 = Entrance(self)
-        self.tab2 = Loader(self)
+#class App(QTabWidget):
+    # def __init__(self):
+    #     super().__init__()
+    #     self.setWindowTitle("napari launcher")
+    #     self.tab1 = Entrance(self)
+    #     self.tab2 = Loader(self)
         # self.tab3 = Trainer(self)
         # self.tab4 = Predicter(self)
 

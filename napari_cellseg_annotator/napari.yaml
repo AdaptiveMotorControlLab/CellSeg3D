@@ -1,6 +1,7 @@
 name: napari-cellseg-annotator
 display_name: Cell Segmentation Annotator
 schema_version: 0.0.1
+
 contributions:
   commands:
   - id: napari-cellseg-annotator.load
@@ -14,7 +15,7 @@ contributions:
     python_name: napari_cellseg_annotator.plugins:Predicter
   widgets:
   - command: napari-cellseg-annotator.load
-    display_name: Annotator
+    display_name: Loader
   - command: napari-cellseg-annotator.train
     display_name: Trainer
   - command: napari-cellseg-annotator.predict

@@ -3,7 +3,7 @@ import os
 import cv2
 import numpy as np
 
-from utils import denormalize_y, divide_imgs, load_Y_gray, merge_imgs
+from napari_cellseg_annotator.utils import denormalize_y, divide_imgs, load_Y_gray, merge_imgs
 
 
 def predict(X_test, model, out_dir):

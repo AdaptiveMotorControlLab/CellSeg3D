@@ -10,9 +10,8 @@ from qtpy.QtWidgets import QWidget, QHBoxLayout
 from pathlib import Path
 from skimage import io
 from skimage.filters import gaussian
-import tensorflow.keras.backend as K
-from tensorflow.keras.losses import binary_crossentropy
-
+import keras.backend as K
+from keras.losses import binary_crossentropy
 
 def normalize_x(image):
     image = image / 127.5 - 1

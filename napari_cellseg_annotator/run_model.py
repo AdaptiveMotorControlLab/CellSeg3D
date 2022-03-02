@@ -19,13 +19,13 @@ import os
 from pathlib import Path
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.optimizers import Adam, RMSprop
-import tensorflow.keras.backend as K
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, CSVLogger
-from tensorflow.keras.losses import binary_crossentropy
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import *
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from keras.optimizers import Adam, RMSprop
+import keras.backend as K
+from keras.callbacks import ModelCheckpoint, EarlyStopping, CSVLogger
+from keras.losses import binary_crossentropy
+from keras.models import Model
+from keras.layers import *
+from keras.preprocessing.image import ImageDataGenerator
 import cv2
 
 from tqdm import tqdm
@@ -452,7 +452,7 @@ def train_unet(X_train, Y_train, csv_path, model_path, input_shape=(128, 128, 1)
     NUM_EPOCH = 100
 
     callbacks = []
-    from tensorflow.keras.callbacks import CSVLogger
+    from keras.callbacks import CSVLogger
     callbacks.append(CSVLogger(csv_path))
     history = model.fit_generator(train_generator, steps_per_epoch=32, epochs=NUM_EPOCH, verbose=1, callbacks=callbacks)
     model.save_weights(model_path)

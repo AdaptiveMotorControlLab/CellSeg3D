@@ -1,9 +1,9 @@
 import tensorflow as tf
-from tensorflow.keras.layers import *
-from tensorflow.keras.models import Model
+from keras.layers import *
+from keras.models import Model
 from tensorflow.keras.optimizers import RMSprop
 
-from utils import bce_dice_loss, dice_coeff
+from napari_cellseg_annotator.utils import bce_dice_loss, dice_coeff
 
 
 def standard_uint(input_tensor, nb_filter):
