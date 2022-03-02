@@ -3,19 +3,19 @@ display_name: Cell Segmentation Annotator
 schema_version: 0.0.1
 contributions:
   commands:
-  - id: cellseg-annotator.load
+  - id: napari-cellseg-annotator.load
     title: Create Loader
-    python_name: cellseg-annotator.plugins:Loader
-  - id: cellseg-annotator.train
+    python_name: napari_cellseg_annotator.plugins:Loader
+  - id: napari-cellseg-annotator.train
     title: Create Trainer
-    python_name: cellseg-annotator.plugins:Trainer
-  - id: cellseg-annotator.predict
+    python_name: napari_cellseg_annotator.plugins:Trainer
+  - id: napari-cellseg-annotator.predict
     title: Create Predicter
-    python_name: cellfinder_napari.plugins:Predicter
+    python_name: napari_cellseg_annotator.plugins:Predicter
   widgets:
-  - command: cellseg-annotator.load
+  - command: napari-cellseg-annotator.load
     display_name: Annotator
-  - command: cellseg-annotator.train
+  - command: napari-cellseg-annotator.train
     display_name: Trainer
-  - command: cellfinder_napari.predict
+  - command: napari-cellseg-annotator.predict
     display_name: Predicter
