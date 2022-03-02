@@ -13,9 +13,9 @@ contributions:
     title: Create Predicter
     python_name: cellfinder_napari.plugins:Predicter
   widgets:
-  - command: cellseg-annotator.plugins:Loader
+  - command: cellseg-annotator.load
     display_name: Annotator
-  - command: cellseg-annotator.plugins:Trainer
+  - command: cellseg-annotator.train
     display_name: Trainer
-  - command: cellfinder_napari.plugins:Predicter
+  - command: cellfinder_napari.predict
     display_name: Predicter
