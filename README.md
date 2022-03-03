@@ -19,6 +19,7 @@ From folder :
 pip install -r requirements.txt
 cd ..
 pip install -e napari-cellseg-annotator
+napari
 ```
 
 ### Add widget :
@@ -27,13 +28,17 @@ pip install -e napari-cellseg-annotator
 ### TODO :
 Broken :
 - [ ] Fix napari_view_simple : replaced deprecated .Gui with .show()
-- maybe remove viewer argument 
+- maybe remove viewer argument : replaced view1 with viewer, changed view_image to add_image
 - [ ] Fix fileread in utils.py
 
 Opti :
+- [ ] -> Optimize launch time for loader
+
+
 - [ ] Check min requirements to reduce install time/bloat/compatibility 
 - [ ] Add reqs to setup.cfg to avoid pip -r step
 - [ ] Rm window popup when launching widgets ?
+
 - [ ] split widgets into loose files to avoid heavy lib import each time ?
 - [ ] Test if functional with dataset/labels
 - [ ] Possible improvements ? 

@@ -126,8 +126,8 @@ class Loader(QWidget):
             labels_raw = None
         view1 = launch_viewers(self._viewer,images, labels, labels_raw, self.modpath, self.textbox.text(), self.checkBox.isChecked())
 
-       # global view_l
-       # view_l.close()  # why does it not close the window ??  #TODO use  close()
+        # global view_l
+        # view_l.close()  # why does it not close the window ??  #TODO use  close()
         self.close
         return view1    
 

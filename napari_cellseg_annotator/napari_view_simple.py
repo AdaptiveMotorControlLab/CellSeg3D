@@ -32,7 +32,8 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
         del layer
     except NameError:
         pass
-    view1 = napari.view_image(images_original, colormap="inferno", contrast_limits=[200,
+    view1 = viewer
+    view1.add_image(images_original, colormap="inferno", contrast_limits=[200,
                                                                                     1000])  # anything bigger than 255 will get mapped to 255... they did it like this because it must have rgb images
     view1.add_labels(base_label, name='base', seed=0.6)
     if raw is not None:  # raw labels is from the prediction
@@ -122,7 +123,8 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
         print(f"slice num is {slice_num}")
         dmg.update(slice_num)
 
-    view1.dims.events.axis.connect(update_button)
+    view1.dims.events.current_step.connect(update_button)
+    #old : events.axis.connect
 
     # draw canvas
 
