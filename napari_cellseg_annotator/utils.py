@@ -92,6 +92,7 @@ def check(project_path, ext):
 
 def load_images(directory):
     filename_pattern_original = os.path.join(directory)
+    #TODO
     images_original = dask_image.imread.imread(filename_pattern_original+'/images.tif')
     return images_original
 
@@ -109,6 +110,7 @@ def load_predicted_masks(mito_mask_dir, er_mask_dir):
 
 def load_saved_masks(mod_mask_dir):
     filename_pattern_label = os.path.join(mod_mask_dir)
+    #TODO
     images_label = dask_image.imread.imread(filename_pattern_label+'/images.tif')
     images_label = images_label.compute()
     base_label = images_label
@@ -117,6 +119,7 @@ def load_saved_masks(mod_mask_dir):
 
 def load_raw_masks(raw_mask_dir):
     filename_pattern_raw = os.path.join(raw_mask_dir)
+    #TODO
     images_raw = dask_image.imread.imread(filename_pattern_raw+'/images.tif')
     images_raw = images_raw.compute()
     base_label = np.where((126 < images_raw) & (images_raw < 171), 255, 0)

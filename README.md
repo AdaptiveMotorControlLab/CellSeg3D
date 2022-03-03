@@ -25,10 +25,17 @@ pip install -e napari-cellseg-annotator
 - Add to napari.yaml
 - Add to plugin.py
 ### TODO :
+Broken :
+- [ ] Fix napari_view_simple : replaced deprecated .Gui with .show()
+- maybe remove viewer argument 
+- [ ] Fix fileread in utils.py
+
+Opti :
 - [ ] Check min requirements to reduce install time/bloat/compatibility 
 - [ ] Add reqs to setup.cfg to avoid pip -r step
 - [ ] Rm window popup when launching widgets ?
 - [ ] split widgets into loose files to avoid heavy lib import each time ?
 - [ ] Test if functional with dataset/labels
 - [ ] Possible improvements ? 
+
 

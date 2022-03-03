@@ -81,7 +81,7 @@ class Loader(QWidget):
 
     def build(self):
         vbox = QVBoxLayout()
-        vbox.addWidget(combine_blocks(self.lbl,self.btn1))
+        vbox.addWidget(combine_blocks(self.btn1,self.lbl))
         vbox.addWidget(combine_blocks(self.btn2, self.lbl2))
         vbox.addWidget(combine_blocks(self.textbox, self.lbl4))
         vbox.addWidget(self.checkBox)
@@ -124,11 +124,12 @@ class Loader(QWidget):
             labels_raw = utils.load_raw_masks(self.modpath + '_raw')
         except:
             labels_raw = None
-        view1 = launch_viewers(images, labels, labels_raw, self.modpath, self.textbox.text(), self.checkBox.isChecked())
-        #TODO use  self._viewer.window.remove_dock_widget(self) ?
-        global view_l
-        view_l.close()  # why does it not close the window ??
-        return view1
+        view1 = launch_viewers(self._viewer,images, labels, labels_raw, self.modpath, self.textbox.text(), self.checkBox.isChecked())
+
+       # global view_l
+       # view_l.close()  # why does it not close the window ??  #TODO use  close()
+        self.close
+        return view1    
 
 
 class Trainer(QWidget):

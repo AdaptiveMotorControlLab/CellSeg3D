@@ -3,8 +3,8 @@ import copy
 import matplotlib.pyplot as plt
 import napari
 import numpy as np
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QSizePolicy, QSlider, QLabel
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import QSizePolicy, QSlider, QLabel
 from magicgui import magicgui
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -17,7 +17,8 @@ from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.dock import Datamanager
 
 
-def launch_viewers(original, base, raw, r_path, model_type, checkbox):
+def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
+    #TODO
     global slicer
     global z_pos
     global view1
@@ -96,8 +97,8 @@ def launch_viewers(original, base, raw, r_path, model_type, checkbox):
         """Take a filename and do something with it."""
         print("The filename is:", dirname)
         return dirname
-
-    gui = dirpicker.Gui(show=True)  # dirpicker.show(run=True)
+    # TODO
+    gui = dirpicker.show(run=True)  # dirpicker.show(run=True)
     view1.window.add_dock_widget(gui)
 
     @magicgui(call_button="save")
@@ -106,7 +107,7 @@ def launch_viewers(original, base, raw, r_path, model_type, checkbox):
         print("The directory is:", out_dir)
         return utils.save_masks(layer1.data, out_dir)
 
-    gui2 = saver.Gui(show=True)  # saver.show(run=True)
+    gui2 = saver.show(run=True)  # saver.show(run=True)
     view1.window.add_dock_widget(gui2, area='bottom')
 
     dmg = Datamanager()
