@@ -28,10 +28,10 @@ class Loader(QWidget):
         self._viewer = parent
         self.opath = ""
         self.modpath = ""
-        self.btn1 = QPushButton('open', self)
+        self.btn1 = QPushButton('Open', self)
         self.btn1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn1.clicked.connect(self.show_dialog_o)
-        self.btn2 = QPushButton('open', self)
+        self.btn2 = QPushButton('Open', self)
         self.btn2.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn2.clicked.connect(self.show_dialog_mod)
 
@@ -44,7 +44,7 @@ class Loader(QWidget):
         self.btn4 = QPushButton('Start reviewing', self)
         self.btn4.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn4.clicked.connect(self.launch_napari)
-        self.btnb = QPushButton('back', self)
+        self.btnb = QPushButton('Back', self)
         self.btnb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btnb.clicked.connect(self.back)
         self.lbl = QLabel('Images directory', self)
@@ -97,6 +97,7 @@ class Loader(QWidget):
         except:
             labels_raw = None
         view1 = launch_viewers(images, labels, labels_raw, self.modpath, self.textbox.text(), self.checkBox.isChecked())
+        #TODO
         global view_l
         view_l.close()  # why does it not close the window ??
         return view1
@@ -126,9 +127,9 @@ class Trainer(QWidget):
         self.btnb = QPushButton('Back', self)
         self.btnb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btnb.clicked.connect(self.back)
-        self.lbl = QLabel('Original dir?', self)
-        self.lbl2 = QLabel('Label dir', self)
-        self.lbl3 = QLabel('Model output dir', self)
+        self.lbl = QLabel('Original directory', self)
+        self.lbl2 = QLabel('Label directory', self)
+        self.lbl3 = QLabel('Model output directory', self)
         self.build()
 
         self.model = None
@@ -205,7 +206,7 @@ class Trainer(QWidget):
                 pass
             else:
                 self.worker.start()
-                self.btn4.setText('stop')
+                self.btn4.setText('Stop')
         else:
             ori_imgs, ori_filenames = utils.load_X_gray(self.opath)
             label_imgs, label_filenames = utils.load_Y_gray(self.labelpath, normalize=False)
