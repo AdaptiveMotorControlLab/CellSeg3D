@@ -41,7 +41,7 @@ class Loader(QWidget):
         self.checkBox = QCheckBox("Create new dataset?")
         self.checkBox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-        self.btn4 = QPushButton('Launch napari !', self)
+        self.btn4 = QPushButton('Start reviewing', self)
         self.btn4.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn4.clicked.connect(self.launch_napari)
         self.btnb = QPushButton('back', self)
@@ -66,14 +66,14 @@ class Loader(QWidget):
 
     def show_dialog_o(self):
         default_path = max(self.opath, self.modpath, os.path.expanduser('~'))
-        f_name = QFileDialog.getExistingDirectory(self, 'Open Directory', default_path)
+        f_name = QFileDialog.getExistingDirectory(self, 'Open directory', default_path)
         if f_name:
             self.opath = f_name
             self.lbl.setText(self.opath)
 
     def show_dialog_mod(self):
         default_path = max(self.opath, self.modpath, os.path.expanduser('~'))
-        f_name = QFileDialog.getExistingDirectory(self, 'Open Directory', default_path)
+        f_name = QFileDialog.getExistingDirectory(self, 'Open directory', default_path)
         if f_name:
             self.modpath = f_name
             self.lbl2.setText(self.modpath)
@@ -110,25 +110,25 @@ class Trainer(QWidget):
         self.opath = ""
         self.labelpath = ""
         self.modelpath = ""
-        self.btn1 = QPushButton('open', self)
+        self.btn1 = QPushButton('Open', self)
         self.btn1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn1.clicked.connect(self.show_dialog_o)
-        self.btn2 = QPushButton('open', self)
+        self.btn2 = QPushButton('Open', self)
         self.btn2.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn2.clicked.connect(self.show_dialog_label)
-        self.btn3 = QPushButton('open', self)
+        self.btn3 = QPushButton('Open', self)
         self.btn3.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn3.clicked.connect(self.show_dialog_model)
 
-        self.btn4 = QPushButton('start training', self)
+        self.btn4 = QPushButton('Start training', self)
         self.btn4.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn4.clicked.connect(self.trainer)
-        self.btnb = QPushButton('back', self)
+        self.btnb = QPushButton('Back', self)
         self.btnb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btnb.clicked.connect(self.back)
-        self.lbl = QLabel('original dir', self)
-        self.lbl2 = QLabel('label dir', self)
-        self.lbl3 = QLabel('model output dir', self)
+        self.lbl = QLabel('Original dir?', self)
+        self.lbl2 = QLabel('Label dir', self)
+        self.lbl3 = QLabel('Model output dir', self)
         self.build()
 
         self.model = None
@@ -148,21 +148,21 @@ class Trainer(QWidget):
 
     def show_dialog_o(self):
         default_path = max(self.opath, self.labelpath, os.path.expanduser('~'))
-        f_name = QFileDialog.getExistingDirectory(self, 'Open Directory', default_path)
+        f_name = QFileDialog.getExistingDirectory(self, 'Open directory', default_path)
         if f_name:
             self.opath = f_name
             self.lbl.setText(self.opath)
 
     def show_dialog_label(self):
         default_path = max(self.opath, self.labelpath, os.path.expanduser('~'))
-        f_name = QFileDialog.getExistingDirectory(self, 'Open Directory', default_path)
+        f_name = QFileDialog.getExistingDirectory(self, 'Open directory', default_path)
         if f_name:
             self.labelpath = f_name
             self.lbl2.setText(self.labelpath)
 
     def show_dialog_model(self):
         default_path = max(self.opath, self.labelpath, os.path.expanduser('~'))
-        f_name = QFileDialog.getExistingDirectory(self, 'Open Directory', default_path)
+        f_name = QFileDialog.getExistingDirectory(self, 'Open directory', default_path)
         if f_name:
             self.modelpath = f_name
             self.lbl3.setText(self.modelpath)
@@ -235,12 +235,12 @@ class Trainer(QWidget):
 
         if self.worker.is_running:
             self.model.stop_training = True
-            print("stop training requested")
-            self.btn4.setText('start training')
+            print("Stop training requested")
+            self.btn4.setText('Start training')
             self.worker = None
         else:
             self.worker.start()
-            self.btn4.setText('stop')
+            self.btn4.setText('Stop')
 
     @thread_worker
     def train(self, devided_train_ori_imgs, devided_train_label_imgs, model):
@@ -270,16 +270,16 @@ class Predicter(QWidget):
         self.labelpath = ""
         self.modelpath = ""
         self.outpath = ""
-        self.btn1 = QPushButton('open', self)
+        self.btn1 = QPushButton('Open', self)
         self.btn1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn1.clicked.connect(self.show_dialog_o)
-        self.btn2 = QPushButton('open', self)
+        self.btn2 = QPushButton('Open', self)
         self.btn2.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn2.clicked.connect(self.show_dialog_label)
-        self.btn3 = QPushButton('open', self)
+        self.btn3 = QPushButton('Open', self)
         self.btn3.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn3.clicked.connect(self.show_dialog_model)
-        self.btn4 = QPushButton('open', self)
+        self.btn4 = QPushButton('Open', self)
         self.btn4.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn4.clicked.connect(self.show_dialog_outdir)
 
@@ -287,16 +287,16 @@ class Predicter(QWidget):
         self.checkBox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.checkBox.toggle()
 
-        self.btn5 = QPushButton('predict', self)
+        self.btn5 = QPushButton('Predict', self)
         self.btn5.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn5.clicked.connect(self.predicter)
-        self.btnb = QPushButton('back', self)
+        self.btnb = QPushButton('Back', self)
         self.btnb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btnb.clicked.connect(self.back)
-        self.lbl = QLabel('original dir', self)
-        self.lbl2 = QLabel('label dir', self)
-        self.lbl3 = QLabel('model dir (contains model.hdf5)', self)
-        self.lbl4 = QLabel('output dir', self)
+        self.lbl = QLabel('Original directory', self)
+        self.lbl2 = QLabel('Label directory', self)
+        self.lbl3 = QLabel('Model directory (contains model.hdf5)', self)
+        self.lbl4 = QLabel('Output directory', self)
         self.build()
 
         self.model = None
@@ -317,28 +317,28 @@ class Predicter(QWidget):
 
     def show_dialog_o(self):
         default_path = max(self.opath, self.labelpath, os.path.expanduser('~'))
-        f_name = QFileDialog.getExistingDirectory(self, 'Open Directory', default_path)
+        f_name = QFileDialog.getExistingDirectory(self, 'Open directory', default_path)
         if f_name:
             self.opath = f_name
             self.lbl.setText(self.opath)
 
     def show_dialog_label(self):
         default_path = max(self.opath, self.labelpath, os.path.expanduser('~'))
-        f_name = QFileDialog.getExistingDirectory(self, 'Open Directory', default_path)
+        f_name = QFileDialog.getExistingDirectory(self, 'Open directory', default_path)
         if f_name:
             self.labelpath = f_name
             self.lbl2.setText(self.labelpath)
 
     def show_dialog_model(self):
         default_path = max(self.opath, self.labelpath, os.path.expanduser('~'))
-        f_name = QFileDialog.getExistingDirectory(self, 'Open Directory', default_path)
+        f_name = QFileDialog.getExistingDirectory(self, 'Open directory', default_path)
         if f_name:
             self.modelpath = f_name
             self.lbl3.setText(self.modelpath)
 
     def show_dialog_outdir(self):
         default_path = max(self.opath, self.labelpath, os.path.expanduser('~'))
-        f_name = QFileDialog.getExistingDirectory(self, 'Open Directory', default_path)
+        f_name = QFileDialog.getExistingDirectory(self, 'Open directory', default_path)
         if f_name:
             self.outpath = f_name
             self.lbl4.setText(self.outpath)
@@ -362,7 +362,7 @@ class Predicter(QWidget):
         self.model = get_nested_unet(input_shape=input_shape, num_classes=num_classes)
         self.model.load_weights(os.path.join(self.modelpath, "model.hdf5"))
 
-        self.btn5.setText('predicting')
+        self.btn5.setText('Predicting')
 
         if self.checkBox.isChecked() is True:
             self.predict(ori_imgs)
@@ -385,7 +385,7 @@ class Predicter(QWidget):
             except Exception as e:
                 print(e)
 
-        self.btn5.setText('predict')
+        self.btn5.setText('Predict')
 
     def predict_single(self, ori_imgs):
         try:
@@ -403,41 +403,41 @@ class Predicter(QWidget):
             except Exception as e:
                 print(e)
 
-        self.btn5.setText('predict')
+        self.btn5.setText('Predict')
 
 
-class Entrance(QWidget):
-    def __init__(self, parent):
-        super().__init__()
-        #self.master = parent
-        self.btn1 = QPushButton('Loader', self)
-        # self.btn1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btn1.clicked.connect(self.move_to_loader)
-        # self.btn2 = QPushButton('Trainer', self)
-        # # self.btn2.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        # self.btn2.clicked.connect(self.move_to_trainer)
-        # self.btn3 = QPushButton('Predicter', self)
-        # # self.btn3.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        # self.btn3.clicked.connect(self.move_to_predicter)
-        self.build()
-
-    def build(self):
-        vbox = QVBoxLayout()
-        vbox.addWidget(self.btn1)
-        # vbox.addWidget(self.btn2)
-        # vbox.addWidget(self.btn3)
-
-        self.setLayout(vbox)
-        self.show()
-
-    def move_to_loader(self):
-        self.master.setCurrentIndex(1)
-
-    # def move_to_trainer(self):
-    #     self.master.setCurrentIndex(2)
-    #
-    # def move_to_predicter(self):
-    #     self.master.setCurrentIndex(3)
+# class Entrance(QWidget):
+#     def __init__(self, parent):
+#         super().__init__()
+#         #self.master = parent
+#         self.btn1 = QPushButton('Loader', self)
+#         # self.btn1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+#         self.btn1.clicked.connect(self.move_to_loader)
+#         # self.btn2 = QPushButton('Trainer', self)
+#         # # self.btn2.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+#         # self.btn2.clicked.connect(self.move_to_trainer)
+#         # self.btn3 = QPushButton('Predicter', self)
+#         # # self.btn3.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+#         # self.btn3.clicked.connect(self.move_to_predicter)
+#         self.build()
+#
+#     def build(self):
+#         vbox = QVBoxLayout()
+#         vbox.addWidget(self.btn1)
+#         # vbox.addWidget(self.btn2)
+#         # vbox.addWidget(self.btn3)
+#
+#         self.setLayout(vbox)
+#         self.show()
+#
+#     def move_to_loader(self):
+#         self.master.setCurrentIndex(1)
+#
+#     # def move_to_trainer(self):
+#     #     self.master.setCurrentIndex(2)
+#     #
+#     # def move_to_predicter(self):
+#     #     self.master.setCurrentIndex(3)
 
 
 #class App(QTabWidget):
@@ -468,10 +468,10 @@ def combine_blocks(block1, block2):
     temp_widget.setLayout(temp_layout)
     return temp_widget
 
-
-if __name__ == '__main__':
-    with napari.gui_qt():
-        view_l = napari.Viewer()
-        launcher = App()
-        view_l.window.add_dock_widget(launcher, area='right')
-    # napari.run()
+#
+# if __name__ == '__main__':
+#     with napari.gui_qt():
+#         view_l = napari.Viewer()
+#         launcher = App()
+#         view_l.window.add_dock_widget(launcher, area='right')
+#     # napari.run()
