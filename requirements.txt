@@ -58,7 +58,6 @@ MarkupSafe==2.1.0
 matplotlib==3.4.1
 matplotlib-inline==0.1.2
 napari==0.4.14
--e git+ssh://git@github.com/C-Achard/cellseg-annotator-test.git@a0cab33dfa229decc564df973311d53e7eeb86c8#egg=napari_cellseg_annotator
 napari-console==0.0.4
 napari-plugin-engine==0.1.9
 napari-svg==0.1.5

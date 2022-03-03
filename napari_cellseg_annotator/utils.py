@@ -13,6 +13,14 @@ from skimage.filters import gaussian
 import keras.backend as K
 from keras.losses import binary_crossentropy
 
+from qtpy.QtGui import QDesktopServices
+from qtpy.QtCore import QUrl
+
+
+def open_url(url):
+    QDesktopServices.openUrl(
+        QUrl(url, QUrl.TolerantMode))
+
 def normalize_x(image):
     image = image / 127.5 - 1
     return image
