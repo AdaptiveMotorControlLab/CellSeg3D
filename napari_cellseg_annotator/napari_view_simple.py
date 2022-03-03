@@ -100,7 +100,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
         return dirname
     # TODO
     gui = dirpicker.show(run=True)  # dirpicker.show(run=True)
-    view1.window.add_dock_widget(gui)
+    view1.window.add_dock_widget(gui, area='bottom')
 
     @magicgui(call_button="save")
     def saver():
