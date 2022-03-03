@@ -24,9 +24,6 @@ class Helper(QWidget):
     def __init__(self, parent: 'napari.viewer.Viewer'):
         super().__init__()
         #self.master = parent
-
-        #"https://wysscenter.ch/advances/3d-computer-vision-for-brain-analysis"
-        #"https://github.com/C-Achard/cellseg-annotator-test/tree/main"
         self.help_url = "https://github.com/C-Achard/cellseg-annotator-test/tree/main"
         self.about_url = "https://wysscenter.ch/advances/3d-computer-vision-for-brain-analysis"
         self._viewer = parent
@@ -74,9 +71,9 @@ class Loader(QWidget):
         self.btn4 = QPushButton('Start reviewing', self)
         self.btn4.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn4.clicked.connect(self.launch_napari)
-        self.btnb = QPushButton('Back', self)
+        self.btnb = QPushButton('Close', self)
         self.btnb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btnb.clicked.connect(self.back)
+        self.btnb.clicked.connect(self.close)
         self.lbl = QLabel('Images directory', self)
         self.lbl2 = QLabel('Labels directory', self)
         self.lbl4 = QLabel('Model name', self)
@@ -84,7 +81,7 @@ class Loader(QWidget):
 
     def build(self):
         vbox = QVBoxLayout()
-        vbox.addWidget(combine_blocks(self.btn1, self.lbl))
+        vbox.addWidget(combine_blocks(self.lbl,self.btn1))
         vbox.addWidget(combine_blocks(self.btn2, self.lbl2))
         vbox.addWidget(combine_blocks(self.textbox, self.lbl4))
         vbox.addWidget(self.checkBox)
@@ -108,8 +105,9 @@ class Loader(QWidget):
             self.modpath = f_name
             self.lbl2.setText(self.modpath)
 
-    def back(self):
-        self.master.setCurrentIndex(0)
+    def close(self):
+        #self.master.setCurrentIndex(0)
+        self._viewer.window.remove_dock_widget(self)
 
     def launch_napari(self):
         images = utils.load_images(self.opath)
@@ -127,7 +125,7 @@ class Loader(QWidget):
         except:
             labels_raw = None
         view1 = launch_viewers(images, labels, labels_raw, self.modpath, self.textbox.text(), self.checkBox.isChecked())
-        #TODO
+        #TODO use  self._viewer.window.remove_dock_widget(self) ?
         global view_l
         view_l.close()  # why does it not close the window ??
         return view1
@@ -154,9 +152,9 @@ class Trainer(QWidget):
         self.btn4 = QPushButton('Start training', self)
         self.btn4.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn4.clicked.connect(self.trainer)
-        self.btnb = QPushButton('Back', self)
+        self.btnb = QPushButton('Close', self)
         self.btnb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btnb.clicked.connect(self.back)
+        self.btnb.clicked.connect(self.close)
         self.lbl = QLabel('Original directory', self)
         self.lbl2 = QLabel('Label directory', self)
         self.lbl3 = QLabel('Model output directory', self)
@@ -198,8 +196,9 @@ class Trainer(QWidget):
             self.modelpath = f_name
             self.lbl3.setText(self.modelpath)
 
-    def back(self):
-        self.master.setCurrentIndex(0)
+    def close(self):
+        # self.master.setCurrentIndex(0)
+        self._viewer.window.remove_dock_widget(self)
 
     def get_newest_csv(self):
         csvs = sorted(list(Path(self.labelpath).glob('./*csv')))
@@ -321,9 +320,9 @@ class Predicter(QWidget):
         self.btn5 = QPushButton('Predict', self)
         self.btn5.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn5.clicked.connect(self.predicter)
-        self.btnb = QPushButton('Back', self)
+        self.btnb = QPushButton('Close', self)
         self.btnb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btnb.clicked.connect(self.back)
+        self.btnb.clicked.connect(self.close)
         self.lbl = QLabel('Original directory', self)
         self.lbl2 = QLabel('Label directory', self)
         self.lbl3 = QLabel('Model directory (contains model.hdf5)', self)
@@ -374,8 +373,9 @@ class Predicter(QWidget):
             self.outpath = f_name
             self.lbl4.setText(self.outpath)
 
-    def back(self):
-        self.master.setCurrentIndex(0)
+    def close(self):
+        # self.master.setCurrentIndex(0)
+        self._viewer.window.remove_dock_widget(self)
 
     def get_newest_csv(self):
         csvs = sorted(list(Path(self.labelpath).glob('./*csv')))
@@ -494,8 +494,8 @@ class Predicter(QWidget):
 def combine_blocks(block1, block2):
     temp_widget = QWidget()
     temp_layout = QHBoxLayout()
-    temp_layout.addWidget(block1)
     temp_layout.addWidget(block2)
+    temp_layout.addWidget(block1)
     temp_widget.setLayout(temp_layout)
     return temp_widget
 
