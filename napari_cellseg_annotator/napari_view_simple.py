@@ -32,6 +32,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
         del layer
     except NameError:
         pass
+    #TODO : cleanup, notably viewer argument
     view1 = viewer
     view1.add_image(images_original, colormap="inferno", contrast_limits=[200,
                                                                                     1000])  # anything bigger than 255 will get mapped to 255... they did it like this because it must have rgb images
@@ -98,24 +99,33 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
         """Take a filename and do something with it."""
         print("The filename is:", dirname)
         return dirname
-    # TODO
+    # TODO merge widgets ?
     gui = dirpicker.show(run=True)  # dirpicker.show(run=True)
-    view1.window.add_dock_widget(gui, area='bottom')
 
-    @magicgui(call_button="save")
+    # view1.window.add_dock_widget(gui,name=' ', area='bottom')
+
+
+    #TODO : fix crash
+    @magicgui(call_button="Save")
     def saver():
         out_dir = gui.dirname  # .value
         print("The directory is:", out_dir)
         return utils.save_masks(layer1.data, out_dir)
 
     gui2 = saver.show(run=True)  # saver.show(run=True)
-    view1.window.add_dock_widget(gui2, area='bottom')
+    view1.window.add_dock_widget(gui2, name=' ',area='bottom')
+    viewer.window._qt_window.tabifyDockWidget(gui, gui2)
 
+    #Qt widget defined in docker.py
     dmg = Datamanager()
     dmg.prepare(r_path, model_type, checkbox)
-    view1.window.add_dock_widget(dmg, area='left')
+    view1.window.add_dock_widget(dmg,name=' ', area='left')
+
+
+    view1.window.add_dock_widget(file_manag_widg, name=' ', area = 'bottom')
 
     def update_button(axis_event):
+        #TODO : possible crash with OOB from here ? file struct or method problem ?
         axis = axis_event.axis
         if axis != 0:
             return
@@ -153,7 +163,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
 
     canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
 
-    view1.window.add_dock_widget(canvas, area='right')
+    view1.window.add_dock_widget(canvas, name=' ', area='right')
 
     @layer.mouse_drag_callbacks.append
     def update_canvas_canvas(layer, event):

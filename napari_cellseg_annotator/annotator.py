@@ -78,17 +78,27 @@ class Loader(QWidget):
         self.lbl = QLabel('Images directory', self)
         self.lbl2 = QLabel('Labels directory', self)
         self.lbl4 = QLabel('Model name', self)
+
+        self.btntest = QPushButton('test',self)
+        self.btntest.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.btntest.clicked.connect(self.run_test)
+
         self.build()
 
     def build(self):
         vbox = QVBoxLayout()
-        vbox.addWidget(combine_blocks(self.btn1,self.lbl))
-        vbox.addWidget(combine_blocks(self.btn2, self.lbl2))
-        vbox.addWidget(combine_blocks(self.textbox, self.lbl4))
+        vbox.addWidget(utils.combine_blocks(self.btn1,self.lbl))
+        vbox.addWidget(utils.combine_blocks(self.btn2, self.lbl2))
+        vbox.addWidget(utils.combine_blocks(self.textbox, self.lbl4))
         vbox.addWidget(self.checkBox)
         vbox.addWidget(self.btn4)
         vbox.addWidget(self.btnb)
-
+        #########################
+        #TODO : remove once done
+        test=True
+        if test :
+            vbox.addWidget(self.btntest)
+        #########################
         self.setLayout(vbox)
         self.show()
 
@@ -125,12 +135,21 @@ class Loader(QWidget):
             labels_raw = utils.load_raw_masks(self.modpath + '_raw')
         except:
             labels_raw = None
+            #TODO: viewer argument ?
         view1 = launch_viewers(self._viewer,images, labels, labels_raw, self.modpath, self.textbox.text(), self.checkBox.isChecked())
 
         # global view_l
         # view_l.close()  # why does it not close the window ??  #TODO use  close()
         #self.close
-        return view1    
+        return view1
+
+    ########################
+    #TODO : remove
+    def run_test(self):
+        self.opath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual/volumes"
+        self.modpath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual/labels"
+        self.launch_napari()
+    ########################
 
 
 class Trainer(QWidget):
@@ -168,9 +187,9 @@ class Trainer(QWidget):
 
     def build(self):
         vbox = QVBoxLayout()
-        vbox.addWidget(combine_blocks(self.btn1, self.lbl))
-        vbox.addWidget(combine_blocks(self.btn2, self.lbl2))
-        vbox.addWidget(combine_blocks(self.btn3, self.lbl3))
+        vbox.addWidget(utils.combine_blocks(self.btn1, self.lbl))
+        vbox.addWidget(utils.combine_blocks(self.btn2, self.lbl2))
+        vbox.addWidget(utils.combine_blocks(self.btn3, self.lbl3))
         vbox.addWidget(self.btn4)
         vbox.addWidget(self.btnb)
 
@@ -336,10 +355,10 @@ class Predicter(QWidget):
 
     def build(self):
         vbox = QVBoxLayout()
-        vbox.addWidget(combine_blocks(self.btn1, self.lbl))
-        vbox.addWidget(combine_blocks(self.btn2, self.lbl2))
-        vbox.addWidget(combine_blocks(self.btn3, self.lbl3))
-        vbox.addWidget(combine_blocks(self.btn4, self.lbl4))
+        vbox.addWidget(utils.combine_blocks(self.btn1, self.lbl))
+        vbox.addWidget(utils.combine_blocks(self.btn2, self.lbl2))
+        vbox.addWidget(utils.combine_blocks(self.btn3, self.lbl3))
+        vbox.addWidget(utils.combine_blocks(self.btn4, self.lbl4))
         vbox.addWidget(self.checkBox)
         vbox.addWidget(self.btn5)
         vbox.addWidget(self.btnb)
@@ -493,13 +512,6 @@ class Predicter(QWidget):
         #self.resize(500, 400)
 
 
-def combine_blocks(block1, block2):
-    temp_widget = QWidget()
-    temp_layout = QHBoxLayout()
-    temp_layout.addWidget(block2)
-    temp_layout.addWidget(block1)
-    temp_widget.setLayout(temp_layout)
-    return temp_widget
 
 #
 # if __name__ == '__main__':

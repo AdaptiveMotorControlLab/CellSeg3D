@@ -16,6 +16,14 @@ from keras.losses import binary_crossentropy
 from qtpy.QtGui import QDesktopServices
 from qtpy.QtCore import QUrl
 
+def combine_blocks(block1, block2):
+    temp_widget = QWidget()
+    temp_layout = QHBoxLayout()
+    temp_layout.addWidget(block2)
+    temp_layout.addWidget(block1)
+    temp_widget.setLayout(temp_layout)
+    return temp_widget
+
 
 def open_url(url):
     QDesktopServices.openUrl(
