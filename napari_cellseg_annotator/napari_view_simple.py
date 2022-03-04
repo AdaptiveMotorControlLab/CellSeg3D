@@ -113,7 +113,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
     # TODO : fix crash
     @magicgui(call_button="Save")
     def saver():
-        out_dir = gui.dirname  # .value
+        out_dir = gui.dirname.value
         print("The directory is:", out_dir)
         return utils.save_masks(layer1.data, out_dir)
 

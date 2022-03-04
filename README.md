@@ -16,12 +16,9 @@ Preferences > Python Interpreter > Add > Conda environment > Existing Environmen
 
 From folder :
 ```
-pip install -r requirements.txt
-cd ..
 pip install -e napari-cellseg-annotator
 napari
 ```
 
-- [ ] Fix utils.save_masks in utils
 
 
