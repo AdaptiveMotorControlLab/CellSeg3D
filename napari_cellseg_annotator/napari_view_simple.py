@@ -18,7 +18,7 @@ from napari_cellseg_annotator.dock import Datamanager
 
 
 def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
-    #TODO
+    # TODO
     global slicer
     global z_pos
     global view1
@@ -33,12 +33,17 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
     except NameError:
         pass
     view1 = viewer
-    view1.add_image(images_original, colormap="inferno", contrast_limits=[200,
-                                                                                    1000])  # anything bigger than 255 will get mapped to 255... they did it like this because it must have rgb images
-    view1.add_labels(base_label, name='base', seed=0.6)
+    view1.add_image(
+        images_original, colormap="inferno", contrast_limits=[200, 1000]
+    )  # anything bigger than 255 will get mapped to 255... they did it like this because it must have rgb images
+    view1.add_labels(base_label, name="base", seed=0.6)
     if raw is not None:  # raw labels is from the prediction
-        view1.add_image(ndimage.gaussian_filter(raw, sigma=3), colormap='magenta', name='low_confident',
-                        blending='additive')
+        view1.add_image(
+            ndimage.gaussian_filter(raw, sigma=3),
+            colormap="magenta",
+            name="low_confident",
+            blending="additive",
+        )
     else:
         pass
 
@@ -98,6 +103,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
         """Take a filename and do something with it."""
         print("The filename is:", dirname)
         return dirname
+
     # TODO
     gui = dirpicker.show(run=True)  # dirpicker.show(run=True)
     view1.window.add_dock_widget(gui)
@@ -109,11 +115,11 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
         return utils.save_masks(layer1.data, out_dir)
 
     gui2 = saver.show(run=True)  # saver.show(run=True)
-    view1.window.add_dock_widget(gui2, area='bottom')
+    view1.window.add_dock_widget(gui2, area="bottom")
 
     dmg = Datamanager()
     dmg.prepare(r_path, model_type, checkbox)
-    view1.window.add_dock_widget(dmg, area='left')
+    view1.window.add_dock_widget(dmg, area="left")
 
     def update_button(axis_event):
         axis = axis_event.axis
@@ -124,47 +130,49 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
         dmg.update(slice_num)
 
     view1.dims.events.current_step.connect(update_button)
-    #old : events.axis.connect
+    # old : events.axis.connect
 
     # draw canvas
 
-    with plt.style.context('dark_background'):
+    with plt.style.context("dark_background"):
         canvas = FigureCanvas(Figure(figsize=(3, 15)))
 
         xy_axes = canvas.figure.add_subplot(3, 1, 1)
 
         xy_axes.imshow(np.zeros((100, 100), np.uint8))
-        xy_axes.scatter(50, 50, s=10, c='red', alpha=0.15)
-        xy_axes.set_xlabel('x axis')
-        xy_axes.set_ylabel('y axis')
+        xy_axes.scatter(50, 50, s=10, c="red", alpha=0.15)
+        xy_axes.set_xlabel("x axis")
+        xy_axes.set_ylabel("y axis")
         yz_axes = canvas.figure.add_subplot(3, 1, 2)
         yz_axes.imshow(np.zeros((100, 100), np.uint8))
-        yz_axes.scatter(50, 50, s=10, c='red', alpha=0.15)
-        yz_axes.set_xlabel('y axis')
-        yz_axes.set_ylabel('z axis')
+        yz_axes.scatter(50, 50, s=10, c="red", alpha=0.15)
+        yz_axes.set_xlabel("y axis")
+        yz_axes.set_ylabel("z axis")
         zx_axes = canvas.figure.add_subplot(3, 1, 3)
         zx_axes.imshow(np.zeros((100, 100), np.uint8))
-        zx_axes.scatter(50, 50, s=10, c='red', alpha=0.15)
-        zx_axes.set_xlabel('x axis')
-        zx_axes.set_ylabel('z axis')
+        zx_axes.scatter(50, 50, s=10, c="red", alpha=0.15)
+        zx_axes.set_xlabel("x axis")
+        zx_axes.set_ylabel("z axis")
 
         # canvas.figure.tight_layout()
-        canvas.figure.subplots_adjust(left=0, bottom=0.1, right=1, top=0.95, wspace=0, hspace=0.4)
+        canvas.figure.subplots_adjust(
+            left=0, bottom=0.1, right=1, top=0.95, wspace=0, hspace=0.4
+        )
 
     canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
 
-    view1.window.add_dock_widget(canvas, area='right')
+    view1.window.add_dock_widget(canvas, area="right")
 
     @layer.mouse_drag_callbacks.append
     def update_canvas_canvas(layer, event):
-        if 'shift' in event.modifiers:
+        if "shift" in event.modifiers:
             try:
                 m_point = np.round(layer.coordinates).astype(int)
                 print(m_point)
                 crop_big = crop_img([m_point[0], m_point[1], m_point[2]], layer)
-                xy_axes.imshow(crop_big[50], 'gray')
-                yz_axes.imshow(crop_big.transpose(1, 0, 2)[50], 'gray')
-                zx_axes.imshow(crop_big.transpose(2, 0, 1)[50], 'gray')
+                xy_axes.imshow(crop_big[50], "gray")
+                yz_axes.imshow(crop_big.transpose(1, 0, 2)[50], "gray")
+                zx_axes.imshow(crop_big.transpose(2, 0, 1)[50], "gray")
                 canvas.draw_idle()
             except Exception as e:
                 print(e)
@@ -173,11 +181,18 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
         min_vals = [x - 50 for x in points]
         max_vals = [x + 50 for x in points]
         yohaku_minus = [n if n < 0 else 0 for n in min_vals]
-        yohaku_plus = [x - layer.data.shape[i] if layer.data.shape[i] < x else 0 for i, x in
-                       enumerate(max_vals)]
-        crop_slice = tuple(slice(np.maximum(0, n), x) for n, x in zip(min_vals, max_vals))
+        yohaku_plus = [
+            x - layer.data.shape[i] if layer.data.shape[i] < x else 0
+            for i, x in enumerate(max_vals)
+        ]
+        crop_slice = tuple(
+            slice(np.maximum(0, n), x) for n, x in zip(min_vals, max_vals)
+        )
         crop_temp = layer.data[crop_slice].persist().compute()
         cropped_img = np.zeros((100, 100, 100), np.uint8)
-        cropped_img[-yohaku_minus[0]:100 - yohaku_plus[0], -yohaku_minus[1]:100 - yohaku_plus[1]
-        , -yohaku_minus[2]:100 - yohaku_plus[2]] = crop_temp
+        cropped_img[
+            -yohaku_minus[0] : 100 - yohaku_plus[0],
+            -yohaku_minus[1] : 100 - yohaku_plus[1],
+            -yohaku_minus[2] : 100 - yohaku_plus[2],
+        ] = crop_temp
         return cropped_img
