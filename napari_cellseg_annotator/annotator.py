@@ -195,7 +195,7 @@ class Trainer(QWidget):
         vbox.addWidget(self.btnb)
 
         self.setLayout(vbox)
-        self.show()
+        #self.show()
 
     def show_dialog_o(self):
         default_path = max(self.opath, self.labelpath, os.path.expanduser('~'))

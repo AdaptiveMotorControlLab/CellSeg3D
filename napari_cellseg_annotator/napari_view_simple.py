@@ -102,7 +102,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
     # TODO merge widgets ?
     gui = dirpicker.show(run=True)  # dirpicker.show(run=True)
 
-    # view1.window.add_dock_widget(gui,name=' ', area='bottom')
+    view1.window.add_dock_widget(gui,name=' ', area='bottom')
 
 
     #TODO : fix crash
@@ -113,16 +113,13 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
         return utils.save_masks(layer1.data, out_dir)
 
     gui2 = saver.show(run=True)  # saver.show(run=True)
-    view1.window.add_dock_widget(gui2, name=' ',area='bottom')
-    view1.window._qt_window.tabifyDockWidget(gui, gui2)
+    view1.window.add_dock_widget(gui2, name=' ', area='bottom')
+    #view1.window._qt_window.tabifyDockWidget(gui, gui2) #not with FunctionGui ?
 
     #Qt widget defined in docker.py
     dmg = Datamanager()
     dmg.prepare(r_path, model_type, checkbox)
     view1.window.add_dock_widget(dmg,name=' ', area='left')
-
-
-    view1.window.add_dock_widget(file_manag_widg, name=' ', area = 'bottom')
 
     def update_button(axis_event):
         #TODO : possible crash with OOB from here ? file struct or method problem ?
