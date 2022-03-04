@@ -176,8 +176,15 @@ class Loader(QWidget):
     ########################
     # TODO : remove once done
     def run_test(self):
-        self.opath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual/volumes"
-        self.modpath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual/labels"
+        tif = False
+
+        self.opath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
+        self.modpath = (
+            "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
+        )
+        if tif:
+            self.opath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes"
+            self.modpath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels"
         self.launch_napari()
         self.close()
 

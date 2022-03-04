@@ -2,6 +2,7 @@ import datetime
 import os
 
 import cv2
+import glob
 import dask_image.imread
 import numpy as np
 import pandas as pd
@@ -140,39 +141,42 @@ def check(project_path, ext):
 
 
 def load_images(directory):
-    filename_pattern_original = os.path.join(directory)
+    filename_pattern_original = os.path.join(directory + "*.png")
+    images_original = dask_image.imread.imread(filename_pattern_original)
+
     # TODO
-    # filename_pattern_original = os.path.join(directory, '*png')
-    images_original = dask_image.imread.imread(
-        filename_pattern_original + "/images.tif"
-    )
+    # filename_pattern_original = os.path.join(directory)
+    # images_original = dask_image.imread.imread(
+    #     filename_pattern_original + "/images.tif"
+    # )
     return images_original
 
 
 def load_predicted_masks(mito_mask_dir, er_mask_dir):
-    filename_pattern_mito_label = os.path.join(mito_mask_dir, "*png")
-    filename_pattern_er_label = os.path.join(er_mask_dir, "*png")
-    images_mito_label = dask_image.imread.imread(filename_pattern_mito_label)
+
+    images_mito_label = load_images(mito_mask_dir)
     images_mito_label = images_mito_label.compute()
-    images_er_label = dask_image.imread.imread(filename_pattern_er_label)
+    images_er_label = load_images(er_mask_dir)
     images_er_label = images_er_label.compute()
     base_label = (images_mito_label > 127) * 1 + (images_er_label > 127) * 2
     return base_label
 
 
 def load_saved_masks(mod_mask_dir):
-    filename_pattern_label = os.path.join(mod_mask_dir)
+    images_label = load_images(mod_mask_dir)
     # TODO
-    images_label = dask_image.imread.imread(filename_pattern_label + "/images.tif")
-    images_label = images_label.compute()
+    # filename_pattern_label = os.path.join(mod_mask_dir)
+    # images_label = dask_image.imread.imread(filename_pattern_label + "/images.tif")
+    # images_label = images_label.compute()
     base_label = images_label
     return base_label
 
 
 def load_raw_masks(raw_mask_dir):
-    filename_pattern_raw = os.path.join(raw_mask_dir)
+    images_raw = load_images(raw_mask_dir)
     # TODO
-    images_raw = dask_image.imread.imread(filename_pattern_raw + "/images.tif")
+    # filename_pattern_raw = os.path.join(raw_mask_dir)
+    # images_raw = dask_image.imread.imread(filename_pattern_raw + "/images.tif")
     images_raw = images_raw.compute()
     base_label = np.where((126 < images_raw) & (images_raw < 171), 255, 0)
     return base_label
