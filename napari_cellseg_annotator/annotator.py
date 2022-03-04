@@ -78,11 +78,12 @@ class Loader(QWidget):
         self.lbl = QLabel('Images directory', self)
         self.lbl2 = QLabel('Labels directory', self)
         self.lbl4 = QLabel('Model name', self)
-
+        #####################################################################
+        #TODO
         self.btntest = QPushButton('test',self)
         self.btntest.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btntest.clicked.connect(self.run_test)
-
+        #####################################################################
         self.build()
 
     def build(self):
@@ -93,12 +94,12 @@ class Loader(QWidget):
         vbox.addWidget(self.checkBox)
         vbox.addWidget(self.btn4)
         vbox.addWidget(self.btnb)
-        #########################
+        ##################################################################
         #TODO : remove once done
         test=True
         if test :
             vbox.addWidget(self.btntest)
-        #########################
+        ##################################################################
         self.setLayout(vbox)
         self.show()
 
@@ -139,12 +140,12 @@ class Loader(QWidget):
         view1 = launch_viewers(self._viewer,images, labels, labels_raw, self.modpath, self.textbox.text(), self.checkBox.isChecked())
 
         # global view_l
-        # view_l.close()  # why does it not close the window ??  #TODO use  close()
+        # view_l.close()  # why does it not close the window ??  #TODO use  self.close() ?
         #self.close
         return view1
 
     ########################
-    #TODO : remove
+    #TODO : remove once done
     def run_test(self):
         self.opath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual/volumes"
         self.modpath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual/labels"

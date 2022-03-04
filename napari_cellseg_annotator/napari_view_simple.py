@@ -122,7 +122,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
     view1.window.add_dock_widget(dmg,name=' ', area='left')
 
     def update_button(axis_event):
-        #TODO : possible crash with OOB from here ? file struct or method problem ?
+        #TODO : possible crash (with OOB ?) from here ? file struct or method problem ?
         axis = axis_event.axis
         if axis != 0:
             return
@@ -131,6 +131,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
         dmg.update(slice_num)
 
     view1.dims.events.current_step.connect(update_button)
+    #No argument ??
     #old : events.axis.connect
 
     # draw canvas
