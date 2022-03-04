@@ -6,8 +6,12 @@ import os
 import cv2
 from dask_image.imread import imread
 
-input_train_vol_path = "/Users/vmax/Documents/TRAILMAP/data/training/training-original/volumes"
-input_train_label_path = "/Users/vmax/Documents/TRAILMAP/data/training/training-original/labels"
+input_train_vol_path = (
+    "/Users/vmax/Documents/TRAILMAP/data/training/training-original/volumes"
+)
+input_train_label_path = (
+    "/Users/vmax/Documents/TRAILMAP/data/training/training-original/labels"
+)
 output_train_vol_path = "/Users/vmax/Documents/cellpose/training/training_source"
 output_train_label_path = "/Users/vmax/Documents/cellpose/training/training_target"
 

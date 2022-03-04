@@ -10,8 +10,8 @@ os.makedirs(out_path, exist_ok=True)
 
 tiff_files_li = []
 for ti in sorted(os.listdir(seg_path)):
-    if '.tif' in ti:
-        tiff_files_li.append(os.path.join(seg_path,ti))
+    if ".tif" in ti:
+        tiff_files_li.append(os.path.join(seg_path, ti))
 
 tifftools.tiff_concat(tiff_files_li, f"{out_path}/image.tif", overwrite=True)
 

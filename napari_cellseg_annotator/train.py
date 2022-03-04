@@ -7,12 +7,12 @@ def train_unet(X_train, Y_train, csv_path, model_path, model):
     X_train = X_train
 
     data_gen_args = dict(
-        rotation_range=90.,
+        rotation_range=90.0,
         width_shift_range=0.1,
         height_shift_range=0.1,
         zoom_range=0.2,
         horizontal_flip=True,
-        vertical_flip=True
+        vertical_flip=True,
     )
     image_datagen = ImageDataGenerator(**data_gen_args)
     mask_datagen = ImageDataGenerator(**data_gen_args)
@@ -33,5 +33,11 @@ def train_unet(X_train, Y_train, csv_path, model_path, model):
 
     callbacks = []
     callbacks.append(CSVLogger(csv_path))
-    history = model.fit(train_generator,steps_per_epoch=32, epochs=NUM_EPOCH, verbose=1, callbacks=callbacks)
+    history = model.fit(
+        train_generator,
+        steps_per_epoch=32,
+        epochs=NUM_EPOCH,
+        verbose=1,
+        callbacks=callbacks,
+    )
     model.save_weights(model_path)

@@ -6,5 +6,5 @@ def napari_experimental_provide_dock_widget():
         (Loader, {"name": "File loader"}),
         (Trainer, {"name": "Trainer"}),
         (Predicter, {"name": "Predicter"}),
-        (Helper, {"name": "Help/About..."})
+        (Helper, {"name": "Help/About..."}),
     ]

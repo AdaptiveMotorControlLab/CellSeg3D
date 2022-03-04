@@ -4,8 +4,12 @@ import os
 import cv2
 from dask_image.imread import imread
 
-input_train_vol_path = "/Users/vmax/Documents/TRAILMAP/data/training/training-original/volumes"
-input_train_label_path = "/Users/vmax/Documents/TRAILMAP/data/training/training-original/labels"
+input_train_vol_path = (
+    "/Users/vmax/Documents/TRAILMAP/data/training/training-original/volumes"
+)
+input_train_label_path = (
+    "/Users/vmax/Documents/TRAILMAP/data/training/training-original/labels"
+)
 output_train_vol_path = "/Users/vmax/Documents/3dunet/training/training_source"
 output_train_label_path = "/Users/vmax/Documents/3dunet/training/training_target"
 
@@ -55,7 +59,11 @@ im = Image.fromarray(slice[0])
 ims = []
 for i in range(1, slice.shape[0]):
     ims.append(Image.fromarray(slice[i]))
-im.save(f"{output_qcsm_label_path}/img_{str(1).zfill(4)}.tif", save_all=True, append_images=ims)
+im.save(
+    f"{output_qcsm_label_path}/img_{str(1).zfill(4)}.tif",
+    save_all=True,
+    append_images=ims,
+)
 
 slice = img2.compute().astype(np.uint8)
 slice[slice >= 1] = 255
@@ -64,7 +72,11 @@ im = Image.fromarray(slice[0])
 ims = []
 for i in range(1, slice.shape[0]):
     ims.append(Image.fromarray(slice[i]))
-im.save(f"{output_qcvisual_label_path}/img_{str(1).zfill(4)}.tif", save_all=True, append_images=ims)
+im.save(
+    f"{output_qcvisual_label_path}/img_{str(1).zfill(4)}.tif",
+    save_all=True,
+    append_images=ims,
+)
 
 img1, img2 = Image.open(input_qcsm_vol_path), Image.open(input_qcvisual_vol_path)
 img1.save(f"{output_qcsm_vol_path}/img_{str(1).zfill(4)}.tif", save_all=True)

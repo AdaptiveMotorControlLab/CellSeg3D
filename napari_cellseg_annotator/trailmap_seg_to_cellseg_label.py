@@ -19,10 +19,14 @@ for filename in os.listdir(input_seg_path):
         image = np.array(img)
         image[image > 0.4] = 1
         image[image <= 0.4] = 0
-        cv2.imwrite(f"{os.path.join(output_seg_path, filename.split('.')[0])}.png", image)
+        cv2.imwrite(
+            f"{os.path.join(output_seg_path, filename.split('.')[0])}.png", image
+        )
 
 for filename in os.listdir(input_vol_path):
     if filename.endswith(".tif"):
         img = Image.open(os.path.join(input_vol_path, filename))
         image = np.array(img)
-        cv2.imwrite(f"{os.path.join(output_vol_path, filename.split('.')[0])}.png", image)
+        cv2.imwrite(
+            f"{os.path.join(output_vol_path, filename.split('.')[0])}.png", image
+        )

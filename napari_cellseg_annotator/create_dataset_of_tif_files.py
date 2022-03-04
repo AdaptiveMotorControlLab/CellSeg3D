@@ -4,8 +4,9 @@ import cv2
 import tifffile
 import numpy as np
 from PIL import Image
+
 # input_path = "/Users/vmax/Documents/3d/Annotation_2021/experimentC_partialannotation/images.tif"
-input_path = "/Users/vmax/Documents/3d/data/cropped_ok.tif"#/Users/vmax/Documents/TRAILMAP/data/validation/validation-original/volumes/c5images.tif"#"/Users/vmax/Documents/3d/Annotation_2021/visual_area/experimentC_sample1/images.tif"
+input_path = "/Users/vmax/Documents/3d/data/cropped_ok.tif"  # /Users/vmax/Documents/TRAILMAP/data/validation/validation-original/volumes/c5images.tif"#"/Users/vmax/Documents/3d/Annotation_2021/visual_area/experimentC_sample1/images.tif"
 output_path = "/Users/vmax/Documents/TRAILMAP/data/testing/crowded"
 img = Image.open(input_path)
 images = []
@@ -14,12 +15,6 @@ for i in range(img.n_frames):
     slice = np.array(img)
     im = Image.fromarray(slice)
     im.save(f"{output_path}/{str(i).zfill(4)}.tif")
-
-
-
-
-
-
 
 
 # original_stack = tifffile.imread(input_path)
@@ -40,4 +35,3 @@ for i in range(img.n_frames):
 # # from dask_image.imread import imread
 # #
 # # x = imread('/Users/vmax/Documents/3d/data/ExpC_TPH2_whole_brain-003.tif')
-

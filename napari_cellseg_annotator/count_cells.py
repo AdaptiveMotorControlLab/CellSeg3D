@@ -10,4 +10,3 @@ for filename in sorted(os.listdir(input_path)):
     if filename.endswith(".tif"):
         print(filename)
         print(len(np.unique(imread(os.path.join(input_path, filename)).compute())))
-

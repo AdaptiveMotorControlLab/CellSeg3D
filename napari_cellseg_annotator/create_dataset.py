@@ -17,7 +17,7 @@ for i in range(original_stack.shape[0]):
 
     cv2.imwrite(
         f"{output_path}/{str(i).zfill(4)}.png",
-        original_stack[i].astype(np.int16) #for labels
+        original_stack[i].astype(np.int16),  # for labels
     )
 
 # from dask_image.imread import imread
