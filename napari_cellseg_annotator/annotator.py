@@ -149,6 +149,7 @@ class Loader(QWidget):
         self.opath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual/volumes"
         self.modpath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual/labels"
         self.launch_napari()
+        self.close()
     ########################
 
 

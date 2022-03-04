@@ -114,7 +114,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
 
     gui2 = saver.show(run=True)  # saver.show(run=True)
     view1.window.add_dock_widget(gui2, name=' ',area='bottom')
-    viewer.window._qt_window.tabifyDockWidget(gui, gui2)
+    view1.window._qt_window.tabifyDockWidget(gui, gui2)
 
     #Qt widget defined in docker.py
     dmg = Datamanager()
