@@ -141,7 +141,7 @@ def check(project_path, ext):
 
 
 def load_images(directory):
-    filename_pattern_original = os.path.join(directory + "*.png")
+    filename_pattern_original = os.path.join(directory + "/*.png")
     images_original = dask_image.imread.imread(filename_pattern_original)
 
     # TODO
