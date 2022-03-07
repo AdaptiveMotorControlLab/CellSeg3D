@@ -181,16 +181,6 @@ def load_raw_masks(raw_mask_dir):
     base_label = np.where((126 < images_raw) & (images_raw < 171), 255, 0)
     return base_label
 
-
-def combine_blocks(block1, block2):
-    temp_widget = QWidget()
-    temp_layout = QHBoxLayout()
-    temp_layout.addWidget(block1)
-    temp_layout.addWidget(block2)
-    temp_widget.setLayout(temp_layout)
-    return temp_widget
-
-
 def save_masks(labels, out_path):
     num = labels.shape[0]
     os.makedirs(out_path, exist_ok=True)

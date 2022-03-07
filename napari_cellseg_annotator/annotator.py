@@ -85,7 +85,7 @@ class Loader(QWidget):
 
         self.btn4 = QPushButton("Start reviewing", self)
         self.btn4.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btn4.clicked.connect(self.launch_napari)
+        self.btn4.clicked.connect(self.run_review)
         self.btn4.clicked.connect(self.close)
         self.btnb = QPushButton("Close", self)
         self.btnb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -136,7 +136,7 @@ class Loader(QWidget):
         # self.master.setCurrentIndex(0)
         self._viewer.window.remove_dock_widget(self)
 
-    def launch_napari(self):
+    def run_review(self):
         images = utils.load_images(self.opath)
         if self.modpath == "":  # saves empty images of the same size as original images
             labels = np.zeros_like(images.compute())  # dask to numpy
@@ -185,7 +185,7 @@ class Loader(QWidget):
         if tif:
             self.opath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes"
             self.modpath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels"
-        self.launch_napari()
+        self.run_review()
         self.close()
 
     ########################
