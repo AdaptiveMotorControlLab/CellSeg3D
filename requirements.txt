@@ -35,6 +35,7 @@ HeapDict==1.0.1
 hsluv==5.0.2
 idna==3.3
 imageio==2.9.0
+imageio-ffmpeg==0.4.5
 imagesize==1.3.0
 importlib-metadata==4.11.2
 importlib-resources==5.4.0

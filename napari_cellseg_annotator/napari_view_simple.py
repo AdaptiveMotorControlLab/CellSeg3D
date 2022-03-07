@@ -32,7 +32,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
         del layer
     except NameError:
         pass
-    # TODO : cleanup, notably viewer argument
+    # TODO : cleanup, notably viewer argument ?
     view1 = viewer
     view1.add_image(
         images_original, colormap="inferno", contrast_limits=[200, 1000]

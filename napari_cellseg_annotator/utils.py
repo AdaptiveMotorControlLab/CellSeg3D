@@ -140,30 +140,31 @@ def check(project_path, ext):
     check_annotations_dir(project_path)
 
 
-def load_images(directory):
-    filename_pattern_original = os.path.join(directory + "/*.png")
+def load_images(directory, filetype):
+
+    filename_pattern_original = os.path.join(directory + "/*" + filetype)
+    if filetype == ".tif":
+        filename_pattern_original = os.path.join(directory + "/images" + filetype)
+    # TODO remove
+    # print("TEST : path is : " + directory + "/*" + filetype)
+
     images_original = dask_image.imread.imread(filename_pattern_original)
 
-    # TODO
-    # filename_pattern_original = os.path.join(directory)
-    # images_original = dask_image.imread.imread(
-    #     filename_pattern_original + "/images.tif"
-    # )
     return images_original
 
 
-def load_predicted_masks(mito_mask_dir, er_mask_dir):
+def load_predicted_masks(mito_mask_dir, er_mask_dir, filetype):
 
-    images_mito_label = load_images(mito_mask_dir)
+    images_mito_label = load_images(mito_mask_dir, filetype)
     images_mito_label = images_mito_label.compute()
-    images_er_label = load_images(er_mask_dir)
+    images_er_label = load_images(er_mask_dir, filetype)
     images_er_label = images_er_label.compute()
     base_label = (images_mito_label > 127) * 1 + (images_er_label > 127) * 2
     return base_label
 
 
-def load_saved_masks(mod_mask_dir):
-    images_label = load_images(mod_mask_dir)
+def load_saved_masks(mod_mask_dir, filetype):
+    images_label = load_images(mod_mask_dir, filetype)
     # TODO
     # filename_pattern_label = os.path.join(mod_mask_dir)
     # images_label = dask_image.imread.imread(filename_pattern_label + "/images.tif")
@@ -172,14 +173,15 @@ def load_saved_masks(mod_mask_dir):
     return base_label
 
 
-def load_raw_masks(raw_mask_dir):
-    images_raw = load_images(raw_mask_dir)
+def load_raw_masks(raw_mask_dir, filetype):
+    images_raw = load_images(raw_mask_dir, filetype)
     # TODO
     # filename_pattern_raw = os.path.join(raw_mask_dir)
     # images_raw = dask_image.imread.imread(filename_pattern_raw + "/images.tif")
     images_raw = images_raw.compute()
     base_label = np.where((126 < images_raw) & (images_raw < 171), 255, 0)
     return base_label
+
 
 def save_masks(labels, out_path):
     num = labels.shape[0]

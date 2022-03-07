@@ -19,6 +19,7 @@ from qtpy.QtWidgets import (
     QTabWidget,
     QLineEdit,
     QCheckBox,
+    QComboBox,
 )
 
 from napari.qt import thread_worker
@@ -77,6 +78,10 @@ class Loader(QWidget):
         self.btn2.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn2.clicked.connect(self.show_dialog_mod)
 
+        self.filetype_choice = QComboBox()
+        self.filetype_choice.addItems([".png", ".tif"])
+        self.filetype_choice.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
         self.textbox = QLineEdit(self)
         self.textbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
@@ -96,6 +101,7 @@ class Loader(QWidget):
         #####################################################################
         # TODO
         self.btntest = QPushButton("test", self)
+        self.lblft = QLabel("Filetype", self)
         self.btntest.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btntest.clicked.connect(self.run_test)
         #####################################################################
@@ -105,6 +111,7 @@ class Loader(QWidget):
         vbox = QVBoxLayout()
         vbox.addWidget(utils.combine_blocks(self.btn1, self.lbl))
         vbox.addWidget(utils.combine_blocks(self.btn2, self.lbl2))
+        vbox.addWidget(utils.combine_blocks(self.filetype_choice, self.lblft))
         vbox.addWidget(utils.combine_blocks(self.textbox, self.lbl4))
         vbox.addWidget(self.checkBox)
         vbox.addWidget(self.btn4)
@@ -137,7 +144,8 @@ class Loader(QWidget):
         self._viewer.window.remove_dock_widget(self)
 
     def run_review(self):
-        images = utils.load_images(self.opath)
+        filetype = self.filetype_choice.currentText()
+        images = utils.load_images(self.opath, filetype)
         if self.modpath == "":  # saves empty images of the same size as original images
             labels = np.zeros_like(images.compute())  # dask to numpy
             self.modpath = os.path.join(
@@ -152,9 +160,9 @@ class Loader(QWidget):
                     os.path.join(self.modpath, str(i).zfill(4) + ".png"), labels[i]
                 )
         else:
-            labels = utils.load_saved_masks(self.modpath)
+            labels = utils.load_saved_masks(self.modpath, filetype)
         try:
-            labels_raw = utils.load_raw_masks(self.modpath + "_raw")
+            labels_raw = utils.load_raw_masks(self.modpath + "_raw", filetype)
         except:
             labels_raw = None
             # TODO: viewer argument ?
@@ -169,24 +177,24 @@ class Loader(QWidget):
         )
 
         # global view_l
-        # view_l.close()  # why does it not close the window ??  #TODO use  self.close() ?
-        # self.close
+        # view_l.close()  # why does it not close the window ??  #use self.close() ?
+        self.close()  # necessary ? since napari is not opening new window now
         return view1
 
     ########################
     # TODO : remove once done
     def run_test(self):
-        tif = False
+        filetype = self.filetype_choice.currentText()
 
         self.opath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
         self.modpath = (
             "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
         )
-        if tif:
+        if filetype == ".tif":
             self.opath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes"
             self.modpath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels"
         self.run_review()
-        self.close()
+        # self.close()
 
     ########################
 
