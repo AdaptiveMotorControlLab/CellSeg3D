@@ -18,7 +18,7 @@ from napari_cellseg_annotator.dock import Datamanager
 
 
 def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
-    # TODO
+
     global slicer
     global z_pos
     global view1

@@ -165,19 +165,12 @@ def load_predicted_masks(mito_mask_dir, er_mask_dir, filetype):
 
 def load_saved_masks(mod_mask_dir, filetype):
     images_label = load_images(mod_mask_dir, filetype)
-    # TODO
-    # filename_pattern_label = os.path.join(mod_mask_dir)
-    # images_label = dask_image.imread.imread(filename_pattern_label + "/images.tif")
-    # images_label = images_label.compute()
     base_label = images_label
     return base_label
 
 
 def load_raw_masks(raw_mask_dir, filetype):
     images_raw = load_images(raw_mask_dir, filetype)
-    # TODO
-    # filename_pattern_raw = os.path.join(raw_mask_dir)
-    # images_raw = dask_image.imread.imread(filename_pattern_raw + "/images.tif")
     images_raw = images_raw.compute()
     base_label = np.where((126 < images_raw) & (images_raw < 171), 255, 0)
     return base_label
