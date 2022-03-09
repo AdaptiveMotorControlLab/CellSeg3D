@@ -174,7 +174,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
     def update_canvas_canvas(layer, event):
         if "shift" in event.modifiers:
             try:
-                m_point = np.round(layer.coordinates).astype(int)
+                m_point = np.round(viewer.cursor.position).astype(int)
                 print(m_point)
                 crop_big = crop_img([m_point[0], m_point[1], m_point[2]], layer)
                 xy_axes.imshow(crop_big[50], "gray")
