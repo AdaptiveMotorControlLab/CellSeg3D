@@ -110,7 +110,6 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
 
     view1.window.add_dock_widget(gui, name=" ", area="bottom")
 
-    # TODO : fix crash
     @magicgui(call_button="Save")
     def saver():
         out_dir = gui.dirname.value
@@ -127,11 +126,12 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
     view1.window.add_dock_widget(dmg, name=" ", area="left")
 
     def update_button(axis_event):
-        # TODO : possible crash (with OOB ?) from here ? file struct or method problem ?
-        axis = axis_event.axis
-        if axis != 0:
-            return
-        slice_num = axis_event.value
+        # TODO : crash fixed, what to do with if axis != 0 ?
+
+        # axis = axis_event.ndim
+        # if axis != 0:
+        #     return
+        slice_num = axis_event.value[0]
         print(f"slice num is {slice_num}")
         dmg.update(slice_num)
 
