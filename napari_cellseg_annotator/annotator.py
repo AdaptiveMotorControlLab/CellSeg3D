@@ -1,6 +1,7 @@
 import os
 import shutil
 import time
+import warnings
 from pathlib import Path
 import io as IO
 import matplotlib.pyplot as plt
@@ -30,6 +31,11 @@ from napari_cellseg_annotator.napari_view_simple import launch_viewers
 from napari_cellseg_annotator.predict import predict_3ax, predict_1ax
 from napari_cellseg_annotator.train import train_unet
 
+
+def format_Warning(message, category, filename, lineno, line=''):
+    return str(filename) + ':' + str(lineno) + ': ' + category.__name__ + ': ' +str(message) + '\n'
+
+warnings.formatwarning = format_Warning
 
 class Helper(QWidget):
     # widget testing
@@ -62,6 +68,10 @@ class Helper(QWidget):
 
     def close(self):
         self._viewer.window.remove_dock_widget(self)
+
+
+launched = False
+
 
 class Loader(QWidget):
     def __init__(self, parent: "napari.viewer.Viewer"):
@@ -152,7 +162,6 @@ class Loader(QWidget):
 
     def run_review(self):
 
-
         self.filetype = self.filetype_choice.currentText()
         images = utils.load_images(self.opath, self.filetype)
         if self.modpath == "":  # saves empty images of the same size as original images
@@ -177,20 +186,38 @@ class Loader(QWidget):
         except:
             labels_raw = None
             # TODO: viewer argument ?
-        view1 = launch_viewers(
-            self._viewer,
-            images,
-            labels,
-            labels_raw,
-            self.modpath,
-            self.textbox.text(),
-            self.checkBox.isChecked(),
-            self.filetype,
-        )
+        global launched
+        if launched:
+            new_viewer = napari.Viewer()
+            view1 = launch_viewers(
+                new_viewer,
+                images,
+                labels,
+                labels_raw,
+                self.modpath,
+                self.textbox.text(),
+                self.checkBox.isChecked(),
+                self.filetype,
+            )
+            warnings.warn("WARNING : Opening several loader sessions in one window is not supported; opening in new window")
+            self._viewer.close()
+        else:
+            new_viewer = self._viewer
 
-        # global view_l
+            view1 = launch_viewers(
+                new_viewer,
+                images,
+                labels,
+                labels_raw,
+                self.modpath,
+                self.textbox.text(),
+                self.checkBox.isChecked(),
+                self.filetype,
+            )
+            launched = True
+            self.close()
+            # global view_l
         # view_l.close()  # why does it not close the window ??  #use self.close() ?
-        self.close()  # necessary ? since napari is not opening new window now
         return view1
 
     ########################
