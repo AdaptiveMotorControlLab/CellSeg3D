@@ -144,9 +144,9 @@ def load_images(directory, filetype):
 
     filename_pattern_original = os.path.join(directory + "/*" + filetype)
     if filetype == ".tif":
+        # TODO : FIX loading only one tif file
         filename_pattern_original = os.path.join(directory + "/images" + filetype)
-    # TODO remove
-    # print("TEST : path is : " + directory + "/*" + filetype)
+
 
     images_original = dask_image.imread.imread(filename_pattern_original)
 
