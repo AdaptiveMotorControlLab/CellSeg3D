@@ -108,10 +108,7 @@ class Datamanager(QWidget):
             # print(self.image_dims[0])
             print(path[0].name)
             filename = path[0].name
-            labels = [
-                str(filename)
-                for i in range(self.image_dims[0])
-            ]
+            labels = [str(filename) for i in range(self.image_dims[0])]
 
         else:
             print("Error: filetype should be assigned on launch")

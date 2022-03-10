@@ -99,26 +99,24 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, fi
     layer = view1.layers[0]
     layer1 = view1.layers[1]
 
-    @magicgui(dirname={"mode": "d"})
-    def dirpicker(dirname=Path(r_path)):  # file name where to save annotations
-        """Take a filename and do something with it."""
+    @magicgui(dirname={"mode": "d", "label": "Save labels in... "}, call_button="Save")
+    def file_widget(dirname=Path(r_path)):  # file name where to save annotations
+        # """Take a filename and do something with it."""
         # print("The filename is:", dirname)
-        return dirname
+        dirname = Path(r_path)
+        # def saver():
+        out_dir = gui.dirname.value
+        # print("The directory is:", out_dir)
+        return dirname, utils.save_masks(layer1.data, out_dir)
 
-    # TODO merge widgets ?
-    gui = dirpicker.show(run=True)  # dirpicker.show(run=True)
+    gui = file_widget.show(run=True)  # dirpicker.show(run=True)
 
     view1.window.add_dock_widget(gui, name=" ", area="bottom")
 
-    @magicgui(call_button="Save")
-    def saver():
-        out_dir = gui.dirname.value
-        # print("The directory is:", out_dir)
-        return utils.save_masks(layer1.data, out_dir)
+    # @magicgui(call_button="Save")
 
-    gui2 = saver.show(run=True)  # saver.show(run=True)
-    view1.window.add_dock_widget(gui2, name=" ", area="bottom")
-    # view1.window._qt_window.tabifyDockWidget(gui, gui2) #not with FunctionGui ?
+    # gui2 = saver.show(run=True)  # saver.show(run=True)
+    # view1.window.add_dock_widget(gui2, name=" ", area="bottom")
 
     # draw canvas
 

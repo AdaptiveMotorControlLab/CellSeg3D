@@ -63,15 +63,16 @@ class Helper(QWidget):
     def close(self):
         self._viewer.window.remove_dock_widget(self)
 
-
 class Loader(QWidget):
     def __init__(self, parent: "napari.viewer.Viewer"):
-        super().__init__()
+        super(Loader, self).__init__()
+
         # self.master = parent
         self._viewer = parent
         self.opath = ""
         self.modpath = ""
         self.filetype = ""
+
         self.btn1 = QPushButton("Open", self)
         self.btn1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn1.clicked.connect(self.show_dialog_o)
@@ -107,9 +108,11 @@ class Loader(QWidget):
         self.btntest.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btntest.clicked.connect(self.run_test)
         #####################################################################
+
         self.build()
 
     def build(self):
+
         vbox = QVBoxLayout()
         vbox.addWidget(utils.combine_blocks(self.btn1, self.lbl))
         vbox.addWidget(utils.combine_blocks(self.btn2, self.lbl2))
@@ -148,6 +151,8 @@ class Loader(QWidget):
         self._viewer.window.remove_dock_widget(self)
 
     def run_review(self):
+
+
         self.filetype = self.filetype_choice.currentText()
         images = utils.load_images(self.opath, self.filetype)
         if self.modpath == "":  # saves empty images of the same size as original images
