@@ -100,7 +100,7 @@ class Loader(QWidget):
         self.lbl2 = QLabel("Labels directory", self)
         self.lbl4 = QLabel("Model name", self)
         #####################################################################
-        # TODO
+        # TODO remove once done
         self.btntest = QPushButton("test", self)
         self.lblft = QLabel("Filetype", self)
         self.btntest.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)

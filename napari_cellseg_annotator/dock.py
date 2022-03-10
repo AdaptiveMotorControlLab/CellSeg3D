@@ -99,10 +99,6 @@ class Datamanager(QWidget):
         :rtype (pandas.DataFrame, str)
         """
 
-        # TODO : causing obvious issues when filetype is not png
-        # tie it to slice number !
-        # labels = ["" for i in range(self.image_dims[0])]
-        # print(self.filetype)
         if self.filetype == ".png":
             labels = sorted(
                 list(path.name for path in Path(label_dir).glob("./*" + self.filetype))
