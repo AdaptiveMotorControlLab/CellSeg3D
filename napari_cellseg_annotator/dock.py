@@ -44,14 +44,17 @@ class Datamanager(QWidget):
         self.df = ""
         self.csv_path = ""
         self.slice_num = 0
+        self.filetype = ""
 
-    def prepare(self, label_dir, model_type, checkbox):
+    def prepare(self, label_dir,filetype, model_type, checkbox):
         """
         :param str label_dir: label path
+        :param str filetype : file extension
         :param str model_type: model type
         :param bool checkbox: create new dataset or not
         """
         self.df, self.csv_path = self.load_csv(label_dir, model_type, checkbox)
+        self.filetype = filetype
         print(self.csv_path, checkbox)
         self.update(0)
 
@@ -92,7 +95,9 @@ class Datamanager(QWidget):
         :return: dataframe, csv path
         :rtype (pandas.DataFrame, str)
         """
-        labels = sorted(list(path.name for path in Path(label_dir).glob("./*png")))
+
+        #TODO : causing obvious issues when filetype is not png
+        labels = sorted(list(path.name for path in Path(label_dir).glob("./*"+self.filetype)))
         df = pd.DataFrame({"filename": labels, "train": ["Not Checked"] * len(labels)})
         csv_path = os.path.join(label_dir, f"{model_type}_train0.csv")
         df.to_csv(csv_path)
@@ -100,6 +105,7 @@ class Datamanager(QWidget):
 
     def update(self, slice_num):
         self.slice_num = slice_num
+        # print(self.df)
         self.button.setText(
             self.df.at[self.df.index[self.slice_num], "train"]
         )  # puts  button values at value of 1st csv item

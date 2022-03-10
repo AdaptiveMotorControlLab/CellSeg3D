@@ -71,6 +71,7 @@ class Loader(QWidget):
         self._viewer = parent
         self.opath = ""
         self.modpath = ""
+        self.filetype = ""
         self.btn1 = QPushButton("Open", self)
         self.btn1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn1.clicked.connect(self.show_dialog_o)
@@ -144,8 +145,8 @@ class Loader(QWidget):
         self._viewer.window.remove_dock_widget(self)
 
     def run_review(self):
-        filetype = self.filetype_choice.currentText()
-        images = utils.load_images(self.opath, filetype)
+        self.filetype = self.filetype_choice.currentText()
+        images = utils.load_images(self.opath, self.filetype)
         if self.modpath == "":  # saves empty images of the same size as original images
             labels = np.zeros_like(images.compute())  # dask to numpy
             self.modpath = os.path.join(
@@ -153,16 +154,16 @@ class Loader(QWidget):
             )
             os.makedirs(self.modpath, exist_ok=True)
             filenames = [
-                fn.name for fn in sorted(list(Path(self.opath).glob("./*png")))
+                fn.name for fn in sorted(list(Path(self.opath).glob("./*"+self.filetype)))
             ]
             for i in range(len(labels)):
                 io.imsave(
-                    os.path.join(self.modpath, str(i).zfill(4) + ".png"), labels[i]
+                    os.path.join(self.modpath, str(i).zfill(4) + self.filetype), labels[i]
                 )
         else:
-            labels = utils.load_saved_masks(self.modpath, filetype)
+            labels = utils.load_saved_masks(self.modpath, self.filetype)
         try:
-            labels_raw = utils.load_raw_masks(self.modpath + "_raw", filetype)
+            labels_raw = utils.load_raw_masks(self.modpath + "_raw", self.filetype)
         except:
             labels_raw = None
             # TODO: viewer argument ?
@@ -174,6 +175,7 @@ class Loader(QWidget):
             self.modpath,
             self.textbox.text(),
             self.checkBox.isChecked(),
+            self.filetype
         )
 
         # global view_l
@@ -184,13 +186,13 @@ class Loader(QWidget):
     ########################
     # TODO : remove once done
     def run_test(self):
-        filetype = self.filetype_choice.currentText()
+        self.filetype = self.filetype_choice.currentText()
 
         self.opath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
         self.modpath = (
             "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
         )
-        if filetype == ".tif":
+        if self.filetype == ".tif":
             self.opath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes"
             self.modpath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels"
         self.run_review()
