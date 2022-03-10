@@ -102,7 +102,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, fi
     @magicgui(dirname={"mode": "d"})
     def dirpicker(dirname=Path(r_path)):  # file name where to save annotations
         """Take a filename and do something with it."""
-        #print("The filename is:", dirname)
+        # print("The filename is:", dirname)
         return dirname
 
     # TODO merge widgets ?
@@ -113,31 +113,12 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, fi
     @magicgui(call_button="Save")
     def saver():
         out_dir = gui.dirname.value
-        #print("The directory is:", out_dir)
+        # print("The directory is:", out_dir)
         return utils.save_masks(layer1.data, out_dir)
 
     gui2 = saver.show(run=True)  # saver.show(run=True)
     view1.window.add_dock_widget(gui2, name=" ", area="bottom")
     # view1.window._qt_window.tabifyDockWidget(gui, gui2) #not with FunctionGui ?
-
-    # Qt widget defined in docker.py
-    dmg = Datamanager()
-    dmg.prepare(r_path,filetype, model_type, checkbox)
-    view1.window.add_dock_widget(dmg, name=" ", area="left")
-
-    def update_button(axis_event):
-        # TODO : crash fixed, what to do with if axis != 0 ?
-
-        # axis = axis_event.ndim
-        # if axis != 0:
-        #     return
-        slice_num = axis_event.value[0]
-        print(f"slice num is {slice_num}")
-        dmg.update(slice_num)
-
-    view1.dims.events.current_step.connect(update_button)
-    # No argument ??
-    # old : events.axis.connect
 
     # draw canvas
 
@@ -176,13 +157,34 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, fi
             try:
                 m_point = np.round(viewer.cursor.position).astype(int)
                 print(m_point)
-                crop_big = crop_img([m_point[0], m_point[1], m_point[2]], viewer.layers[0])
+                crop_big = crop_img(
+                    [m_point[0], m_point[1], m_point[2]], viewer.layers[0]
+                )
                 xy_axes.imshow(crop_big[50], "gray")
                 yz_axes.imshow(crop_big.transpose(1, 0, 2)[50], "gray")
                 zx_axes.imshow(crop_big.transpose(2, 0, 1)[50], "gray")
                 canvas.draw_idle()
             except Exception as e:
                 print(e)
+
+    # Qt widget defined in docker.py
+    dmg = Datamanager(parent=view1)
+    dmg.prepare(r_path, filetype, model_type, checkbox)
+    view1.window.add_dock_widget(dmg, name=" ", area="left")
+
+    def update_button(axis_event):
+        # TODO : crash fixed, what to do with if axis != 0 ?
+
+        # axis = axis_event.ndim
+        # if axis != 0:
+        #     return
+        slice_num = axis_event.value[0]
+        print(f"slice num is {slice_num}")
+        dmg.update(slice_num)
+
+    view1.dims.events.current_step.connect(update_button)
+    # No argument ??
+    # old : events.axis.connect
 
     def crop_img(points, layer):
         min_vals = [x - 50 for x in points]

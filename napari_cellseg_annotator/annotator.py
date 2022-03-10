@@ -154,11 +154,13 @@ class Loader(QWidget):
             )
             os.makedirs(self.modpath, exist_ok=True)
             filenames = [
-                fn.name for fn in sorted(list(Path(self.opath).glob("./*"+self.filetype)))
+                fn.name
+                for fn in sorted(list(Path(self.opath).glob("./*" + self.filetype)))
             ]
             for i in range(len(labels)):
                 io.imsave(
-                    os.path.join(self.modpath, str(i).zfill(4) + self.filetype), labels[i]
+                    os.path.join(self.modpath, str(i).zfill(4) + self.filetype),
+                    labels[i],
                 )
         else:
             labels = utils.load_saved_masks(self.modpath, self.filetype)
@@ -175,7 +177,7 @@ class Loader(QWidget):
             self.modpath,
             self.textbox.text(),
             self.checkBox.isChecked(),
-            self.filetype
+            self.filetype,
         )
 
         # global view_l
