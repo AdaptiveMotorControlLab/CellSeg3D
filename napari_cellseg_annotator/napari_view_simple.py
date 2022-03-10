@@ -17,7 +17,7 @@ from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.dock import Datamanager
 
 
-def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
+def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, filetype):
 
     global slicer
     global z_pos
@@ -102,7 +102,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
     @magicgui(dirname={"mode": "d"})
     def dirpicker(dirname=Path(r_path)):  # file name where to save annotations
         """Take a filename and do something with it."""
-        print("The filename is:", dirname)
+        #print("The filename is:", dirname)
         return dirname
 
     # TODO merge widgets ?
@@ -113,7 +113,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
     @magicgui(call_button="Save")
     def saver():
         out_dir = gui.dirname.value
-        print("The directory is:", out_dir)
+        #print("The directory is:", out_dir)
         return utils.save_masks(layer1.data, out_dir)
 
     gui2 = saver.show(run=True)  # saver.show(run=True)
@@ -122,7 +122,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
 
     # Qt widget defined in docker.py
     dmg = Datamanager()
-    dmg.prepare(r_path, model_type, checkbox)
+    dmg.prepare(r_path,filetype, model_type, checkbox)
     view1.window.add_dock_widget(dmg, name=" ", area="left")
 
     def update_button(axis_event):
@@ -145,19 +145,19 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
         canvas = FigureCanvas(Figure(figsize=(3, 15)))
 
         xy_axes = canvas.figure.add_subplot(3, 1, 1)
-
+        plt.title("Shift-click for plot")
         xy_axes.imshow(np.zeros((100, 100), np.uint8))
-        xy_axes.scatter(50, 50, s=10, c="red", alpha=0.15)
+        xy_axes.scatter(50, 50, s=10, c="red", alpha=0.25)
         xy_axes.set_xlabel("x axis")
         xy_axes.set_ylabel("y axis")
         yz_axes = canvas.figure.add_subplot(3, 1, 2)
         yz_axes.imshow(np.zeros((100, 100), np.uint8))
-        yz_axes.scatter(50, 50, s=10, c="red", alpha=0.15)
+        yz_axes.scatter(50, 50, s=10, c="red", alpha=0.25)
         yz_axes.set_xlabel("y axis")
         yz_axes.set_ylabel("z axis")
         zx_axes = canvas.figure.add_subplot(3, 1, 3)
         zx_axes.imshow(np.zeros((100, 100), np.uint8))
-        zx_axes.scatter(50, 50, s=10, c="red", alpha=0.15)
+        zx_axes.scatter(50, 50, s=10, c="red", alpha=0.25)
         zx_axes.set_xlabel("x axis")
         zx_axes.set_ylabel("z axis")
 
@@ -170,13 +170,13 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
 
     view1.window.add_dock_widget(canvas, name=" ", area="right")
 
-    @layer.mouse_drag_callbacks.append
-    def update_canvas_canvas(layer, event):
+    @viewer.mouse_drag_callbacks.append
+    def update_canvas_canvas(viewer, event):
         if "shift" in event.modifiers:
             try:
                 m_point = np.round(viewer.cursor.position).astype(int)
                 print(m_point)
-                crop_big = crop_img([m_point[0], m_point[1], m_point[2]], layer)
+                crop_big = crop_img([m_point[0], m_point[1], m_point[2]], viewer.layers[0])
                 xy_axes.imshow(crop_big[50], "gray")
                 yz_axes.imshow(crop_big.transpose(1, 0, 2)[50], "gray")
                 zx_axes.imshow(crop_big.transpose(2, 0, 1)[50], "gray")
