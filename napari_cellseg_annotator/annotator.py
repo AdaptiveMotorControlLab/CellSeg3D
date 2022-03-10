@@ -102,7 +102,8 @@ class Loader(QWidget):
         #####################################################################
         # TODO remove once done
         self.btntest = QPushButton("test", self)
-        self.lblft = QLabel("Filetype", self)
+        self.lblft = QLabel("Filetype :", self)
+        self.lblft2 = QLabel("(Folders of .png or single .tif files)")
         self.btntest.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btntest.clicked.connect(self.run_test)
         #####################################################################
@@ -112,7 +113,9 @@ class Loader(QWidget):
         vbox = QVBoxLayout()
         vbox.addWidget(utils.combine_blocks(self.btn1, self.lbl))
         vbox.addWidget(utils.combine_blocks(self.btn2, self.lbl2))
+        vbox.addWidget(self.lblft2)
         vbox.addWidget(utils.combine_blocks(self.filetype_choice, self.lblft))
+
         vbox.addWidget(utils.combine_blocks(self.textbox, self.lbl4))
         vbox.addWidget(self.checkBox)
         vbox.addWidget(self.btn4)

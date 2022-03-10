@@ -109,7 +109,7 @@ class Datamanager(QWidget):
             print(path[0].name)
             filename = path[0].name
             labels = [
-                "Slice " + str(i) + " of: " + str(filename)
+                str(filename)
                 for i in range(self.image_dims[0])
             ]
 
