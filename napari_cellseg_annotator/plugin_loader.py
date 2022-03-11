@@ -188,7 +188,6 @@ class Loader(QWidget):
             launched = True
             self.close()
 
-
         return view1
 
     ########################

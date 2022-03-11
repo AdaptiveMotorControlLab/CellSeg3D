@@ -1,8 +1,6 @@
 import os
-import warnings
 from pathlib import Path
 import napari
-import numpy as np
 from qtpy.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -10,14 +8,9 @@ from qtpy.QtWidgets import (
     QSizePolicy,
     QLabel,
     QFileDialog,
-    QComboBox,
-    QLineEdit,
     QCheckBox,
 )
-from skimage import io
 from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.napari_view_simple import launch_viewers
-
 
 
 class Predicter(QWidget):
