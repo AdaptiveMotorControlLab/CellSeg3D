@@ -11,8 +11,9 @@ from qtpy.QtWidgets import QWidget, QHBoxLayout
 from pathlib import Path
 from skimage import io
 from skimage.filters import gaussian
-import keras.backend as K
-from keras.losses import binary_crossentropy
+
+# import keras.backend as K
+# from keras.losses import binary_crossentropy
 
 from qtpy.QtGui import QDesktopServices
 from qtpy.QtCore import QUrl
@@ -164,10 +165,13 @@ def load_predicted_masks(mito_mask_dir, er_mask_dir, filetype):
     return base_label
 
 
+
 def load_saved_masks(mod_mask_dir, filetype):
     images_label = load_images(mod_mask_dir, filetype)
+    images_label = images_label.compute()
     base_label = images_label
     return base_label
+
 
 
 def load_raw_masks(raw_mask_dir, filetype):
@@ -255,23 +259,25 @@ def select_train_data(dataframe, ori_imgs, label_imgs, ori_filenames):
     return np.array(train_ori_imgs), np.array(train_label_imgs)
 
 
-def dice_coeff(y_true, y_pred):
-    smooth = 1.0
-    y_true_f = K.flatten(y_true)
-    y_pred_f = K.flatten(y_pred)
-    intersection = K.sum(y_true_f * y_pred_f)
-    score = (2.0 * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
-    return score
+
+# def dice_coeff(y_true, y_pred):
+#     smooth = 1.
+#     y_true_f = K.flatten(y_true)
+#     y_pred_f = K.flatten(y_pred)
+#     intersection = K.sum(y_true_f * y_pred_f)
+#     score = (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
+#     return score
 
 
-def dice_loss(y_true, y_pred):
-    loss = 1 - dice_coeff(y_true, y_pred)
-    return loss
+
+# def dice_loss(y_true, y_pred):
+#     loss = 1 - dice_coeff(y_true, y_pred)
+#     return loss
 
 
-def bce_dice_loss(y_true, y_pred):
-    loss = binary_crossentropy(y_true, y_pred) + dice_loss(y_true, y_pred)
-    return loss
+# def bce_dice_loss(y_true, y_pred):
+#     loss = binary_crossentropy(y_true, y_pred) + dice_loss(y_true, y_pred)
+#     return loss
 
 
 def divide_imgs(images):

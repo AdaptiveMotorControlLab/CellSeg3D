@@ -17,7 +17,9 @@ from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.dock import Datamanager
 
 
+
 def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, filetype):
+
 
     global slicer
     global z_pos
@@ -99,6 +101,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, fi
     layer = view1.layers[0]
     layer1 = view1.layers[1]
 
+
     @magicgui(dirname={"mode": "d", "label": "Save labels in... "}, call_button="Save")
     def file_widget(dirname=Path(r_path)):  # file name where to save annotations
         # """Take a filename and do something with it."""
@@ -109,14 +112,39 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, fi
         # print("The directory is:", out_dir)
         return dirname, utils.save_masks(layer1.data, out_dir)
 
+
     gui = file_widget.show(run=True)  # dirpicker.show(run=True)
 
     view1.window.add_dock_widget(gui, name=" ", area="bottom")
+
 
     # @magicgui(call_button="Save")
 
     # gui2 = saver.show(run=True)  # saver.show(run=True)
     # view1.window.add_dock_widget(gui2, name=" ", area="bottom")
+
+
+    #view1.window._qt_window.tabifyDockWidget(gui, gui2) #not with FunctionGui ?
+
+
+    #Qt widget defined in docker.py
+    dmg = Datamanager()
+    dmg.prepare(r_path, model_type, checkbox)
+
+    view1.window.add_dock_widget(dmg,name=' ', area='left')
+
+
+    def update_button(axis_event):
+        #TODO : possible crash with OOB from here ? file struct or method problem ?
+        axis = axis_event.axis
+        if axis != 0:
+            return
+        slice_num = axis_event.value
+        print(f"slice num is {slice_num}")
+        dmg.update(slice_num)
+
+    view1.dims.events.current_step.connect(update_button)
+    # old : events.axis.connect
 
     # draw canvas
 
@@ -149,15 +177,19 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, fi
 
     view1.window.add_dock_widget(canvas, name=" ", area="right")
 
+
     @viewer.mouse_drag_callbacks.append
     def update_canvas_canvas(viewer, event):
+
         if "shift" in event.modifiers:
             try:
                 m_point = np.round(viewer.cursor.position).astype(int)
                 print(m_point)
+
                 crop_big = crop_img(
                     [m_point[0], m_point[1], m_point[2]], viewer.layers[0]
                 )
+
                 xy_axes.imshow(crop_big[50], "gray")
                 yz_axes.imshow(crop_big.transpose(1, 0, 2)[50], "gray")
                 zx_axes.imshow(crop_big.transpose(2, 0, 1)[50], "gray")

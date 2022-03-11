@@ -1,14 +1,17 @@
 import os
+
 import shutil
 import time
 import warnings
+
 from pathlib import Path
-import io as IO
-import matplotlib.pyplot as plt
+
 import napari
 import numpy as np
+
 import pandas as pd
 from PIL import Image
+
 from qtpy.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -17,19 +20,21 @@ from qtpy.QtWidgets import (
     QSizePolicy,
     QLabel,
     QFileDialog,
+
     QTabWidget,
     QLineEdit,
     QCheckBox,
     QComboBox,
+    QLineEdit,
+    QCheckBox,
 )
 
 from napari.qt import thread_worker
 from skimage import io
+
 from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.models import get_nested_unet
 from napari_cellseg_annotator.napari_view_simple import launch_viewers
-from napari_cellseg_annotator.predict import predict_3ax, predict_1ax
-from napari_cellseg_annotator.train import train_unet
+
 
 
 def format_Warning(message, category, filename, lineno, line=""):
@@ -81,12 +86,14 @@ class Helper(QWidget):
         self._viewer.window.remove_dock_widget(self)
 
 
+
 launched = False
 
 
 class Loader(QWidget):
     def __init__(self, parent: "napari.viewer.Viewer"):
         super(Loader, self).__init__()
+
 
         # self.master = parent
         self._viewer = parent
@@ -113,6 +120,7 @@ class Loader(QWidget):
 
         self.btn4 = QPushButton("Start reviewing", self)
         self.btn4.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
         self.btn4.clicked.connect(self.run_review)
         #self.btn4.clicked.connect(self.close)
         self.btnb = QPushButton("Close", self)
@@ -130,17 +138,21 @@ class Loader(QWidget):
         self.btntest.clicked.connect(self.run_test)
         #####################################################################
 
+
         self.build()
 
     def build(self):
 
         vbox = QVBoxLayout()
+
         vbox.addWidget(utils.combine_blocks(self.btn1, self.lbl))
+
         vbox.addWidget(utils.combine_blocks(self.btn2, self.lbl2))
         vbox.addWidget(self.lblft2)
         vbox.addWidget(utils.combine_blocks(self.filetype_choice, self.lblft))
 
         vbox.addWidget(utils.combine_blocks(self.textbox, self.lbl4))
+
         vbox.addWidget(self.checkBox)
         vbox.addWidget(self.btn4)
         vbox.addWidget(self.btnb)
@@ -231,8 +243,8 @@ class Loader(QWidget):
             self.close()
             # global view_l
         # view_l.close()  # why does it not close the window ??  #use self.close() ?
-        return view1
 
+        return view1
     ########################
     # TODO : remove once done
     def run_test(self):
@@ -629,6 +641,7 @@ class Predicter(QWidget):
 # self.setStyleSheet("QTabWidget::pane { border: 0; }")
 # self.tabBar().hide()
 # self.resize(500, 400)
+
 
 
 #

@@ -16,7 +16,9 @@ GUI_MINIMUM_HEIGHT = 300
 
 
 class Datamanager(QWidget):
+
     def __init__(self, parent: "napari.viewer.Viewer", *args, **kwargs):
+
 
         super(Datamanager, self).__init__(*args, **kwargs)
 
@@ -112,6 +114,7 @@ class Datamanager(QWidget):
 
         else:
             print("Error: filetype should be assigned on launch")
+
         df = pd.DataFrame({"filename": labels, "train": ["Not Checked"] * len(labels)})
         csv_path = os.path.join(label_dir, f"{model_type}_train0.csv")
         df.to_csv(csv_path)
