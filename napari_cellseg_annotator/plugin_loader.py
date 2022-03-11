@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import napari
+import warnings
 import numpy as np
 from qtpy.QtWidgets import (
     QWidget,
