@@ -17,8 +17,10 @@ from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.dock import Datamanager
 
 
-def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
-    # TODO
+
+def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, filetype):
+
+
     global slicer
     global z_pos
     global view1
@@ -32,7 +34,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
         del layer
     except NameError:
         pass
-    #TODO : cleanup, notably viewer argument
+    # TODO : cleanup, notably viewer argument ?
     view1 = viewer
     view1.add_image(
         images_original, colormap="inferno", contrast_limits=[200, 1000]
@@ -99,29 +101,29 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
     layer = view1.layers[0]
     layer1 = view1.layers[1]
 
-    @magicgui(dirname={"mode": "d"})
-    def dirpicker(dirname=Path(r_path)):  # file name where to save annotations
-        """Take a filename and do something with it."""
-        print("The filename is:", dirname)
-        return dirname
 
-    # TODO merge widgets ?
+    @magicgui(dirname={"mode": "d", "label": "Save labels in... "}, call_button="Save")
+    def file_widget(dirname=Path(r_path)):  # file name where to save annotations
+        # """Take a filename and do something with it."""
+        # print("The filename is:", dirname)
+        dirname = Path(r_path)
+        # def saver():
+        out_dir = gui.dirname.value
+        # print("The directory is:", out_dir)
+        return dirname, utils.save_masks(layer1.data, out_dir)
 
-    gui = dirpicker.show(run=True)  # dirpicker.show(run=True)
 
-    view1.window.add_dock_widget(gui,name=' ', area='bottom')
+    gui = file_widget.show(run=True)  # dirpicker.show(run=True)
+
+    view1.window.add_dock_widget(gui, name=" ", area="bottom")
 
 
-    #TODO : fix crash
-    @magicgui(call_button="Save")
-    def saver():
-        out_dir = gui.dirname  # .value
-        print("The directory is:", out_dir)
-        return utils.save_masks(layer1.data, out_dir)
+    # @magicgui(call_button="Save")
 
-    gui2 = saver.show(run=True)  # saver.show(run=True)
+    # gui2 = saver.show(run=True)  # saver.show(run=True)
+    # view1.window.add_dock_widget(gui2, name=" ", area="bottom")
 
-    view1.window.add_dock_widget(gui2, name=' ', area='bottom')
+
     #view1.window._qt_window.tabifyDockWidget(gui, gui2) #not with FunctionGui ?
 
 
@@ -150,19 +152,19 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
         canvas = FigureCanvas(Figure(figsize=(3, 15)))
 
         xy_axes = canvas.figure.add_subplot(3, 1, 1)
-
+        canvas.figure.suptitle("Shift-click for plot \n", fontsize= 8)
         xy_axes.imshow(np.zeros((100, 100), np.uint8))
-        xy_axes.scatter(50, 50, s=10, c="red", alpha=0.15)
+        xy_axes.scatter(50, 50, s=10, c="red", alpha=0.25)
         xy_axes.set_xlabel("x axis")
         xy_axes.set_ylabel("y axis")
         yz_axes = canvas.figure.add_subplot(3, 1, 2)
         yz_axes.imshow(np.zeros((100, 100), np.uint8))
-        yz_axes.scatter(50, 50, s=10, c="red", alpha=0.15)
+        yz_axes.scatter(50, 50, s=10, c="red", alpha=0.25)
         yz_axes.set_xlabel("y axis")
         yz_axes.set_ylabel("z axis")
         zx_axes = canvas.figure.add_subplot(3, 1, 3)
         zx_axes.imshow(np.zeros((100, 100), np.uint8))
-        zx_axes.scatter(50, 50, s=10, c="red", alpha=0.15)
+        zx_axes.scatter(50, 50, s=10, c="red", alpha=0.25)
         zx_axes.set_xlabel("x axis")
         zx_axes.set_ylabel("z axis")
 
@@ -173,22 +175,46 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox):
 
     canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
 
-    view1.window.add_dock_widget(canvas, name=' ', area='right')
+    view1.window.add_dock_widget(canvas, name=" ", area="right")
 
 
-    @layer.mouse_drag_callbacks.append
-    def update_canvas_canvas(layer, event):
+    @viewer.mouse_drag_callbacks.append
+    def update_canvas_canvas(viewer, event):
+
         if "shift" in event.modifiers:
             try:
-                m_point = np.round(layer.coordinates).astype(int)
+                m_point = np.round(viewer.cursor.position).astype(int)
                 print(m_point)
-                crop_big = crop_img([m_point[0], m_point[1], m_point[2]], layer)
+
+                crop_big = crop_img(
+                    [m_point[0], m_point[1], m_point[2]], viewer.layers[0]
+                )
+
                 xy_axes.imshow(crop_big[50], "gray")
                 yz_axes.imshow(crop_big.transpose(1, 0, 2)[50], "gray")
                 zx_axes.imshow(crop_big.transpose(2, 0, 1)[50], "gray")
                 canvas.draw_idle()
             except Exception as e:
                 print(e)
+
+    # Qt widget defined in docker.py
+    dmg = Datamanager(parent=view1)
+    dmg.prepare(r_path, filetype, model_type, checkbox)
+    view1.window.add_dock_widget(dmg, name=" ", area="left")
+
+    def update_button(axis_event):
+        # TODO : crash fixed, what to do with if axis != 0 ?
+
+        # axis = axis_event.ndim
+        # if axis != 0:
+        #     return
+        slice_num = axis_event.value[0]
+        print(f"slice num is {slice_num}")
+        dmg.update(slice_num)
+
+    view1.dims.events.current_step.connect(update_button)
+    # No argument ??
+    # old : events.axis.connect
 
     def crop_img(points, layer):
         min_vals = [x - 50 for x in points]

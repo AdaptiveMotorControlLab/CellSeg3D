@@ -7,11 +7,25 @@ contributions:
   - id: napari-cellseg-annotator.load
     title: Create Loader
     python_name: napari_cellseg_annotator.plugins:Loader
+
+#  - id: napari-cellseg-annotator.train
+#    title: Create Trainer
+#    python_name: napari_cellseg_annotator.plugins:Trainer
+#  - id: napari-cellseg-annotator.predict
+#    title: Create Predicter
+#    python_name: napari_cellseg_annotator.plugins:Predicter
+
   - id: napari-cellseg-annotator.help
     title: Create Help
     python_name: napari_cellseg_annotator.plugins:Helper
   widgets:
   - command: napari-cellseg-annotator.load
     display_name: Loader
+
+#  - command: napari-cellseg-annotator.train
+#    display_name: Trainer
+#  - command: napari-cellseg-annotator.predict
+#    display_name: Predicter
+
   - command: napari-cellseg-annotator.help
     display_name: Help/About...

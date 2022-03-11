@@ -2,6 +2,7 @@ import datetime
 import os
 
 import cv2
+import glob
 import dask_image.imread
 import numpy as np
 import pandas as pd
@@ -16,6 +17,7 @@ from skimage.filters import gaussian
 
 from qtpy.QtGui import QDesktopServices
 from qtpy.QtCore import QUrl
+
 
 def combine_blocks(block1, block2):
     temp_widget = QWidget()
@@ -139,54 +141,44 @@ def check(project_path, ext):
     check_annotations_dir(project_path)
 
 
-def load_images(directory):
-    filename_pattern_original = os.path.join(directory)
+def load_images(directory, filetype):
 
-    #TODO
-    #filename_pattern_original = os.path.join(directory, '*png')
-    images_original = dask_image.imread.imread(filename_pattern_original+'/images.tif')
+    filename_pattern_original = os.path.join(directory + "/*" + filetype)
+    if filetype == ".tif":
+        # TODO : FIX loading only one tif file
+        # use filename = path[0].name and path = list(Path(directory).glob("./*.tif"))
+        path = list(Path(directory).glob("./*.tif"))
+        filename_pattern_original = os.path.join(directory + "/" + path[0].name)
+
+    images_original = dask_image.imread.imread(filename_pattern_original)
+
     return images_original
 
 
-def load_predicted_masks(mito_mask_dir, er_mask_dir):
-    filename_pattern_mito_label = os.path.join(mito_mask_dir, "*png")
-    filename_pattern_er_label = os.path.join(er_mask_dir, "*png")
-    images_mito_label = dask_image.imread.imread(filename_pattern_mito_label)
+def load_predicted_masks(mito_mask_dir, er_mask_dir, filetype):
+
+    images_mito_label = load_images(mito_mask_dir, filetype)
     images_mito_label = images_mito_label.compute()
-    images_er_label = dask_image.imread.imread(filename_pattern_er_label)
+    images_er_label = load_images(er_mask_dir, filetype)
     images_er_label = images_er_label.compute()
     base_label = (images_mito_label > 127) * 1 + (images_er_label > 127) * 2
     return base_label
 
 
-def load_saved_masks(mod_mask_dir):
-    filename_pattern_label = os.path.join(mod_mask_dir)
-    # TODO
-    images_label = dask_image.imread.imread(
-        filename_pattern_label
-        # + "/images.tif"
-    )
+
+def load_saved_masks(mod_mask_dir, filetype):
+    images_label = load_images(mod_mask_dir, filetype)
     images_label = images_label.compute()
     base_label = images_label
     return base_label
 
 
-def load_raw_masks(raw_mask_dir):
-    filename_pattern_raw = os.path.join(raw_mask_dir)
-    # TODO
-    images_raw = dask_image.imread.imread(filename_pattern_raw + "/images.tif")
+
+def load_raw_masks(raw_mask_dir, filetype):
+    images_raw = load_images(raw_mask_dir, filetype)
     images_raw = images_raw.compute()
     base_label = np.where((126 < images_raw) & (images_raw < 171), 255, 0)
     return base_label
-
-
-def combine_blocks(block1, block2):
-    temp_widget = QWidget()
-    temp_layout = QHBoxLayout()
-    temp_layout.addWidget(block1)
-    temp_layout.addWidget(block2)
-    temp_widget.setLayout(temp_layout)
-    return temp_widget
 
 
 def save_masks(labels, out_path):
@@ -267,6 +259,7 @@ def select_train_data(dataframe, ori_imgs, label_imgs, ori_filenames):
     return np.array(train_ori_imgs), np.array(train_label_imgs)
 
 
+
 # def dice_coeff(y_true, y_pred):
 #     smooth = 1.
 #     y_true_f = K.flatten(y_true)
@@ -274,6 +267,7 @@ def select_train_data(dataframe, ori_imgs, label_imgs, ori_filenames):
 #     intersection = K.sum(y_true_f * y_pred_f)
 #     score = (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
 #     return score
+
 
 
 # def dice_loss(y_true, y_pred):

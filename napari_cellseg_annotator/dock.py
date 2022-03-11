@@ -16,12 +16,14 @@ GUI_MINIMUM_HEIGHT = 300
 
 
 class Datamanager(QWidget):
-    def __init__(self, *args, **kwargs):
+
+    def __init__(self, parent: "napari.viewer.Viewer", *args, **kwargs):
+
 
         super(Datamanager, self).__init__(*args, **kwargs)
 
         layout = QVBoxLayout()
-
+        self.viewer = parent
         # add some buttons
         self.button = QPushButton("1", self)
         self.button.clicked.connect(self.button_func)
@@ -44,16 +46,22 @@ class Datamanager(QWidget):
         self.df = ""
         self.csv_path = ""
         self.slice_num = 0
+        self.filetype = ""
+        self.image_dims = self.viewer.layers[0].data.shape
 
-    def prepare(self, label_dir, model_type, checkbox):
+    def prepare(self, label_dir, filetype, model_type, checkbox):
         """
         :param str label_dir: label path
+        :param str filetype : file extension
         :param str model_type: model type
         :param bool checkbox: create new dataset or not
         """
+        self.filetype = filetype
         self.df, self.csv_path = self.load_csv(label_dir, model_type, checkbox)
+
         print(self.csv_path, checkbox)
-        self.update(0)
+        # print(self.viewer.dims.current_step[0])
+        self.update(self.viewer.dims.current_step[0])
 
     def load_csv(self, label_dir, model_type, checkbox):
         """
@@ -92,7 +100,21 @@ class Datamanager(QWidget):
         :return: dataframe, csv path
         :rtype (pandas.DataFrame, str)
         """
-        labels = sorted(list(path.name for path in Path(label_dir).glob("./*png")))
+
+        if self.filetype == ".png":
+            labels = sorted(
+                list(path.name for path in Path(label_dir).glob("./*" + self.filetype))
+            )
+        elif self.filetype == ".tif":
+            path = list(Path(label_dir).glob("./*.tif"))
+            # print(self.image_dims[0])
+            print(path[0].name)
+            filename = path[0].name
+            labels = [str(filename) for i in range(self.image_dims[0])]
+
+        else:
+            print("Error: filetype should be assigned on launch")
+
         df = pd.DataFrame({"filename": labels, "train": ["Not Checked"] * len(labels)})
         csv_path = os.path.join(label_dir, f"{model_type}_train0.csv")
         df.to_csv(csv_path)
@@ -100,6 +122,7 @@ class Datamanager(QWidget):
 
     def update(self, slice_num):
         self.slice_num = slice_num
+        # print(self.df)
         self.button.setText(
             self.df.at[self.df.index[self.slice_num], "train"]
         )  # puts  button values at value of 1st csv item
