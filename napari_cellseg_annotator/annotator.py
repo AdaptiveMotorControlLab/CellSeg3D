@@ -32,10 +32,21 @@ from napari_cellseg_annotator.predict import predict_3ax, predict_1ax
 from napari_cellseg_annotator.train import train_unet
 
 
-def format_Warning(message, category, filename, lineno, line=''):
-    return str(filename) + ':' + str(lineno) + ': ' + category.__name__ + ': ' +str(message) + '\n'
+def format_Warning(message, category, filename, lineno, line=""):
+    return (
+        str(filename)
+        + ":"
+        + str(lineno)
+        + ": "
+        + category.__name__
+        + ": "
+        + str(message)
+        + "\n"
+    )
+
 
 warnings.formatwarning = format_Warning
+
 
 class Helper(QWidget):
     # widget testing
@@ -199,7 +210,9 @@ class Loader(QWidget):
                 self.checkBox.isChecked(),
                 self.filetype,
             )
-            warnings.warn("WARNING : Opening several loader sessions in one window is not supported; opening in new window")
+            warnings.warn(
+                "WARNING : Opening several loader sessions in one window is not supported; opening in new window"
+            )
             self._viewer.close()
         else:
             new_viewer = self._viewer

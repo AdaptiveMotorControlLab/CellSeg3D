@@ -124,7 +124,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, fi
         canvas = FigureCanvas(Figure(figsize=(3, 15)))
 
         xy_axes = canvas.figure.add_subplot(3, 1, 1)
-        plt.title("Shift-click for plot")
+        canvas.figure.suptitle("Shift-click for plot \n", fontsize= 8)
         xy_axes.imshow(np.zeros((100, 100), np.uint8))
         xy_axes.scatter(50, 50, s=10, c="red", alpha=0.25)
         xy_axes.set_xlabel("x axis")
