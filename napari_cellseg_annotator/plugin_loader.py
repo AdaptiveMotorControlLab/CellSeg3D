@@ -37,12 +37,13 @@ warnings.formatwarning = format_Warning
 
 launched = False
 
+
 class Loader(QWidget):
-    def __init__(self, parent: "napari.viewer.Viewer"):
-        super(Loader, self).__init__()
+    def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
+        super().__init__(parent)
 
         # self.master = parent
-        self._viewer = parent
+        self._viewer = viewer
         self.opath = ""
         self.modpath = ""
         self.filetype = ""
@@ -153,7 +154,7 @@ class Loader(QWidget):
             labels_raw = utils.load_raw_masks(self.modpath + "_raw", self.filetype)
         except:
             labels_raw = None
-            # TODO: viewer argument ?
+
         global launched
         if launched:
             new_viewer = napari.Viewer()
@@ -186,8 +187,7 @@ class Loader(QWidget):
             )
             launched = True
             self.close()
-            # global view_l
-        # view_l.close()  # why does it not close the window ??  #use self.close() ?
+
 
         return view1
 
