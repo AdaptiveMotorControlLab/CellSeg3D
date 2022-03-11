@@ -11,7 +11,7 @@ contributions:
 #  - id: napari-cellseg-annotator.train
 #    title: Create Trainer
 #    python_name: napari_cellseg_annotator.plugins:Trainer
-#  - id: napari-cellseg-annotator.predict
+  - id: napari-cellseg-annotator.predict
     title: Create Predicter
     python_name: napari_cellseg_annotator.plugins:Predicter
 
