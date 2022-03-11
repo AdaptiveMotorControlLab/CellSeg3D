@@ -3,7 +3,6 @@ from qtpy.QtWidgets import QWidget, QVBoxLayout, QPushButton
 from napari_cellseg_annotator import utils
 
 
-
 class Helper(QWidget):
     # widget testing
     def __init__(self, parent: "napari.viewer.Viewer"):
@@ -35,4 +34,3 @@ class Helper(QWidget):
 
     def close(self):
         self._viewer.window.remove_dock_widget(self)
-

@@ -19,7 +19,6 @@ from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.napari_view_simple import launch_viewers
 
 
-
 def format_Warning(message, category, filename, lineno, line=""):
     return (
         str(filename)
@@ -34,6 +33,9 @@ def format_Warning(message, category, filename, lineno, line=""):
 
 
 warnings.formatwarning = format_Warning
+
+
+launched = False
 
 class Loader(QWidget):
     def __init__(self, parent: "napari.viewer.Viewer"):
