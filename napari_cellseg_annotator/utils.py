@@ -17,6 +17,14 @@ from skimage.filters import gaussian
 from qtpy.QtGui import QDesktopServices
 from qtpy.QtCore import QUrl
 
+def combine_blocks(block1, block2):
+    temp_widget = QWidget()
+    temp_layout = QHBoxLayout()
+    temp_layout.addWidget(block2)
+    temp_layout.addWidget(block1)
+    temp_widget.setLayout(temp_layout)
+    return temp_widget
+
 
 def open_url(url):
     QDesktopServices.openUrl(QUrl(url, QUrl.TolerantMode))
@@ -133,10 +141,10 @@ def check(project_path, ext):
 
 def load_images(directory):
     filename_pattern_original = os.path.join(directory)
-    # TODO
-    images_original = dask_image.imread.imread(
-        filename_pattern_original  # + "/images.tif"
-    )
+
+    #TODO
+    #filename_pattern_original = os.path.join(directory, '*png')
+    images_original = dask_image.imread.imread(filename_pattern_original+'/images.tif')
     return images_original
 
 
