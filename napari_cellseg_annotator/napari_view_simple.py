@@ -120,24 +120,6 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, fi
 
     # view1.window._qt_window.tabifyDockWidget(gui, gui2) #not with FunctionGui ?
 
-    # Qt widget defined in docker.py
-    dmg = Datamanager()
-    dmg.prepare(r_path, model_type, checkbox)
-
-    view1.window.add_dock_widget(dmg, name=" ", area="left")
-
-    def update_button(axis_event):
-        # TODO : possible crash with OOB from here ? file struct or method problem ?
-        axis = axis_event.axis
-        if axis != 0:
-            return
-        slice_num = axis_event.value
-        print(f"slice num is {slice_num}")
-        dmg.update(slice_num)
-
-    view1.dims.events.current_step.connect(update_button)
-    # old : events.axis.connect
-
     # draw canvas
 
     with plt.style.context("dark_background"):
