@@ -114,7 +114,7 @@ class Loader(QWidget):
         self.btn4 = QPushButton("Start reviewing", self)
         self.btn4.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn4.clicked.connect(self.run_review)
-        self.btn4.clicked.connect(self.close)
+        #self.btn4.clicked.connect(self.close)
         self.btnb = QPushButton("Close", self)
         self.btnb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btnb.clicked.connect(self.close)
