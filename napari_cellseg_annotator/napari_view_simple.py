@@ -17,9 +17,7 @@ from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.dock import Datamanager
 
 
-
 def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, filetype):
-
 
     global slicer
     global z_pos
@@ -101,7 +99,6 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, fi
     layer = view1.layers[0]
     layer1 = view1.layers[1]
 
-
     @magicgui(dirname={"mode": "d", "label": "Save labels in... "}, call_button="Save")
     def file_widget(dirname=Path(r_path)):  # file name where to save annotations
         # """Take a filename and do something with it."""
@@ -112,30 +109,25 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, fi
         # print("The directory is:", out_dir)
         return dirname, utils.save_masks(layer1.data, out_dir)
 
-
     gui = file_widget.show(run=True)  # dirpicker.show(run=True)
 
     view1.window.add_dock_widget(gui, name=" ", area="bottom")
-
 
     # @magicgui(call_button="Save")
 
     # gui2 = saver.show(run=True)  # saver.show(run=True)
     # view1.window.add_dock_widget(gui2, name=" ", area="bottom")
 
+    # view1.window._qt_window.tabifyDockWidget(gui, gui2) #not with FunctionGui ?
 
-    #view1.window._qt_window.tabifyDockWidget(gui, gui2) #not with FunctionGui ?
-
-
-    #Qt widget defined in docker.py
+    # Qt widget defined in docker.py
     dmg = Datamanager()
     dmg.prepare(r_path, model_type, checkbox)
 
-    view1.window.add_dock_widget(dmg,name=' ', area='left')
-
+    view1.window.add_dock_widget(dmg, name=" ", area="left")
 
     def update_button(axis_event):
-        #TODO : possible crash with OOB from here ? file struct or method problem ?
+        # TODO : possible crash with OOB from here ? file struct or method problem ?
         axis = axis_event.axis
         if axis != 0:
             return
@@ -152,7 +144,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, fi
         canvas = FigureCanvas(Figure(figsize=(3, 15)))
 
         xy_axes = canvas.figure.add_subplot(3, 1, 1)
-        canvas.figure.suptitle("Shift-click for plot \n", fontsize= 8)
+        canvas.figure.suptitle("Shift-click for plot \n", fontsize=8)
         xy_axes.imshow(np.zeros((100, 100), np.uint8))
         xy_axes.scatter(50, 50, s=10, c="red", alpha=0.25)
         xy_axes.set_xlabel("x axis")
@@ -176,7 +168,6 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, fi
     canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
 
     view1.window.add_dock_widget(canvas, name=" ", area="right")
-
 
     @viewer.mouse_drag_callbacks.append
     def update_canvas_canvas(viewer, event):

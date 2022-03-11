@@ -16,9 +16,7 @@ GUI_MINIMUM_HEIGHT = 300
 
 
 class Datamanager(QWidget):
-
     def __init__(self, parent: "napari.viewer.Viewer", *args, **kwargs):
-
 
         super(Datamanager, self).__init__(*args, **kwargs)
 

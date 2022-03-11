@@ -20,7 +20,6 @@ from qtpy.QtWidgets import (
     QSizePolicy,
     QLabel,
     QFileDialog,
-
     QTabWidget,
     QLineEdit,
     QCheckBox,
@@ -34,7 +33,6 @@ from skimage import io
 
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.napari_view_simple import launch_viewers
-
 
 
 def format_Warning(message, category, filename, lineno, line=""):
@@ -86,14 +84,12 @@ class Helper(QWidget):
         self._viewer.window.remove_dock_widget(self)
 
 
-
 launched = False
 
 
 class Loader(QWidget):
     def __init__(self, parent: "napari.viewer.Viewer"):
         super(Loader, self).__init__()
-
 
         # self.master = parent
         self._viewer = parent
@@ -122,7 +118,7 @@ class Loader(QWidget):
         self.btn4.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         self.btn4.clicked.connect(self.run_review)
-        #self.btn4.clicked.connect(self.close)
+        # self.btn4.clicked.connect(self.close)
         self.btnb = QPushButton("Close", self)
         self.btnb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btnb.clicked.connect(self.close)
@@ -137,7 +133,6 @@ class Loader(QWidget):
         self.btntest.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btntest.clicked.connect(self.run_test)
         #####################################################################
-
 
         self.build()
 
@@ -245,6 +240,7 @@ class Loader(QWidget):
         # view_l.close()  # why does it not close the window ??  #use self.close() ?
 
         return view1
+
     ########################
     # TODO : remove once done
     def run_test(self):
@@ -641,7 +637,6 @@ class Predicter(QWidget):
 # self.setStyleSheet("QTabWidget::pane { border: 0; }")
 # self.tabBar().hide()
 # self.resize(500, 400)
-
 
 
 #

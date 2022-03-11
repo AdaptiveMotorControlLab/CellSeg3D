@@ -9,4 +9,3 @@ def napari_experimental_provide_dock_widget():
         (Predicter, {"name": "Predicter"}),
         (Helper, {"name": "Help/About..."}),
     ]
-

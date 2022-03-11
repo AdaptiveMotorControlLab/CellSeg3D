@@ -165,13 +165,11 @@ def load_predicted_masks(mito_mask_dir, er_mask_dir, filetype):
     return base_label
 
 
-
 def load_saved_masks(mod_mask_dir, filetype):
     images_label = load_images(mod_mask_dir, filetype)
     images_label = images_label.compute()
     base_label = images_label
     return base_label
-
 
 
 def load_raw_masks(raw_mask_dir, filetype):
@@ -259,7 +257,6 @@ def select_train_data(dataframe, ori_imgs, label_imgs, ori_filenames):
     return np.array(train_ori_imgs), np.array(train_label_imgs)
 
 
-
 # def dice_coeff(y_true, y_pred):
 #     smooth = 1.
 #     y_true_f = K.flatten(y_true)
@@ -267,7 +264,6 @@ def select_train_data(dataframe, ori_imgs, label_imgs, ori_filenames):
 #     intersection = K.sum(y_true_f * y_pred_f)
 #     score = (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
 #     return score
-
 
 
 # def dice_loss(y_true, y_pred):
