@@ -1,8 +1,6 @@
 import datetime
 import os
-
 import cv2
-import glob
 import dask_image.imread
 import numpy as np
 import pandas as pd
@@ -11,10 +9,6 @@ from qtpy.QtWidgets import QWidget, QHBoxLayout
 from pathlib import Path
 from skimage import io
 from skimage.filters import gaussian
-
-# import keras.backend as K
-# from keras.losses import binary_crossentropy
-
 from qtpy.QtGui import QDesktopServices
 from qtpy.QtCore import QUrl
 

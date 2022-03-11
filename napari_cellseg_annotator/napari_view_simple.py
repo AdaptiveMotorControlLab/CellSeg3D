@@ -1,16 +1,12 @@
 import copy
-
 import matplotlib.pyplot as plt
-import napari
 import numpy as np
-from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QSizePolicy, QSlider, QLabel
+from qtpy.QtWidgets import QSizePolicy
 from magicgui import magicgui
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from pathlib import Path
 
-from napari._qt.qthreading import thread_worker
 from scipy import ndimage
 
 from napari_cellseg_annotator import utils
@@ -48,23 +44,23 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, fi
     else:
         pass
 
-    def label_and_sort(base_label):  # assigns a different id for every different cell ?
-        labeled = ndimage.label(base_label, structure=np.ones((3, 3, 3)))[0]
-
-        mks, nums = np.unique(labeled, return_counts=True)
-
-        idx_list = list(np.argsort(nums[1:]))
-        nums = np.sort(nums[1:])
-        labeled_sorted = np.zeros_like(labeled)
-        for i, idx in enumerate(idx_list):
-            labeled_sorted = np.where(labeled == mks[1:][idx], i + 1, labeled_sorted)
-        return labeled_sorted, nums
-
-    def label_ct(labeled_array, nums, value):
-        labeled_temp = copy.copy(labeled_array)
-        idx = np.abs(nums - value).argmin()
-        labeled_temp = np.where((labeled_temp < idx) & (labeled_temp != 0), 255, 0)
-        return labeled_temp
+    # def label_and_sort(base_label):  # assigns a different id for every different cell ?
+    #     labeled = ndimage.label(base_label, structure=np.ones((3, 3, 3)))[0]
+    #
+    #     mks, nums = np.unique(labeled, return_counts=True)
+    #
+    #     idx_list = list(np.argsort(nums[1:]))
+    #     nums = np.sort(nums[1:])
+    #     labeled_sorted = np.zeros_like(labeled)
+    #     for i, idx in enumerate(idx_list):
+    #         labeled_sorted = np.where(labeled == mks[1:][idx], i + 1, labeled_sorted)
+    #     return labeled_sorted, nums
+    #
+    # def label_ct(labeled_array, nums, value):
+    #     labeled_temp = copy.copy(labeled_array)
+    #     idx = np.abs(nums - value).argmin()
+    #     labeled_temp = np.where((labeled_temp < idx) & (labeled_temp != 0), 255, 0)
+    #     return labeled_temp
 
     # def show_so_layer(args):
     #     labeled_c, labeled_sorted, nums = args
