@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 import napari
 from qtpy.QtWidgets import (
@@ -11,6 +12,7 @@ from qtpy.QtWidgets import (
     QCheckBox,
 )
 from napari_cellseg_annotator import utils
+import pandas as pd
 
 
 class Predicter(QWidget):
@@ -35,9 +37,7 @@ class Predicter(QWidget):
         self.btn4.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn4.clicked.connect(self.show_dialog_outdir)
 
-        self.checkBox = QCheckBox(
-            "Check the box if you want to use TAP (Three-Axis-Prediction"
-        )
+        self.checkBox = QCheckBox("Use TAP (Three-Axis-Prediction)")
         self.checkBox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.checkBox.toggle()
 
