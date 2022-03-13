@@ -15,6 +15,12 @@ GUI_MAXIMUM_HEIGHT = 350
 GUI_MINIMUM_HEIGHT = 300
 
 
+"""
+dock.py
+====================================
+Definition of Datamanger widget, for saving labels
+"""
+
 class Datamanager(QWidget):
     def __init__(self, parent: "napari.viewer.Viewer", *args, **kwargs):
 

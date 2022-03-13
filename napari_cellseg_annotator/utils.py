@@ -13,16 +13,33 @@ from qtpy.QtGui import QDesktopServices
 from qtpy.QtCore import QUrl
 
 
-def combine_blocks(block1, block2):
+def combine_blocks(button, label):
+    """Combines two QWidget objects and puts them side by side (label on the lest and button on the right)
+
+    Args:
+        button (QWidget): Button widget to be displayed right of the label
+        label (QWidget): Labrel widget to be added on the left of button
+        """
     temp_widget = QWidget()
     temp_layout = QHBoxLayout()
-    temp_layout.addWidget(block2)
-    temp_layout.addWidget(block1)
+    temp_layout.addWidget(label)
+    temp_layout.addWidget(button)
     temp_widget.setLayout(temp_layout)
     return temp_widget
 
 
+"""
+utils.py
+====================================
+Definition of utility functions
+"""
+
 def open_url(url):
+    """Opens the url given as a string using QDesktopServices.openUrl.
+
+    Args:
+        url (str): Url to be opened
+    """
     QDesktopServices.openUrl(QUrl(url, QUrl.TolerantMode))
 
 

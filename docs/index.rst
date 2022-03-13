@@ -1,8 +1,3 @@
-.. napari-cellseg-annotator documentation main file, created by
-   sphinx-quickstart on Thu Oct  1 00:43:18 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to napari-cellseg-annotator's documentation!
 ===============================================================
 
@@ -10,6 +5,15 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
+
+    dock
+    drafts
+    napari_view_simple
+    plugin_helper
+    plugin_loader
+    plugin_predicter
+    plugins
+    utils
 
 
 
