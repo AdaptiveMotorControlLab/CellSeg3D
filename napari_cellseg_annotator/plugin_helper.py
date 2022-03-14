@@ -8,10 +8,10 @@ class Helper(QWidget):
     def __init__(self, parent: "napari.viewer.Viewer"):
         super().__init__()
         # self.master = parent
-        self.help_url = "https://github.com/C-Achard/cellseg-annotator-test/tree/main"
-        self.about_url = (
-            "https://wysscenter.ch/advances/3d-computer-vision-for-brain-analysis"
+        self.help_url = (
+            "https://github.com/C-Achard/cellseg-annotator-test/tree/main"
         )
+        self.about_url = "https://wysscenter.ch/advances/3d-computer-vision-for-brain-analysis"
         self._viewer = parent
         self.btn1 = QPushButton("Help...", self)
         # self.btn1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)

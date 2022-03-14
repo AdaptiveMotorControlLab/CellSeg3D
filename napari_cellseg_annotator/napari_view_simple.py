@@ -3,7 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from qtpy.QtWidgets import QSizePolicy
 from magicgui import magicgui
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvasQTAgg as FigureCanvas,
+)
 from matplotlib.figure import Figure
 from pathlib import Path
 
@@ -13,7 +15,9 @@ from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.dock import Datamanager
 
 
-def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, filetype):
+def launch_viewers(
+    viewer, original, base, raw, r_path, model_type, checkbox, filetype
+):
 
     global slicer
     global z_pos
@@ -95,8 +99,13 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, fi
     layer = view1.layers[0]
     layer1 = view1.layers[1]
 
-    @magicgui(dirname={"mode": "d", "label": "Save labels in... "}, call_button="Save")
-    def file_widget(dirname=Path(r_path)):  # file name where to save annotations
+    @magicgui(
+        dirname={"mode": "d", "label": "Save labels in... "},
+        call_button="Save",
+    )
+    def file_widget(
+        dirname=Path(r_path),
+    ):  # file name where to save annotations
         # """Take a filename and do something with it."""
         # print("The filename is:", dirname)
         dirname = Path(r_path)

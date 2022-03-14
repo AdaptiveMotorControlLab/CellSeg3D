@@ -40,10 +40,10 @@ class Helper(QWidget):
     def __init__(self, parent: "napari.viewer.Viewer"):
         super().__init__()
         # self.master = parent
-        self.help_url = "https://github.com/C-Achard/cellseg-annotator-test/tree/main"
-        self.about_url = (
-            "https://wysscenter.ch/advances/3d-computer-vision-for-brain-analysis"
+        self.help_url = (
+            "https://github.com/C-Achard/cellseg-annotator-test/tree/main"
         )
+        self.about_url = "https://wysscenter.ch/advances/3d-computer-vision-for-brain-analysis"
         self._viewer = parent
         self.btn1 = QPushButton("Help...", self)
         # self.btn1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -90,7 +90,9 @@ class Loader(QWidget):
 
         self.filetype_choice = QComboBox()
         self.filetype_choice.addItems([".png", ".tif"])
-        self.filetype_choice.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.filetype_choice.setSizePolicy(
+            QSizePolicy.Fixed, QSizePolicy.Fixed
+        )
 
         self.textbox = QLineEdit(self)
         self.textbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -146,14 +148,18 @@ class Loader(QWidget):
 
     def show_dialog_o(self):
         default_path = max(self.opath, self.modpath, os.path.expanduser("~"))
-        f_name = QFileDialog.getExistingDirectory(self, "Open directory", default_path)
+        f_name = QFileDialog.getExistingDirectory(
+            self, "Open directory", default_path
+        )
         if f_name:
             self.opath = f_name
             self.lbl.setText(self.opath)
 
     def show_dialog_mod(self):
         default_path = max(self.opath, self.modpath, os.path.expanduser("~"))
-        f_name = QFileDialog.getExistingDirectory(self, "Open directory", default_path)
+        f_name = QFileDialog.getExistingDirectory(
+            self, "Open directory", default_path
+        )
         if f_name:
             self.modpath = f_name
             self.lbl2.setText(self.modpath)
@@ -166,7 +172,9 @@ class Loader(QWidget):
 
         self.filetype = self.filetype_choice.currentText()
         images = utils.load_images(self.opath, self.filetype)
-        if self.modpath == "":  # saves empty images of the same size as original images
+        if (
+            self.modpath == ""
+        ):  # saves empty images of the same size as original images
             labels = np.zeros_like(images.compute())  # dask to numpy
             self.modpath = os.path.join(
                 os.path.dirname(self.opath), self.textbox.text()
@@ -174,17 +182,23 @@ class Loader(QWidget):
             os.makedirs(self.modpath, exist_ok=True)
             filenames = [
                 fn.name
-                for fn in sorted(list(Path(self.opath).glob("./*" + self.filetype)))
+                for fn in sorted(
+                    list(Path(self.opath).glob("./*" + self.filetype))
+                )
             ]
             for i in range(len(labels)):
                 io.imsave(
-                    os.path.join(self.modpath, str(i).zfill(4) + self.filetype),
+                    os.path.join(
+                        self.modpath, str(i).zfill(4) + self.filetype
+                    ),
                     labels[i],
                 )
         else:
             labels = utils.load_saved_masks(self.modpath, self.filetype)
         try:
-            labels_raw = utils.load_raw_masks(self.modpath + "_raw", self.filetype)
+            labels_raw = utils.load_raw_masks(
+                self.modpath + "_raw", self.filetype
+            )
         except:
             labels_raw = None
             # TODO: viewer argument ?
@@ -230,13 +244,17 @@ class Loader(QWidget):
     def run_test(self):
         self.filetype = self.filetype_choice.currentText()
 
-        self.opath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
-        self.modpath = (
-            "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
+        self.opath = (
+            "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
         )
+        self.modpath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
         if self.filetype == ".tif":
-            self.opath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes"
-            self.modpath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels"
+            self.opath = (
+                "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes"
+            )
+            self.modpath = (
+                "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels"
+            )
         self.run_review()
         # self.close()
 

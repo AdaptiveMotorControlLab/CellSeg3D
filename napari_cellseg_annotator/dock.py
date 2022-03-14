@@ -21,6 +21,7 @@ dock.py
 Definition of Datamanger widget, for saving labels
 """
 
+
 class Datamanager(QWidget):
     def __init__(self, parent: "napari.viewer.Viewer", *args, **kwargs):
 
@@ -88,7 +89,10 @@ class Datamanager(QWidget):
                 csv_path = (
                     csv_path.split("_train")[0]
                     + "_train"
-                    + str(int(os.path.splitext(csv_path.split("_train")[1])[0]) + 1)
+                    + str(
+                        int(os.path.splitext(csv_path.split("_train")[1])[0])
+                        + 1
+                    )
                     + ".csv"
                 )  # adds 1 to current csv name number
                 df.to_csv(csv_path)
@@ -107,7 +111,10 @@ class Datamanager(QWidget):
 
         if self.filetype == ".png":
             labels = sorted(
-                list(path.name for path in Path(label_dir).glob("./*" + self.filetype))
+                list(
+                    path.name
+                    for path in Path(label_dir).glob("./*" + self.filetype)
+                )
             )
         elif self.filetype == ".tif":
             path = list(Path(label_dir).glob("./*.tif"))
@@ -119,7 +126,9 @@ class Datamanager(QWidget):
         else:
             print("Error: filetype should be assigned on launch")
 
-        df = pd.DataFrame({"filename": labels, "train": ["Not Checked"] * len(labels)})
+        df = pd.DataFrame(
+            {"filename": labels, "train": ["Not Checked"] * len(labels)}
+        )
         csv_path = os.path.join(label_dir, f"{model_type}_train0.csv")
         df.to_csv(csv_path)
         return df, csv_path
@@ -143,14 +152,17 @@ class Datamanager(QWidget):
 
     def move_data(self):
         shutil.copy(
-            self.df.at[self.df.index[self.slice_num], "filename"], self.train_data_dir
+            self.df.at[self.df.index[self.slice_num], "filename"],
+            self.train_data_dir,
         )
 
     def delete_data(self):
         os.remove(
             os.path.join(
                 self.train_data_dir,
-                os.path.basename(self.df.at[self.df.index[self.slice_num], "filename"]),
+                os.path.basename(
+                    self.df.at[self.df.index[self.slice_num], "filename"]
+                ),
             )
         )
 
@@ -159,7 +171,8 @@ class Datamanager(QWidget):
             if self.df.at[self.df.index[i], "train"] == "Checked":
                 try:
                     shutil.copy(
-                        self.df.at[self.df.index[i], "filename"], self.train_data_dir
+                        self.df.at[self.df.index[i], "filename"],
+                        self.train_data_dir,
                     )
                 except:
                     pass
@@ -168,7 +181,9 @@ class Datamanager(QWidget):
                     os.remove(
                         os.path.join(
                             self.train_data_dir,
-                            os.path.basename(self.df.at[self.df.index[i], "filename"]),
+                            os.path.basename(
+                                self.df.at[self.df.index[i], "filename"]
+                            ),
                         )
                     )
                 except:

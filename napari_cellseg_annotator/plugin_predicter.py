@@ -71,28 +71,36 @@ class Predicter(QWidget):
 
     def show_dialog_o(self):
         default_path = max(self.opath, self.labelpath, os.path.expanduser("~"))
-        f_name = QFileDialog.getExistingDirectory(self, "Open directory", default_path)
+        f_name = QFileDialog.getExistingDirectory(
+            self, "Open directory", default_path
+        )
         if f_name:
             self.opath = f_name
             self.lbl.setText(self.opath)
 
     def show_dialog_label(self):
         default_path = max(self.opath, self.labelpath, os.path.expanduser("~"))
-        f_name = QFileDialog.getExistingDirectory(self, "Open directory", default_path)
+        f_name = QFileDialog.getExistingDirectory(
+            self, "Open directory", default_path
+        )
         if f_name:
             self.labelpath = f_name
             self.lbl2.setText(self.labelpath)
 
     def show_dialog_model(self):
         default_path = max(self.opath, self.labelpath, os.path.expanduser("~"))
-        f_name = QFileDialog.getExistingDirectory(self, "Open directory", default_path)
+        f_name = QFileDialog.getExistingDirectory(
+            self, "Open directory", default_path
+        )
         if f_name:
             self.modelpath = f_name
             self.lbl3.setText(self.modelpath)
 
     def show_dialog_outdir(self):
         default_path = max(self.opath, self.labelpath, os.path.expanduser("~"))
-        f_name = QFileDialog.getExistingDirectory(self, "Open directory", default_path)
+        f_name = QFileDialog.getExistingDirectory(
+            self, "Open directory", default_path
+        )
         if f_name:
             self.outpath = f_name
             self.lbl4.setText(self.outpath)
@@ -114,7 +122,9 @@ class Predicter(QWidget):
         input_shape = (512, 512, 1)
         num_classes = 1
 
-        self.model = get_nested_unet(input_shape=input_shape, num_classes=num_classes)
+        self.model = get_nested_unet(
+            input_shape=input_shape, num_classes=num_classes
+        )
         self.model.load_weights(os.path.join(self.modelpath, "model.hdf5"))
 
         self.btn5.setText("Predicting")
@@ -144,7 +154,8 @@ class Predicter(QWidget):
                             os.path.join(self.outpath, "merged_prediction"),
                         )
                     shutil.copy(
-                        str(csv_path), os.path.join(self.outpath, "merged_prediction")
+                        str(csv_path),
+                        os.path.join(self.outpath, "merged_prediction"),
                     )
             except Exception as e:
                 print(e)
@@ -171,7 +182,8 @@ class Predicter(QWidget):
                             os.path.join(self.outpath, "merged_prediction"),
                         )
                     shutil.copy(
-                        str(csv_path), os.path.join(self.outpath, "merged_prediction")
+                        str(csv_path),
+                        os.path.join(self.outpath, "merged_prediction"),
                     )
             except Exception as e:
                 print(e)

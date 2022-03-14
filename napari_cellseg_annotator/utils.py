@@ -12,14 +12,23 @@ from skimage.filters import gaussian
 from qtpy.QtGui import QDesktopServices
 from qtpy.QtCore import QUrl
 
+"""
+utils.py
+====================================
+Definition of utility functions
+"""
+
 
 def combine_blocks(button, label):
-    """Combines two QWidget objects and puts them side by side (label on the lest and button on the right)
+    """Combines two QWidget objects and puts them side by side (label on the left and button on the right)
 
     Args:
         button (QWidget): Button widget to be displayed right of the label
         label (QWidget): Labrel widget to be added on the left of button
-        """
+
+    Returns:
+        QWidget: new QWidget containing the merged widget and label
+    """
     temp_widget = QWidget()
     temp_layout = QHBoxLayout()
     temp_layout.addWidget(label)
@@ -28,14 +37,8 @@ def combine_blocks(button, label):
     return temp_widget
 
 
-"""
-utils.py
-====================================
-Definition of utility functions
-"""
-
 def open_url(url):
-    """Opens the url given as a string using QDesktopServices.openUrl.
+    """Opens the url given as a string in OS default browser using QDesktopServices.openUrl.
 
     Args:
         url (str): Url to be opened
@@ -44,16 +47,40 @@ def open_url(url):
 
 
 def normalize_x(image):
+    """Normalizes the values of an image array to be between [-1;1] rather than [0;255]
+
+    Args:
+        image (array): Image to process
+
+    Returns:
+        array: normalized value for the image
+    """
     image = image / 127.5 - 1
     return image
 
 
 def normalize_y(image):
+    """Normalizes the values of an image array to be between [0;1] rather than [0;255]
+
+    Args:
+        image (array): Image to process
+
+    Returns:
+        array: normalized value for the image
+    """
     image = image / 255
     return image
 
 
 def denormalize_y(image):
+    """De-normalizes the values of an image array to be between [0;255] rather than [0;1]
+
+    Args:
+        image (array): Image to process
+
+    Returns:
+        array: de-normalized value for the image
+    """
     return image * 255
 
 
@@ -68,7 +95,9 @@ def annotation_to_input(label_ermito):
     er = gaussian(er, sigma=2) * 255
     mito_anno[:, :] = mito
     er_anno[:, :] = er
-    anno = np.concatenate([mito_anno[:, :, np.newaxis], er_anno[:, :, np.newaxis]], 2)
+    anno = np.concatenate(
+        [mito_anno[:, :, np.newaxis], er_anno[:, :, np.newaxis]], 2
+    )
     anno = normalize_x(anno[np.newaxis, :, :, :])
     return anno
 
@@ -117,7 +146,9 @@ def check_csv(project_path, ext):
             index=df.columns,
         )
         df = df.append(record, ignore_index=True)
-        df.to_csv(os.path.join(project_path, os.path.basename(project_path) + ".csv"))
+        df.to_csv(
+            os.path.join(project_path, os.path.basename(project_path) + ".csv")
+        )
     else:
         pass
 
@@ -126,14 +157,18 @@ def check_annotations_dir(project_path):
     if not os.path.isdir(
         os.path.join(project_path, "annotations/Original_size/master")
     ):
-        os.makedirs(os.path.join(project_path, "annotations/Original_size/master"))
+        os.makedirs(
+            os.path.join(project_path, "annotations/Original_size/master")
+        )
     else:
         pass
 
 
 def check_zarr(project_path, ext):
     if not len(
-        list((Path(project_path) / "dataset" / "Original_size").glob("./*.zarr"))
+        list(
+            (Path(project_path) / "dataset" / "Original_size").glob("./*.zarr")
+        )
     ):
         filename_pattern_original = os.path.join(
             project_path, f"dataset/Original_size/Original/*{ext}"
@@ -153,11 +188,13 @@ def check(project_path, ext):
 
 
 def load_images(directory, filetype):
-
+    """Loads the images in ```directory```, with different behaviour depending on ```filetype```"""
     filename_pattern_original = os.path.join(directory + "/*" + filetype)
     if filetype == ".tif":
         path = list(Path(directory).glob("./*.tif"))
-        filename_pattern_original = os.path.join(directory + "/" + path[0].name)
+        filename_pattern_original = os.path.join(
+            directory + "/" + path[0].name
+        )
 
     images_original = dask_image.imread.imread(filename_pattern_original)
 
@@ -207,11 +244,17 @@ def load_X_gray(folder_path):
 
     image_files.sort()
 
-    img = cv2.imread(folder_path + os.sep + image_files[0], cv2.IMREAD_GRAYSCALE)
+    img = cv2.imread(
+        folder_path + os.sep + image_files[0], cv2.IMREAD_GRAYSCALE
+    )
 
-    images = np.zeros((len(image_files), img.shape[0], img.shape[1], 1), np.float32)
+    images = np.zeros(
+        (len(image_files), img.shape[0], img.shape[1], 1), np.float32
+    )
     for i, image_file in tqdm(enumerate(image_files)):
-        image = cv2.imread(folder_path + os.sep + image_file, cv2.IMREAD_GRAYSCALE)
+        image = cv2.imread(
+            folder_path + os.sep + image_file, cv2.IMREAD_GRAYSCALE
+        )
         image = image[:, :, np.newaxis]
         images[i] = normalize_x(image)
 
@@ -231,12 +274,18 @@ def load_Y_gray(folder_path, thresh=None, normalize=False):
 
     image_files.sort()
 
-    img = cv2.imread(folder_path + os.sep + image_files[0], cv2.IMREAD_GRAYSCALE)
+    img = cv2.imread(
+        folder_path + os.sep + image_files[0], cv2.IMREAD_GRAYSCALE
+    )
 
-    images = np.zeros((len(image_files), img.shape[0], img.shape[1], 1), np.float32)
+    images = np.zeros(
+        (len(image_files), img.shape[0], img.shape[1], 1), np.float32
+    )
 
     for i, image_file in tqdm(enumerate(image_files)):
-        image = cv2.imread(folder_path + os.sep + image_file, cv2.IMREAD_GRAYSCALE)
+        image = cv2.imread(
+            folder_path + os.sep + image_file, cv2.IMREAD_GRAYSCALE
+        )
         if thresh:
             ret, image = cv2.threshold(image, thresh, 255, cv2.THRESH_BINARY)
         image = image[:, :, np.newaxis]
@@ -258,7 +307,9 @@ def select_train_data(dataframe, ori_imgs, label_imgs, ori_filenames):
 
     train_ori_imgs = list()
     train_label_imgs = list()
-    for ori_img, label_img, train_filename in zip(ori_imgs, label_imgs, ori_filenames):
+    for ori_img, label_img, train_filename in zip(
+        ori_imgs, label_imgs, ori_filenames
+    ):
         if train_filename in train_img_names:
             train_ori_imgs.append(ori_img)
             train_label_imgs.append(label_img)
@@ -307,29 +358,35 @@ def divide_imgs(images):
                 if h == -1:
                     if w == -1:
                         cropped_img[
-                            50 : images.shape[1] + 50, 50 : images.shape[2] + 50, 0
+                            50 : images.shape[1] + 50,
+                            50 : images.shape[2] + 50,
+                            0,
                         ] = image[0 : images.shape[1], 0 : images.shape[2], 0]
                     elif w == 0:
-                        cropped_img[50 : images.shape[1] + 50, 50:512, 0] = image[
-                            0 : images.shape[1], 0:462, 0
-                        ]
+                        cropped_img[
+                            50 : images.shape[1] + 50, 50:512, 0
+                        ] = image[0 : images.shape[1], 0:462, 0]
                     elif w == W - 1:
                         cropped_img[
                             50 : images.shape[1] + 50,
                             0 : images.shape[2] - 412 * W - 50,
                             0,
                         ] = image[
-                            0 : images.shape[1], w * 412 - 50 : images.shape[2], 0
+                            0 : images.shape[1],
+                            w * 412 - 50 : images.shape[2],
+                            0,
                         ]
                     else:
                         cropped_img[50 : images.shape[1] + 50, :, 0] = image[
-                            0 : images.shape[1], w * 412 - 50 : (w + 1) * 412 + 50, 0
+                            0 : images.shape[1],
+                            w * 412 - 50 : (w + 1) * 412 + 50,
+                            0,
                         ]
                 elif h == 0:
                     if w == -1:
-                        cropped_img[50:512, 50 : images.shape[2] + 50, 0] = image[
-                            0:462, 0 : images.shape[2], 0
-                        ]
+                        cropped_img[
+                            50:512, 50 : images.shape[2] + 50, 0
+                        ] = image[0:462, 0 : images.shape[2], 0]
                     elif w == 0:
                         cropped_img[50:512, 50:512, 0] = image[0:462, 0:462, 0]
                     elif w == W - 1:
@@ -344,8 +401,12 @@ def divide_imgs(images):
                             ]
                         except:
                             cropped_img[
-                                50:512, 0 : images.shape[2] - 412 * (W - 1) - 50, 0
-                            ] = image[0:462, w * 412 - 50 : (w + 1) * 412 + 50, 0]
+                                50:512,
+                                0 : images.shape[2] - 412 * (W - 1) - 50,
+                                0,
+                            ] = image[
+                                0:462, w * 412 - 50 : (w + 1) * 412 + 50, 0
+                            ]
                 elif h == H - 1:
                     if w == -1:
                         cropped_img[
@@ -353,7 +414,9 @@ def divide_imgs(images):
                             50 : images.shape[2] + 50,
                             0,
                         ] = image[
-                            h * 412 - 50 : images.shape[1], 0 : images.shape[2], 0
+                            h * 412 - 50 : images.shape[1],
+                            0 : images.shape[2],
+                            0,
                         ]
                     elif w == 0:
                         cropped_img[
@@ -391,7 +454,9 @@ def divide_imgs(images):
                 else:
                     if w == -1:
                         cropped_img[:, 50 : images.shape[2] + 50, 0] = image[
-                            h * 412 - 50 : (h + 1) * 412 + 50, 0 : images.shape[2], 0
+                            h * 412 - 50 : (h + 1) * 412 + 50,
+                            0 : images.shape[2],
+                            0,
                         ]
                     elif w == 0:
                         # cropped_img[:, 50:512, 0] = image[h*412-50:(h+1)*412+50, 0:462, 0]
@@ -401,8 +466,12 @@ def divide_imgs(images):
                             ]
                         except:
                             cropped_img[
-                                0 : images.shape[1] - 412 * H - 50 + 412, 50:512, 0
-                            ] = image[h * 412 - 50 : (h + 1) * 412 + 50, 0:462, 0]
+                                0 : images.shape[1] - 412 * H - 50 + 412,
+                                50:512,
+                                0,
+                            ] = image[
+                                h * 412 - 50 : (h + 1) * 412 + 50, 0:462, 0
+                            ]
                     elif w == W - 1:
                         # cropped_img[:, 0:images.shape[2]-412*W-50, 0] = image[h*412-50:(h+1)*412+50, w*412-50:images.shape[2], 0]
                         try:
@@ -434,7 +503,9 @@ def divide_imgs(images):
                         except:
                             try:
                                 cropped_img[
-                                    :, 0 : images.shape[2] - 412 * (W - 1) - 50, 0
+                                    :,
+                                    0 : images.shape[2] - 412 * (W - 1) - 50,
+                                    0,
                                 ] = image[
                                     h * 412 - 50 : (h + 1) * 412 + 50,
                                     w * 412 - 50 : (w + 1) * 412 + 50,
@@ -442,7 +513,9 @@ def divide_imgs(images):
                                 ]
                             except:
                                 cropped_img[
-                                    0 : images.shape[1] - 412 * (H - 1) - 50, :, 0
+                                    0 : images.shape[1] - 412 * (H - 1) - 50,
+                                    :,
+                                    0,
                                 ] = image[
                                     h * 412 - 50 : (h + 1) * 412 + 50,
                                     w * 412 - 50 : (w + 1) * 412 + 50,
@@ -458,7 +531,12 @@ def divide_imgs(images):
 
 def merge_imgs(imgs, original_image_shape):
     merged_imgs = np.zeros(
-        (original_image_shape[0], original_image_shape[1], original_image_shape[2], 1),
+        (
+            original_image_shape[0],
+            original_image_shape[1],
+            original_image_shape[2],
+            1,
+        ),
         np.float32,
     )
     H = -(-original_image_shape[1] // 412)
@@ -487,9 +565,11 @@ def merge_imgs(imgs, original_image_shape):
                             0,
                         ]
                     elif w == 0:
-                        merged_imgs[z, 0 : original_image_shape[1], 0:412, 0] = imgs[
-                            z * H * W + w * H + 0
-                        ][50 : original_image_shape[1] + 50, 50:462, 0]
+                        merged_imgs[
+                            z, 0 : original_image_shape[1], 0:412, 0
+                        ] = imgs[z * H * W + w * H + 0][
+                            50 : original_image_shape[1] + 50, 50:462, 0
+                        ]
                     elif w == W - 1:
                         merged_imgs[
                             z,
@@ -503,29 +583,36 @@ def merge_imgs(imgs, original_image_shape):
                         ]
                     else:
                         merged_imgs[
-                            z, 0 : original_image_shape[1], w * 412 : (w + 1) * 412, 0
+                            z,
+                            0 : original_image_shape[1],
+                            w * 412 : (w + 1) * 412,
+                            0,
                         ] = imgs[z * H * W + w * H + 0][
                             50 : original_image_shape[1] + 50, 50:462, 0
                         ]
                 elif h == 0:
                     if w == -1:
-                        merged_imgs[z, 0:412, 0 : original_image_shape[2], 0] = imgs[
-                            z * H * W + 0 * H + h
-                        ][50:462, 50 : original_image_shape[2] + 50, 0]
-                    elif w == 0:
-                        merged_imgs[z, 0:412, 0:412, 0] = imgs[z * H * W + w * H + h][
-                            50:462, 50:462, 0
+                        merged_imgs[
+                            z, 0:412, 0 : original_image_shape[2], 0
+                        ] = imgs[z * H * W + 0 * H + h][
+                            50:462, 50 : original_image_shape[2] + 50, 0
                         ]
+                    elif w == 0:
+                        merged_imgs[z, 0:412, 0:412, 0] = imgs[
+                            z * H * W + w * H + h
+                        ][50:462, 50:462, 0]
                     elif w == W - 1:
                         merged_imgs[
                             z, 0:412, w * 412 : original_image_shape[2], 0
                         ] = imgs[z * H * W + w * H + h][
-                            50:462, 50 : original_image_shape[2] - 412 * W - 50, 0
+                            50:462,
+                            50 : original_image_shape[2] - 412 * W - 50,
+                            0,
                         ]
                     else:
-                        merged_imgs[z, 0:412, w * 412 : (w + 1) * 412, 0] = imgs[
-                            z * H * W + w * H + h
-                        ][50:462, 50:462, 0]
+                        merged_imgs[
+                            z, 0:412, w * 412 : (w + 1) * 412, 0
+                        ] = imgs[z * H * W + w * H + h][50:462, 50:462, 0]
                 elif h == H - 1:
                     if w == -1:
                         merged_imgs[
@@ -542,7 +629,9 @@ def merge_imgs(imgs, original_image_shape):
                         merged_imgs[
                             z, h * 412 : original_image_shape[1], 0:412, 0
                         ] = imgs[z * H * W + w * H + h][
-                            50 : original_image_shape[1] - 412 * H - 50, 50:462, 0
+                            50 : original_image_shape[1] - 412 * H - 50,
+                            50:462,
+                            0,
                         ]
                     elif w == W - 1:
                         merged_imgs[
@@ -562,19 +651,24 @@ def merge_imgs(imgs, original_image_shape):
                             w * 412 : (w + 1) * 412,
                             0,
                         ] = imgs[z * H * W + w * H + h][
-                            50 : original_image_shape[1] - 412 * H - 50, 50:462, 0
+                            50 : original_image_shape[1] - 412 * H - 50,
+                            50:462,
+                            0,
                         ]
                 else:
                     if w == -1:
                         merged_imgs[
-                            z, h * 412 : (h + 1) * 412, 0 : original_image_shape[2], 0
+                            z,
+                            h * 412 : (h + 1) * 412,
+                            0 : original_image_shape[2],
+                            0,
                         ] = imgs[z * H * W + 0 * H + h][
                             50:462, 50 : original_image_shape[2] + 50, 0
                         ]
                     elif w == 0:
-                        merged_imgs[z, h * 412 : (h + 1) * 412, 0:412, 0] = imgs[
-                            z * H * W + w * H + h
-                        ][50:462, 50:462, 0]
+                        merged_imgs[
+                            z, h * 412 : (h + 1) * 412, 0:412, 0
+                        ] = imgs[z * H * W + w * H + h][50:462, 50:462, 0]
                     elif w == W - 1:
                         merged_imgs[
                             z,
@@ -582,11 +676,16 @@ def merge_imgs(imgs, original_image_shape):
                             w * 412 : original_image_shape[2],
                             0,
                         ] = imgs[z * H * W + w * H + h][
-                            50:462, 50 : original_image_shape[2] - 412 * W - 50, 0
+                            50:462,
+                            50 : original_image_shape[2] - 412 * W - 50,
+                            0,
                         ]
                     else:
                         merged_imgs[
-                            z, h * 412 : (h + 1) * 412, w * 412 : (w + 1) * 412, 0
+                            z,
+                            h * 412 : (h + 1) * 412,
+                            w * 412 : (w + 1) * 412,
+                            0,
                         ] = imgs[z * H * W + w * H + h][50:462, 50:462, 0]
 
     print(merged_imgs.shape)
