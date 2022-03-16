@@ -16,7 +16,7 @@ from qtpy.QtWidgets import (
 )
 from skimage import io
 from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.napari_view_simple import launch_viewer
+from napari_cellseg_annotator.launch_review import launch_review
 
 
 def format_Warning(message, category, filename, lineno, line=""):
@@ -52,7 +52,7 @@ class Loader(QWidget):
 
         A checkbox if you want to create a new status csv for the dataset
 
-        A button to launch the review process (see :ref:`launch_viewer`)
+        A button to launch the review process (see :doc:`launch_review`)
         """
 
         super().__init__(parent)
@@ -170,7 +170,7 @@ class Loader(QWidget):
 
         * Save work done before leaving
 
-        See :ref:`launch_viewer`
+        See :doc:`launch_review`
 
         Returns:
             napari.viewer.Viewer: self.viewer
@@ -210,7 +210,7 @@ class Loader(QWidget):
         global global_launched_before
         if global_launched_before:
             new_viewer = napari.Viewer()
-            view1 = launch_viewer(
+            view1 = launch_review(
                 new_viewer,
                 images,
                 labels,
@@ -227,7 +227,7 @@ class Loader(QWidget):
         else:
             new_viewer = self._viewer
 
-            view1 = launch_viewer(
+            view1 = launch_review(
                 new_viewer,
                 images,
                 labels,

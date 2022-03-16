@@ -8,7 +8,7 @@ Welcome to napari-cellseg-annotator's documentation!
 
 
     plugin_loader
-    napari_view_simple
+    launch_review
     utils
 
 

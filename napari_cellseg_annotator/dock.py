@@ -71,11 +71,14 @@ class Datamanager(QWidget):
     def load_csv(self, label_dir, model_type, checkbox):
         """
         load newest csv or create new csv
-        :param str label_dir: label path
-        :param str model_type:model type
-        :param bool checkbox: create new dataset or not
-        :return: dataframe、csv path
-        :rtype (pandas.DataFrame, str)
+
+        Args:
+        label_dir (str): label path
+         model_type (str):model type
+        checkbox ( bool ): create new dataset or not
+
+        Returns:
+        (pandas.DataFrame, str) dataframe、csv path
         """
         csvs = sorted(list(Path(label_dir).glob(f"{model_type}*.csv")))
         if len(csvs) == 0:
@@ -103,10 +106,11 @@ class Datamanager(QWidget):
     def create(self, label_dir, model_type):
         """
         Create a new dataframe and save the csv
-        :param str label_dir: label path
-        :param str model_type : model type
-        :return: dataframe, csv path
-        :rtype (pandas.DataFrame, str)
+        Args:
+          label_dir (str): label path
+          model_type (str): model type
+        Returns:
+         (pandas.DataFrame, str): dataframe, csv path
         """
 
         if self.filetype == ".png":
