@@ -16,7 +16,7 @@ from qtpy.QtWidgets import (
 )
 from skimage import io
 from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.napari_view_simple import launch_viewers
+from napari_cellseg_annotator.napari_view_simple import launch_viewer
 
 
 def format_Warning(message, category, filename, lineno, line=""):
@@ -68,7 +68,7 @@ class Helper(QWidget):
         self._viewer.window.remove_dock_widget(self)
 
 
-launched = False
+global_launched_before = False
 
 
 class Loader(QWidget):
@@ -202,10 +202,10 @@ class Loader(QWidget):
         except:
             labels_raw = None
             # TODO: viewer argument ?
-        global launched
-        if launched:
+        global global_launched_before
+        if global_launched_before:
             new_viewer = napari.Viewer()
-            view1 = launch_viewers(
+            view1 = launch_viewer(
                 new_viewer,
                 images,
                 labels,
@@ -222,7 +222,7 @@ class Loader(QWidget):
         else:
             new_viewer = self._viewer
 
-            view1 = launch_viewers(
+            view1 = launch_viewer(
                 new_viewer,
                 images,
                 labels,
@@ -232,7 +232,7 @@ class Loader(QWidget):
                 self.checkBox.isChecked(),
                 self.filetype,
             )
-            launched = True
+            global_launched_before = True
             self.close()
             # global view_l
         # view_l.close()  # why does it not close the window ??  #use self.close() ?

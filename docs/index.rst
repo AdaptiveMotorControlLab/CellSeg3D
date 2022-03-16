@@ -1,13 +1,16 @@
 Welcome to napari-cellseg-annotator's documentation!
 ===============================================================
 
-Contents:
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
     :caption: Contents:
 
+
+    plugin_loader
+    napari_view_simple
     utils
+
 
 
 

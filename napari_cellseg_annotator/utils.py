@@ -11,6 +11,9 @@ from skimage import io
 from skimage.filters import gaussian
 from qtpy.QtGui import QDesktopServices
 from qtpy.QtCore import QUrl
+from qtpy.QtWidgets import (
+    QFileDialog,
+)
 
 """
 utils.py
@@ -187,8 +190,33 @@ def check(project_path, ext):
     check_annotations_dir(project_path)
 
 
+def open_file_dialog(widget, possible_paths=os.path.expanduser("~")):
+    """Opens a window to choose a file directory using QFileDialog.
+
+    Args:
+        possible_paths (str): Paths that may have been chosen before, can
+    """
+    default_path = max(possible_paths)
+    f_name = QFileDialog.getExistingDirectory(
+        widget, "Open directory", default_path
+    )
+    return f_name
+
+
 def load_images(directory, filetype):
-    """Loads the images in ```directory```, with different behaviour depending on ```filetype```"""
+    """Loads the images in ``directory``, with different behaviour depending on ``filetype``
+
+     For ``filetype == ".tif"`` : loads the first tif file found in the folder
+
+     For  ``filetype == ".png"`` : loads all png files in the folder as a 3D dataset
+
+    Args:
+        directory (str): path to the directory containing the images
+        filetype (str): expected file extension of the image(s) in the directory
+
+    Returns:
+        dask.array.Array: dask array with loaded images
+    """
     filename_pattern_original = os.path.join(directory + "/*" + filetype)
     if filetype == ".tif":
         path = list(Path(directory).glob("./*.tif"))

@@ -1,4 +1,3 @@
-import copy
 import matplotlib.pyplot as plt
 import numpy as np
 from qtpy.QtWidgets import QSizePolicy
@@ -15,10 +14,28 @@ from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.dock import Datamanager
 
 
-def launch_viewers(
+def launch_viewer(
     viewer, original, base, raw, r_path, model_type, checkbox, filetype
 ):
+    """Launch the review process, loading the original image, the labels & the raw labels (from prediction)
+       in the viewer.
 
+    Adds several widgets to the viewer :
+
+    * A data manager widget that lets the user choose a directory to save the labels in, and a save button to quickly
+      save.
+
+    * A "checked/not checked" button to let the user confirm that a slice has been checked or not.
+      *This writes in a csv file under the corresponding slice the slice status (i.e. checked or not checked)
+      to allow tracking of the review process for a given dataset.*
+
+    * A plot widget that, when shift-clicking on the volume or label,
+      displays the chosen location on several projections (x-y, y-z, x-z),
+      to allow the user to have a better all-around view of the object
+      and determine whether it should be labeled or not.
+
+
+    """
     global slicer
     global z_pos
     global view1

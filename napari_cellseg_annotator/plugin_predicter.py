@@ -8,7 +8,6 @@ from qtpy.QtWidgets import (
     QPushButton,
     QSizePolicy,
     QLabel,
-    QFileDialog,
     QCheckBox,
 )
 from napari_cellseg_annotator import utils
@@ -70,37 +69,32 @@ class Predicter(QWidget):
         self.show()
 
     def show_dialog_o(self):
-        default_path = max(self.opath, self.labelpath, os.path.expanduser("~"))
-        f_name = QFileDialog.getExistingDirectory(
-            self, "Open directory", default_path
-        )
+        default_path = [self.opath, self.labelpath]
+        f_name = utils.open_file_dialog(self, default_path)
+
         if f_name:
             self.opath = f_name
             self.lbl.setText(self.opath)
 
     def show_dialog_label(self):
-        default_path = max(self.opath, self.labelpath, os.path.expanduser("~"))
-        f_name = QFileDialog.getExistingDirectory(
-            self, "Open directory", default_path
-        )
+        default_path = [self.opath, self.labelpath]
+        f_name = utils.open_file_dialog(self, default_path)
         if f_name:
             self.labelpath = f_name
             self.lbl2.setText(self.labelpath)
 
     def show_dialog_model(self):
-        default_path = max(self.opath, self.labelpath, os.path.expanduser("~"))
-        f_name = QFileDialog.getExistingDirectory(
-            self, "Open directory", default_path
-        )
+        default_path = [self.opath, self.labelpath]
+
+        f_name = utils.open_file_dialog(self, default_path)
         if f_name:
             self.modelpath = f_name
             self.lbl3.setText(self.modelpath)
 
     def show_dialog_outdir(self):
-        default_path = max(self.opath, self.labelpath, os.path.expanduser("~"))
-        f_name = QFileDialog.getExistingDirectory(
-            self, "Open directory", default_path
-        )
+        default_path = [self.opath, self.labelpath, os.path.expanduser("~")]
+        f_name = utils.open_file_dialog(default_path, self)
+
         if f_name:
             self.outpath = f_name
             self.lbl4.setText(self.outpath)
