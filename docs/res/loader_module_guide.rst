@@ -21,6 +21,14 @@ of your images (either .png or .tif).
     * For .tif, a folder containing a single 3D tif file with all slices (if there are several, the first one will be used)
 
 You can then provide a model name, which will be used in the csv file recording the status of each slice.
+
 If a corresponding csv file exists already, it will be used. If not, a new one will be created.
+
 If you choose to create a new dataset, a new csv will be created no matter what,
 with a trailing number if several copies of it already exists.
+
+Once you are ready, you can press **Run** to start the review process.
+
+Review process : interface & functionalities
+---------------------------------------------------------------
+

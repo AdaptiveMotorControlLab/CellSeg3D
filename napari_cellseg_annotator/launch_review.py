@@ -26,8 +26,10 @@ def launch_review(
       save.
 
     * A "checked/not checked" button to let the user confirm that a slice has been checked or not.
-      **This writes in a csv file under the corresponding slice the slice status (i.e. checked or not checked)
-      to allow tracking of the review process for a given dataset.**
+
+
+          **This writes in a csv file under the corresponding slice the slice status (i.e. checked or not checked)
+          to allow tracking of the review process for a given dataset.**
 
     * A plot widget that, when shift-clicking on the volume or label,
       displays the chosen location on several projections (x-y, y-z, x-z),
