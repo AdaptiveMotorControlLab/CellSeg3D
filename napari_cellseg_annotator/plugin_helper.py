@@ -11,6 +11,7 @@ class Helper(QWidget):
         self.help_url = (
             "https://github.com/C-Achard/cellseg-annotator-test/tree/main"
         )
+
         self.about_url = "https://wysscenter.ch/advances/3d-computer-vision-for-brain-analysis"
         self._viewer = parent
         self.btn1 = QPushButton("Help...", self)

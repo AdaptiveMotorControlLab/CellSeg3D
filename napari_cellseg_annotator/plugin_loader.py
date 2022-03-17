@@ -63,7 +63,6 @@ class Loader(QWidget):
 
         self.opath = ""
         """str: path to output folder"""
-
         self.modpath = ""
         """str: path to mask folder"""
         self.filetype = ""

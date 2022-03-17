@@ -18,17 +18,29 @@ GUI_MINIMUM_HEIGHT = 300
 """
 dock.py
 ====================================
-Definition of Datamanger widget, for saving labels
+Definition of Datamanager widget, for saving labels status in csv file
 """
 
 
 class Datamanager(QWidget):
-    def __init__(self, parent: "napari.viewer.Viewer", *args, **kwargs):
+    """A widget with a single checkbox that allows to store the status of
+    a slice in csv file (checked/not checked)
 
+    """
+
+    def __init__(self, parent: "napari.viewer.Viewer", *args, **kwargs):
+        """Creates the datamanager widget in the specified viewer window.
+
+        Args:
+            parent (napari.viewer.Viewer): napair Viewer for the widget to be displayed in"""
+
+        # TODO : use of args ?
         super(Datamanager, self).__init__(*args, **kwargs)
 
         layout = QVBoxLayout()
         self.viewer = parent
+        """napari.viewer.Viewer: viewer in which the widget is displayed"""
+
         # add some buttons
         self.button = QPushButton("1", self)
         self.button.clicked.connect(self.button_func)
@@ -55,11 +67,14 @@ class Datamanager(QWidget):
         self.image_dims = self.viewer.layers[0].data.shape
 
     def prepare(self, label_dir, filetype, model_type, checkbox):
-        """
-        :param str label_dir: label path
-        :param str filetype : file extension
-        :param str model_type: model type
-        :param bool checkbox: create new dataset or not
+        """Initialize the Datamanager, which loads the csv file and updates it
+        with the index of the current slice.
+
+        Args:
+        label_dir (str): label path
+        filetype (str) : file extension
+        model_type (str): model type
+        checkbox (bool): create new dataset or not
         """
         self.filetype = filetype
         self.df, self.csv_path = self.load_csv(label_dir, model_type, checkbox)
@@ -70,15 +85,15 @@ class Datamanager(QWidget):
 
     def load_csv(self, label_dir, model_type, checkbox):
         """
-        load newest csv or create new csv
+        Loads newest csv or create new csv
 
         Args:
-        label_dir (str): label path
-         model_type (str):model type
-        checkbox ( bool ): create new dataset or not
+            label_dir (str): label path
+            model_type (str):model type
+            checkbox ( bool ): create new dataset or not
 
         Returns:
-        (pandas.DataFrame, str) dataframe、csv path
+            (pandas.DataFrame, str) dataframe、csv path
         """
         csvs = sorted(list(Path(label_dir).glob(f"{model_type}*.csv")))
         if len(csvs) == 0:
@@ -138,6 +153,13 @@ class Datamanager(QWidget):
         return df, csv_path
 
     def update(self, slice_num):
+        """Updates the Datamanager with the index of the current slice, and updates
+        the text with the status contained in the csv (e.g. checked/not checked).
+
+        Args:
+            slice_num (int): index of the current slice
+
+        """
         self.slice_num = slice_num
         # print(self.df)
         self.button.setText(
