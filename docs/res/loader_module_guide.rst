@@ -40,14 +40,11 @@ Review process : interface & functionalities
 
 Once you have launched the review process, you will have access to the following functionalities:
 
-**1.** A dialog to choose the folder in which you want to save the verified and/or corrected annotations,
-   and a button to save the labels. They will be saved as png, with one file per slice.
+**1.** A dialog to choose the folder in which you want to save the verified and/or corrected annotations, and a button to save the labels. They will be saved as png, with one file per slice.
 
 **2.** A button to update the status of the slice in the csv file (in this case : checked/not checked)
 
-**3.** A plot with three projections in the x-y, y-z and x-z planes, to allow the reviewer to better see the surroundings of the label
-   and properly establish whether the image should be labeled or not. You can **shift-click** anywhere on the image or label layer to
-   update the plot to the location being reviewed.
+**3.** A plot with three projections in the x-y, y-z and x-z planes, to allow the reviewer to better see the surroundings of the label and properly establish whether the image should be labeled or not. You can **shift-click** anywhere on the image or label layer to update the plot to the location being reviewed.
 
 Using these, you can check your labels, correct them, save them and keep track of which slices have been checked or not.
 
