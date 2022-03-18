@@ -1,9 +1,9 @@
 from napari_cellseg_annotator import utils
 import numpy as np
 
-def test_normalize_x() :
 
-    test_array = utils.normalize_x(np.array([0,255,127.5]))
-    expected = np.array([-1,1, 0])
+def test_normalize_x():
+
+    test_array = utils.normalize_x(np.array([0, 255, 127.5]))
+    expected = np.array([-1, 1, 0])
     assert np.all(test_array == expected)
-
