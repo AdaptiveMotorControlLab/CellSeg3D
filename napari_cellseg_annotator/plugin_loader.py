@@ -9,7 +9,6 @@ from qtpy.QtWidgets import (
     QPushButton,
     QSizePolicy,
     QLabel,
-    QFileDialog,
     QComboBox,
     QLineEdit,
     QCheckBox,
@@ -44,15 +43,15 @@ class Loader(QWidget):
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
         """Creates a Loader plugin with several buttons :
 
-        Open file prompt to select volumes directory
+        * Open file prompt to select volumes directory
 
-        Open file prompt to select labels directory
+        * Open file prompt to select labels directory
 
-        A dropdown menu with a choice of png or tif filetypes
+        * A dropdown menu with a choice of png or tif filetypes
 
-        A checkbox if you want to create a new status csv for the dataset
+        * A checkbox if you want to create a new status csv for the dataset
 
-        A button to launch the review process (see :doc:`launch_review`)
+        * A button to launch the review process (see :doc:`launch_review`)
         """
 
         super().__init__(parent)

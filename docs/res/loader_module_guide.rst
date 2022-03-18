@@ -49,7 +49,7 @@ Once you have launched the review process, you will have access to the following
 Using these, you can check your labels, correct them, save them and keep track of which slices have been checked or not.
 
 
-Source code :
+Source code
 -------------------------------------------------
 
 * :doc:`plugin_loader`
