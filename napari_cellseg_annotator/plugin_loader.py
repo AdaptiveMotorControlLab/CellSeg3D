@@ -127,8 +127,8 @@ class Loader(QWidget):
         vbox.addWidget(self.btnb)
         ##################################################################
         # remove once done ?
-        test = True
-        if test:
+        test_button = True
+        if test_button:
             vbox.addWidget(self.btntest)
         ##################################################################
         self.setLayout(vbox)

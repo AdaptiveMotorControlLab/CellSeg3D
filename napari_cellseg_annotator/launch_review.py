@@ -150,7 +150,7 @@ def launch_review(
         canvas = FigureCanvas(Figure(figsize=(3, 15)))
 
         xy_axes = canvas.figure.add_subplot(3, 1, 1)
-        canvas.figure.suptitle("Shift-click for plot \n", fontsize=8)
+        canvas.figure.suptitle("Shift-click on image for plot \n", fontsize=8)
         xy_axes.imshow(np.zeros((100, 100), np.uint8))
         xy_axes.scatter(50, 50, s=10, c="red", alpha=0.25)
         xy_axes.set_xlabel("x axis")
