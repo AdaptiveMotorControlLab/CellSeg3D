@@ -36,6 +36,23 @@ def launch_review(
       to allow the user to have a better all-around view of the object
       and determine whether it should be labeled or not.
 
+    Args:
+        viewer (napari.viewer.Viewer): The viewer the widgets are to be displayed in
+
+        original (dask.array.Array): The original images/volumes that have been labeled
+
+        base (dask.array.Array): The labels for the volume
+
+        raw (dask.array.Array): The raw labels from the prediction
+
+        r_path (str): Path to the raw labels
+
+        model_type (str): The name of the model to be displayed in csv filenames.
+
+        checkbox (bool): Whether the "new model" checkbox has been checked or not, to create a new csv
+
+        filetype (str): The file extension of the volumes and labels.
+
 
     """
     global slicer

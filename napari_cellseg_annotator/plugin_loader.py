@@ -3,6 +3,7 @@ import warnings
 from pathlib import Path
 import napari
 import numpy as np
+from qtpy import QtGui
 from qtpy.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -97,13 +98,25 @@ class Loader(QWidget):
         self.lbl = QLabel("Images directory", self)
         self.lbl2 = QLabel("Labels directory", self)
         self.lbl4 = QLabel("Model name", self)
-        #####################################################################
-        # TODO remove once done
-        self.btntest = QPushButton("test", self)
+
         self.lblft = QLabel("Filetype :", self)
         self.lblft2 = QLabel("(Folders of .png or single .tif files)")
-        self.btntest.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btntest.clicked.connect(self.run_test)
+
+        self.warn_label = QLabel(
+            "WARNING : You already have a review session running.\n"
+            "Launching another will close the current one,\n"
+            " make sure to save your work beforehand"
+        )
+        pal = self.warn_label.palette()
+        pal.setColor(QtGui.QPalette.WindowText, QtGui.QColor("red"))
+        self.warn_label.setPalette(pal)
+        #####################################################################
+        # TODO remove once done
+        self.test_button = True
+        if self.test_button:
+            self.btntest = QPushButton("test", self)
+            self.btntest.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+            self.btntest.clicked.connect(self.run_test)
         #####################################################################
 
         self.build()
@@ -112,6 +125,15 @@ class Loader(QWidget):
         """Build buttons in a layout and add them to the napari Viewer"""
 
         vbox = QVBoxLayout()
+
+        global global_launched_before
+        if global_launched_before:
+            vbox.addWidget(self.warn_label)
+            warnings.warn(
+                "WARNING : You already have a review session running.\n"
+                "Launching another will close the current one,\n"
+                " make sure to save your work beforehand"
+            )
 
         vbox.addWidget(utils.combine_blocks(self.btn1, self.lbl))
 
@@ -124,10 +146,11 @@ class Loader(QWidget):
         vbox.addWidget(self.checkBox)
         vbox.addWidget(self.btn4)
         vbox.addWidget(self.btnb)
+
         ##################################################################
         # remove once done ?
-        test_button = True
-        if test_button:
+
+        if self.test_button:
             vbox.addWidget(self.btntest)
         ##################################################################
         self.setLayout(vbox)
