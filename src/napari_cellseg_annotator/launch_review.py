@@ -1,9 +1,10 @@
-import copy
 import matplotlib.pyplot as plt
 import numpy as np
 from qtpy.QtWidgets import QSizePolicy
 from magicgui import magicgui
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvasQTAgg as FigureCanvas,
+)
 from matplotlib.figure import Figure
 from pathlib import Path
 
@@ -13,8 +14,47 @@ from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.dock import Datamanager
 
 
-def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, filetype):
+def launch_review(
+    viewer, original, base, raw, r_path, model_type, checkbox, filetype
+):
+    """Launch the review process, loading the original image, the labels & the raw labels (from prediction)
+    in the viewer.
 
+    Adds several widgets to the viewer :
+
+    * A data manager widget that lets the user choose a directory to save the labels in, and a save button to quickly
+      save.
+
+    * A "checked/not checked" button to let the user confirm that a slice has been checked or not.
+
+
+          **This writes in a csv file under the corresponding slice the slice status (i.e. checked or not checked)
+          to allow tracking of the review process for a given dataset.**
+
+    * A plot widget that, when shift-clicking on the volume or label,
+      displays the chosen location on several projections (x-y, y-z, x-z),
+      to allow the user to have a better all-around view of the object
+      and determine whether it should be labeled or not.
+
+    Args:
+        viewer (napari.viewer.Viewer): The viewer the widgets are to be displayed in
+
+        original (dask.array.Array): The original images/volumes that have been labeled
+
+        base (dask.array.Array): The labels for the volume
+
+        raw (dask.array.Array): The raw labels from the prediction
+
+        r_path (str): Path to the raw labels
+
+        model_type (str): The name of the model to be displayed in csv filenames.
+
+        checkbox (bool): Whether the "new model" checkbox has been checked or not, to create a new csv
+
+        filetype (str): The file extension of the volumes and labels.
+
+
+    """
     global slicer
     global z_pos
     global view1
@@ -95,8 +135,13 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, fi
     layer = view1.layers[0]
     layer1 = view1.layers[1]
 
-    @magicgui(dirname={"mode": "d", "label": "Save labels in... "}, call_button="Save")
-    def file_widget(dirname=Path(r_path)):  # file name where to save annotations
+    @magicgui(
+        dirname={"mode": "d", "label": "Save labels in... "},
+        call_button="Save",
+    )
+    def file_widget(
+        dirname=Path(r_path),
+    ):  # file name where to save annotations
         # """Take a filename and do something with it."""
         # print("The filename is:", dirname)
         dirname = Path(r_path)
@@ -122,7 +167,7 @@ def launch_viewers(viewer, original, base, raw, r_path, model_type, checkbox, fi
         canvas = FigureCanvas(Figure(figsize=(3, 15)))
 
         xy_axes = canvas.figure.add_subplot(3, 1, 1)
-        canvas.figure.suptitle("Shift-click for plot \n", fontsize=8)
+        canvas.figure.suptitle("Shift-click on image for plot \n", fontsize=8)
         xy_axes.imshow(np.zeros((100, 100), np.uint8))
         xy_axes.scatter(50, 50, s=10, c="red", alpha=0.25)
         xy_axes.set_xlabel("x axis")

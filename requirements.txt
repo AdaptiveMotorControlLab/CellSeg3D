@@ -91,6 +91,7 @@ PyOpenGL==3.1.6
 pyparsing==3.0.7
 qtpy>=1.7.0
 pyrsistent==0.18.1
+PyQt5==5.15.6
 python-dateutil==2.8.2
 pytomlpp==1.0.10
 pytz==2021.3

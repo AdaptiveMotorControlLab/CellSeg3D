@@ -5,7 +5,7 @@ schema_version: 0.0.1
 contributions:
   commands:
   - id: napari-cellseg-annotator.load
-    title: Create Loader
+    title: Create review loader
     python_name: napari_cellseg_annotator.plugins:Loader
 
 #  - id: napari-cellseg-annotator.train
@@ -20,7 +20,7 @@ contributions:
     python_name: napari_cellseg_annotator.plugins:Helper
   widgets:
   - command: napari-cellseg-annotator.load
-    display_name: Loader
+    display_name: Review loader
 
 #  - command: napari-cellseg-annotator.train
 #    display_name: Trainer

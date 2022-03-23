@@ -15,13 +15,32 @@ GUI_MAXIMUM_HEIGHT = 350
 GUI_MINIMUM_HEIGHT = 300
 
 
-class Datamanager(QWidget):
-    def __init__(self, parent: "napari.viewer.Viewer", *args, **kwargs):
+"""
+dock.py
+====================================
+Definition of Datamanager widget, for saving labels status in csv file
+"""
 
+
+class Datamanager(QWidget):
+    """A widget with a single checkbox that allows to store the status of
+    a slice in csv file (checked/not checked)
+
+    """
+
+    def __init__(self, parent: "napari.viewer.Viewer", *args, **kwargs):
+        """Creates the datamanager widget in the specified viewer window.
+
+        Args:
+            parent (napari.viewer.Viewer): napair Viewer for the widget to be displayed in"""
+
+        # TODO : use of args ?
         super(Datamanager, self).__init__(*args, **kwargs)
 
         layout = QVBoxLayout()
         self.viewer = parent
+        """napari.viewer.Viewer: viewer in which the widget is displayed"""
+
         # add some buttons
         self.button = QPushButton("1", self)
         self.button.clicked.connect(self.button_func)
@@ -48,11 +67,14 @@ class Datamanager(QWidget):
         self.image_dims = self.viewer.layers[0].data.shape
 
     def prepare(self, label_dir, filetype, model_type, checkbox):
-        """
-        :param str label_dir: label path
-        :param str filetype : file extension
-        :param str model_type: model type
-        :param bool checkbox: create new dataset or not
+        """Initialize the Datamanager, which loads the csv file and updates it
+        with the index of the current slice.
+
+        Args:
+        label_dir (str): label path
+        filetype (str) : file extension
+        model_type (str): model type
+        checkbox (bool): create new dataset or not
         """
         self.filetype = filetype
         self.df, self.csv_path = self.load_csv(label_dir, model_type, checkbox)
@@ -63,12 +85,15 @@ class Datamanager(QWidget):
 
     def load_csv(self, label_dir, model_type, checkbox):
         """
-        load newest csv or create new csv
-        :param str label_dir: label path
-        :param str model_type:model type
-        :param bool checkbox: create new dataset or not
-        :return: dataframe、csv path
-        :rtype (pandas.DataFrame, str)
+        Loads newest csv or create new csv
+
+        Args:
+            label_dir (str): label path
+            model_type (str):model type
+            checkbox ( bool ): create new dataset or not
+
+        Returns:
+            (pandas.DataFrame, str) dataframe、csv path
         """
         csvs = sorted(list(Path(label_dir).glob(f"{model_type}*.csv")))
         if len(csvs) == 0:
@@ -82,7 +107,10 @@ class Datamanager(QWidget):
                 csv_path = (
                     csv_path.split("_train")[0]
                     + "_train"
-                    + str(int(os.path.splitext(csv_path.split("_train")[1])[0]) + 1)
+                    + str(
+                        int(os.path.splitext(csv_path.split("_train")[1])[0])
+                        + 1
+                    )
                     + ".csv"
                 )  # adds 1 to current csv name number
                 df.to_csv(csv_path)
@@ -93,15 +121,19 @@ class Datamanager(QWidget):
     def create(self, label_dir, model_type):
         """
         Create a new dataframe and save the csv
-        :param str label_dir: label path
-        :param str model_type : model type
-        :return: dataframe, csv path
-        :rtype (pandas.DataFrame, str)
+        Args:
+          label_dir (str): label path
+          model_type (str): model type
+        Returns:
+         (pandas.DataFrame, str): dataframe, csv path
         """
 
         if self.filetype == ".png":
             labels = sorted(
-                list(path.name for path in Path(label_dir).glob("./*" + self.filetype))
+                list(
+                    path.name
+                    for path in Path(label_dir).glob("./*" + self.filetype)
+                )
             )
         elif self.filetype == ".tif":
             path = list(Path(label_dir).glob("./*.tif"))
@@ -113,12 +145,21 @@ class Datamanager(QWidget):
         else:
             print("Error: filetype should be assigned on launch")
 
-        df = pd.DataFrame({"filename": labels, "train": ["Not Checked"] * len(labels)})
+        df = pd.DataFrame(
+            {"filename": labels, "train": ["Not Checked"] * len(labels)}
+        )
         csv_path = os.path.join(label_dir, f"{model_type}_train0.csv")
         df.to_csv(csv_path)
         return df, csv_path
 
     def update(self, slice_num):
+        """Updates the Datamanager with the index of the current slice, and updates
+        the text with the status contained in the csv (e.g. checked/not checked).
+
+        Args:
+            slice_num (int): index of the current slice
+
+        """
         self.slice_num = slice_num
         # print(self.df)
         self.button.setText(
@@ -137,14 +178,17 @@ class Datamanager(QWidget):
 
     def move_data(self):
         shutil.copy(
-            self.df.at[self.df.index[self.slice_num], "filename"], self.train_data_dir
+            self.df.at[self.df.index[self.slice_num], "filename"],
+            self.train_data_dir,
         )
 
     def delete_data(self):
         os.remove(
             os.path.join(
                 self.train_data_dir,
-                os.path.basename(self.df.at[self.df.index[self.slice_num], "filename"]),
+                os.path.basename(
+                    self.df.at[self.df.index[self.slice_num], "filename"]
+                ),
             )
         )
 
@@ -153,7 +197,8 @@ class Datamanager(QWidget):
             if self.df.at[self.df.index[i], "train"] == "Checked":
                 try:
                     shutil.copy(
-                        self.df.at[self.df.index[i], "filename"], self.train_data_dir
+                        self.df.at[self.df.index[i], "filename"],
+                        self.train_data_dir,
                     )
                 except:
                     pass
@@ -162,7 +207,9 @@ class Datamanager(QWidget):
                     os.remove(
                         os.path.join(
                             self.train_data_dir,
-                            os.path.basename(self.df.at[self.df.index[i], "filename"]),
+                            os.path.basename(
+                                self.df.at[self.df.index[i], "filename"]
+                            ),
                         )
                     )
                 except:
