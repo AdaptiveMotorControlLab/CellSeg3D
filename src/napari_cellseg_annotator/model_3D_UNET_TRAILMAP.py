@@ -1,11 +1,13 @@
+from matplotlib.style import use
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
-import torcheck
 import skimage.io as skio
-import utils
+from napari_cellseg_annotator import utils
 import numpy as np
 import napari
+
+
 
 
 # Get cpu or gpu device for training.
@@ -13,6 +15,13 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using {device} device")
 
 print(torch.__version__)
+
+##############
+# for testing only, messes up with cuda
+use_torcheck = False
+if use_torcheck and device == "cpu" :
+    import torcheck
+##############
 
 # device = torch.device("cuda")
 
@@ -23,8 +32,8 @@ print(torch.__version__)
 train_path_vol = "C:/Users/Cyril/Desktop/Proj_bachelor/code/pytorch-test-3dunet/cropped_visual/train/vol"
 train_path_lab = "C:/Users/Cyril/Desktop/Proj_bachelor/code/pytorch-test-3dunet/cropped_visual/train/lab"
 
-train_volumes = utils.load_images(train_path_vol, ".tif")
-train_labels = utils.load_images(train_path_lab, ".tif")
+train_volumes = utils.load_images_unet(train_path_vol, ".tif")
+train_labels = utils.load_images_unet(train_path_lab, ".tif")
 
 
 val_path_vol = "C:/Users/Cyril/Desktop/Proj_bachelor/code/pytorch-test-3dunet/cropped_visual/val/vol/crop_vol_val.tif"
@@ -173,14 +182,16 @@ class Unet_3d(nn.Module):
 model = Unet_3d(1, 1)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
+###################################
 # torcheck code
-
 #DISABLE WITH CUDA (uses CPU)
-# torcheck.register(optimizer)
-# torcheck.add_module_changing_check(model, module_name="3D UNET test")
-# torcheck.add_module_output_range_check(model, output_range=(0, 1), negate_range=True)
-# torcheck.add_module_nan_check(model)
-# torcheck.add_module_inf_check(model)
+if use_torcheck and device == "cpu" :
+    torcheck.register(optimizer)
+    torcheck.add_module_changing_check(model, module_name="3D UNET test")
+    torcheck.add_module_output_range_check(model, output_range=(0, 1), negate_range=True)
+    torcheck.add_module_nan_check(model)
+    torcheck.add_module_inf_check(model)
+###################################
 
 
 def train(model, train_dl, loss_fn, optimizer, epochs=2):

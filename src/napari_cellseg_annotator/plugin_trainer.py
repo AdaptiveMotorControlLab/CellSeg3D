@@ -45,8 +45,8 @@ class Trainer(QWidget):
         self.btnb = QPushButton("Close", self)
         self.btnb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btnb.clicked.connect(self.close)
-        self.lbl = QLabel("Original directory", self)
-        self.lbl2 = QLabel("Label directory", self)
+        self.lbl = QLabel("Original volumes directory", self)
+        self.lbl2 = QLabel("Labeled volumes directory", self)
         self.lbl3 = QLabel("Model output directory", self)
         self.build()
 
