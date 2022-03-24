@@ -20,6 +20,10 @@ contributions:
     title: Create Help
     python_name: napari_cellseg_annotator.plugins:Helper
 
+  - id: napari-cellseg-annotator.crop
+    title: Crop utility
+    python_name: napari_cellseg_annotator.plugins:Cropping
+
   widgets:
   - command: napari-cellseg-annotator.load
     display_name: Review loader
@@ -30,5 +34,9 @@ contributions:
   - command: napari-cellseg-annotator.predict
     display_name: Predicter
 
+  - command: napari-cellseg-annotator.crop
+    display_name: Crop utility
+
   - command: napari-cellseg-annotator.help
     display_name: Help/About...
+

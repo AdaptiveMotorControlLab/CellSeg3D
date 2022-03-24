@@ -100,7 +100,7 @@ class Loader(QWidget):
         self.lbl4 = QLabel("Model name", self)
 
         self.lblft = QLabel("Filetype :", self)
-        self.lblft2 = QLabel("(Folders of .png or single .tif files)")
+        self.lblft2 = QLabel("(Folders of .png or single .tif files)", self)
 
         self.warn_label = QLabel(
             "WARNING : You already have a review session running.\n"
