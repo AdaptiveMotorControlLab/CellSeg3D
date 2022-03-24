@@ -62,7 +62,9 @@ class Unet_3d(nn.Module):
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
             nn.BatchNorm3d(out_ch),
             nn.ReLU(),
-            nn.Conv3d(out_ch, out_ch, kernel_size=kernel_size, padding=padding),
+            nn.Conv3d(
+                out_ch, out_ch, kernel_size=kernel_size, padding=padding
+            ),
             nn.BatchNorm3d(out_ch),
             nn.ReLU(),
             nn.MaxPool3d(2),
@@ -75,7 +77,9 @@ class Unet_3d(nn.Module):
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
             nn.BatchNorm3d(out_ch),
             nn.ReLU(),
-            nn.Conv3d(out_ch, out_ch, kernel_size=kernel_size, padding=padding),
+            nn.Conv3d(
+                out_ch, out_ch, kernel_size=kernel_size, padding=padding
+            ),
             nn.BatchNorm3d(out_ch),
             nn.ReLU(),
             # nn.ConvTranspose3d(out_ch, out_ch, kernel_size=2, stride=2),
@@ -88,7 +92,9 @@ class Unet_3d(nn.Module):
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
             nn.BatchNorm3d(out_ch),
             nn.ReLU(),
-            nn.Conv3d(out_ch, out_ch, kernel_size=kernel_size, padding=padding),
+            nn.Conv3d(
+                out_ch, out_ch, kernel_size=kernel_size, padding=padding
+            ),
             nn.BatchNorm3d(out_ch),
             nn.ReLU(),
             nn.ConvTranspose3d(
@@ -106,11 +112,9 @@ class Unet_3d(nn.Module):
         return out
 
 
-
-def train(model, train_dl, loss_fn, optimizer,device, epochs=2):
+def train(model, train_dl, loss_fn, optimizer, device, epochs=2):
 
     model.to(device)
-
 
     train_loss = []
 

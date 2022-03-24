@@ -11,8 +11,8 @@ from qtpy.QtWidgets import (
 import napari
 from napari_cellseg_annotator import utils
 
-class Cropping(QWidget) :
 
+class Cropping(QWidget):
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
 
         super().__init__(parent)
@@ -34,8 +34,7 @@ class Cropping(QWidget) :
         self.btn3.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn3.clicked.connect(self.show_dialog_lab)
 
-        self.lbl3 = QLabel("Labels directory :",self)
-
+        self.lbl3 = QLabel("Labels directory :", self)
 
         self.filetype_choice = QComboBox()
         self.filetype_choice.addItems([".png", ".tif"])
@@ -45,7 +44,6 @@ class Cropping(QWidget) :
 
         self.lblft = QLabel("Filetype :", self)
         self.lblft2 = QLabel("(Folders of .png or single .tif files)", self)
-
 
         self.btn4 = QPushButton("Start", self)
         self.btn4.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -95,7 +93,6 @@ class Cropping(QWidget) :
         self.setLayout(vbox)
         self.show()
 
-
     def show_dialog_in(self):
         default_path = [self.output_path, self.input_path, self.label_path]
         f_name = utils.open_file_dialog(self, default_path)
@@ -105,12 +102,12 @@ class Cropping(QWidget) :
             self.lbl1.setText(self.input_path)
 
     def show_dialog_lab(self):
-            default_path = [self.output_path, self.input_path, self.label_path]
-            f_name = utils.open_file_dialog(self, default_path)
+        default_path = [self.output_path, self.input_path, self.label_path]
+        f_name = utils.open_file_dialog(self, default_path)
 
-            if f_name:
-                self.label_path = f_name
-                self.lbl3.setText(self.label_path)
+        if f_name:
+            self.label_path = f_name
+            self.lbl3.setText(self.label_path)
 
     def close(self):
         """Close the widget"""
@@ -134,9 +131,9 @@ class Cropping(QWidget) :
                 "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels"
             )
         self.start()
+
     def start(self):
         self.filetype = self.filetype_choice.currentText()
-
 
         image = utils.load_images(self.input_path, self.filetype)
         labels = utils.load_images(self.label_path, self.filetype)
@@ -144,15 +141,15 @@ class Cropping(QWidget) :
         vw = self._viewer
 
         vw.dims.ndisplay = 3
-        input_image = vw.add_image(image,colormap="inferno", scale=[1, 1, 1], opacity=0.7)
+        input_image = vw.add_image(
+            image, colormap="inferno", scale=[1, 1, 1], opacity=0.7
+        )
         label_layer = vw.add_labels(labels, visible=False)
 
         label_stack = labels
         image_stack = np.array(image)
 
-
         crop_dims = 64
-
 
         crop_sizes = (crop_dims, crop_dims, crop_dims)
         cropz, cropy, cropx = crop_sizes
@@ -173,7 +170,6 @@ class Cropping(QWidget) :
             scale=label_layer.scale,
         )
 
-
         def set_slice(axis, value, crop_size=64):
             # cropz, cropy, cropx = crop_size
             cropz = int(64)
@@ -188,30 +184,32 @@ class Cropping(QWidget) :
             i = int(i)
             j = int(j)
             k = int(k)
-            highres_crop_layer.data = image_stack[i : i + cropz, j : j + cropy, k : k + cropx]
+            highres_crop_layer.data = image_stack[
+                i : i + cropz, j : j + cropy, k : k + cropx
+            ]
             highres_crop_layer.translate = scale * izyx
             highres_crop_layer.refresh()
-            labels_crop_layer.data = label_stack[i : i + cropz, j : j + cropy, k : k + cropx]
+            labels_crop_layer.data = label_stack[
+                i : i + cropz, j : j + cropy, k : k + cropx
+            ]
             labels_crop_layer.translate = scale * izyx
             labels_crop_layer.refresh()
 
-        def  update_crop_size(crop_size) :
+        def update_crop_size(crop_size):
             self._crop_size = crop_size
             return crop_size
 
         # spinbox = SpinBox(name="Crop size", min = 1, max = 100, step = 1)
         # spinbox.changed.connect(update_crop_size)
 
-
-
         sliders = [
             Slider(name=axis, min=0, max=end, step=step)
             for axis, end, step in zip("zyx", ends, stepsizes)
         ]
         for axis, slider in enumerate(sliders):
-            slider.changed.connect(lambda event, axis=axis: set_slice(axis, event))
-
-
+            slider.changed.connect(
+                lambda event, axis=axis: set_slice(axis, event)
+            )
 
         container_widget = Container(layout="vertical")
         container_widget.extend(sliders)
