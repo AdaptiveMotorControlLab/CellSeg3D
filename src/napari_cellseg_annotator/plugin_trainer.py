@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import (
     QCheckBox,
 )
 from napari.qt import thread_worker
-import utils
+from napari_cellseg_annotator import utils
 
 
 class Trainer(QWidget):
