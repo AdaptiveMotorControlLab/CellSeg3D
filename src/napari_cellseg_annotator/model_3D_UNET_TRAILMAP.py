@@ -107,7 +107,7 @@ class Unet_3d(nn.Module):
 
 
 
-def train(model, train_dl, loss_fn, optimizer, epochs=2):
+def train(model, train_dl, loss_fn, optimizer,device, epochs=2):
 
     model.to(device)
 
