@@ -1,12 +1,12 @@
-import torch
-from torch import nn
-import torcheck
-import skimage.io as skio
-from napari_cellseg_annotator import utils
-import numpy as np
 import napari
-from napari_cellseg_annotator.model_3D_UNET_TRAILMAP import Unet_3d, train
+import numpy as np
+import skimage.io as skio
+import torch
+import torcheck
+from torch import nn
 
+from napari_cellseg_annotator import utils
+from napari_cellseg_annotator.model_test.model_3D_UNET_TRAILMAP import Unet_3d, train
 
 # Get cpu or gpu device for training.
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -75,7 +75,7 @@ test_dataset = torch.utils.data.TensorDataset(X_val, y_val)
 test_loader = torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE)
 
 
-model = Unet_3d(1, 1)
+model = Unet_3d(1, 1, device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 ###################################

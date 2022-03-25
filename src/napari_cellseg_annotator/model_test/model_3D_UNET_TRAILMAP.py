@@ -1,10 +1,12 @@
 import torch
 from torch import nn
 
+BATCH_SIZE = 1
 
 class Unet_3d(nn.Module):
-    def __init__(self, in_ch, out_ch):
+    def __init__(self, in_ch, out_ch, device):
         super().__init__()
+        self.device = device
         self.conv0 = self.encoderBlock(in_ch, 32, 3)  # input
         self.conv1 = self.encoderBlock(32, 64, 3)  # l1
         self.conv2 = self.encoderBlock(64, 128, 3)  # l2
@@ -54,7 +56,7 @@ class Unet_3d(nn.Module):
         out = self.out(up8)
         print("out:")
         print(out.shape)
-        return out[0].to(device)
+        return out[0].to(self.device)
 
     def encoderBlock(self, in_ch, out_ch, kernel_size, padding="same"):
 
