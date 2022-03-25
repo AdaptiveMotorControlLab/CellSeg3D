@@ -1,19 +1,20 @@
 import datetime
 import os
+from pathlib import Path
+
 import cv2
 import dask_image.imread
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
-from qtpy.QtWidgets import QWidget, QHBoxLayout
-from pathlib import Path
-from skimage import io
-from skimage.filters import gaussian
-from qtpy.QtGui import QDesktopServices
 from qtpy.QtCore import QUrl
+from qtpy.QtGui import QDesktopServices
 from qtpy.QtWidgets import (
     QFileDialog,
 )
+from qtpy.QtWidgets import QWidget, QHBoxLayout
+from skimage import io
+from skimage.filters import gaussian
+from tqdm import tqdm
 
 """
 utils.py
@@ -223,6 +224,7 @@ def load_images(directory, filetype):
         filename_pattern_original = os.path.join(
             directory + "/" + path[0].name
         )
+        print(path[0].name)
 
     images_original = dask_image.imread.imread(filename_pattern_original)
 

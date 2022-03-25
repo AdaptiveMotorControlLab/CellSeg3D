@@ -1,6 +1,7 @@
 import os
 import warnings
 from pathlib import Path
+
 import napari
 import numpy as np
 from qtpy import QtGui
@@ -15,6 +16,7 @@ from qtpy.QtWidgets import (
     QCheckBox,
 )
 from skimage import io
+
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.launch_review import launch_review
 
@@ -186,8 +188,6 @@ class Loader(QWidget):
         closes the window entirely and launches the review process in a fresh window.
 
         TODO:
-
-        * Add warning that launching again will close the current window and lose all progress
 
         * Save work done before leaving
 

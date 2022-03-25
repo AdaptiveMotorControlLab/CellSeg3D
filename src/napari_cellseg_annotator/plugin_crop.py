@@ -1,5 +1,6 @@
+import napari
 import numpy as np
-from magicgui.widgets import Slider, Container, SpinBox
+from magicgui.widgets import Slider, Container
 from qtpy.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -9,29 +10,49 @@ from qtpy.QtWidgets import (
     QComboBox,
     QSpinBox,
 )
-import napari
+
 from napari_cellseg_annotator import utils
 
 DEFAULT_CROP_SIZE = 64
 
 
 class Cropping(QWidget):
+    """A utility plugin for cropping 3D volumes."""
+
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
+        """Creates a Cropping plugin with several buttons :
+
+        * Open file prompt to select volumes directory
+
+        * Open file prompt to select labels directory
+
+        * A dropdown menu with a choice of png or tif filetypes
+
+        * Three spinboxes to choose the dimensions of the cropped volume in x, y, z
+
+        * A button to launch the cropping process (see :doc:`plugin_crop`)
+
+        * A button to close the widget
+        """
 
         super().__init__(parent)
 
         self._viewer = viewer
-
+        """napari.viewer.Viewer: viewer in which the widget is displayed"""
         self.input_path = ""
+        """str: path to volumes folder"""
         self.label_path = ""
-        self.output_path = ""
+        """str: path to labels folder"""
+        # self.output_path = "" # use napari save manually once done
+
         self.filetype = ""
+        """str: filetype, .tif or .png"""
 
         self.btn1 = QPushButton("Open", self)
         self.btn1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn1.clicked.connect(self.show_dialog_in)
 
-        self.lbl1 = QLabel("Input directory :")
+        self.lbl1 = QLabel("Image directory :")
 
         self.btn3 = QPushButton("Open", self)
         self.btn3.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -57,16 +78,17 @@ class Cropping(QWidget):
         self.btnc.clicked.connect(self.close)
 
         ######################
-        def make_sizebox_container(axis: str) :
+        def make_sizebox_container(axis: str):
             sizebox = QSpinBox()
-            sizebox.setMinimum(1)    
+            sizebox.setMinimum(1)
             sizebox.setMaximum(1000)
             sizebox.setValue(DEFAULT_CROP_SIZE)
-            lblsize = QLabel("Size in "+axis+" of cropped volume :", self)
+            lblsize = QLabel("Size in " + axis + " of cropped volume :", self)
             return [sizebox, lblsize]
 
         self.box_widgets = [make_sizebox_container(ax) for ax in "xyz"]
-
+        for wid in self.box_widgets:
+            wid[0].setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self._x = 0
         self._y = 0
         self._z = 0
@@ -87,7 +109,7 @@ class Cropping(QWidget):
         self.build()
 
     def build(self):
-
+        """Build buttons in a layout and add them to the napari Viewer"""
         vbox = QVBoxLayout()
 
         vbox.addWidget(utils.combine_blocks(self.btn1, self.lbl1))
@@ -95,7 +117,10 @@ class Cropping(QWidget):
         vbox.addWidget(self.lblft2)
         vbox.addWidget(utils.combine_blocks(self.filetype_choice, self.lblft))
 
-        [vbox.addWidget(utils.combine_blocks(cont[0], cont[1])) for cont in self.box_widgets]
+        [
+            vbox.addWidget(utils.combine_blocks(cont[0], cont[1]))
+            for cont in self.box_widgets
+        ]
 
         vbox.addWidget(self.btn4)
         vbox.addWidget(self.btnc)
@@ -131,11 +156,11 @@ class Cropping(QWidget):
         # self.master.setCurrentIndex(0)
         self._viewer.window.remove_dock_widget(self)
 
-    ########################
-    # TODO : remove once done
+    ###########################################
+    # TODO : remove/disable once done
     def run_test(self):
+
         self.filetype = self.filetype_choice.currentText()
-        
 
         self.input_path = (
             "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
@@ -150,18 +175,25 @@ class Cropping(QWidget):
             )
         self.start()
 
+    ###########################################
     def start(self):
-        self._crop_size_x, self._crop_size_y, self._crop_size_z = [box[0].value() for box in self.box_widgets]
+        """Launches cropping process by loading the files from the chosen folders,
+        and adds control widgets to the napari Viewer for moving the cropped volume.
+        """
+        self._crop_size_x, self._crop_size_y, self._crop_size_z = [
+            box[0].value() for box in self.box_widgets
+        ]
         self.filetype = self.filetype_choice.currentText()
-
         image = utils.load_images(self.input_path, self.filetype)
         labels = utils.load_images(self.label_path, self.filetype)
 
         vw = self._viewer
 
         vw.dims.ndisplay = 3
+
+        #add image and labels
         input_image = vw.add_image(
-            image, colormap="inferno", scale=[1, 1, 1], opacity=0.7
+            image, colormap="inferno", contrast_limits=[200, 1000], opacity=0.7
         )
         label_layer = vw.add_labels(labels, visible=False)
 
@@ -172,6 +204,8 @@ class Cropping(QWidget):
         self._y = 0
         self._z = 0
 
+
+        # define crop sizes and boundaries for the image
         crop_sizes = (self._crop_size_x, self._crop_size_y, self._crop_size_z)
         cropx, cropy, cropz = crop_sizes
         # shapez, shapey, shapex = image_stack.shape
@@ -192,7 +226,8 @@ class Cropping(QWidget):
         )
 
         def set_slice(axis, value):
-
+            """"Update cropped volume posistion
+            """
             idx = int(value)
             scale = np.asarray(highres_crop_layer.scale)
             translate = np.asarray(highres_crop_layer.translate)
@@ -201,7 +236,6 @@ class Cropping(QWidget):
             izyx = [int(var) for var in izyx]
             i, j, k = izyx
 
-           
             cropx = self._crop_size_x
             cropy = self._crop_size_y
             cropz = self._crop_size_z
@@ -219,17 +253,9 @@ class Cropping(QWidget):
             self._x = k
             self._y = j
             self._z = i
-        
-
-        
-
-
-
-
 
         # spinbox = SpinBox(name="crop_dims", min=1, value=self._crop_size, max=max(image_stack.shape), step=1)
         # spinbox.changed.connect(lambda event : change_size(event))
-
 
         sliders = [
             Slider(name=axis, min=0, max=end, step=step)
@@ -239,12 +265,9 @@ class Cropping(QWidget):
             slider.changed.connect(
                 lambda event, axis=axis: set_slice(axis, event)
             )
-
-        
-        
-
+        # TEST : trying to dynamically change the size of the cropped volume
         # @spinbox.changed.connect
-        def change_size(value: int) :
+        def change_size(value: int):
 
             print(value)
             i = self._x
@@ -264,20 +287,18 @@ class Cropping(QWidget):
                 i : i + cropz, j : j + cropy, k : k + cropx
             ]
             labels_crop_layer.refresh()
-            
 
         container_widget = Container(layout="vertical")
         container_widget.extend(sliders)
-        #vw.window.add_dock_widget([spinbox, container_widget], area="right")
+        # vw.window.add_dock_widget([spinbox, container_widget], area="right")
         vw.window.add_dock_widget(container_widget, area="right")
 
 
-
 #################################
 #################################
 #################################
-#code for mutiple sliders, one for each dim
-#broken for now
+# code for mutiple sliders, one for each dim
+# broken for now
 
 #  def change_size(axis, value) :
 
@@ -289,19 +310,18 @@ class Cropping(QWidget):
 #                     izyx = translate // scale
 #                     izyx[axis] = index
 #                     izyx = [int(el) for el in izyx]
-                    
+
 #                     cropz,cropy,cropx = izyx
 
 #                     i = self._x
 #                     j = self._y
 #                     k = self._z
 
-#                     self._crop_size_x = cropx        
+#                     self._crop_size_x = cropx
 #                     self._crop_size_y = cropy
 #                     self._crop_size_z = cropz
 
 
-                    
 #                     highres_crop_layer.data = image_stack[
 #                         i : i + cropz, j : j + cropy, k : k + cropx
 #                     ]
@@ -312,7 +332,7 @@ class Cropping(QWidget):
 #                     labels_crop_layer.refresh()
 
 
-#         # @spinbox.changed.connect        
+#         # @spinbox.changed.connect
 #         # spinbox = SpinBox(name=crop_dims, min=1, max=max(image_stack.shape), step=1)
 #         # spinbox.changed.connect(lambda event : change_size(event))
 
@@ -335,9 +355,6 @@ class Cropping(QWidget):
 #                 lambda event, axes=axes : change_size(axis, event)
 #             )
 
-        
-        
-            
 
 #         container_widget = Container(layout="vertical")
 #         container_widget.extend(sliders)

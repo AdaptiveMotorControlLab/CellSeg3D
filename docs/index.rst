@@ -7,6 +7,7 @@ Welcome to napari-cellseg-annotator's documentation!
 
     res/welcome
     res/loader_module_guide
+    res/cropping_module_guide
 
 
 .. toctree::
@@ -16,6 +17,7 @@ Welcome to napari-cellseg-annotator's documentation!
 
     res/plugin_loader
     res/launch_review
+    res/plugin_crop
     res/dock
     res/utils
 
