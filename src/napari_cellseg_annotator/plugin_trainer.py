@@ -180,4 +180,3 @@ class Trainer(QWidget):
             df["epoch"] = df["epoch"] + 1
             yield df
             time.sleep(30)
-

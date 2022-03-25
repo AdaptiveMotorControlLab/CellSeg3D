@@ -1,7 +1,9 @@
 import os
 import shutil
 from pathlib import Path
+
 import napari
+import pandas as pd
 from qtpy.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -10,8 +12,8 @@ from qtpy.QtWidgets import (
     QLabel,
     QCheckBox,
 )
+
 from napari_cellseg_annotator import utils
-import pandas as pd
 
 
 class Predicter(QWidget):
@@ -23,6 +25,12 @@ class Predicter(QWidget):
         self.labelpath = ""
         self.modelpath = ""
         self.outpath = ""
+        self._default_path = [
+            self.opath,
+            self.labelpath,
+            self.modelpath,
+            self.outpath,
+        ]
         self.btn1 = QPushButton("Open", self)
         self.btn1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn1.clicked.connect(self.show_dialog_o)
@@ -69,8 +77,8 @@ class Predicter(QWidget):
         self.show()
 
     def show_dialog_o(self):
-        default_path = [self.opath, self.labelpath]
-        f_name = utils.open_file_dialog(self, default_path)
+
+        f_name = utils.open_file_dialog(self, self._default_path)
 
         if f_name:
             self.opath = f_name
@@ -78,7 +86,7 @@ class Predicter(QWidget):
 
     def show_dialog_label(self):
         default_path = [self.opath, self.labelpath]
-        f_name = utils.open_file_dialog(self, default_path)
+        f_name = utils.open_file_dialog(self, self._default_path)
         if f_name:
             self.labelpath = f_name
             self.lbl2.setText(self.labelpath)
@@ -86,14 +94,13 @@ class Predicter(QWidget):
     def show_dialog_model(self):
         default_path = [self.opath, self.labelpath]
 
-        f_name = utils.open_file_dialog(self, default_path)
+        f_name = utils.open_file_dialog(self, self._default_path)
         if f_name:
             self.modelpath = f_name
             self.lbl3.setText(self.modelpath)
 
     def show_dialog_outdir(self):
-        default_path = [self.opath, self.labelpath, os.path.expanduser("~")]
-        f_name = utils.open_file_dialog(default_path, self)
+        f_name = utils.open_file_dialog(self,  self._default_path)
 
         if f_name:
             self.outpath = f_name

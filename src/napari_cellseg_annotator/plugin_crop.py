@@ -191,7 +191,7 @@ class Cropping(QWidget):
 
         vw.dims.ndisplay = 3
 
-        #add image and labels
+        # add image and labels
         input_image = vw.add_image(
             image, colormap="inferno", contrast_limits=[200, 1000], opacity=0.7
         )
@@ -203,7 +203,6 @@ class Cropping(QWidget):
         self._x = 0
         self._y = 0
         self._z = 0
-
 
         # define crop sizes and boundaries for the image
         crop_sizes = (self._crop_size_x, self._crop_size_y, self._crop_size_z)
@@ -226,8 +225,7 @@ class Cropping(QWidget):
         )
 
         def set_slice(axis, value):
-            """"Update cropped volume posistion
-            """
+            """ "Update cropped volume posistion"""
             idx = int(value)
             scale = np.asarray(highres_crop_layer.scale)
             translate = np.asarray(highres_crop_layer.translate)
