@@ -191,12 +191,14 @@ def check(project_path, ext):
     check_annotations_dir(project_path)
 
 
-def open_file_dialog(widget, possible_paths=os.path.expanduser("~")):
+def open_file_dialog(widget, possible_paths):
     """Opens a window to choose a file directory using QFileDialog.
 
     Args:
-        possible_paths (str): Paths that may have been chosen before, can
+        possible_paths (str): Paths that may have been chosen before, can be a string
+        or an array of strings containing the paths
     """
+    possible_paths.append(os.path.expanduser("~"))
     default_path = max(possible_paths)
     f_name = QFileDialog.getExistingDirectory(
         widget, "Open directory", default_path

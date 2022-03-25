@@ -70,6 +70,8 @@ class Loader(QWidget):
         self.filetype = ""
         """str: filetype, .tif or .png"""
 
+        self._default_path = [self.opath, self.modpath]
+
         self.btn1 = QPushButton("Open", self)
         self.btn1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn1.clicked.connect(self.show_dialog_o)
@@ -160,16 +162,15 @@ class Loader(QWidget):
 
     def show_dialog_o(self):
 
-        default_path = [self.opath, self.modpath]
-        f_name = utils.open_file_dialog(self, default_path)
+        f_name = utils.open_file_dialog(self, self._default_path)
 
         if f_name:
             self.opath = f_name
             self.lbl.setText(self.opath)
 
     def show_dialog_mod(self):
-        default_path = [self.opath, self.modpath]
-        f_name = utils.open_file_dialog(self, default_path)
+
+        f_name = utils.open_file_dialog(self, self._default_path)
 
         if f_name:
             self.modpath = f_name

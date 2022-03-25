@@ -48,6 +48,8 @@ class Cropping(QWidget):
         self.filetype = ""
         """str: filetype, .tif or .png"""
 
+        self._default_path = [self.input_path, self.label_path]
+
         self.btn1 = QPushButton("Open", self)
         self.btn1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn1.clicked.connect(self.show_dialog_in)
@@ -136,16 +138,14 @@ class Cropping(QWidget):
         self.show()
 
     def show_dialog_in(self):
-        default_path = [self.output_path, self.input_path, self.label_path]
-        f_name = utils.open_file_dialog(self, default_path)
+        f_name = utils.open_file_dialog(self, self._default_path)
 
         if f_name:
             self.input_path = f_name
             self.lbl1.setText(self.input_path)
 
     def show_dialog_lab(self):
-        default_path = [self.output_path, self.input_path, self.label_path]
-        f_name = utils.open_file_dialog(self, default_path)
+        f_name = utils.open_file_dialog(self, self._default_path)
 
         if f_name:
             self.label_path = f_name
