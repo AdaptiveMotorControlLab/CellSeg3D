@@ -135,8 +135,8 @@ class Cropping(QWidget):
         ##################################################################
 
         self.setLayout(vbox)
-        self.show()
-
+        # self.show()
+        self._viewer.window.add_dock_widget(self, name="Crop utility", area="right")
     def show_dialog_in(self):
         f_name = utils.open_file_dialog(self, self._default_path)
 

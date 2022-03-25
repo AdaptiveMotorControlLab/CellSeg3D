@@ -100,7 +100,7 @@ class Predicter(QWidget):
             self.lbl3.setText(self.modelpath)
 
     def show_dialog_outdir(self):
-        f_name = utils.open_file_dialog(self,  self._default_path)
+        f_name = utils.open_file_dialog(self, self._default_path)
 
         if f_name:
             self.outpath = f_name

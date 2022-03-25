@@ -1,5 +1,6 @@
 import napari
 from qtpy.QtWidgets import QWidget, QVBoxLayout, QPushButton
+
 from napari_cellseg_annotator import utils
 
 
@@ -31,7 +32,7 @@ class Helper(QWidget):
         vbox.addWidget(self.btn2)
         vbox.addWidget(self.btnc)
         self.setLayout(vbox)
-        self.show()
-
+        #self.show()
+        self._viewer.window.add_dock_widget(self, name="Help/About...", area="right")
     def close(self):
         self._viewer.window.remove_dock_widget(self)

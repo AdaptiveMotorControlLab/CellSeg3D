@@ -6,7 +6,10 @@ import torcheck
 from torch import nn
 
 from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.model_test.model_3D_UNET_TRAILMAP import Unet_3d, train
+from napari_cellseg_annotator.model_test.model_3D_UNET_TRAILMAP import (
+    Unet_3d,
+    train,
+)
 
 # Get cpu or gpu device for training.
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

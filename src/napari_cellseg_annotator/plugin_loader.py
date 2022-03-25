@@ -158,7 +158,8 @@ class Loader(QWidget):
             vbox.addWidget(self.btntest)
         ##################################################################
         self.setLayout(vbox)
-        self.show()
+        # self.show()
+        self._viewer.window.add_dock_widget(self, name="Loader", area="right")
 
     def show_dialog_o(self):
 
