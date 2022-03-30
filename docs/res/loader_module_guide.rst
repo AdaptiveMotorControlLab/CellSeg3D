@@ -36,7 +36,7 @@ Once you are ready, you can press **Run** to start the review process.
 Review process : interface & functionalities
 ---------------------------------------------------------------
 
-.. image:: review_process_example.png
+.. image:: images/review_process_example.png
 
 Once you have launched the review process, you will have access to the following functionalities:
 

@@ -34,7 +34,7 @@ Once you are ready, you can press **Start** to start the review process.
 Cropping process : interface & functionalities
 ---------------------------------------------------------------
 
-.. image:: cropping_process_example.png
+.. image:: images/cropping_process_example.png
 
 Once you have launched the review process, you will have access to three sliders that will let
 you **change the position** of the cropped volumes and labels in the x,y and z positions.
