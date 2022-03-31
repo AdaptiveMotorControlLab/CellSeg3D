@@ -58,6 +58,7 @@ Markdown==3.3.4
 MarkupSafe==2.1.0
 matplotlib==3.4.1
 matplotlib-inline==0.1.2
+monai==0.8.1
 napari==0.4.14
 napari-console==0.0.4
 napari-plugin-engine==0.1.9

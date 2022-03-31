@@ -1,12 +1,11 @@
 import napari
-from qtpy.QtWidgets import QWidget, QVBoxLayout, QPushButton
-
 from napari_cellseg_annotator import utils
+from qtpy.QtWidgets import QWidget, QVBoxLayout, QPushButton
 
 
 class Helper(QWidget):
     # widget testing
-    def __init__(self, parent: "napari.viewer.Viewer"):
+    def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
         # self.master = parent
         self.help_url = (
@@ -14,7 +13,7 @@ class Helper(QWidget):
         )
 
         self.about_url = "https://wysscenter.ch/advances/3d-computer-vision-for-brain-analysis"
-        self._viewer = parent
+        self._viewer = viewer
         self.btn1 = QPushButton("Help...", self)
         # self.btn1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn1.clicked.connect(lambda: utils.open_url(self.help_url))

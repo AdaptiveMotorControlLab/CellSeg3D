@@ -4,6 +4,8 @@ from pathlib import Path
 
 import napari
 import numpy as np
+from napari_cellseg_annotator import utils
+from napari_cellseg_annotator.launch_review import launch_review
 from qtpy import QtGui
 from qtpy.QtWidgets import (
     QWidget,
@@ -16,9 +18,6 @@ from qtpy.QtWidgets import (
     QCheckBox,
 )
 from skimage import io
-
-from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.launch_review import launch_review
 
 
 def format_Warning(message, category, filename, lineno, line=""):
@@ -43,7 +42,7 @@ global_launched_before = False
 class Loader(QWidget):
     """A plugin for selecting volumes and labels file and launching the review process."""
 
-    def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
+    def __init__(self, viewer: "napari.viewer.Viewer"):
         """Creates a Loader plugin with several buttons :
 
         * Open file prompt to select volumes directory
@@ -57,7 +56,7 @@ class Loader(QWidget):
         * A button to launch the review process (see :doc:`launch_review`)
         """
 
-        super().__init__(parent)
+        super().__init__()
 
         # self.master = parent
         self._viewer = viewer
@@ -74,6 +73,7 @@ class Loader(QWidget):
 
         self.btn1 = QPushButton("Open", self)
         self.btn1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.lbl = QLabel("Images directory", self)
         self.btn1.clicked.connect(self.show_dialog_o)
         self.btn2 = QPushButton("Open", self)
         self.btn2.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -99,7 +99,7 @@ class Loader(QWidget):
         self.btnb = QPushButton("Close", self)
         self.btnb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btnb.clicked.connect(self.close)
-        self.lbl = QLabel("Images directory", self)
+
         self.lbl2 = QLabel("Labels directory", self)
         self.lbl4 = QLabel("Model name", self)
 
@@ -159,7 +159,7 @@ class Loader(QWidget):
         ##################################################################
         self.setLayout(vbox)
         # self.show()
-        #self._viewer.window.add_dock_widget(self, name="Loader", area="right")
+        # self._viewer.window.add_dock_widget(self, name="Loader", area="right")
 
     def show_dialog_o(self):
 
@@ -168,6 +168,8 @@ class Loader(QWidget):
         if f_name:
             self.opath = f_name
             self.lbl.setText(self.opath)
+            self.update_default()
+            print(self._default_path)
 
     def show_dialog_mod(self):
 
@@ -176,6 +178,10 @@ class Loader(QWidget):
         if f_name:
             self.modpath = f_name
             self.lbl2.setText(self.modpath)
+            self.update_default()
+
+    def update_default(self):
+        self._default_path = [self.opath, self.modpath]
 
     def close(self):
         """Close the widget"""

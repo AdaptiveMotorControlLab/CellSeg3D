@@ -1,6 +1,7 @@
 import napari
 import numpy as np
 from magicgui.widgets import Slider, Container
+from napari_cellseg_annotator import utils
 from qtpy.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -11,15 +12,13 @@ from qtpy.QtWidgets import (
     QSpinBox,
 )
 
-from napari_cellseg_annotator import utils
-
 DEFAULT_CROP_SIZE = 64
 
 
 class Cropping(QWidget):
     """A utility plugin for cropping 3D volumes."""
 
-    def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
+    def __init__(self, viewer: "napari.viewer.Viewer"):
         """Creates a Cropping plugin with several buttons :
 
         * Open file prompt to select volumes directory
@@ -35,7 +34,7 @@ class Cropping(QWidget):
         * A button to close the widget
         """
 
-        super().__init__(parent)
+        super().__init__()
 
         self._viewer = viewer
         """napari.viewer.Viewer: viewer in which the widget is displayed"""
