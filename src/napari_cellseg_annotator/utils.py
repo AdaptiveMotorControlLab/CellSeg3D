@@ -199,7 +199,10 @@ def open_file_dialog(widget, possible_paths):
         or an array of strings containing the paths
     """
     possible_paths.append(os.path.expanduser("~"))
-    default_path = max(possible_paths)
+    default_path = [p for p in possible_paths if p != ""][0]
+    # print("paths :")
+    # print(possible_paths)
+    # print(default_path)
     f_name = QFileDialog.getExistingDirectory(
         widget, "Open directory", default_path
     )
@@ -232,46 +235,6 @@ def load_images(directory, filetype):
 
     return images_original
 
-
-###############################################################
-###############################################################
-###############################################################
-# TODO : TEMPORARY ONLY; FIX & REMOVE ASAP
-
-import glob
-import skimage.io as skio
-
-
-def load_images_unet(directory, filetype):
-    """Loads the images in ``directory``, with different behaviour depending on ``filetype``
-
-     For ``filetype == ".tif"`` : loads the first tif file found in the folder
-
-     For  ``filetype == ".png"`` : loads all png files in the folder as a 3D dataset
-
-    Args:
-        directory (str): path to the directory containing the images
-        filetype (str): expected file extension of the image(s) in the directory
-
-    Returns:
-        dask.array.Array: dask array with loaded images
-    """
-    # filename_pattern_original = os.path.join(directory + "/*" + filetype)
-    # if filetype == ".tif":
-    #     path = list(Path(directory).glob("./*.tif"))
-    #     filename_pattern_original = os.path.join(
-    #         directory + "/" + path[0].name
-    #     )
-    images_original = []
-    for filename in glob.glob(os.path.join(directory, "*" + filetype)):
-        images_original.append(skio.imread(filename))
-
-    return images_original
-
-
-###############################################################
-###############################################################
-###############################################################
 
 
 def load_predicted_masks(mito_mask_dir, er_mask_dir, filetype):
