@@ -1,8 +1,8 @@
 import glob
 import os
-import torch
 
 import napari
+import torch
 from napari_cellseg_annotator import utils
 from qtpy.QtWidgets import (
     QWidget,
@@ -14,20 +14,32 @@ from qtpy.QtWidgets import (
 
 
 class ModelFramework(QWidget):
+    """Create a framework to use for loading images, labels, models, etc. for both inference and training"""
     def __init__(self, viewer: "napari.viewer.Viewer"):
+        """Builds the framework with the following elements :
 
+
+        Args:
+            viewer (napari.viewer.Viewer): viewer to load the widget in
+        """
         super().__init__()
 
         self._viewer = viewer
+        """Viewer to display in"""
 
-        self.model_type = None
 
         self.images_filepaths = ""
+        """array(str): paths to images for training or inference"""
         self.labels_filepaths = ""
+        """array(str): paths to labels for training"""
         self.results_path = ""
+        """str: path to output folder,to save results in"""
         self.model_path = ""
+        """str: path to custom model defined by user"""
+
 
         self.device = "cpu"
+        """Device to train on, chosen automatically by :ref:`self.get_device`"""
 
         self._default_path = [self.images_filepaths, self.labels_filepaths]
         self._default_model_path = [self.model_path]
@@ -74,11 +86,17 @@ class ModelFramework(QWidget):
         #######################################################
 
     def update_default(self):
+        """Update default path for smoother file dialogs"""
         self._default_path = [self.images_filepaths, self.labels_filepaths]
         self._default_model_path = [self.model_path]
         self._default_res_path = [self.results_path]
 
     def load_dataset_paths(self):
+        """Loads all image paths (as str) in a given folder for which the extension matches the set filetype
+
+        Returns:
+           array(str): all loaded file paths
+            """
         filetype = self.filetype_choice.currentText()
         directory = utils.open_file_dialog(self, self._default_path, True)
         # print(directory)
@@ -87,7 +105,13 @@ class ModelFramework(QWidget):
         return file_paths
 
     def create_train_dataset_dict(self):
+        """Creates data dictionary for MONAI transforms and training.
 
+        Keys:
+            * "image": image
+
+            * "label" : corresponding label
+            """
         data_dicts = [
             {"image": image_name, "label": label_name}
             for image_name, label_name in zip(
@@ -98,15 +122,18 @@ class ModelFramework(QWidget):
         return data_dicts
 
     def load_image_dataset(self):
+        """Show file dialog to set :ref:`images_filepaths`"""
         filenames = self.load_dataset_paths()
+        print(filenames)
         if filenames != "" and filenames != []:
             self.images_filepaths = filenames
             # print(filenames)
             path = os.path.dirname(filenames[0])
             self.lbl_image_files.setText(path)
-            self.update_default()
+            self._default_path[0] = path
 
     def load_label_dataset(self):
+        """Show file dialog to set :ref:`labels_filepaths`"""
         filenames = self.load_dataset_paths()
         if filenames != "":
             self.labels_filepaths = filenames
@@ -115,6 +142,7 @@ class ModelFramework(QWidget):
             self.update_default()
 
     def load_results_path(self):
+        """Show file dialog to set :ref:`results_path`"""
         dir = utils.open_file_dialog(self, self._default_res_path, True)
         if dir != "" and type(dir) is str:
             self.results_path = dir
@@ -122,6 +150,7 @@ class ModelFramework(QWidget):
             self.update_default()
 
     def load_model_path(self):
+        """Show file dialog to set :ref:`model_path`"""
         dir = utils.open_file_dialog(self, self._default_model_path)
         if dir != "" and type(dir) is str:
             self.model_path = dir
@@ -129,6 +158,8 @@ class ModelFramework(QWidget):
             self.update_default()
 
     def get_device(self):
+        """Automatically discovers any cuda device and uses it for tensor operations.
+        If none is available, uses cpu instead."""
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu"
         )
@@ -137,6 +168,16 @@ class ModelFramework(QWidget):
         print(torch.__version__)
 
     def get_padding_dim(self, image_shape):
+        """
+        Finds the nearest and superior power of two for each image dimension to pad it for CNN processing
+
+
+        Args:
+            image_shape (torch.size): an array of the dimensions of the image in D/H/W
+
+        Returns:
+            array(int): padding value for each dim
+        """
         padding = []
         for p in range(3):
             n = 0
@@ -159,4 +200,5 @@ class ModelFramework(QWidget):
         raise NotImplementedError("Should be defined in children classes")
 
     def close(self):
+        """Removes widget from viewer"""
         self._viewer.window.remove_dock_widget(self)

@@ -9,6 +9,8 @@ from qtpy.QtWidgets import (
     QComboBox,
 )
 
+# TODO : setup training
+
 
 class Model_Loader(QTabWidget):
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):

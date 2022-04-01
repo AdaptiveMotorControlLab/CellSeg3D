@@ -23,6 +23,7 @@ class BasePlugin(QWidget):
         * Open file prompt to select labels directory
 
         * A checkbox to choose whether to load a folder of images or a single 3D file
+          If toggled, shows a filetype option to select the extension
 
         * A close button that closes the widget
 

@@ -1,22 +1,15 @@
 import os
 from datetime import datetime
-import napari
-import torch
-import numpy as np
-
 from pathlib import Path
-from tifffile import imwrite
 
-from qtpy.QtWidgets import (
-    QVBoxLayout,
-    QPushButton,
-    QSizePolicy,
-    QLabel,
-    QCheckBox,
-    QComboBox,
+import napari
+import numpy as np
+import torch
+from monai.data import (
+    DataLoader,
+    Dataset,
 )
-
-from monai.utils import first
+# MONAI
 from monai.inferers import sliding_window_inference
 from monai.transforms import (
     AsDiscrete,
@@ -28,15 +21,21 @@ from monai.transforms import (
     LabelFilter,
     SpatialPadd,
 )
-from monai.data import (
-    DataLoader,
-    Dataset,
-)
-
+# local
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.model_framework import ModelFramework
 from napari_cellseg_annotator.models import model_SegResNet as SegResNet
-
+from napari_cellseg_annotator.models import model_VNet as VNet
+# Qt
+from qtpy.QtWidgets import (
+    QVBoxLayout,
+    QPushButton,
+    QSizePolicy,
+    QLabel,
+    QCheckBox,
+    QComboBox,
+)
+from tifffile import imwrite
 
 WEIGHTS_DIR = os.path.dirname(os.path.realpath(__file__)) + str(
     Path("/models/saved_weights")
@@ -44,16 +43,48 @@ WEIGHTS_DIR = os.path.dirname(os.path.realpath(__file__)) + str(
 
 
 class Inferer(ModelFramework):
-    """A plugin to run already trained models in evaluation mode to preform inference and output a volume label."""
+    """A plugin to run already trained models in evaluation mode to preform inference and output a label on all
+    given volumes."""
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
+        """
+        Creates an Inference loader plugin with the following widgets :
 
+        * A filetype choice for the images to load
+
+        * Two buttons to choose the images folder to run segmentation and save results in, respectively
+
+        * A dropdown menu to select which model should be used for inference
+
+        * A checkbox to choose whether to display results in napari afterwards
+
+        * A button to launch the inference process
+
+        * A button to close the widget
+
+        TODO:
+
+        * Verify if way of loading model is  OK
+
+        * Padding OK ?
+
+        * Add option to choose number of images to display in napari (1,3,all)
+
+        * Save toggle ?
+
+        * Prevent launch if not all args are set to avoid undefined behaviour
+
+        Args:
+            viewer (napari.viewer.Viewer): napari viewer to display the widget in
+        """
         super().__init__(viewer)
 
         self._viewer = viewer
 
-        self.models_dict = {"VNet": " ", "SegResNet": SegResNet}
-        self.current_model = None
+        self.models_dict = {"VNet": VNet, "SegResNet": SegResNet}
+        """dict: dictionary of available models, with string for widget display as key
+        
+        Currently implemented : SegResNet, VNet"""
 
         self.view_checkbox = QCheckBox()
         self.view_checkbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -67,6 +98,7 @@ class Inferer(ModelFramework):
         self.btn_start.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn_start.clicked.connect(self.start)
 
+        #hide unused widgets from parent class
         self.btn_label_files.setVisible(False)
         self.lbl_label_files.setVisible(False)
         self.btn_model_path.setVisible(False)
@@ -85,16 +117,21 @@ class Inferer(ModelFramework):
         self.build()
 
     def get_model(self, key):
+        """Getter for module associated to currently selected model"""
         return self.models_dict[key]
 
     def create_inference_dict(self):
+        """Create a dict with all image paths in :ref:`self.images_filepaths`
+
+        Returns:
+            dict: list of image paths from loaded folder"""
         data_dicts = [
             {"image": image_name} for image_name in self.images_filepaths
         ]
         return data_dicts
 
     def build(self):
-
+        """Build buttons in a layout and add them to the napari Viewer"""
         vbox = QVBoxLayout()
 
         vbox.addWidget(
@@ -154,14 +191,22 @@ class Inferer(ModelFramework):
     ########################
 
     def start(self):
+        """Start the inference process and does the following:
 
+        * Loads the weights from the chosen model
+
+        * Creates a dict with all image paths (see :ref:`create_inference_dict`)
+
+        * Loads the images, pads them so their size is a power of two in every dim (see :ref:`get_padding_dim`)
+
+        * Performs sliding window inference (from MONAI) on every image
+
+        * Saves all outputs in the selected results folder
+
+        * If the option has been selected, display the results in napari
+
+        """
         device = self.device
-
-        post_process_transforms = Compose(
-            EnsureType(),
-            AsDiscrete(threshold=0.1),
-            LabelFilter(applied_labels=[0]),
-        )
 
         model_key = self.model_choice.currentText()
 
@@ -187,6 +232,11 @@ class Inferer(ModelFramework):
                 EnsureTyped(keys=["image"]),
             ]
         )
+        post_process_transforms = Compose(
+            EnsureType(),
+            AsDiscrete(threshold=0.1),
+            LabelFilter(applied_labels=[0]),
+        )
 
         inference_ds = Dataset(data=images_dict, transform=load_transforms)
         inference_loader = DataLoader(
@@ -196,7 +246,7 @@ class Inferer(ModelFramework):
         weights = self.get_model(model_key).get_weights_file()
         # print(f"wh dir : {WEIGHTS_DIR}")
         # print(weights)
-        model.load_state_dict(torch.load(os.path.join(WEIGHTS_DIR, weights)))
+        model.load_state_dict(torch.load(os.path.join(WEIGHTS_DIR, weights), map_location=device))
 
         model.eval()
         with torch.no_grad():
@@ -205,14 +255,13 @@ class Inferer(ModelFramework):
                 inputs = inf_data["image"]
                 inputs = inputs.to(device)
                 outputs = sliding_window_inference(
-                    inputs, None, 1, lambda inputs: model(inputs)[0]
+                    inputs, roi_size= None,sw_batch_size= 1, predictor= lambda inputs: model(inputs)[0], device = device
                 )
 
                 out = outputs.detach().cpu()
                 out = post_process_transforms(out)
                 out = np.array(out).astype(np.float32)
                 print(f"Saving to : {self.results_path}")
-
 
                 time = "{:%Y_%m_%d_%H_%M_%S}".format(datetime.now())
                 print(time)
@@ -223,16 +272,20 @@ class Inferer(ModelFramework):
                     + f"_{time}_"
                     + f"pred{i}"
                     + self.filetype_choice.currentText()
-                    )
+                )
 
-                print(filename)
+                # print(filename)
                 imwrite(filename, out)
+
                 print(f"File n°{i} saved as :")
                 print(filename)
 
                 if self.view_checkbox.isChecked():
+
                     viewer = self._viewer
+
                     in_data = np.array(inf_data["image"]).astype(np.float32)
+
                     original_layer = viewer.add_image(
                         in_data,
                         colormap="inferno",
@@ -245,9 +298,7 @@ class Inferer(ModelFramework):
                         out[0],
                         colormap="gist_earth",
                         name=f"pred_{i}",
-                        opacity=0.6,
+                        opacity=0.8,
                     )
-        if self.view_checkbox.isChecked():
-            napari.run()
 
         return

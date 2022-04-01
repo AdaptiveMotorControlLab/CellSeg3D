@@ -191,10 +191,11 @@ def check(project_path, ext):
     check_annotations_dir(project_path)
 
 
-def open_file_dialog(widget, possible_paths, load_as_folder: bool = False):
+def open_file_dialog(widget, possible_paths = [], load_as_folder: bool = False):
     """Opens a window to choose a file directory using QFileDialog.
 
     Args:
+        widget (QWidget): Widget to display file dialog in
         possible_paths (str): Paths that may have been chosen before, can be a string
         or an array of strings containing the paths
         load_as_folder (bool): Whether to open a folder or a single file. If True, will allow to open as folder

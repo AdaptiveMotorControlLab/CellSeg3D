@@ -43,6 +43,7 @@ intervaltree==3.1.0
 ipykernel==6.9.1
 ipython==8.1.0
 ipython-genutils==0.2.0
+itk
 jedi==0.18.1
 Jinja2==3.0.3
 jsonschema==4.4.0
