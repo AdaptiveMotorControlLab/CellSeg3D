@@ -1,5 +1,6 @@
 import glob
 import os
+import torch
 
 import napari
 from napari_cellseg_annotator import utils
@@ -23,11 +24,14 @@ class ModelFramework(QWidget):
 
         self.images_filepaths = ""
         self.labels_filepaths = ""
-        self.filetype = ""
         self.results_path = ""
         self.model_path = ""
 
+        self.device = "cpu"
+
         self._default_path = [self.images_filepaths, self.labels_filepaths]
+        self._default_model_path = [self.model_path]
+        self._default_res_path = [self.results_path]
 
         #######################################################
         # interface
@@ -71,36 +75,79 @@ class ModelFramework(QWidget):
 
     def update_default(self):
         self._default_path = [self.images_filepaths, self.labels_filepaths]
-
-    def load_results_path(self):
-        self.results_path = utils.open_file_dialog(self, self._default_path)
-
-    def load_model_path(self):
-        self.model_path = utils.open_file_dialog(self, self._default_path)
+        self._default_model_path = [self.model_path]
+        self._default_res_path = [self.results_path]
 
     def load_dataset_paths(self):
         filetype = self.filetype_choice.currentText()
         directory = utils.open_file_dialog(self, self._default_path, True)
-        file_paths = sorted(
-            glob.glob(os.path.join(directory, ("*" + filetype)))
-        )
-
+        # print(directory)
+        file_paths = sorted(glob.glob(os.path.join(directory, "*" + filetype)))
+        # print(file_paths)
         return file_paths
 
-    def create_train_dataset_dict(self, images_paths, labels_paths):
+    def create_train_dataset_dict(self):
 
         data_dicts = [
             {"image": image_name, "label": label_name}
-            for image_name, label_name in zip(images_paths, labels_paths)
+            for image_name, label_name in zip(
+                self.images_filepaths, self.labels_filepaths
+            )
         ]
 
         return data_dicts
 
     def load_image_dataset(self):
-        self.images_filepaths = self.load_dataset_paths()
+        filenames = self.load_dataset_paths()
+        if filenames != "" and filenames != []:
+            self.images_filepaths = filenames
+            # print(filenames)
+            path = os.path.dirname(filenames[0])
+            self.lbl_image_files.setText(path)
+            self.update_default()
 
     def load_label_dataset(self):
-        self.labels_filepaths = self.load_dataset_paths()
+        filenames = self.load_dataset_paths()
+        if filenames != "":
+            self.labels_filepaths = filenames
+            path = os.path.dirname(filenames[0])
+            self.lbl_label_files.setText(path)
+            self.update_default()
+
+    def load_results_path(self):
+        dir = utils.open_file_dialog(self, self._default_res_path, True)
+        if dir != "" and type(dir) is str:
+            self.results_path = dir
+            self.lbl_result_path.setText(self.results_path)
+            self.update_default()
+
+    def load_model_path(self):
+        dir = utils.open_file_dialog(self, self._default_model_path)
+        if dir != "" and type(dir) is str:
+            self.model_path = dir
+            self.lbl_model_path.setText(self.results_path)
+            self.update_default()
+
+    def get_device(self):
+        self.device = torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu"
+        )
+        print(f"Using {self.device} device")
+        print("Using torch :")
+        print(torch.__version__)
+
+    def get_padding_dim(self, image_shape):
+        padding = []
+        for p in range(3):
+            n = 0
+            pad = -1
+            while pad < image_shape[p]:
+                pad = 2**n
+                n += 1
+                if pad > 4095:
+                    return
+            padding.append(pad)
+        return padding
 
     def transform(self):
         return
