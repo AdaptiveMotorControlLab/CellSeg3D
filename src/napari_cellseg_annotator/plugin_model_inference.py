@@ -212,7 +212,6 @@ class Inferer(ModelFramework):
                 out = np.array(out).astype(np.float32)
                 print(f"Saving to : {self.results_path}")
 
-
                 time = "{:%Y_%m_%d_%H_%M_%S}".format(datetime.now())
                 print(time)
                 filename = (
@@ -222,7 +221,7 @@ class Inferer(ModelFramework):
                     + f"_{time}_"
                     + f"pred{i}"
                     + self.filetype_choice.currentText()
-                    )
+                )
 
                 print(filename)
                 imwrite(filename, out)
