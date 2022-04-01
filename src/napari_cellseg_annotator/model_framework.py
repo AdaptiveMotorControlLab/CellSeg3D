@@ -15,6 +15,7 @@ from qtpy.QtWidgets import (
 
 class ModelFramework(QWidget):
     """Create a framework to use for loading images, labels, models, etc. for both inference and training"""
+
     def __init__(self, viewer: "napari.viewer.Viewer"):
         """Builds the framework with the following elements :
 
@@ -27,7 +28,6 @@ class ModelFramework(QWidget):
         self._viewer = viewer
         """Viewer to display in"""
 
-
         self.images_filepaths = ""
         """array(str): paths to images for training or inference"""
         self.labels_filepaths = ""
@@ -36,7 +36,6 @@ class ModelFramework(QWidget):
         """str: path to output folder,to save results in"""
         self.model_path = ""
         """str: path to custom model defined by user"""
-
 
         self.device = "cpu"
         """Device to train on, chosen automatically by :py:func:`get_device`"""
@@ -96,7 +95,7 @@ class ModelFramework(QWidget):
 
         Returns:
            array(str): all loaded file paths
-            """
+        """
         filetype = self.filetype_choice.currentText()
         directory = utils.open_file_dialog(self, self._default_path, True)
         # print(directory)
@@ -111,7 +110,7 @@ class ModelFramework(QWidget):
             * "image": image
 
             * "label" : corresponding label
-            """
+        """
         data_dicts = [
             {"image": image_name, "label": label_name}
             for image_name, label_name in zip(

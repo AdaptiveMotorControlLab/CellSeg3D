@@ -1,10 +1,14 @@
 import os
 from datetime import datetime
+from pathlib import Path
+
 import napari
 import numpy as np
 import torch
-
-
+from monai.data import (
+    DataLoader,
+    Dataset,
+)
 # MONAI
 from monai.inferers import sliding_window_inference
 from monai.transforms import (
@@ -16,10 +20,6 @@ from monai.transforms import (
     EnsureType,
     LabelFilter,
     SpatialPadd,
-)
-from monai.data import (
-    DataLoader,
-    Dataset,
 )
 # local
 from napari_cellseg_annotator import utils
@@ -98,7 +98,7 @@ class Inferer(ModelFramework):
         self.btn_start.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn_start.clicked.connect(self.start)
 
-        #hide unused widgets from parent class
+        # hide unused widgets from parent class
         self.btn_label_files.setVisible(False)
         self.lbl_label_files.setVisible(False)
         self.btn_model_path.setVisible(False)
@@ -246,7 +246,9 @@ class Inferer(ModelFramework):
         weights = self.get_model(model_key).get_weights_file()
         # print(f"wh dir : {WEIGHTS_DIR}")
         # print(weights)
-        model.load_state_dict(torch.load(os.path.join(WEIGHTS_DIR, weights), map_location=device))
+        model.load_state_dict(
+            torch.load(os.path.join(WEIGHTS_DIR, weights), map_location=device)
+        )
 
         model.eval()
         with torch.no_grad():
@@ -255,7 +257,11 @@ class Inferer(ModelFramework):
                 inputs = inf_data["image"]
                 inputs = inputs.to(device)
                 outputs = sliding_window_inference(
-                    inputs, roi_size= None,sw_batch_size= 1, predictor= lambda inputs: model(inputs)[0], device = device
+                    inputs,
+                    roi_size=None,
+                    sw_batch_size=1,
+                    predictor=lambda inputs: model(inputs)[0],
+                    device=device,
                 )
 
                 out = outputs.detach().cpu()
