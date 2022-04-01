@@ -144,7 +144,7 @@ def launch_review(
 
     layer = view1.layers[0]
     layer1 = view1.layers[1]
-    if not as_folder :
+    if not as_folder:
         r_path = os.path.dirname(r_path)
 
     @magicgui(

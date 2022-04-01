@@ -24,6 +24,11 @@ contributions:
     title: Crop utility
     python_name: napari_cellseg_annotator.plugins:Cropping
 
+  - id: napari-cellseg-annotator.infer
+    title: Create Inferer
+    python_name: napari_cellseg_annotator.plugins:Inferer
+
+
   widgets:
   - command: napari-cellseg-annotator.load
     display_name: Review loader
@@ -36,6 +41,9 @@ contributions:
 
   - command: napari-cellseg-annotator.crop
     display_name: Crop utility
+
+  - command: napari-cellseg-annotator.infer
+    display_name: Inference loader
 
   - command: napari-cellseg-annotator.help
     display_name: Help/About...

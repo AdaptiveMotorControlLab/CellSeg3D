@@ -92,16 +92,16 @@ class BasePlugin(QWidget):
 
     def show_file_dialog(self):
         """Open file dialog and process path depending on single file/folder loading behaviour"""
-        f_name = utils.open_file_dialog(
+        f_or_dir_name = utils.open_file_dialog(
             self, self._default_path, self.file_handling_box.isChecked()
         )
         if not self.file_handling_box.isChecked():
-            f_name = str(f_name[0])
-            self.filetype = os.path.splitext(f_name)[1]
+            f_or_dir_name = str(f_or_dir_name[0])
+            self.filetype = os.path.splitext(f_or_dir_name)[1]
 
-        print(f_name)
+        print(f_or_dir_name)
 
-        return f_name
+        return f_or_dir_name
 
     def show_dialog_images(self):
         """Show file dialog and set image path"""
@@ -123,6 +123,4 @@ class BasePlugin(QWidget):
         self._default_path = [self.image_path, self.label_path]
 
     def close(self):
-        raise NotImplementedError(
-            "Has to be defined in children widget for viewer call to work"
-        )
+        self._viewer.window.remove_dock_widget(self)

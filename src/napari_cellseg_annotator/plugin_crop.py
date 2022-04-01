@@ -81,7 +81,6 @@ class Cropping(BasePlugin):
         vbox.addWidget(utils.combine_blocks(self.btn_image, self.lbl_image))
         vbox.addWidget(utils.combine_blocks(self.btn_label, self.lbl_label))
 
-
         [
             vbox.addWidget(utils.combine_blocks(cont[0], cont[1]))
             for cont in self.box_widgets
@@ -107,18 +106,14 @@ class Cropping(BasePlugin):
 
         self.filetype = self.filetype_choice.currentText()
 
-        if self.file_handling_box.isChecked() :
+        if self.file_handling_box.isChecked():
             self.input_path = (
                 "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
             )
             self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
         else:
-            self.input_path = (
-                "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
-            )
-            self.label_path = (
-                "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels/testing_im.tif"
-            )
+            self.input_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
+            self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels/testing_im.tif"
         self.start()
 
     ###########################################
@@ -131,8 +126,12 @@ class Cropping(BasePlugin):
             box[0].value() for box in self.box_widgets
         ]
         self.filetype = self.filetype_choice.currentText()
-        image = utils.load_images(self.input_path, self.filetype, self.file_handling_box.isChecked())
-        labels = utils.load_images(self.label_path, self.filetype,self.file_handling_box.isChecked())
+        image = utils.load_images(
+            self.input_path, self.filetype, self.file_handling_box.isChecked()
+        )
+        labels = utils.load_images(
+            self.label_path, self.filetype, self.file_handling_box.isChecked()
+        )
 
         vw = self._viewer
 

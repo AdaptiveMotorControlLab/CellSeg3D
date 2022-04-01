@@ -58,7 +58,7 @@ class Loader(BasePlugin):
 
         super().__init__(viewer)
 
-        self._viewer = viewer
+        # self._viewer = viewer
 
         self.textbox = QLineEdit(self)
         self.textbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -112,6 +112,7 @@ class Loader(BasePlugin):
         self.filetype_choice.setVisible(False)
 
         vbox.addWidget(utils.combine_blocks(self.btn_image, self.lbl_image))
+
         vbox.addWidget(utils.combine_blocks(self.btn_label, self.lbl_label))
         # vbox.addWidget(self.lblft2)
 
