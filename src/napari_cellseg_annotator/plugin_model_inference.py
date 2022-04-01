@@ -121,7 +121,7 @@ class Inferer(ModelFramework):
         return self.models_dict[key]
 
     def create_inference_dict(self):
-        """Create a dict with all image paths in :ref:`self.images_filepaths`
+        """Create a dict with all image paths in :py:mod:`self.images_filepaths`
 
         Returns:
             dict: list of image paths from loaded folder"""
@@ -195,9 +195,9 @@ class Inferer(ModelFramework):
 
         * Loads the weights from the chosen model
 
-        * Creates a dict with all image paths (see :ref:`create_inference_dict`)
+        * Creates a dict with all image paths (see :py:mod:`create_inference_dict`)
 
-        * Loads the images, pads them so their size is a power of two in every dim (see :ref:`get_padding_dim`)
+        * Loads the images, pads them so their size is a power of two in every dim (see :py:mod:`get_padding_dim`)
 
         * Performs sliding window inference (from MONAI) on every image
 
