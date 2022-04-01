@@ -1,14 +1,10 @@
 import os
 from datetime import datetime
-from pathlib import Path
-
 import napari
 import numpy as np
 import torch
-from monai.data import (
-    DataLoader,
-    Dataset,
-)
+
+
 # MONAI
 from monai.inferers import sliding_window_inference
 from monai.transforms import (
@@ -20,6 +16,10 @@ from monai.transforms import (
     EnsureType,
     LabelFilter,
     SpatialPadd,
+)
+from monai.data import (
+    DataLoader,
+    Dataset,
 )
 # local
 from napari_cellseg_annotator import utils
