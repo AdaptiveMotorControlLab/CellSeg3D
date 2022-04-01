@@ -106,10 +106,11 @@ class ModelFramework(QWidget):
     def create_train_dataset_dict(self):
         """Creates data dictionary for MONAI transforms and training.
 
-        Keys:
-            * "image": image
+        **Keys:**
 
-            * "label" : corresponding label
+        * "image": image
+
+        * "label" : corresponding label
         """
         data_dicts = [
             {"image": image_name, "label": label_name}
