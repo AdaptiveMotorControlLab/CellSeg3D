@@ -1,21 +1,29 @@
+import os
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
-from qtpy.QtWidgets import QSizePolicy
 from magicgui import magicgui
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
-from pathlib import Path
-
-from scipy import ndimage
-
 from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.dock import Datamanager
+from napari_cellseg_annotator.plugin_dock import Datamanager
+from qtpy.QtWidgets import QSizePolicy
+from scipy import ndimage
 
 
 def launch_review(
-    viewer, original, base, raw, r_path, model_type, checkbox, filetype
+    viewer,
+    original,
+    base,
+    raw,
+    r_path,
+    model_type,
+    checkbox,
+    filetype,
+    as_folder,
 ):
     """Launch the review process, loading the original image, the labels & the raw labels (from prediction)
     in the viewer.
@@ -52,6 +60,8 @@ def launch_review(
         checkbox (bool): Whether the "new model" checkbox has been checked or not, to create a new csv
 
         filetype (str): The file extension of the volumes and labels.
+
+        as_folder (bool): Whether to load as folder or single file
 
 
     """
@@ -134,6 +144,8 @@ def launch_review(
 
     layer = view1.layers[0]
     layer1 = view1.layers[1]
+    if not as_folder :
+        r_path = os.path.dirname(r_path)
 
     @magicgui(
         dirname={"mode": "d", "label": "Save labels in... "},
@@ -144,15 +156,16 @@ def launch_review(
     ):  # file name where to save annotations
         # """Take a filename and do something with it."""
         # print("The filename is:", dirname)
+
         dirname = Path(r_path)
         # def saver():
         out_dir = gui.dirname.value
         # print("The directory is:", out_dir)
         return dirname, utils.save_masks(layer1.data, out_dir)
 
-    gui = file_widget.show(run=True)  # dirpicker.show(run=True)
+    # gui = file_widget.show(run=True)  # dirpicker.show(run=True)
 
-    view1.window.add_dock_widget(gui, name=" ", area="bottom")
+    view1.window.add_dock_widget(file_widget, name=" ", area="bottom")
 
     # @magicgui(call_button="Save")
 
@@ -213,7 +226,7 @@ def launch_review(
 
     # Qt widget defined in docker.py
     dmg = Datamanager(parent=view1)
-    dmg.prepare(r_path, filetype, model_type, checkbox)
+    dmg.prepare(r_path, filetype, model_type, checkbox, as_folder)
     view1.window.add_dock_widget(dmg, name=" ", area="left")
 
     def update_button(axis_event):

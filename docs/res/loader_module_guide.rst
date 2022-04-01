@@ -11,14 +11,12 @@ and correct them if needed. It then saves the status of each file in a csv, for 
 Launching the review process
 ---------------------------------
 
-First, you will be asked to provide a volume folder and a label folder, as well as the file extension
-of your images (either .png or .tif).
+First, you will be asked to load your images and labels; you can use the checkbox above the Open buttons to
+choose whether you want to load a single 3D **.tif** image or a folder of 2D images as a 3D stack.
+Folders can be stacks of either .png or .tif files, ideally numbered with the index of the slice at the end.
 
-.. important::
-    Depending on the filetype you selected, the folders should either contain:
-
-    * For .png, one png per slice (provide a folder of several pngs)
-    * For .tif, a folder containing a single 3D tif file with all slices (if there are several, the first one will be used)
+.. note::
+    Only single .tif files or folder of several .png or .tif are supported.
 
 You can then provide a model name, which will be used in the csv file recording the status of each slice.
 

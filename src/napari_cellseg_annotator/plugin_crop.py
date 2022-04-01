@@ -2,20 +2,19 @@ import napari
 import numpy as np
 from magicgui.widgets import Slider, Container
 from napari_cellseg_annotator import utils
+from napari_cellseg_annotator.plugin_base import BasePlugin
 from qtpy.QtWidgets import (
-    QWidget,
     QVBoxLayout,
     QPushButton,
     QSizePolicy,
     QLabel,
-    QComboBox,
     QSpinBox,
 )
 
 DEFAULT_CROP_SIZE = 64
 
 
-class Cropping(QWidget):
+class Cropping(BasePlugin):
     """A utility plugin for cropping 3D volumes."""
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
@@ -34,51 +33,12 @@ class Cropping(QWidget):
         * A button to close the widget
         """
 
-        super().__init__()
+        super().__init__(viewer)
 
-        self._viewer = viewer
-        """napari.viewer.Viewer: viewer in which the widget is displayed"""
-        self.input_path = ""
-        """str: path to volumes folder"""
-        self.label_path = ""
-        """str: path to labels folder"""
-        # self.output_path = "" # use napari save manually once done
+        self.btn_start = QPushButton("Start", self)
+        self.btn_start.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.btn_start.clicked.connect(self.start)
 
-        self.filetype = ""
-        """str: filetype, .tif or .png"""
-
-        self._default_path = [self.input_path, self.label_path]
-
-        self.btn1 = QPushButton("Open", self)
-        self.btn1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btn1.clicked.connect(self.show_dialog_in)
-
-        self.lbl1 = QLabel("Image directory :")
-
-        self.btn3 = QPushButton("Open", self)
-        self.btn3.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btn3.clicked.connect(self.show_dialog_lab)
-
-        self.lbl3 = QLabel("Labels directory :", self)
-
-        self.filetype_choice = QComboBox()
-        self.filetype_choice.addItems([".tif", ".png"])
-        self.filetype_choice.setSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.Fixed
-        )
-
-        self.lblft = QLabel("Filetype :", self)
-        self.lblft2 = QLabel("(Folders of .png or single .tif files)", self)
-
-        self.btn4 = QPushButton("Start", self)
-        self.btn4.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btn4.clicked.connect(self.start)
-
-        self.btnc = QPushButton("Close", self)
-        self.btnc.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btnc.clicked.connect(self.close)
-
-        ######################
         def make_sizebox_container(axis: str):
             sizebox = QSpinBox()
             sizebox.setMinimum(1)
@@ -88,6 +48,7 @@ class Cropping(QWidget):
             return [sizebox, lblsize]
 
         self.box_widgets = [make_sizebox_container(ax) for ax in "xyz"]
+
         for wid in self.box_widgets:
             wid[0].setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self._x = 0
@@ -96,7 +57,6 @@ class Cropping(QWidget):
         self._crop_size_x = DEFAULT_CROP_SIZE
         self._crop_size_y = DEFAULT_CROP_SIZE
         self._crop_size_z = DEFAULT_CROP_SIZE
-        ######################
 
         #####################################################################
         # TODO remove once done
@@ -113,18 +73,22 @@ class Cropping(QWidget):
         """Build buttons in a layout and add them to the napari Viewer"""
         vbox = QVBoxLayout()
 
-        vbox.addWidget(utils.combine_blocks(self.btn1, self.lbl1))
-        vbox.addWidget(utils.combine_blocks(self.btn3, self.lbl3))
-        vbox.addWidget(self.lblft2)
-        vbox.addWidget(utils.combine_blocks(self.filetype_choice, self.lblft))
+        vbox.addWidget(
+            utils.combine_blocks(self.filetype_choice, self.file_handling_box)
+        )
+        self.filetype_choice.setVisible(False)
+
+        vbox.addWidget(utils.combine_blocks(self.btn_image, self.lbl_image))
+        vbox.addWidget(utils.combine_blocks(self.btn_label, self.lbl_label))
+
 
         [
             vbox.addWidget(utils.combine_blocks(cont[0], cont[1]))
             for cont in self.box_widgets
         ]
 
-        vbox.addWidget(self.btn4)
-        vbox.addWidget(self.btnc)
+        vbox.addWidget(self.btn_start)
+        vbox.addWidget(self.btn_close)
 
         ##################################################################
         # remove once done ?
@@ -137,45 +101,28 @@ class Cropping(QWidget):
         # self.show()
         # self._viewer.window.add_dock_widget(self, name="Crop utility", area="right")
 
-    def show_dialog_in(self):
-        f_name = utils.open_file_dialog(self, self._default_path)
-
-        if f_name:
-            self.input_path = f_name
-            self.lbl1.setText(self.input_path)
-
-    def show_dialog_lab(self):
-        f_name = utils.open_file_dialog(self, self._default_path)
-
-        if f_name:
-            self.label_path = f_name
-            self.lbl3.setText(self.label_path)
-
-    def close(self):
-        """Close the widget"""
-        # self.master.setCurrentIndex(0)
-        self._viewer.window.remove_dock_widget(self)
-
     ###########################################
     # TODO : remove/disable once done
     def run_test(self):
 
         self.filetype = self.filetype_choice.currentText()
 
-        self.input_path = (
-            "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
-        )
-        self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
-        if self.filetype == ".tif":
+        if self.file_handling_box.isChecked() :
             self.input_path = (
-                "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes"
+                "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
+            )
+            self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
+        else:
+            self.input_path = (
+                "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
             )
             self.label_path = (
-                "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels"
+                "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels/testing_im.tif"
             )
         self.start()
 
     ###########################################
+
     def start(self):
         """Launches cropping process by loading the files from the chosen folders,
         and adds control widgets to the napari Viewer for moving the cropped volume.
@@ -184,8 +131,8 @@ class Cropping(QWidget):
             box[0].value() for box in self.box_widgets
         ]
         self.filetype = self.filetype_choice.currentText()
-        image = utils.load_images(self.input_path, self.filetype)
-        labels = utils.load_images(self.label_path, self.filetype)
+        image = utils.load_images(self.input_path, self.filetype, self.file_handling_box.isChecked())
+        labels = utils.load_images(self.label_path, self.filetype,self.file_handling_box.isChecked())
 
         vw = self._viewer
 

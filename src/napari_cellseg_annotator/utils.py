@@ -191,50 +191,67 @@ def check(project_path, ext):
     check_annotations_dir(project_path)
 
 
-def open_file_dialog(widget, possible_paths):
+def open_file_dialog(widget, possible_paths, load_as_folder: bool = False):
     """Opens a window to choose a file directory using QFileDialog.
 
     Args:
         possible_paths (str): Paths that may have been chosen before, can be a string
         or an array of strings containing the paths
+        load_as_folder (bool): Whether to open a folder or a single file. If True, will allow to open as folder
     """
     possible_paths.append(os.path.expanduser("~"))
     default_path = [p for p in possible_paths if p != ""][0]
+
     # print("paths :")
     # print(possible_paths)
     # print(default_path)
-    f_name = QFileDialog.getExistingDirectory(
-        widget, "Open directory", default_path
-    )
-    return f_name
+
+    if not load_as_folder:
+        f_name = QFileDialog.getOpenFileName(
+            widget, "Choose file", default_path, "Image file (*.tif *.tiff)"
+        )
+        return f_name
+    else:
+
+        filenames = QFileDialog.getExistingDirectory(
+            widget, "Open directory", default_path
+        )
+        return filenames
 
 
-def load_images(directory, filetype):
-    """Loads the images in ``directory``, with different behaviour depending on ``filetype``
+def load_images(dir_or_path, filetype="", as_folder: bool = False):
+    """Loads the images in ``directory``, with different behaviour depending on ``filetype`` and ``as_folder``
 
-     For ``filetype == ".tif"`` : loads the first tif file found in the folder
+    * If ``as_folder`` is true, will load the path as a single image.
 
-     For  ``filetype == ".png"`` : loads all png files in the folder as a 3D dataset
+    * If False, it will try to load a folder as stack of images. In this case ``filetype`` must be specified.
+        If False :
+
+        * For ``filetype == ".tif"`` : loads all tif files in the folder as a 3D dataset.
+
+        * For  ``filetype == ".png"`` : loads all png files in the folder as a 3D dataset.
 
     Args:
-        directory (str): path to the directory containing the images
-        filetype (str): expected file extension of the image(s) in the directory
+        dir_or_path (str): path to the directory containing the images or the images themselves
+        filetype (str): expected file extension of the image(s) in the directory, if as_folder is False
+        as_folder (bool): Whether to load a folder of images as stack or a single 3D image
 
     Returns:
         dask.array.Array: dask array with loaded images
     """
-    filename_pattern_original = os.path.join(directory + "/*" + filetype)
-    if filetype == ".tif":
-        path = list(Path(directory).glob("./*.tif"))
-        filename_pattern_original = os.path.join(
-            directory + "/" + path[0].name
-        )
-        print(path[0].name)
+
+    if not as_folder:
+        filename_pattern_original = os.path.join(dir_or_path)
+        print(filename_pattern_original)
+    elif as_folder and filetype != "":
+        filename_pattern_original = os.path.join(dir_or_path + "/*" + filetype)
+        print(filename_pattern_original)
+    else:
+        raise ValueError("If loading as a folder, filetype must be specified")
 
     images_original = dask_image.imread.imread(filename_pattern_original)
 
     return images_original
-
 
 
 def load_predicted_masks(mito_mask_dir, er_mask_dir, filetype):
@@ -247,8 +264,8 @@ def load_predicted_masks(mito_mask_dir, er_mask_dir, filetype):
     return base_label
 
 
-def load_saved_masks(mod_mask_dir, filetype):
-    images_label = load_images(mod_mask_dir, filetype)
+def load_saved_masks(mod_mask_dir, filetype, as_folder: bool):
+    images_label = load_images(mod_mask_dir, filetype, as_folder)
     images_label = images_label.compute()
     base_label = images_label
     return base_label

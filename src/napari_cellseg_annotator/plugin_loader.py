@@ -4,20 +4,19 @@ from pathlib import Path
 
 import napari
 import numpy as np
+import skimage.io as io
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.launch_review import launch_review
+from napari_cellseg_annotator.plugin_base import BasePlugin
 from qtpy import QtGui
 from qtpy.QtWidgets import (
-    QWidget,
     QVBoxLayout,
     QPushButton,
     QSizePolicy,
     QLabel,
-    QComboBox,
     QLineEdit,
     QCheckBox,
 )
-from skimage import io
 
 
 def format_Warning(message, category, filename, lineno, line=""):
@@ -39,8 +38,9 @@ warnings.formatwarning = format_Warning
 global_launched_before = False
 
 
-class Loader(QWidget):
-    """A plugin for selecting volumes and labels file and launching the review process."""
+class Loader(BasePlugin):
+    """A plugin for selecting volumes and labels file and launching the review process.
+    Inherits from : :doc:`plugin_base`"""
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
         """Creates a Loader plugin with several buttons :
@@ -56,34 +56,9 @@ class Loader(QWidget):
         * A button to launch the review process (see :doc:`launch_review`)
         """
 
-        super().__init__()
+        super().__init__(viewer)
 
-        # self.master = parent
         self._viewer = viewer
-        """napari.viewer.Viewer: viewer in which the widget is displayed"""
-
-        self.opath = ""
-        """str: path to output folder"""
-        self.modpath = ""
-        """str: path to mask folder"""
-        self.filetype = ""
-        """str: filetype, .tif or .png"""
-
-        self._default_path = [self.opath, self.modpath]
-
-        self.btn1 = QPushButton("Open", self)
-        self.btn1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.lbl = QLabel("Images directory", self)
-        self.btn1.clicked.connect(self.show_dialog_o)
-        self.btn2 = QPushButton("Open", self)
-        self.btn2.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btn2.clicked.connect(self.show_dialog_mod)
-
-        self.filetype_choice = QComboBox()
-        self.filetype_choice.addItems([".png", ".tif"])
-        self.filetype_choice.setSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.Fixed
-        )
 
         self.textbox = QLineEdit(self)
         self.textbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -91,20 +66,12 @@ class Loader(QWidget):
         self.checkBox = QCheckBox("Create new dataset?")
         self.checkBox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-        self.btn4 = QPushButton("Start reviewing", self)
-        self.btn4.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.btn_start = QPushButton("Start reviewing", self)
+        self.btn_start.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-        self.btn4.clicked.connect(self.run_review)
-        # self.btn4.clicked.connect(self.close)
-        self.btnb = QPushButton("Close", self)
-        self.btnb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btnb.clicked.connect(self.close)
+        self.btn_start.clicked.connect(self.run_review)
 
-        self.lbl2 = QLabel("Labels directory", self)
-        self.lbl4 = QLabel("Model name", self)
-
-        self.lblft = QLabel("Filetype :", self)
-        self.lblft2 = QLabel("(Folders of .png or single .tif files)", self)
+        self.lbl_mod = QLabel("Model name", self)
 
         self.warn_label = QLabel(
             "WARNING : You already have a review session running.\n"
@@ -134,22 +101,25 @@ class Loader(QWidget):
         if global_launched_before:
             vbox.addWidget(self.warn_label)
             warnings.warn(
-                "WARNING : You already have a review session running.\n"
+                "You already have a review session running.\n"
                 "Launching another will close the current one,\n"
                 " make sure to save your work beforehand"
             )
 
-        vbox.addWidget(utils.combine_blocks(self.btn1, self.lbl))
+        vbox.addWidget(
+            utils.combine_blocks(self.filetype_choice, self.file_handling_box)
+        )
+        self.filetype_choice.setVisible(False)
 
-        vbox.addWidget(utils.combine_blocks(self.btn2, self.lbl2))
-        vbox.addWidget(self.lblft2)
-        vbox.addWidget(utils.combine_blocks(self.filetype_choice, self.lblft))
+        vbox.addWidget(utils.combine_blocks(self.btn_image, self.lbl_image))
+        vbox.addWidget(utils.combine_blocks(self.btn_label, self.lbl_label))
+        # vbox.addWidget(self.lblft2)
 
-        vbox.addWidget(utils.combine_blocks(self.textbox, self.lbl4))
+        vbox.addWidget(utils.combine_blocks(self.textbox, self.lbl_mod))
 
         vbox.addWidget(self.checkBox)
-        vbox.addWidget(self.btn4)
-        vbox.addWidget(self.btnb)
+        vbox.addWidget(self.btn_start)
+        vbox.addWidget(self.btn_close)
 
         ##################################################################
         # remove once done ?
@@ -160,33 +130,6 @@ class Loader(QWidget):
         self.setLayout(vbox)
         # self.show()
         # self._viewer.window.add_dock_widget(self, name="Loader", area="right")
-
-    def show_dialog_o(self):
-
-        f_name = utils.open_file_dialog(self, self._default_path)
-
-        if f_name:
-            self.opath = f_name
-            self.lbl.setText(self.opath)
-            self.update_default()
-            print(self._default_path)
-
-    def show_dialog_mod(self):
-
-        f_name = utils.open_file_dialog(self, self._default_path)
-
-        if f_name:
-            self.modpath = f_name
-            self.lbl2.setText(self.modpath)
-            self.update_default()
-
-    def update_default(self):
-        self._default_path = [self.opath, self.modpath]
-
-    def close(self):
-        """Close the widget"""
-        # self.master.setCurrentIndex(0)
-        self._viewer.window.remove_dock_widget(self)
 
     def run_review(self):
 
@@ -205,33 +148,39 @@ class Loader(QWidget):
             napari.viewer.Viewer: self.viewer
         """
         self.filetype = self.filetype_choice.currentText()
-        images = utils.load_images(self.opath, self.filetype)
+        images = utils.load_images(
+            self.image_path, self.filetype, self.file_handling_box.isChecked()
+        )
         if (
-            self.modpath == ""
+            self.label_path == ""
         ):  # saves empty images of the same size as original images
             labels = np.zeros_like(images.compute())  # dask to numpy
-            self.modpath = os.path.join(
-                os.path.dirname(self.opath), self.textbox.text()
+            self.label_path = os.path.join(
+                os.path.dirname(self.image_path), self.textbox.text()
             )
-            os.makedirs(self.modpath, exist_ok=True)
+            os.makedirs(self.label_path, exist_ok=True)
             filenames = [
                 fn.name
                 for fn in sorted(
-                    list(Path(self.opath).glob("./*" + self.filetype))
+                    list(Path(self.image_path).glob("./*" + self.filetype))
                 )
             ]
             for i in range(len(labels)):
                 io.imsave(
                     os.path.join(
-                        self.modpath, str(i).zfill(4) + self.filetype
+                        self.label_path, str(i).zfill(4) + self.filetype
                     ),
                     labels[i],
                 )
         else:
-            labels = utils.load_saved_masks(self.modpath, self.filetype)
+            labels = utils.load_saved_masks(
+                self.label_path,
+                self.filetype,
+                self.file_handling_box.isChecked(),
+            )
         try:
             labels_raw = utils.load_raw_masks(
-                self.modpath + "_raw", self.filetype
+                self.label_path + "_raw", self.filetype
             )
         except:
             labels_raw = None
@@ -244,30 +193,32 @@ class Loader(QWidget):
                 images,
                 labels,
                 labels_raw,
-                self.modpath,
+                self.label_path,
                 self.textbox.text(),
                 self.checkBox.isChecked(),
                 self.filetype,
+                self.file_handling_box.isChecked(),
             )
             warnings.warn(
-                "WARNING : Opening several loader sessions in one window is not supported; opening in new window"
+                "Opening several loader sessions in one window is not supported; opening in new window"
             )
             self._viewer.close()
         else:
-            new_viewer = self._viewer
-
+            viewer = self._viewer
+            print("new sess")
             view1 = launch_review(
-                new_viewer,
+                viewer,
                 images,
                 labels,
                 labels_raw,
-                self.modpath,
+                self.label_path,
                 self.textbox.text(),
                 self.checkBox.isChecked(),
                 self.filetype,
+                self.file_handling_box.isChecked(),
             )
+            self._viewer.window.remove_dock_widget(self)
             global_launched_before = True
-            self.close()
 
         return view1
 
@@ -275,19 +226,25 @@ class Loader(QWidget):
     # TODO : remove once done
     def run_test(self):
         self.filetype = self.filetype_choice.currentText()
-
-        self.opath = (
-            "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
-        )
-        self.modpath = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
-        if self.filetype == ".tif":
-            self.opath = (
-                "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes"
+        if self.file_handling_box.isChecked():
+            self.image_path = (
+                "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
             )
-            self.modpath = (
-                "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels"
-            )
+            self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
+        else:
+            self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
+            self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels/testing_im.tif"
         self.run_review()
         # self.close()
 
     ########################
+    def close(self):
+        """Close widget and remove it from window.
+        Sets the check for an active session to false, so that if the user closes manually and doesn't launch the review,
+        the active session warning does not display and a new viewer is not opened when launching for the first time.
+        """
+        global global_launched_before  # if user closes window rather than launching review, does not count as active session
+        if global_launched_before:
+            global_launched_before = False
+        print("close req")
+        self._viewer.window.remove_dock_widget(self)

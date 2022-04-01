@@ -14,11 +14,11 @@ Welcome to napari-cellseg-annotator's documentation!
     :maxdepth: 1
     :caption: Source files:
 
-
+    res/plugin_base
     res/plugin_loader
     res/launch_review
     res/plugin_crop
-    res/dock
+    res/plugin_dock
     res/utils
 
 

@@ -16,7 +16,7 @@ GUI_MINIMUM_HEIGHT = 300
 
 
 """
-dock.py
+plugin_dock.py
 ====================================
 Definition of Datamanager widget, for saving labels status in csv file
 """
@@ -66,7 +66,7 @@ class Datamanager(QWidget):
         self.filetype = ""
         self.image_dims = self.viewer.layers[0].data.shape
 
-    def prepare(self, label_dir, filetype, model_type, checkbox):
+    def prepare(self, label_dir, filetype, model_type, checkbox, as_folder):
         """Initialize the Datamanager, which loads the csv file and updates it
         with the index of the current slice.
 
@@ -75,8 +75,14 @@ class Datamanager(QWidget):
         filetype (str) : file extension
         model_type (str): model type
         checkbox (bool): create new dataset or not
+        as_folder (bool) : load as folder or as single file
         """
+
+        # label_dir = os.path.dirname(label_dir)
+        print("csv path try :")
+        print(label_dir)
         self.filetype = filetype
+        self.as_folder = as_folder
         self.df, self.csv_path = self.load_csv(label_dir, model_type, checkbox)
 
         print(self.csv_path, checkbox)
@@ -95,6 +101,10 @@ class Datamanager(QWidget):
         Returns:
             (pandas.DataFrame, str) dataframe、csv path
         """
+        # if not self.as_folder :
+        #     label_dir = os.path.dirname(label_dir)
+        print("label dir")
+        print(label_dir)
         csvs = sorted(list(Path(label_dir).glob(f"{model_type}*.csv")))
         if len(csvs) == 0:
             df, csv_path = self.create(
@@ -128,27 +138,29 @@ class Datamanager(QWidget):
          (pandas.DataFrame, str): dataframe, csv path
         """
 
-        if self.filetype == ".png":
+        if self.as_folder:
             labels = sorted(
                 list(
                     path.name
                     for path in Path(label_dir).glob("./*" + self.filetype)
                 )
             )
-        elif self.filetype == ".tif":
-            path = list(Path(label_dir).glob("./*.tif"))
+        elif not self.as_folder:
+            path = list(Path(label_dir).glob("./*" + self.filetype))
             # print(self.image_dims[0])
             print(path[0].name)
             filename = path[0].name
             labels = [str(filename) for i in range(self.image_dims[0])]
 
         else:
-            print("Error: filetype should be assigned on launch")
+            print("Error: Loading behaviour should be determined on launch")
 
         df = pd.DataFrame(
             {"filename": labels, "train": ["Not Checked"] * len(labels)}
         )
         csv_path = os.path.join(label_dir, f"{model_type}_train0.csv")
+        print("csv path for create")
+        print(csv_path)
         df.to_csv(csv_path)
         return df, csv_path
 

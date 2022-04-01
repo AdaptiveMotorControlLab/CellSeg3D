@@ -14,11 +14,14 @@ Methods
 
 
 
+
+
+
 Attributes
 *********************
 
 .. autoclass:: napari_cellseg_annotator.plugin_loader::Loader
-   :members:  _viewer, opath, modpath, filetype
+   :members:  _viewer, image_path, label_path, filetype
 
 
 
