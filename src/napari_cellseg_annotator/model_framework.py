@@ -39,7 +39,7 @@ class ModelFramework(QWidget):
 
 
         self.device = "cpu"
-        """Device to train on, chosen automatically by :ref:`self.get_device`"""
+        """Device to train on, chosen automatically by :py:mod:`self.get_device`"""
 
         self._default_path = [self.images_filepaths, self.labels_filepaths]
         self._default_model_path = [self.model_path]
@@ -122,7 +122,7 @@ class ModelFramework(QWidget):
         return data_dicts
 
     def load_image_dataset(self):
-        """Show file dialog to set :ref:`images_filepaths`"""
+        """Show file dialog to set :py:mod:`images_filepaths`"""
         filenames = self.load_dataset_paths()
         print(filenames)
         if filenames != "" and filenames != []:
@@ -133,7 +133,7 @@ class ModelFramework(QWidget):
             self._default_path[0] = path
 
     def load_label_dataset(self):
-        """Show file dialog to set :ref:`labels_filepaths`"""
+        """Show file dialog to set :py:mod:`labels_filepaths`"""
         filenames = self.load_dataset_paths()
         if filenames != "":
             self.labels_filepaths = filenames
@@ -142,7 +142,7 @@ class ModelFramework(QWidget):
             self.update_default()
 
     def load_results_path(self):
-        """Show file dialog to set :ref:`results_path`"""
+        """Show file dialog to set :py:mod:`results_path`"""
         dir = utils.open_file_dialog(self, self._default_res_path, True)
         if dir != "" and type(dir) is str:
             self.results_path = dir
@@ -150,7 +150,7 @@ class ModelFramework(QWidget):
             self.update_default()
 
     def load_model_path(self):
-        """Show file dialog to set :ref:`model_path`"""
+        """Show file dialog to set :py:mod:`model_path`"""
         dir = utils.open_file_dialog(self, self._default_model_path)
         if dir != "" and type(dir) is str:
             self.model_path = dir

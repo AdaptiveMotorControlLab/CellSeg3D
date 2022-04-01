@@ -18,7 +18,7 @@ Attributes
 *********************
 
 .. autoclass:: napari_cellseg_annotator.plugin_crop::Cropping
-   :members:  _viewer, input_path, label_path, filetype
+   :members:  _viewer, image_path, label_path, filetype
 
 
 
