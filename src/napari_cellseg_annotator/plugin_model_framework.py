@@ -1,8 +1,24 @@
 import glob
 import os
-
+import numpy as np
 import napari
 from napari_cellseg_annotator.plugin_base import BasePlugin
+
+from monai.utils import first
+import monai.transforms as mtf
+
+from monai.networks.nets import SegResNetVAE
+from monai.inferers import sliding_window_inference
+from monai.metrics import DiceMetric
+from monai.losses import DiceLoss
+from monai.data import (
+    CacheDataset,
+    DataLoader,
+    Dataset,
+    decollate_batch,
+    pad_list_data_collate,
+)
+import torch
 
 
 class ModelFramework(BasePlugin):
@@ -15,6 +31,18 @@ class ModelFramework(BasePlugin):
         self.data_filepaths = []
         self.label_filepaths = []
         self.results_path = ""
+
+        self.train_image_transforms = mtf.Compose(  # ?
+        [
+            mtf.LoadImaged(keys=["image", "label"]),
+            # AddChanneld(keys=["image", "label"]), #already done
+            mtf.EnsureChannelFirstd(keys=["image", "label"]),
+            mtf.RandSpatialCropd(keys=["image", "label"], roi_size=[64, 64, 64]),
+            mtf.SpatialPadd(keys=["image", "label"], spatial_size=[128, 128, 128]),
+            mtf.RandShiftIntensityd(keys=["image"], offsets=0.2),
+            mtf.EnsureTyped(keys=["image", "label"]),
+        ]
+    )
 
         #######################################################
         # interface
