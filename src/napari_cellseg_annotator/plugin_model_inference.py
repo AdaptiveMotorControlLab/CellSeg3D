@@ -16,7 +16,6 @@ from qtpy.QtWidgets import (
     QComboBox,
 )
 
-from monai.utils import first
 from monai.inferers import sliding_window_inference
 from monai.transforms import (
     AsDiscrete,
