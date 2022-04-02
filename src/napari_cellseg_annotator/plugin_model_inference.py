@@ -9,6 +9,7 @@ from monai.data import (
     DataLoader,
     Dataset,
 )
+
 # MONAI
 from monai.inferers import sliding_window_inference
 from monai.transforms import (
@@ -21,11 +22,13 @@ from monai.transforms import (
     LabelFilter,
     SpatialPadd,
 )
+
 # local
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.model_framework import ModelFramework
 from napari_cellseg_annotator.models import model_SegResNet as SegResNet
 from napari_cellseg_annotator.models import model_VNet as VNet
+
 # Qt
 from qtpy.QtWidgets import (
     QVBoxLayout,
@@ -174,16 +177,17 @@ class Inferer(ModelFramework):
         self.images_filepaths = [
             "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
         ]
-        filenames = self.images_filepaths
-        path = os.path.dirname(filenames[0])
+        path = os.path.dirname(self.images_filepaths[0])
+        print("test")
+        print(path)
+        self._default_path = [path]
         self.lbl_image_files.setText(path)
-        self.update_default()
 
         self.view_checkbox.toggle()
 
         self.results_path = "C:/Users/Cyril/Desktop/test"
         self.lbl_result_path.setText(self.results_path)
-        self.update_default()
+        self._default_res_path = [self.results_path]
         self.start()
 
     # self.close()
@@ -302,7 +306,7 @@ class Inferer(ModelFramework):
 
                     out_layer = viewer.add_image(
                         out[0],
-                        colormap="gist_earth",
+                        colormap="twilight",
                         name=f"pred_{i}",
                         opacity=0.8,
                     )

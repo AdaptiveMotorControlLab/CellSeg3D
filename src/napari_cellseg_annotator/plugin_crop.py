@@ -161,7 +161,7 @@ class Cropping(BasePlugin):
             image_stack[:cropz, :cropy, :cropx],
             name="cropped",
             blending="additive",
-            colormap="blue",
+            colormap="twilight_shifted",
             scale=input_image.scale,
         )
         labels_crop_layer = vw.add_labels(

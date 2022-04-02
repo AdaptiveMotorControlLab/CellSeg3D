@@ -230,18 +230,14 @@ def launch_review(
     view1.window.add_dock_widget(dmg, name=" ", area="left")
 
     def update_button(axis_event):
-        # TODO : crash fixed, what to do with if axis != 0 ?
 
-        # axis = axis_event.ndim
-        # if axis != 0:
-        #     return
+
         slice_num = axis_event.value[0]
         print(f"slice num is {slice_num}")
         dmg.update(slice_num)
 
     view1.dims.events.current_step.connect(update_button)
-    # No argument ??
-    # old : events.axis.connect
+
 
     def crop_img(points, layer):
         min_vals = [x - 50 for x in points]

@@ -28,9 +28,9 @@ class ModelFramework(QWidget):
         self._viewer = viewer
         """Viewer to display in"""
 
-        self.images_filepaths = ""
+        self.images_filepaths = []
         """array(str): paths to images for training or inference"""
-        self.labels_filepaths = ""
+        self.labels_filepaths = []
         """array(str): paths to labels for training"""
         self.results_path = ""
         """str: path to output folder,to save results in"""
@@ -130,12 +130,13 @@ class ModelFramework(QWidget):
             # print(filenames)
             path = os.path.dirname(filenames[0])
             self.lbl_image_files.setText(path)
+            print(path)
             self._default_path[0] = path
 
     def load_label_dataset(self):
         """Show file dialog to set :py:attr:`labels_filepaths`"""
         filenames = self.load_dataset_paths()
-        if filenames != "":
+        if filenames != "" and filenames != [] :
             self.labels_filepaths = filenames
             path = os.path.dirname(filenames[0])
             self.lbl_label_files.setText(path)
@@ -144,7 +145,7 @@ class ModelFramework(QWidget):
     def load_results_path(self):
         """Show file dialog to set :py:attr:`results_path`"""
         dir = utils.open_file_dialog(self, self._default_res_path, True)
-        if dir != "" and type(dir) is str:
+        if dir != "" and type(dir) is str and os.path.isdir(dir) :
             self.results_path = dir
             self.lbl_result_path.setText(self.results_path)
             self.update_default()
@@ -152,7 +153,7 @@ class ModelFramework(QWidget):
     def load_model_path(self):
         """Show file dialog to set :py:attr:`model_path`"""
         dir = utils.open_file_dialog(self, self._default_model_path)
-        if dir != "" and type(dir) is str:
+        if dir != "" and type(dir) is str and os.path.isdir(dir):
             self.model_path = dir
             self.lbl_model_path.setText(self.results_path)
             self.update_default()

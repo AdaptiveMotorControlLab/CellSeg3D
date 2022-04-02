@@ -148,8 +148,8 @@ class Datamanager(QWidget):
         elif not self.as_folder:
             path = list(Path(label_dir).glob("./*" + self.filetype))
             # print(self.image_dims[0])
-            print(path[0].name)
-            filename = path[0].name
+            print(path)
+            filename = path
             labels = [str(filename) for i in range(self.image_dims[0])]
 
         else:

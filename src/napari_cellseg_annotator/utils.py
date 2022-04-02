@@ -201,7 +201,7 @@ def open_file_dialog(widget, possible_paths=[], load_as_folder: bool = False):
         load_as_folder (bool): Whether to open a folder or a single file. If True, will allow to open as folder
     """
     possible_paths.append(os.path.expanduser("~"))
-    default_path = [p for p in possible_paths if p != ""][0]
+    default_path = [p for p in possible_paths if p != "" and len(p) >= 3][0]
 
     # print("paths :")
     # print(possible_paths)
@@ -213,7 +213,7 @@ def open_file_dialog(widget, possible_paths=[], load_as_folder: bool = False):
         )
         return f_name
     else:
-
+        print(default_path)
         filenames = QFileDialog.getExistingDirectory(
             widget, "Open directory", default_path
         )

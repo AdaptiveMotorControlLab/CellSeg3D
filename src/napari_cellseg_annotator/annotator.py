@@ -201,7 +201,7 @@ class Loader(QWidget):
             )
         except:
             labels_raw = None
-            # TODO: viewer argument ?
+
         global global_launched_before
         if global_launched_before:
             new_viewer = napari.Viewer()
