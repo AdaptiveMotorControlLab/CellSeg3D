@@ -238,8 +238,8 @@ class Inferer(ModelFramework):
         )
         post_process_transforms = Compose(
             EnsureType(),
-            AsDiscrete(threshold=0.1),
-            LabelFilter(applied_labels=[0]),
+            AsDiscrete(threshold=0.8),
+            # LabelFilter(applied_labels=[0]),
         )
 
         inference_ds = Dataset(data=images_dict, transform=load_transforms)
