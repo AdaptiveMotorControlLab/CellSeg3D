@@ -3,7 +3,6 @@ import os
 
 import napari
 import torch
-from napari_cellseg_annotator import utils
 from qtpy.QtWidgets import (
     QWidget,
     QPushButton,
@@ -11,6 +10,8 @@ from qtpy.QtWidgets import (
     QLabel,
     QComboBox,
 )
+
+from napari_cellseg_annotator import utils
 
 
 class ModelFramework(QWidget):
@@ -180,14 +181,21 @@ class ModelFramework(QWidget):
             array(int): padding value for each dim
         """
         padding = []
-        for p in range(3):
+
+        dims = len(image_shape)
+        if dims != 2 or dims != 3 :
+            raise ValueError("Please check the size of the input, only 2 or 3-dimensional data is supported currently")
+
+        for p in range(dims):
             n = 0
             pad = -1
             while pad < image_shape[p]:
                 pad = 2**n
                 n += 1
                 if pad > 4095:
-                    return
+                    raise OverflowError("Feel free to change this if you have access to ludicrous amounts of VRAM. "
+                                        "Otherwise,you might want to use smaller images.")
+
             padding.append(pad)
         return padding
 
