@@ -3,5 +3,5 @@
 Inference module guide
 =================================
 
-This module inference images yay
+This module inference images
 TODO

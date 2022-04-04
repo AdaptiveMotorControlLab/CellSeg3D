@@ -8,10 +8,11 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
-from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.plugin_dock import Datamanager
 from qtpy.QtWidgets import QSizePolicy
 from scipy import ndimage
+
+from napari_cellseg_annotator import utils
+from napari_cellseg_annotator.plugin_dock import Datamanager
 
 
 def launch_review(
@@ -231,13 +232,11 @@ def launch_review(
 
     def update_button(axis_event):
 
-
         slice_num = axis_event.value[0]
         print(f"slice num is {slice_num}")
         dmg.update(slice_num)
 
     view1.dims.events.current_step.connect(update_button)
-
 
     def crop_img(points, layer):
         min_vals = [x - 50 for x in points]

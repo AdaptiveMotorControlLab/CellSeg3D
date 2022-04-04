@@ -137,7 +137,7 @@ class ModelFramework(QWidget):
     def load_label_dataset(self):
         """Show file dialog to set :py:attr:`labels_filepaths`"""
         filenames = self.load_dataset_paths()
-        if filenames != "" and filenames != [] :
+        if filenames != "" and filenames != []:
             self.labels_filepaths = filenames
             path = os.path.dirname(filenames[0])
             self.lbl_label_files.setText(path)
@@ -146,7 +146,7 @@ class ModelFramework(QWidget):
     def load_results_path(self):
         """Show file dialog to set :py:attr:`results_path`"""
         dir = utils.open_file_dialog(self, self._default_res_path, True)
-        if dir != "" and type(dir) is str and os.path.isdir(dir) :
+        if dir != "" and type(dir) is str and os.path.isdir(dir):
             self.results_path = dir
             self.lbl_result_path.setText(self.results_path)
             self.update_default()
@@ -183,8 +183,10 @@ class ModelFramework(QWidget):
         padding = []
 
         dims = len(image_shape)
-        if dims != 2 or dims != 3 :
-            raise ValueError("Please check the size of the input, only 2 or 3-dimensional data is supported currently")
+        if dims != 2 or dims != 3:
+            raise ValueError(
+                "Please check the size of the input, only 2 or 3-dimensional data is supported currently"
+            )
 
         for p in range(dims):
             n = 0
@@ -193,8 +195,10 @@ class ModelFramework(QWidget):
                 pad = 2**n
                 n += 1
                 if pad > 4095:
-                    raise OverflowError("Feel free to change this if you have access to ludicrous amounts of VRAM. "
-                                        "Otherwise,you might want to use smaller images.")
+                    raise OverflowError(
+                        "Feel free to change this if you have access to ludicrous amounts of VRAM. "
+                        "Otherwise,you might want to use smaller images."
+                    )
 
             padding.append(pad)
         return padding

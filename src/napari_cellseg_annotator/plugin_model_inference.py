@@ -9,7 +9,6 @@ from monai.data import (
     DataLoader,
     Dataset,
 )
-
 # MONAI
 from monai.inferers import sliding_window_inference
 from monai.transforms import (
@@ -19,16 +18,8 @@ from monai.transforms import (
     LoadImaged,
     EnsureTyped,
     EnsureType,
-    LabelFilter,
     SpatialPadd,
 )
-
-# local
-from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.model_framework import ModelFramework
-from napari_cellseg_annotator.models import model_SegResNet as SegResNet
-from napari_cellseg_annotator.models import model_VNet as VNet
-
 # Qt
 from qtpy.QtWidgets import (
     QVBoxLayout,
@@ -39,6 +30,12 @@ from qtpy.QtWidgets import (
     QComboBox,
 )
 from tifffile import imwrite
+
+# local
+from napari_cellseg_annotator import utils
+from napari_cellseg_annotator.model_framework import ModelFramework
+from napari_cellseg_annotator.models import model_SegResNet as SegResNet
+from napari_cellseg_annotator.models import model_VNet as VNet
 
 WEIGHTS_DIR = os.path.dirname(os.path.realpath(__file__)) + str(
     Path("/models/saved_weights")
@@ -91,7 +88,19 @@ class Inferer(ModelFramework):
 
         self.view_checkbox = QCheckBox()
         self.view_checkbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.view_checkbox.stateChanged.connect(self.toggle_display_number)
         self.lbl_view = QLabel("View in napari after prediction ?", self)
+
+        self.display_number_choice = QComboBox()
+        self.display_number_dict = {
+            "One result": 1,
+            "Three results": 3,
+            "Ten results": 10,
+        }
+        self.display_number_choice.addItems(self.display_number_dict.keys())
+        self.display_number_choice.setSizePolicy(
+            QSizePolicy.Fixed, QSizePolicy.Fixed
+        )
 
         self.model_choice = QComboBox()
         self.model_choice.addItems(sorted(self.models_dict.keys()))
@@ -133,6 +142,12 @@ class Inferer(ModelFramework):
         ]
         return data_dicts
 
+    def toggle_display_number(self):
+        if self.view_checkbox.isChecked():
+            self.display_number_choice.setVisible(True)
+        elif not self.view_checkbox.isChecked():
+            self.display_number_choice.setVisible(False)
+
     def build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
         vbox = QVBoxLayout()
@@ -153,10 +168,12 @@ class Inferer(ModelFramework):
         vbox.addWidget(
             utils.combine_blocks(self.view_checkbox, self.lbl_view)
         )  # view_after bool
+        vbox.addWidget(self.display_number_choice)
+        self.display_number_choice.setVisible(False)
 
         # TODO : add custom model handling ? using exec() to read user provided model class
         # self.lbl_label.setText("model.pth directory :")
-
+        vbox.addWidget(QLabel("", self))
         vbox.addWidget(self.btn_start)
         vbox.addWidget(self.btn_close)
 
@@ -290,7 +307,13 @@ class Inferer(ModelFramework):
                 print(f"File n°{i} saved as :")
                 print(filename)
 
-                if self.view_checkbox.isChecked():
+                if (
+                    self.view_checkbox.isChecked()
+                    and i
+                    < self.display_number_dict[
+                        self.display_number_choice.currentText()
+                    ]
+                ):
 
                     viewer = self._viewer
 
