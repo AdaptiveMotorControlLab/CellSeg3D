@@ -1,5 +1,6 @@
 import glob
 import os
+import warnings
 
 import napari
 import torch
@@ -12,6 +13,8 @@ from qtpy.QtWidgets import (
 )
 
 from napari_cellseg_annotator import utils
+
+warnings.formatwarning = utils.format_Warning
 
 
 class ModelFramework(QWidget):
@@ -183,7 +186,7 @@ class ModelFramework(QWidget):
         padding = []
 
         dims = len(image_shape)
-        print(dims)
+        print(f"Dimension for padding : {dims}")
         if dims != 2 and dims != 3:
             raise ValueError(
                 "Please check the size of the input, only 2 or 3-dimensional data is supported currently"
@@ -195,10 +198,10 @@ class ModelFramework(QWidget):
             while pad < image_shape[p]:
                 pad = 2**n
                 n += 1
-                if pad > 4095:
-                    raise OverflowError(
-                        "Feel free to change this if you have access to ludicrous amounts of VRAM. "
-                        "Otherwise,you might want to use smaller images."
+                if pad == 4096:
+                    warnings.warn(
+                        "Warning : a very large dimension for automatic padding has been computed.\n"
+                        "Ensure your images are of an appropriate size and/or that you have enough memory."
                     )
 
             padding.append(pad)

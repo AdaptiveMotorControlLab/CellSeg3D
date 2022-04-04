@@ -290,11 +290,14 @@ class Inferer(ModelFramework):
                 out = np.array(out).astype(np.float32)
                 print(f"Saving to : {self.results_path}")
 
+                image_id = i + 1
                 time = "{:%Y_%m_%d_%H_%M_%S}".format(datetime.now())
                 # print(time)
-                #TODO : original filename in output
+                # TODO : original filename in output
 
-                original_filename = os.path.basename(self.images_filepaths[i]).split('.')[0]
+                original_filename = os.path.basename(
+                    self.images_filepaths[i]
+                ).split(".")[0]
 
                 # File output save name : original-name_model_date+time_number.fileext
                 filename = (
@@ -304,16 +307,17 @@ class Inferer(ModelFramework):
                     + "_"
                     + self.model_choice.currentText()
                     + f"_{time}_"
-                    + f"pred{i}"
+                    + f"pred{image_id}"
                     + self.filetype_choice.currentText()
                 )
 
                 # print(filename)
                 imwrite(filename, out)
 
-                print(f"File n°{i} saved as :")
+                print(f"File n°{image_id} saved as :")
                 print(filename)
 
+                # check that viewer checkbox is on and that max number of displays has not been reached.
                 if (
                     self.view_checkbox.isChecked()
                     and i
@@ -329,15 +333,15 @@ class Inferer(ModelFramework):
                     original_layer = viewer.add_image(
                         in_data,
                         colormap="inferno",
-                        name=f"original_{i}",
+                        name=f"original_{image_id}",
                         scale=[1, 1, 1],
                         opacity=0.7,
                     )
 
                     out_layer = viewer.add_image(
                         out[0],
-                        colormap="twilight",
-                        name=f"pred_{i}",
+                        colormap="twilight_shifted",
+                        name=f"pred_{image_id}",
                         opacity=0.8,
                     )
 

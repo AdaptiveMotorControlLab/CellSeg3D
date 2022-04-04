@@ -5,9 +5,6 @@ from pathlib import Path
 import napari
 import numpy as np
 import skimage.io as io
-from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.launch_review import launch_review
-from napari_cellseg_annotator.plugin_base import BasePlugin
 from qtpy import QtGui
 from qtpy.QtWidgets import (
     QVBoxLayout,
@@ -18,21 +15,11 @@ from qtpy.QtWidgets import (
     QCheckBox,
 )
 
+from napari_cellseg_annotator import utils
+from napari_cellseg_annotator.launch_review import launch_review
+from napari_cellseg_annotator.plugin_base import BasePlugin
 
-def format_Warning(message, category, filename, lineno, line=""):
-    return (
-        str(filename)
-        + ":"
-        + str(lineno)
-        + ": "
-        + category.__name__
-        + ": "
-        + str(message)
-        + "\n"
-    )
-
-
-warnings.formatwarning = format_Warning
+warnings.formatwarning = utils.format_Warning
 
 
 global_launched_before = False

@@ -371,6 +371,19 @@ def select_train_data(dataframe, ori_imgs, label_imgs, ori_filenames):
     return np.array(train_ori_imgs), np.array(train_label_imgs)
 
 
+def format_Warning(message, category, filename, lineno, line=""):
+    return (
+        str(filename)
+        + ":"
+        + str(lineno)
+        + ": "
+        + category.__name__
+        + ": "
+        + str(message)
+        + "\n"
+    )
+
+
 # def dice_coeff(y_true, y_pred):
 #     smooth = 1.
 #     y_true_f = K.flatten(y_true)

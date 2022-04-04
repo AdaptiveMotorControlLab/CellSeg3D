@@ -23,12 +23,12 @@ Interface and functionalities
 
 When launching the module, you will be asked to provide an image folder containing all the volumes you'd like to be labeled.
 All images with the **.tif** extension in this folder will be labeled.
-You can then choose an output folder, where all the results will be saved as {original_name}_{model}_{date & time}_{id}
+You can then choose an output folder, where all the results will be saved as {original_name}_{model}_{date & time}_{id}.file_ext
 You can also select whether you'd like to see the results in napari afterwards; by default the first image processed you will be display,
 but you can choose to display up to ten at once.
 
-
-
-TODO
+.. note::
+    Feel free to change the colormap or contrast when viewing results to ensure you can properly see the labels.
+    You'll most likely want to use 3D view and grid mode in napari when checking results more broadly.
 
 
