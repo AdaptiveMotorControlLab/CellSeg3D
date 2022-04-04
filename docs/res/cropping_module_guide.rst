@@ -15,16 +15,14 @@ or simply **CTRL+S** once you have selected the correct layer.
 Launching the review process
 ---------------------------------
 
-First, you will be asked to provide a volume folder and a label folder, as well as the file extension
-of your images (either .png or .tif).
+First, you will be asked to load your images and labels; you can use the checkbox above the Open buttons to
+choose whether you want to load a single 3D **.tif** image or a folder of 2D images as a 3D stack.
+Folders can be stacks of either .png or .tif files, ideally numbered with the index of the slice at the end.
 
-.. important::
-    Depending on the filetype you selected, the folders should either contain:
+.. note::
+    Only single .tif files or folder of several .png or .tif are supported.
 
-    * For .png, one png per slice (provide a folder of several pngs)
-    * For .tif, a folder containing a **single** **3D** tif file with all slices (if there are several, the first one will be used)
-
-You can the choose the size of the cropped volume, which will be fixed throughout the process.
+You can the choose the size of the cropped volume, which will be constant throughout the process; make sure it is correct beforehand.
 Support for dynamically changing the crop size might be added in the future.
 
 Once you are ready, you can press **Start** to start the review process.
@@ -42,7 +40,7 @@ you **change the position** of the cropped volumes and labels in the x,y and z p
 .. hint::
     If you **cannot see your cropped volume well**, feel free to change the **colormaps** of the image and the cropped
     volume to better see them.
-    You may want to change the **opacity** and **contrast values** depending on your image, too.
+    You may want to change the **opacity** and **contrast thresholds** depending on your image, too.
 
 
 .. note::

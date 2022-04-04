@@ -7,6 +7,7 @@ Welcome to napari-cellseg-annotator's documentation!
 
     res/welcome
     res/loader_module_guide
+    res/inference_module_guide
     res/cropping_module_guide
 
 
