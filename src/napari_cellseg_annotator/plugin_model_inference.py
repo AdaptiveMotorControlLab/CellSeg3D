@@ -195,8 +195,8 @@ class Inferer(ModelFramework):
             "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
         ]
         path = os.path.dirname(self.images_filepaths[0])
-        print("test")
-        print(path)
+        # print("test")
+        # print(path)
         self._default_path = [path]
         self.lbl_image_files.setText(path)
 
@@ -291,10 +291,17 @@ class Inferer(ModelFramework):
                 print(f"Saving to : {self.results_path}")
 
                 time = "{:%Y_%m_%d_%H_%M_%S}".format(datetime.now())
-                print(time)
+                # print(time)
+                #TODO : original filename in output
+
+                original_filename = os.path.basename(self.images_filepaths[i]).split('.')[0]
+
+                # File output save name : original-name_model_date+time_number.fileext
                 filename = (
                     self.results_path
                     + "/"
+                    + original_filename
+                    + "_"
                     + self.model_choice.currentText()
                     + f"_{time}_"
                     + f"pred{i}"

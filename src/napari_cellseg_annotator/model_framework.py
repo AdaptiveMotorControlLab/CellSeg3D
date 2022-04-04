@@ -183,7 +183,8 @@ class ModelFramework(QWidget):
         padding = []
 
         dims = len(image_shape)
-        if dims != 2 or dims != 3:
+        print(dims)
+        if dims != 2 and dims != 3:
             raise ValueError(
                 "Please check the size of the input, only 2 or 3-dimensional data is supported currently"
             )
