@@ -198,7 +198,7 @@ def open_file_dialog(widget, possible_paths=[], load_as_folder: bool = False):
         widget (QWidget): Widget to display file dialog in
         possible_paths (str): Paths that may have been chosen before, can be a string
         or an array of strings containing the paths
-        load_as_folder (bool): Whether to open a folder or a single file. If True, will allow to open as folder
+        load_as_folder (bool): Whether to open a folder or a single file. If True, will allow to open folder as a single file (2D stack interpreted as 3D)
     """
     possible_paths.append(os.path.expanduser("~"))
     default_path = [p for p in possible_paths if p != "" and len(p) >= 3][0]
@@ -223,14 +223,14 @@ def open_file_dialog(widget, possible_paths=[], load_as_folder: bool = False):
 def load_images(dir_or_path, filetype="", as_folder: bool = False):
     """Loads the images in ``directory``, with different behaviour depending on ``filetype`` and ``as_folder``
 
-    * If ``as_folder`` is true, will load the path as a single image.
+    * If ``as_folder`` is True, will load the path as a single image.
 
     * If False, it will try to load a folder as stack of images. In this case ``filetype`` must be specified.
-        If False :
+    If False :
 
-        * For ``filetype == ".tif"`` : loads all tif files in the folder as a 3D dataset.
+    * For ``filetype == ".tif"`` : loads all tif files in the folder as a 3D dataset.
 
-        * For  ``filetype == ".png"`` : loads all png files in the folder as a 3D dataset.
+    * For  ``filetype == ".png"`` : loads all png files in the folder as a 3D dataset.
 
     Args:
         dir_or_path (str): path to the directory containing the images or the images themselves
@@ -372,6 +372,18 @@ def select_train_data(dataframe, ori_imgs, label_imgs, ori_filenames):
 
 
 def format_Warning(message, category, filename, lineno, line=""):
+    """Formats a warning message, use in code with ``warnings.formatwarning = utils.format_Warning``
+
+    Args:
+        message: warning message
+        category: which type of warning has been raised
+        filename: file
+        lineno: line number
+        line: unused
+
+    Returns: format
+
+    """
     return (
         str(filename)
         + ":"

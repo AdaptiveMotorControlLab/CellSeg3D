@@ -224,7 +224,15 @@ class Inferer(ModelFramework):
 
         * Saves all outputs in the selected results folder
 
-        * If the option has been selected, display the results in napari
+        * If the option has been selected, display the results in napari, up to the maximum number selected
+
+        TODO:
+
+        * Turn prediction into a function ? (for threading maybe)
+
+        * Use os.makedirs(dir, exist_ok = True) ?
+
+        * Multithreading ?
 
         """
         device = self.device
@@ -293,13 +301,12 @@ class Inferer(ModelFramework):
                 image_id = i + 1
                 time = "{:%Y_%m_%d_%H_%M_%S}".format(datetime.now())
                 # print(time)
-                # TODO : original filename in output
 
                 original_filename = os.path.basename(
                     self.images_filepaths[i]
                 ).split(".")[0]
 
-                # File output save name : original-name_model_date+time_number.fileext
+                # File output save name : original-name_model_date+time_number.filetype
                 filename = (
                     self.results_path
                     + "/"
@@ -307,7 +314,7 @@ class Inferer(ModelFramework):
                     + "_"
                     + self.model_choice.currentText()
                     + f"_{time}_"
-                    + f"pred{image_id}"
+                    + f"pred_{image_id}"
                     + self.filetype_choice.currentText()
                 )
 

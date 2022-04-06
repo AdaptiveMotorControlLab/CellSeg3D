@@ -1,7 +1,6 @@
 import os
 
 import napari
-from napari_cellseg_annotator import utils
 from qtpy.QtWidgets import (
     QWidget,
     QPushButton,
@@ -10,6 +9,8 @@ from qtpy.QtWidgets import (
     QComboBox,
     QCheckBox,
 )
+
+from napari_cellseg_annotator import utils
 
 
 class BasePlugin(QWidget):
@@ -124,4 +125,5 @@ class BasePlugin(QWidget):
         self._default_path = [self.image_path, self.label_path]
 
     def close(self):
+        """"Virtual",should be implemented in children classes"""
         self._viewer.window.remove_dock_widget(self)

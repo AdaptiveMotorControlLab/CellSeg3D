@@ -61,7 +61,7 @@ class ModelFramework(QWidget):
         self.btn_label_files.setSizePolicy(
             QSizePolicy.Fixed, QSizePolicy.Fixed
         )
-        self.lbl_label_files = QLabel("Images directory", self)
+        self.lbl_label_files = QLabel("Labels directory", self)
         self.btn_label_files.clicked.connect(self.load_label_dataset)
 
         self.filetype_choice = QComboBox()
@@ -206,12 +206,6 @@ class ModelFramework(QWidget):
 
             padding.append(pad)
         return padding
-
-    def transform(self):
-        return
-
-    def train(self):
-        return
 
     def build(self):
         raise NotImplementedError("Should be defined in children classes")
