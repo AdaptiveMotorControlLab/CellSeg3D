@@ -29,6 +29,18 @@ load_images
 **************************************
 .. autofunction:: napari_cellseg_annotator.utils::load_images
 
+open_file_dialog
+**************************************
+.. autofunction:: napari_cellseg_annotator.utils::open_file_dialog
+
+format_Warning
+**************************************
+.. autofunction:: napari_cellseg_annotator.utils::format_Warning
+
+
+
+
+
 
 
 

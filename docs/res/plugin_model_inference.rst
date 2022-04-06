@@ -5,7 +5,8 @@ plugin_model_inference.py
 Class : Inferer
 ----------------------------------------------------
 
-Inherits from : :doc:`model_framework`
+.. important::
+    Inherits from : :doc:`model_framework`
 
 Methods
 **********************

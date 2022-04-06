@@ -28,10 +28,10 @@ with a trailing number if several copies of it already exists.
 Once you are ready, you can press **Run** to start the review process.
 
 .. note::
-    You can find the csv file containing the annotation status **in the same folder as the volumes**
+    You can find the csv file containing the annotation status **in the same folder as the labels**
 
 
-Review process : interface & functionalities
+Interface & functionalities
 ---------------------------------------------------------------
 
 .. image:: images/review_process_example.png
@@ -52,3 +52,4 @@ Source code
 
 * :doc:`plugin_loader`
 * :doc:`launch_review`
+* :doc:`plugin_base`

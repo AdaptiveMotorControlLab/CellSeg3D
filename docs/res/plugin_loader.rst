@@ -5,7 +5,8 @@ plugin_loader.py
 Class : Loader
 ----------------------------------------------------
 
-Inherits from : :doc:`plugin_base`
+.. important::
+    Inherits from : :doc:`plugin_base`
 
 Methods
 **********************
