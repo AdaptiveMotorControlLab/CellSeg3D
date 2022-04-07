@@ -34,9 +34,15 @@ You can then choose an output folder, where all the results will be saved.
 You can also select whether you'd like to see the results in napari afterwards; by default the first image processed will be displayed,
 but you can choose to display up to three or ten at once.
 
+When you are done choosing your parameters, you can press the **Start** button to begin the inference process.
+Once it has finished, results will be saved then displayed in napari; each ouput will be paired with its original.
+
 .. note::
-    Feel free to change the **colormap** or **contrast** when viewing results to ensure you can properly see the labels.
-    You'll most likely want to use **3D view** and **grid mode** in napari when checking results more broadly.
+    | **Results** will be displayed using the **twilight shifted** colormap, whereas the **original** image will show in the **inferno** colormap.
+    | Feel free to change the **colormap** or **contrast** when viewing results to ensure you can properly see the labels.
+    | You'll most likely want to use **3D view** and **grid mode** in napari when checking results more broadly.
+
+.. image:: images/inference_results_example.png
 
 Source code
 --------------------------------
