@@ -29,6 +29,10 @@ load_images
 **************************************
 .. autofunction:: napari_cellseg_annotator.utils::load_images
 
+get_date_time
+**************************************
+.. autofunction:: napari_cellseg_annotator.utils::get_date_time
+
 open_file_dialog
 **************************************
 .. autofunction:: napari_cellseg_annotator.utils::open_file_dialog

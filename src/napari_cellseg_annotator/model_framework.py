@@ -13,6 +13,8 @@ from qtpy.QtWidgets import (
 )
 
 from napari_cellseg_annotator import utils
+from napari_cellseg_annotator.models import model_SegResNet as SegResNet
+from napari_cellseg_annotator.models import model_VNet as VNet
 
 warnings.formatwarning = utils.format_Warning
 
@@ -43,6 +45,11 @@ class ModelFramework(QWidget):
 
         self.device = "cpu"
         """Device to train on, chosen automatically by :py:func:`get_device`"""
+
+        self.models_dict = {"VNet": VNet, "SegResNet": SegResNet}
+        """dict: dictionary of available models, with string for widget display as key
+
+        Currently implemented : SegResNet, VNet"""
 
         self._default_path = [self.images_filepaths, self.labels_filepaths]
         self._default_model_path = [self.model_path]
@@ -83,6 +90,10 @@ class ModelFramework(QWidget):
         self.lbl_model_path = QLabel("Model directory", self)
         self.btn_model_path.clicked.connect(self.load_label_dataset)
 
+        self.model_choice = QComboBox()
+        self.model_choice.addItems(sorted(self.models_dict.keys()))
+        self.lbl_model_choice = QLabel("Model name", self)
+
         self.btn_close = QPushButton("Close", self)
         self.btn_close.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn_close.clicked.connect(self.close)
@@ -116,6 +127,8 @@ class ModelFramework(QWidget):
 
         * "label" : corresponding label
         """
+        print(f"Image {self.images_filepaths}")
+        print(f"Lab {self.labels_filepaths}")
         data_dicts = [
             {"image": image_name, "label": label_name}
             for image_name, label_name in zip(
@@ -125,16 +138,24 @@ class ModelFramework(QWidget):
 
         return data_dicts
 
+    def get_model(self, key):
+        """Getter for module associated to currently selected model"""
+        return self.models_dict[key]
+
+    def get_loss(self, key):
+        """Getter for loss function selected by user"""
+        return self.loss_dict[key]
+
     def load_image_dataset(self):
         """Show file dialog to set :py:attr:`images_filepaths`"""
         filenames = self.load_dataset_paths()
-        print(filenames)
+        # print(filenames)
         if filenames != "" and filenames != []:
             self.images_filepaths = filenames
             # print(filenames)
             path = os.path.dirname(filenames[0])
             self.lbl_image_files.setText(path)
-            print(path)
+            # print(path)
             self._default_path[0] = path
 
     def load_label_dataset(self):
@@ -174,11 +195,12 @@ class ModelFramework(QWidget):
 
     def get_padding_dim(self, image_shape):
         """
-        Finds the nearest and superior power of two for each image dimension to pad it for CNN processing
+        Finds the nearest and superior power of two for each image dimension to pad it for CNN processing,
+        for either 2D or 3D images
 
 
         Args:
-            image_shape (torch.size): an array of the dimensions of the image in D/H/W
+            image_shape (torch.size): an array of the dimensions of the image in D/H/W if 3D or H/W if 2D
 
         Returns:
             array(int): padding value for each dim
@@ -186,7 +208,7 @@ class ModelFramework(QWidget):
         padding = []
 
         dims = len(image_shape)
-        print(f"Dimension for padding : {dims}")
+        print(f"Dimension of data for padding : {dims}D")
         if dims != 2 and dims != 3:
             raise ValueError(
                 "Please check the size of the input, only 2 or 3-dimensional data is supported currently"
@@ -198,10 +220,11 @@ class ModelFramework(QWidget):
             while pad < image_shape[p]:
                 pad = 2**n
                 n += 1
-                if pad == 4096:
+                if pad >= 1024:
                     warnings.warn(
                         "Warning : a very large dimension for automatic padding has been computed.\n"
                         "Ensure your images are of an appropriate size and/or that you have enough memory."
+                        f"The padding value is currently {pad}."
                     )
 
             padding.append(pad)

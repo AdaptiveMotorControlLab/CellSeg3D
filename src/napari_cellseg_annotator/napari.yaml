@@ -28,6 +28,10 @@ contributions:
     title: Create Inferer
     python_name: napari_cellseg_annotator.plugins:Inferer
 
+  - id: napari-cellseg-annotator.train
+    title: Create Trainer
+    python_name: napari_cellseg_annotator.plugins:Trainer
+
 
   widgets:
   - command: napari-cellseg-annotator.load
@@ -36,11 +40,8 @@ contributions:
   - command: napari-cellseg-annotator.infer
     display_name: Inference loader
 
-#  - command: napari-cellseg-annotator.train
-#    display_name: Trainer
-#
-#  - command: napari-cellseg-annotator.predict
-#    display_name: Predicter
+  - command: napari-cellseg-annotator.train
+    display_name: Training loader
 
   - command: napari-cellseg-annotator.crop
     display_name: Crop utility

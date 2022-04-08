@@ -1,5 +1,5 @@
-import datetime
 import os
+from datetime import datetime
 from pathlib import Path
 
 import cv2
@@ -218,6 +218,11 @@ def open_file_dialog(widget, possible_paths=[], load_as_folder: bool = False):
             widget, "Open directory", default_path
         )
         return filenames
+
+
+def get_date_time():
+    """Get date and time in the following format : year_month_day_hour_minute_second"""
+    return "{:%Y_%m_%d_%H_%M_%S}".format(datetime.now())
 
 
 def load_images(dir_or_path, filetype="", as_folder: bool = False):

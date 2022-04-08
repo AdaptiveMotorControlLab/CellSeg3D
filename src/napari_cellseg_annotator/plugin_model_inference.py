@@ -1,4 +1,5 @@
 import os
+import warnings
 from pathlib import Path
 
 import napari
@@ -26,7 +27,6 @@ from qtpy.QtWidgets import (
     QSizePolicy,
     QLabel,
     QCheckBox,
-    QComboBox,
     QSpinBox,
 )
 from tifffile import imwrite
@@ -34,8 +34,6 @@ from tifffile import imwrite
 # local
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.model_framework import ModelFramework
-from napari_cellseg_annotator.models import model_SegResNet as SegResNet
-from napari_cellseg_annotator.models import model_VNet as VNet
 
 WEIGHTS_DIR = os.path.dirname(os.path.realpath(__file__)) + str(
     Path("/models/saved_weights")
@@ -81,25 +79,17 @@ class Inferer(ModelFramework):
 
         self._viewer = viewer
 
-        self.models_dict = {"VNet": VNet, "SegResNet": SegResNet}
-        """dict: dictionary of available models, with string for widget display as key
-        
-        Currently implemented : SegResNet, VNet"""
-
         self.view_checkbox = QCheckBox()
         self.view_checkbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.view_checkbox.stateChanged.connect(self.toggle_display_number)
-        self.lbl_view = QLabel("View in napari after prediction ?", self)
+        self.lbl_view = QLabel("View results in napari after prediction ?", self)
 
         self.display_number_choice = QSpinBox()
-        self.display_number_choice.setRange(1,10)
-        self.display_number_choice.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.lbl_display_number =QLabel("How many ?", self)
-
-
-        self.model_choice = QComboBox()
-        self.model_choice.addItems(sorted(self.models_dict.keys()))
-        self.lbl_model_choice = QLabel("Model name", self)
+        self.display_number_choice.setRange(1, 10)
+        self.display_number_choice.setSizePolicy(
+            QSizePolicy.Fixed, QSizePolicy.Fixed
+        )
+        self.lbl_display_number = QLabel("How many ? (max. 10)", self)
 
         self.btn_start = QPushButton("Start inference")
         self.btn_start.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -120,12 +110,7 @@ class Inferer(ModelFramework):
             self.btntest.clicked.connect(self.run_test)
         #####################################################################
 
-        self.get_device()
         self.build()
-
-    def get_model(self, key):
-        """Getter for module associated to currently selected model"""
-        return self.models_dict[key]
 
     def create_inference_dict(self):
         """Create a dict with all image paths in :py:attr:`self.images_filepaths`
@@ -137,11 +122,19 @@ class Inferer(ModelFramework):
         ]
         return data_dicts
 
+    def check_ready(self):
+        if self.images_filepaths != [] and self.results_path != "":
+            return True
+        else:
+            warnings.formatwarning = utils.format_Warning
+            warnings.warn("Image and label paths are not correctly set")
+            return False
+
     def toggle_display_number(self):
         if self.view_checkbox.isChecked():
             self.display_number_choice.setVisible(True)
             self.lbl_display_number.setVisible(True)
-        else :
+        else:
             self.display_number_choice.setVisible(False)
             self.lbl_display_number.setVisible(False)
 
@@ -165,7 +158,11 @@ class Inferer(ModelFramework):
         vbox.addWidget(
             utils.combine_blocks(self.view_checkbox, self.lbl_view)
         )  # view_after bool
-        vbox.addWidget(utils.combine_blocks(self.display_number_choice, self.lbl_display_number))
+        vbox.addWidget(
+            utils.combine_blocks(
+                self.display_number_choice, self.lbl_display_number
+            )
+        )
         self.display_number_choice.setVisible(False)
         self.lbl_display_number.setVisible(False)
 
@@ -212,6 +209,8 @@ class Inferer(ModelFramework):
     def start(self):
         """Start the inference process and does the following:
 
+        * Checks if the output and input folders are correctly set
+
         * Loads the weights from the chosen model
 
         * Creates a dict with all image paths (see :py:func:`create_inference_dict`)
@@ -233,6 +232,10 @@ class Inferer(ModelFramework):
         * Multithreading ?
 
         """
+
+        if not self.check_ready():
+            raise ValueError("Aborting")
+
         device = self.device
 
         model_key = self.model_choice.currentText()
@@ -242,7 +245,6 @@ class Inferer(ModelFramework):
         model.to(device)
 
         images_dict = self.create_inference_dict()
-
 
         # TODO : better solution than loading first image always ?
         data = LoadImaged(keys=["image"])(images_dict[0])
@@ -327,8 +329,7 @@ class Inferer(ModelFramework):
                 # check that viewer checkbox is on and that max number of displays has not been reached.
                 if (
                     self.view_checkbox.isChecked()
-                    and i
-                    < self.display_number_choice.value()
+                    and i < self.display_number_choice.value()
                 ):
 
                     viewer = self._viewer
