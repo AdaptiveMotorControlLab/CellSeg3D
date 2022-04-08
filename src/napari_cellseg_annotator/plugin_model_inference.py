@@ -1,5 +1,4 @@
 import os
-from datetime import datetime
 from pathlib import Path
 
 import napari
@@ -245,6 +244,8 @@ class Inferer(ModelFramework):
 
         images_dict = self.create_inference_dict()
 
+
+        # TODO : better solution than loading first image always ?
         data = LoadImaged(keys=["image"])(images_dict[0])
         # print(data)
         check = data["image"].shape
@@ -299,7 +300,7 @@ class Inferer(ModelFramework):
                 print(f"Saving to : {self.results_path}")
 
                 image_id = i + 1
-                time = "{:%Y_%m_%d_%H_%M_%S}".format(datetime.now())
+                time = utils.get_date_time()
                 # print(time)
 
                 original_filename = os.path.basename(
