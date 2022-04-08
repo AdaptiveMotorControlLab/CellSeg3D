@@ -27,6 +27,7 @@ from qtpy.QtWidgets import (
     QLabel,
     QCheckBox,
     QComboBox,
+    QSpinBox,
 )
 from tifffile import imwrite
 
@@ -90,16 +91,11 @@ class Inferer(ModelFramework):
         self.view_checkbox.stateChanged.connect(self.toggle_display_number)
         self.lbl_view = QLabel("View in napari after prediction ?", self)
 
-        self.display_number_choice = QComboBox()
-        self.display_number_dict = {
-            "One result": 1,
-            "Three results": 3,
-            "Ten results": 10,
-        }
-        self.display_number_choice.addItems(self.display_number_dict.keys())
-        self.display_number_choice.setSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.Fixed
-        )
+        self.display_number_choice = QSpinBox()
+        self.display_number_choice.setRange(1,10)
+        self.display_number_choice.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.lbl_display_number =QLabel("How many ?", self)
+
 
         self.model_choice = QComboBox()
         self.model_choice.addItems(sorted(self.models_dict.keys()))
@@ -144,8 +140,10 @@ class Inferer(ModelFramework):
     def toggle_display_number(self):
         if self.view_checkbox.isChecked():
             self.display_number_choice.setVisible(True)
-        elif not self.view_checkbox.isChecked():
+            self.lbl_display_number.setVisible(True)
+        else :
             self.display_number_choice.setVisible(False)
+            self.lbl_display_number.setVisible(False)
 
     def build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
@@ -167,8 +165,9 @@ class Inferer(ModelFramework):
         vbox.addWidget(
             utils.combine_blocks(self.view_checkbox, self.lbl_view)
         )  # view_after bool
-        vbox.addWidget(self.display_number_choice)
+        vbox.addWidget(utils.combine_blocks(self.display_number_choice, self.lbl_display_number))
         self.display_number_choice.setVisible(False)
+        self.lbl_display_number.setVisible(False)
 
         # TODO : add custom model handling ? using exec() to read user provided model class
         # self.lbl_label.setText("model.pth directory :")
@@ -329,9 +328,7 @@ class Inferer(ModelFramework):
                 if (
                     self.view_checkbox.isChecked()
                     and i
-                    < self.display_number_dict[
-                        self.display_number_choice.currentText()
-                    ]
+                    < self.display_number_choice.value()
                 ):
 
                     viewer = self._viewer
