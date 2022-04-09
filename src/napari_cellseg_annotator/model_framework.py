@@ -127,8 +127,15 @@ class ModelFramework(QWidget):
 
         * "label" : corresponding label
         """
-        print(f"\nImage {self.images_filepaths}")
-        print(f"Lab {self.labels_filepaths}\n")
+
+        print("Image")
+        for file in self.images_filepaths:
+            print(os.path.basename(file).split(".")[0])
+
+        print("Labels")
+        for file in self.labels_filepaths:
+            print(os.path.basename(file).split(".")[0])
+
         data_dicts = [
             {"image": image_name, "label": label_name}
             for image_name, label_name in zip(
@@ -192,6 +199,12 @@ class ModelFramework(QWidget):
         print(f"Using {self.device} device")
         print("Using torch :")
         print(torch.__version__)
+        return self.device
+
+    def empty_cuda_cache(self):
+        print("Empyting cache...")
+        torch.cuda.empty_cache()
+        print("Cache emptied")
 
     def get_padding_dim(self, image_shape):
         """

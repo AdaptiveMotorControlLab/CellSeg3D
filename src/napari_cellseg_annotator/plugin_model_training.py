@@ -10,6 +10,7 @@ from monai.data import (
     decollate_batch,
     pad_list_data_collate,
 )
+
 # MONAI
 from monai.losses import DiceLoss, FocalLoss, DiceFocalLoss
 from monai.metrics import DiceMetric
@@ -26,6 +27,7 @@ from monai.transforms import (
     Rand3DElasticd,
 )
 from napari.qt.threading import thread_worker
+
 # Qt
 from qtpy.QtWidgets import (
     QVBoxLayout,
@@ -53,26 +55,40 @@ class Trainer(ModelFramework):
         """napari.viewer.Viewer: viewer in which the widget is displayed"""
 
         ######################
+        ######################
+        ######################
         # TEST TODO REMOVE
         import glob
-        directory = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes"
-        lab_directory = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/lab_sem"
-        self.images_filepaths = sorted(glob.glob(os.path.join(directory, "*.tif")))
 
-        self.labels_filepaths = sorted(glob.glob(os.path.join(lab_directory, "*.tif")))
+        directory = os.path.dirname(os.path.realpath(__file__)) + str(
+            Path("/models/dataset/volumes")
+        )
 
+        lab_directory = os.path.dirname(os.path.realpath(__file__)) + str(
+            Path("/models/dataset/lab_sem")
+        )
+        self.images_filepaths = sorted(
+            glob.glob(os.path.join(directory, "*.tif"))
+        )
+
+        self.labels_filepaths = sorted(
+            glob.glob(os.path.join(lab_directory, "*.tif"))
+        )
+
+        #######################
+        #######################
         #######################
 
         self.results_path = os.path.dirname(os.path.realpath(__file__)) + str(
             Path("/models/saved_weights")
         )
 
-        self.num_samples = 2
+        self.num_samples = 30
 
-        self.batch_size = 1
-        self.epochs = 4
+        self.batch_size = 5
+        self.epochs = 10
 
-        self.model = None  # TODO : model loading ?
+        self.model = None  # TODO : custom model loading ?
         self.worker = None
 
         self.loss_dict = {
@@ -100,6 +116,12 @@ class Trainer(ModelFramework):
         self.lbl_sample_choice = QLabel(
             "Number of samples from image : ", self
         )
+
+        self.batch_choice = QSpinBox()
+        self.batch_choice.setValue(self.batch_size)
+        self.batch_choice.setRange(1, 10)
+        self.batch_choice.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.lbl_batch_choice = QLabel("Batch size : ", self)
 
         self.btn_start = QPushButton("Start training")
         self.btn_start.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -154,6 +176,9 @@ class Trainer(ModelFramework):
         vbox.addWidget(
             utils.combine_blocks(self.sample_choice, self.lbl_sample_choice)
         )  # number of samples
+        vbox.addWidget(
+            utils.combine_blocks(self.batch_choice, self.lbl_batch_choice)
+        )  # batch size
 
         vbox.addWidget(QLabel("", self))
 
@@ -180,6 +205,50 @@ class Trainer(ModelFramework):
     def start(self):
 
         self.num_samples = self.sample_choice.value()
+        self.batch_size = self.batch_choice.value()
+
+
+        self.btn_close.setVisible(False)
+
+        # TODO : multithreading ?
+        if self.worker is not None:
+            if self.worker.is_running:
+                pass
+            else:
+                self.worker.start()
+                self.btn_start.setText("Running...")
+        else:
+            self.worker = self.train()
+            self.worker.started.connect(lambda: print("Worker is running..."))
+            self.worker.finished.connect(lambda: print("Worker stopped"))
+            if self.get_device().type == "cuda":
+                self.worker.finished.connect(self.empty_cuda_cache)
+
+
+
+        if self.worker.is_running:
+            print("Still working...")
+        else:
+            self.worker.start()
+            self.btn_start.setText("Running...")
+
+
+    @thread_worker
+    def train(self):
+
+        device = self.get_device()
+
+        data_dicts = self.create_train_dataset_dict()
+
+        # TODO param : % of validation from training set
+        train_files, val_files = (
+            data_dicts[0 : int(len(data_dicts) * 0.9)],
+            data_dicts[int(len(data_dicts) * 0.9) :],
+        )
+        print("train/val")
+        print(train_files)
+        print("\n")
+        print(val_files)
 
         self.sample_loader = Compose(
             [
@@ -213,46 +282,10 @@ class Trainer(ModelFramework):
         self.val_transforms = Compose(
             [
                 # LoadImaged(keys=["image", "label"]),
-                #EnsureChannelFirstd(keys=["image", "label"]),
+                # EnsureChannelFirstd(keys=["image", "label"]),
                 EnsureTyped(keys=["image", "label"]),
             ]
         )
-        self.btn_close.setVisible(False)
-
-        # TODO : multithreading ?
-        if self.worker is not None :
-            if self.worker.is_running :
-                pass
-            else :
-                self.worker.start()
-                self.btn_start.setText("Stop")
-        else :
-            self.worker = self.train()
-            self.worker.started.connect(lambda: print("Worker is running..."))
-            self.worker.finished.connect(lambda: print("Worker stopped"))
-
-        if self.worker.is_running:
-            print("Stop training requested")
-            self.model.stop_training = True
-            self.btn_start.setText("Start training")
-            self.btn_close.setVisible(True)
-            self.worker = None
-        else:
-            self.worker.start()
-            self.btn_start.setText("Stop")
-
-    @thread_worker
-    def train(self):
-
-        device = self.get_device()
-
-        data_dicts = self.create_train_dataset_dict()
-
-        # TODO param : % of validation from training set
-        train_files, val_files = data_dicts, data_dicts
-        # print("train/val")
-        # print(train_files)
-        # print(val_files)
 
         train_ds = PatchDataset(
             data=train_files,
@@ -288,7 +321,7 @@ class Trainer(ModelFramework):
         post_pred = AsDiscrete(threshold=0.3)
         post_label = EnsureType()
         val_interval = 2
-        max_epochs = self.epochs
+        max_epochs = self.epoch_choice.value()
         loss_function = self.get_loss(self.loss_choice.currentText())
         optimizer = torch.optim.Adam(model.parameters(), 1e-3)
         dice_metric = DiceMetric(include_background=True, reduction="mean")
@@ -299,11 +332,31 @@ class Trainer(ModelFramework):
         metric_values = []
 
         time = utils.get_date_time()
-        weights_filename = "best_model" + f"_{time}_.pth"
+        weights_filename = (
+            f"{self.model_choice.currentText()}_best_metric" + f"_{time}.pth"
+        )
+        if device.type == "cuda":
+            print("\nUsing GPU :")
+            print(torch.cuda.get_device_name(0))
+        else :
+            print("Using CPU")
 
         for epoch in range(max_epochs):
             print("-" * 10)
             print(f"Epoch {epoch + 1}/{max_epochs}")
+            if device.type == "cuda":
+                print("Memory Usage:")
+                print(
+                    "Allocated:",
+                    round(torch.cuda.memory_allocated(0) / 1024**3, 1),
+                    "GB",
+                )
+                print(
+                    "Cached:   ",
+                    round(torch.cuda.memory_reserved(0) / 1024**3, 1),
+                    "GB",
+                )
+
             model.train()
             epoch_loss = 0
             step = 0
@@ -336,13 +389,13 @@ class Trainer(ModelFramework):
                             val_data["label"].to(device),
                         )
 
-
-                        val_outputs = model_id.get_validation(model, val_inputs)
+                        val_outputs = model_id.get_validation(
+                            model, val_inputs
+                        )
 
                         pred = decollate_batch(val_outputs)
 
                         labs = decollate_batch(val_labels)
-
 
                         val_outputs = [
                             post_pred(res_tensor) for res_tensor in pred
@@ -371,11 +424,13 @@ class Trainer(ModelFramework):
                         f"\nBest mean dice: {best_metric:.4f} "
                         f"at epoch: {best_metric_epoch}"
                     )
+        print("="*10)
+        print("Done !")
         print(
             f"Train completed, best_metric: {best_metric:.4f} "
             f"at epoch: {best_metric_epoch}"
         )
-        #self.close()
+        # self.close()
         self.btn_start.setText("Start training")
         self.btn_close.setVisible(True)
 
