@@ -250,9 +250,9 @@ class Trainer(ModelFramework):
 
         # TODO param : % of validation from training set
         train_files, val_files = data_dicts, data_dicts
-        print("train/val")
-        print(train_files)
-        print(val_files)
+        # print("train/val")
+        # print(train_files)
+        # print(val_files)
 
         train_ds = PatchDataset(
             data=train_files,
@@ -375,8 +375,9 @@ class Trainer(ModelFramework):
             f"Train completed, best_metric: {best_metric:.4f} "
             f"at epoch: {best_metric_epoch}"
         )
-        warnings.warn("Training completed !")
-        self.close()
+        #self.close()
+        self.btn_start.setText("Start training")
+        self.btn_close.setVisible(True)
 
     def close(self):
         """Close the widget"""

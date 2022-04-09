@@ -127,8 +127,8 @@ class ModelFramework(QWidget):
 
         * "label" : corresponding label
         """
-        print(f"Image {self.images_filepaths}")
-        print(f"Lab {self.labels_filepaths}")
+        print(f"\nImage {self.images_filepaths}")
+        print(f"Lab {self.labels_filepaths}\n")
         data_dicts = [
             {"image": image_name, "label": label_name}
             for image_name, label_name in zip(
