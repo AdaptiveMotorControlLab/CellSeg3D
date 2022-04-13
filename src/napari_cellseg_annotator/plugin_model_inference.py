@@ -9,6 +9,7 @@ from monai.data import (
     DataLoader,
     Dataset,
 )
+
 # MONAI
 from monai.inferers import sliding_window_inference
 from monai.transforms import (
@@ -20,6 +21,7 @@ from monai.transforms import (
     EnsureType,
     SpatialPadd,
 )
+
 # Qt
 from qtpy.QtWidgets import (
     QVBoxLayout,
@@ -197,7 +199,6 @@ class Inferer(ModelFramework):
         self._default_path = [path]
         self.lbl_image_files.setText(path)
 
-        self.view_checkbox.toggle()
 
         self.results_path = "C:/Users/Cyril/Desktop/test"
         self.lbl_result_path.setText(self.results_path)
@@ -238,7 +239,7 @@ class Inferer(ModelFramework):
         if not self.check_ready():
             raise ValueError("Aborting")
 
-        device = self.device
+        device = self.get_device()
 
         model_key = self.model_choice.currentText()
 
@@ -292,7 +293,7 @@ class Inferer(ModelFramework):
                 outputs = sliding_window_inference(
                     inputs,
                     roi_size=None,
-                    sw_batch_size=1,
+                    sw_batch_size=3,
                     predictor=lambda inputs: model(inputs)[0],
                     device=device,
                 )
@@ -352,5 +353,6 @@ class Inferer(ModelFramework):
                         name=f"pred_{image_id}",
                         opacity=0.8,
                     )
-
+        if self.get_device().type == "cuda":
+            self.empty_cuda_cache()
         return
