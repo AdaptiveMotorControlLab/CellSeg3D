@@ -83,3 +83,9 @@ venv/
 # written by setuptools_scm
 **/_version.py
 
+
+
+########
+#project specific
+#dataset
+/src/napari_cellseg_annotator/models/dataset/
