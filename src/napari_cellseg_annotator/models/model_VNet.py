@@ -10,8 +10,10 @@ def get_net():
 def get_weights_file():
     return "dice_VNet.pth"
 
+
 def get_output(model, input):
     return model(input)
+
 
 def get_validation(model, val_inputs):
     roi_size = (64, 64, 64)
@@ -20,4 +22,3 @@ def get_validation(model, val_inputs):
         val_inputs, roi_size, sw_batch_size, model
     )
     return val_outputs
-

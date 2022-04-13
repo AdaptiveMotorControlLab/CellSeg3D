@@ -82,7 +82,9 @@ class Inferer(ModelFramework):
         self.view_checkbox = QCheckBox()
         self.view_checkbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.view_checkbox.stateChanged.connect(self.toggle_display_number)
-        self.lbl_view = QLabel("View results in napari after prediction ?", self)
+        self.lbl_view = QLabel(
+            "View results in napari after prediction ?", self
+        )
 
         self.display_number_choice = QSpinBox()
         self.display_number_choice.setRange(1, 10)

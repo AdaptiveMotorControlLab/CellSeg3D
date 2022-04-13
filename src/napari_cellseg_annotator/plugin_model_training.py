@@ -4,13 +4,17 @@ from pathlib import Path
 
 import napari
 import torch
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvasQTAgg as FigureCanvas,
+)
+from matplotlib.figure import Figure
+# MONAI
 from monai.data import (
     DataLoader,
     PatchDataset,
     decollate_batch,
     pad_list_data_collate,
 )
-# MONAI
 from monai.losses import DiceLoss, FocalLoss, DiceFocalLoss
 from monai.metrics import DiceMetric
 from monai.transforms import (
@@ -55,11 +59,20 @@ class Trainer(ModelFramework):
         ######################
         # TEST TODO REMOVE
         import glob
-        directory = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes"
-        lab_directory = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/lab_sem"
-        self.images_filepaths = sorted(glob.glob(os.path.join(directory, "*.tif")))
 
-        self.labels_filepaths = sorted(glob.glob(os.path.join(lab_directory, "*.tif")))
+        directory = (
+            "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes"
+        )
+        lab_directory = (
+            "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/lab_sem"
+        )
+        self.images_filepaths = sorted(
+            glob.glob(os.path.join(directory, "*.tif"))
+        )
+
+        self.labels_filepaths = sorted(
+            glob.glob(os.path.join(lab_directory, "*.tif"))
+        )
 
         #######################
 
@@ -213,20 +226,20 @@ class Trainer(ModelFramework):
         self.val_transforms = Compose(
             [
                 # LoadImaged(keys=["image", "label"]),
-                #EnsureChannelFirstd(keys=["image", "label"]),
+                # EnsureChannelFirstd(keys=["image", "label"]),
                 EnsureTyped(keys=["image", "label"]),
             ]
         )
         self.btn_close.setVisible(False)
 
         # TODO : multithreading ?
-        if self.worker is not None :
-            if self.worker.is_running :
+        if self.worker is not None:
+            if self.worker.is_running:
                 pass
-            else :
+            else:
                 self.worker.start()
                 self.btn_start.setText("Stop")
-        else :
+        else:
             self.worker = self.train()
             self.worker.started.connect(lambda: print("Worker is running..."))
             self.worker.finished.connect(lambda: print("Worker stopped"))
@@ -336,13 +349,13 @@ class Trainer(ModelFramework):
                             val_data["label"].to(device),
                         )
 
-
-                        val_outputs = model_id.get_validation(model, val_inputs)
+                        val_outputs = model_id.get_validation(
+                            model, val_inputs
+                        )
 
                         pred = decollate_batch(val_outputs)
 
                         labs = decollate_batch(val_labels)
-
 
                         val_outputs = [
                             post_pred(res_tensor) for res_tensor in pred
@@ -375,7 +388,34 @@ class Trainer(ModelFramework):
             f"Train completed, best_metric: {best_metric:.4f} "
             f"at epoch: {best_metric_epoch}"
         )
-        #self.close()
+
+        canvas = FigureCanvas(Figure(figsize=(2, 15)))
+
+        train_loss = canvas.figure.add_subplot(2, 1, 1)
+        # canvas.figure.suptitle("Loss plot\n", fontsize=8)
+        train_loss.set_title("Epoch Average Loss")
+
+        x = [i + 1 for i in range(len(epoch_loss_values))]
+        y = epoch_loss_values
+        train_loss.set_xlabel("epoch")
+        train_loss.plot(x, y)
+        dice_metric = canvas.figure.add_subplot(2, 1, 2)
+        dice_metric.set_title("Val Mean Dice")
+        x = [val_interval * (i + 1) for i in range(len(metric_values))]
+        y = metric_values
+        dice_metric.set_xlabel("epoch")
+        dice_metric.plot(x, y)
+
+        # canvas.figure.tight_layout()
+        canvas.figure.subplots_adjust(
+            left=0, bottom=0.1, right=1, top=0.95, wspace=0, hspace=0.4
+        )
+
+        canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
+
+        self._viewer.window.add_dock_widget(canvas, name=" ", area="right")
+
+        # self.close()
         self.btn_start.setText("Start training")
         self.btn_close.setVisible(True)
 
