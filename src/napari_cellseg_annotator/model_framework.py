@@ -5,7 +5,7 @@ import warnings
 import napari
 import torch
 from qtpy.QtWidgets import (
-    QWidget,
+    QTabWidget,
     QPushButton,
     QSizePolicy,
     QLabel,
@@ -19,7 +19,7 @@ from napari_cellseg_annotator.models import model_VNet as VNet
 warnings.formatwarning = utils.format_Warning
 
 
-class ModelFramework(QWidget):
+class ModelFramework(QTabWidget):
     """Create a framework to use for loading images, labels, models, etc. for both inference and training"""
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
@@ -128,10 +128,10 @@ class ModelFramework(QWidget):
         * "label" : corresponding label
         """
 
-        print("Image")
+        print("Images :")
         for file in self.images_filepaths:
             print(os.path.basename(file).split(".")[0])
-
+        print("*" * 10)
         print("Labels")
         for file in self.labels_filepaths:
             print(os.path.basename(file).split(".")[0])

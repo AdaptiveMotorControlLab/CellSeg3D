@@ -231,11 +231,13 @@ def load_images(dir_or_path, filetype="", as_folder: bool = False):
     * If ``as_folder`` is True, will load the path as a single image.
 
     * If False, it will try to load a folder as stack of images. In this case ``filetype`` must be specified.
+
     If False :
 
-    * For ``filetype == ".tif"`` : loads all tif files in the folder as a 3D dataset.
+        * For ``filetype == ".tif"`` : loads all tif files in the folder as a 3D dataset.
 
-    * For  ``filetype == ".png"`` : loads all png files in the folder as a 3D dataset.
+        * For  ``filetype == ".png"`` : loads all png files in the folder as a 3D dataset.
+
 
     Args:
         dir_or_path (str): path to the directory containing the images or the images themselves

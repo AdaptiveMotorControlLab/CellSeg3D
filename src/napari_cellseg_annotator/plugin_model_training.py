@@ -32,9 +32,11 @@ from monai.transforms import (
 from napari.qt.threading import thread_worker
 # Qt
 from qtpy.QtWidgets import (
+    QWidget,
     QVBoxLayout,
     QPushButton,
     QSizePolicy,
+    QLayout,
     QLabel,
     QComboBox,
     QSpinBox,
@@ -85,8 +87,8 @@ class Trainer(ModelFramework):
             Path("/models/saved_weights")
         )
 
+        # default values
         self.num_samples = 2
-
         self.batch_size = 1
         self.epochs = 4
         self.val_interval = 2
@@ -144,7 +146,7 @@ class Trainer(ModelFramework):
         # interface
         self.epoch_choice = QSpinBox()
         self.epoch_choice.setValue(self.epochs)
-        self.epoch_choice.setRange(1, 100)
+        self.epoch_choice.setRange(2, 1000)
         self.epoch_choice.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.lbl_epoch_choice = QLabel("Number of epochs : ", self)
 
@@ -154,7 +156,7 @@ class Trainer(ModelFramework):
 
         self.sample_choice = QSpinBox()
         self.sample_choice.setValue(self.num_samples)
-        self.sample_choice.setRange(1, 50)
+        self.sample_choice.setRange(2, 50)
         self.sample_choice.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.lbl_sample_choice = QLabel(
             "Number of samples from image : ", self
@@ -185,51 +187,56 @@ class Trainer(ModelFramework):
 
     def build(self):
 
-        vbox = QVBoxLayout()
+        param_tab = QWidget()
 
-        vbox.addWidget(
+        param_tab_layout = QVBoxLayout()
+        param_tab_layout.setSizeConstraint(QLayout.SetFixedSize)
+
+        param_tab_layout.addWidget(
             utils.combine_blocks(self.filetype_choice, self.lbl_filetype)
         )  # file extension
 
-        vbox.addWidget(
+        param_tab_layout.addWidget(
             utils.combine_blocks(self.btn_image_files, self.lbl_image_files)
         )  # volumes
-        vbox.addWidget(
+        param_tab_layout.addWidget(
             utils.combine_blocks(self.btn_label_files, self.lbl_label_files)
         )  # labels
 
-        # vbox.addWidget(
+        # param_tab_layout.addWidget(
         #     utils.combine_blocks(self.model_choice, self.lbl_model_choice)
         # )  # model choice
 
-        vbox.addWidget(
+        param_tab_layout.addWidget(
             utils.combine_blocks(self.btn_result_path, self.lbl_result_path)
         )  # results folder
 
-        vbox.addWidget(QLabel("", self))
-        vbox.addWidget(
+        param_tab_layout.addWidget(QLabel("", self))
+        param_tab_layout.addWidget(
             utils.combine_blocks(self.model_choice, self.lbl_model_choice)
         )  # model choice
-        vbox.addWidget(
+        param_tab_layout.addWidget(
             utils.combine_blocks(self.loss_choice, self.lbl_loss_choice)
         )  # loss choice
-        vbox.addWidget(
+        param_tab_layout.addWidget(
             utils.combine_blocks(self.epoch_choice, self.lbl_epoch_choice)
         )  # epochs
-        vbox.addWidget(
+        param_tab_layout.addWidget(
             utils.combine_blocks(self.sample_choice, self.lbl_sample_choice)
         )  # number of samples
-        vbox.addWidget(
+        param_tab_layout.addWidget(
             utils.combine_blocks(self.batch_choice, self.lbl_batch_choice)
         )  # batch size
 
-        vbox.addWidget(QLabel("", self))
+        param_tab_layout.addWidget(QLabel("", self))
 
-        vbox.addWidget(self.btn_start)
-        vbox.addWidget(self.btn_close)
+        param_tab_layout.addWidget(self.btn_start)
+        param_tab_layout.addWidget(self.btn_close)
         # TODO : what to train ? predefined model ? custom model ?
 
-        self.setLayout(vbox)
+        param_tab.setLayout(param_tab_layout)
+
+        self.addTab(param_tab, "Basic parameters")
 
     def show_dialog_lab(self):
         f_name = utils.open_file_dialog(self, self._default_path)
@@ -265,6 +272,7 @@ class Trainer(ModelFramework):
             self.worker = self.train()
             self.worker.started.connect(lambda: print("Worker is running..."))
             self.worker.finished.connect(lambda: print("Worker stopped"))
+            self.worker.finished.connect(self.train_results)
             if self.get_device().type == "cuda":
                 self.worker.finished.connect(self.empty_cuda_cache)
 
@@ -274,6 +282,10 @@ class Trainer(ModelFramework):
             self.worker.start()
             self.btn_start.setText("Running...")
 
+    def train_results(self):
+        self.btn_start.setText("Start")
+        self.btn_close.setVisible(True)
+        self.plot_loss()
 
     @thread_worker
     def train(self):
@@ -284,13 +296,12 @@ class Trainer(ModelFramework):
 
         # TODO param : % of validation from training set
         train_files, val_files = (
-            data_dicts[0: int(len(data_dicts) * 0.9)],
-            data_dicts[int(len(data_dicts) * 0.9):],
+            data_dicts[0 : int(len(data_dicts) * 0.9)],
+            data_dicts[int(len(data_dicts) * 0.9) :],
         )
         # print("train/val")
         # print(train_files)
         # print(val_files)
-
 
         train_ds = PatchDataset(
             data=train_files,
@@ -334,7 +345,6 @@ class Trainer(ModelFramework):
         best_metric = -1
         best_metric_epoch = -1
 
-
         time = utils.get_date_time()
         weights_filename = (
             f"{self.model_choice.currentText()}_best_metric" + f"_{time}.pth"
@@ -342,7 +352,7 @@ class Trainer(ModelFramework):
         if device.type == "cuda":
             print("\nUsing GPU :")
             print(torch.cuda.get_device_name(0))
-        else :
+        else:
             print("Using CPU")
 
         for epoch in range(max_epochs):
@@ -428,20 +438,18 @@ class Trainer(ModelFramework):
                         f"\nBest mean dice: {best_metric:.4f} "
                         f"at epoch: {best_metric_epoch}"
                     )
-        print("="*10)
+        print("=" * 10)
         print("Done !")
         print(
             f"Train completed, best_metric: {best_metric:.4f} "
             f"at epoch: {best_metric_epoch}"
         )
 
-
         # self.close()
 
-
     def plot_loss(self):
-        #loss plot
-        canvas = FigureCanvas(Figure(figsize=(2, 15)))
+        # loss plot
+        canvas = FigureCanvas(Figure(figsize=(3, 10)))
 
         train_loss = canvas.figure.add_subplot(2, 1, 1)
         # canvas.figure.suptitle("Loss plot\n", fontsize=8)
@@ -451,21 +459,30 @@ class Trainer(ModelFramework):
         y = self.epoch_loss_values
         train_loss.set_xlabel("epoch")
         train_loss.plot(x, y)
+        train_loss.ticklabel_format(axis=y,style="sci")
         dice_metric = canvas.figure.add_subplot(2, 1, 2)
         dice_metric.set_title("Val Mean Dice")
-        x = [self.val_interval * (i + 1) for i in range(len(self.metric_values))]
+        x = [
+            self.val_interval * (i + 1) for i in range(len(self.metric_values))
+        ]
         y = self.metric_values
         dice_metric.set_xlabel("epoch")
         dice_metric.plot(x, y)
+        dice_metric.ticklabel_format(axis=y,style="sci")
 
         # canvas.figure.tight_layout()
         canvas.figure.subplots_adjust(
-            left=0, bottom=0.1, right=1, top=0.95, wspace=0, hspace=0.4
+            left=0.15, bottom=0.1, right=0.9, top=0.95, wspace=0, hspace=0.4
         )
 
-        canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
+        canvas.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
 
-        self._viewer.window.add_dock_widget(canvas, name=" ", area="right")
+        self.addTab(canvas, "Loss plot")
+
+    def save_checkpoint(self):
+        return
+
+    # TODO : yield with generator
 
     def close(self):
         """Close the widget"""

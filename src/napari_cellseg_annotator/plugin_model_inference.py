@@ -9,7 +9,6 @@ from monai.data import (
     DataLoader,
     Dataset,
 )
-
 # MONAI
 from monai.inferers import sliding_window_inference
 from monai.transforms import (
@@ -21,7 +20,6 @@ from monai.transforms import (
     EnsureType,
     SpatialPadd,
 )
-
 # Qt
 from qtpy.QtWidgets import (
     QVBoxLayout,
@@ -198,7 +196,6 @@ class Inferer(ModelFramework):
         # print(path)
         self._default_path = [path]
         self.lbl_image_files.setText(path)
-
 
         self.results_path = "C:/Users/Cyril/Desktop/test"
         self.lbl_result_path.setText(self.results_path)
