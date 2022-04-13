@@ -128,11 +128,11 @@ class ModelFramework(QTabWidget):
         * "label" : corresponding label
         """
 
-        print("Images :")
+        print("Images :\n")
         for file in self.images_filepaths:
             print(os.path.basename(file).split(".")[0])
         print("*" * 10)
-        print("Labels")
+        print("Labels :\n")
         for file in self.labels_filepaths:
             print(os.path.basename(file).split(".")[0])
 

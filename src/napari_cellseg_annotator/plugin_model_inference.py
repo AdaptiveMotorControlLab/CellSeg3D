@@ -9,6 +9,7 @@ from monai.data import (
     DataLoader,
     Dataset,
 )
+
 # MONAI
 from monai.inferers import sliding_window_inference
 from monai.transforms import (
@@ -20,6 +21,7 @@ from monai.transforms import (
     EnsureType,
     SpatialPadd,
 )
+
 # Qt
 from qtpy.QtWidgets import (
     QVBoxLayout,

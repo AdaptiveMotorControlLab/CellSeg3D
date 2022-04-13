@@ -1,13 +1,18 @@
 import os
 import warnings
 from pathlib import Path
+import numpy as np
 
 import napari
 import torch
+
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+from matplotlib.pylab import MaxNLocator
+
 # MONAI
 from monai.data import (
     DataLoader,
@@ -30,6 +35,7 @@ from monai.transforms import (
     Rand3DElasticd,
 )
 from napari.qt.threading import thread_worker
+
 # Qt
 from qtpy.QtWidgets import (
     QWidget,
@@ -102,42 +108,6 @@ class Trainer(ModelFramework):
             "Dice-Focal Loss": DiceFocalLoss(sigmoid=True, lambda_dice=0.2),
         }
 
-        self.sample_loader = Compose(
-            [
-                LoadImaged(keys=["image", "label"]),
-                EnsureChannelFirstd(keys=["image", "label"]),
-                RandSpatialCropSamplesd(
-                    keys=["image", "label"],
-                    roi_size=(110, 110, 110),
-                    max_roi_size=(120, 120, 120),
-                    num_samples=self.num_samples,
-                ),
-                SpatialPadd(
-                    keys=["image", "label"], spatial_size=(128, 128, 128)
-                ),
-                EnsureTyped(keys=["image", "label"]),
-            ]
-        )
-
-        self.train_transforms = Compose(  # TODO : figure out which ones ?
-            [
-                RandShiftIntensityd(keys=["image"], offsets=0.7),
-                Rand3DElasticd(
-                    keys=["image", "label"],
-                    sigma_range=(0.3, 0.7),
-                    magnitude_range=(0.3, 0.7),
-                ),
-                EnsureTyped(keys=["image", "label"]),
-            ]
-        )
-
-        self.val_transforms = Compose(
-            [
-                # LoadImaged(keys=["image", "label"]),
-                # EnsureChannelFirstd(keys=["image", "label"]),
-                EnsureTyped(keys=["image", "label"]),
-            ]
-        )
 
         self.metric_values = []
         self.epoch_loss_values = []
@@ -147,6 +117,7 @@ class Trainer(ModelFramework):
         self.epoch_choice = QSpinBox()
         self.epoch_choice.setValue(self.epochs)
         self.epoch_choice.setRange(2, 1000)
+        self.epoch_choice.setSingleStep(2)
         self.epoch_choice.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.lbl_epoch_choice = QLabel("Number of epochs : ", self)
 
@@ -302,6 +273,42 @@ class Trainer(ModelFramework):
         # print("train/val")
         # print(train_files)
         # print(val_files)
+        self.sample_loader = Compose(
+            [
+                LoadImaged(keys=["image", "label"]),
+                EnsureChannelFirstd(keys=["image", "label"]),
+                RandSpatialCropSamplesd(
+                    keys=["image", "label"],
+                    roi_size=(110, 110, 110),
+                    max_roi_size=(120, 120, 120),
+                    num_samples=self.num_samples,
+                ),
+                SpatialPadd(
+                    keys=["image", "label"], spatial_size=(128, 128, 128)
+                ),
+                EnsureTyped(keys=["image", "label"]),
+            ]
+        )
+
+        self.train_transforms = Compose(  # TODO : figure out which ones ?
+            [
+                RandShiftIntensityd(keys=["image"], offsets=0.7),
+                Rand3DElasticd(
+                    keys=["image", "label"],
+                    sigma_range=(0.3, 0.7),
+                    magnitude_range=(0.3, 0.7),
+                ),
+                EnsureTyped(keys=["image", "label"]),
+            ]
+        )
+
+        self.val_transforms = Compose(
+            [
+                # LoadImaged(keys=["image", "label"]),
+                # EnsureChannelFirstd(keys=["image", "label"]),
+                EnsureTyped(keys=["image", "label"]),
+            ]
+        )
 
         train_ds = PatchDataset(
             data=train_files,
@@ -448,36 +455,67 @@ class Trainer(ModelFramework):
         # self.close()
 
     def plot_loss(self):
-        # loss plot
-        canvas = FigureCanvas(Figure(figsize=(3, 10)))
+        with plt.style.context("dark_background"):
+            # loss plot
+            canvas = FigureCanvas(Figure(figsize=(10, 3)))
 
-        train_loss = canvas.figure.add_subplot(2, 1, 1)
-        # canvas.figure.suptitle("Loss plot\n", fontsize=8)
-        train_loss.set_title("Epoch Average Loss")
+            train_loss = canvas.figure.add_subplot(1, 2, 1)
+            train_loss.set_title("Epoch average loss")
 
-        x = [i + 1 for i in range(len(self.epoch_loss_values))]
-        y = self.epoch_loss_values
-        train_loss.set_xlabel("epoch")
-        train_loss.plot(x, y)
-        train_loss.ticklabel_format(axis=y,style="sci")
-        dice_metric = canvas.figure.add_subplot(2, 1, 2)
-        dice_metric.set_title("Val Mean Dice")
-        x = [
-            self.val_interval * (i + 1) for i in range(len(self.metric_values))
-        ]
-        y = self.metric_values
-        dice_metric.set_xlabel("epoch")
-        dice_metric.plot(x, y)
-        dice_metric.ticklabel_format(axis=y,style="sci")
+            x = [i + 1 for i in range(len(self.epoch_loss_values))]
+            y = self.epoch_loss_values
+            train_loss.set_xlabel("Epoch")
+            train_loss.set_ylabel("Loss")
+            train_loss.plot(x, y)
+            # start, end = x[0], x[-1]
+            # train_loss.xaxis.set_ticks(np.arange(start, end, len(x) / 10))
+            train_loss.ticklabel_format(
+                axis="y", style="sci", scilimits=(-5, 0)
+            )
 
-        # canvas.figure.tight_layout()
-        canvas.figure.subplots_adjust(
-            left=0.15, bottom=0.1, right=0.9, top=0.95, wspace=0, hspace=0.4
-        )
+            bckgrd_color = (0, 0, 0, 0)  #'#262930'
+            # dice metric validation plot
+            dice_metric = canvas.figure.add_subplot(1, 2, 2)
+            dice_metric.set_title("Validation metric : Mean Dice coefficient")
 
-        canvas.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+            x = [
+                self.val_interval * (i + 1)
+                for i in range(len(self.metric_values))
+            ]
+            y = self.metric_values
 
-        self.addTab(canvas, "Loss plot")
+            epoch_min = (np.argmax(y) + 1) * self.val_interval
+            dice_min = np.max(y)
+
+            dice_metric.set_xlabel("Epoch")
+            dice_metric.plot(x, y)
+            print(epoch_min)
+            print(dice_min)
+            dice_metric.scatter(
+                epoch_min, dice_min, c="r", label="Maximum Dice coeff."
+            )
+            dice_metric.legend(facecolor="#262930")
+            # start, end = x[0], x[-1]
+            # dice_metric.xaxis.set_ticks(np.arange(start, end, len(x) / 5))
+            dice_metric.ticklabel_format(
+                axis="y", style="sci", scilimits=(-5, 0)
+            )
+
+            canvas.figure.set_facecolor(bckgrd_color)
+            dice_metric.set_facecolor(bckgrd_color)
+            train_loss.set_facecolor(bckgrd_color)
+
+            # canvas.figure.tight_layout()
+
+            canvas.figure.subplots_adjust(
+                left=0.1, bottom=0.2, right=0.95, top=0.9, wspace=0.2, hspace=0
+            )
+
+        canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+
+        # tab_index = self.addTab(canvas, "Loss plot")
+        # self.setCurrentIndex(tab_index)
+        self._viewer.window.add_dock_widget(canvas, area="bottom")
 
     def save_checkpoint(self):
         return
