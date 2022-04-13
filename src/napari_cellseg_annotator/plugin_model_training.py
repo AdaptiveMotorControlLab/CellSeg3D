@@ -30,7 +30,6 @@ from monai.transforms import (
     Rand3DElasticd,
 )
 from napari.qt.threading import thread_worker
-
 # Qt
 from qtpy.QtWidgets import (
     QVBoxLayout,
@@ -90,6 +89,7 @@ class Trainer(ModelFramework):
 
         self.batch_size = 1
         self.epochs = 4
+        self.val_interval = 2
 
         self.model = None  # TODO : custom model loading ?
         self.worker = None
@@ -99,6 +99,46 @@ class Trainer(ModelFramework):
             "Focal loss": FocalLoss(),
             "Dice-Focal Loss": DiceFocalLoss(sigmoid=True, lambda_dice=0.2),
         }
+
+        self.sample_loader = Compose(
+            [
+                LoadImaged(keys=["image", "label"]),
+                EnsureChannelFirstd(keys=["image", "label"]),
+                RandSpatialCropSamplesd(
+                    keys=["image", "label"],
+                    roi_size=(110, 110, 110),
+                    max_roi_size=(120, 120, 120),
+                    num_samples=self.num_samples,
+                ),
+                SpatialPadd(
+                    keys=["image", "label"], spatial_size=(128, 128, 128)
+                ),
+                EnsureTyped(keys=["image", "label"]),
+            ]
+        )
+
+        self.train_transforms = Compose(  # TODO : figure out which ones ?
+            [
+                RandShiftIntensityd(keys=["image"], offsets=0.7),
+                Rand3DElasticd(
+                    keys=["image", "label"],
+                    sigma_range=(0.3, 0.7),
+                    magnitude_range=(0.3, 0.7),
+                ),
+                EnsureTyped(keys=["image", "label"]),
+            ]
+        )
+
+        self.val_transforms = Compose(
+            [
+                # LoadImaged(keys=["image", "label"]),
+                # EnsureChannelFirstd(keys=["image", "label"]),
+                EnsureTyped(keys=["image", "label"]),
+            ]
+        )
+
+        self.metric_values = []
+        self.epoch_loss_values = []
 
         ################################
         # interface
@@ -207,9 +247,10 @@ class Trainer(ModelFramework):
 
     def start(self):
 
+        if not self.check_ready():
+            return
         self.num_samples = self.sample_choice.value()
         self.batch_size = self.batch_choice.value()
-
 
         self.btn_close.setVisible(False)
 
@@ -227,8 +268,6 @@ class Trainer(ModelFramework):
             if self.get_device().type == "cuda":
                 self.worker.finished.connect(self.empty_cuda_cache)
 
-
-
         if self.worker.is_running:
             print("Still working...")
         else:
@@ -245,86 +284,13 @@ class Trainer(ModelFramework):
 
         # TODO param : % of validation from training set
         train_files, val_files = (
-            data_dicts[0 : int(len(data_dicts) * 0.9)],
-            data_dicts[int(len(data_dicts) * 0.9) :],
+            data_dicts[0: int(len(data_dicts) * 0.9)],
+            data_dicts[int(len(data_dicts) * 0.9):],
         )
-        print("train/val")
-        print(train_files)
-        print("\n")
-        print(val_files)
-
-        self.sample_loader = Compose(
-            [
-                LoadImaged(keys=["image", "label"]),
-                EnsureChannelFirstd(keys=["image", "label"]),
-                RandSpatialCropSamplesd(
-                    keys=["image", "label"],
-                    roi_size=(110, 110, 110),
-                    max_roi_size=(120, 120, 120),
-                    num_samples=self.num_samples,
-                ),
-                SpatialPadd(
-                    keys=["image", "label"], spatial_size=(128, 128, 128)
-                ),
-                EnsureTyped(keys=["image", "label"]),
-            ]
-        )
-
-        self.train_transforms = Compose(  # TODO : figure out which ones ?
-            [
-                RandShiftIntensityd(keys=["image"], offsets=0.7),
-                Rand3DElasticd(
-                    keys=["image", "label"],
-                    sigma_range=(0.3, 0.7),
-                    magnitude_range=(0.3, 0.7),
-                ),
-                EnsureTyped(keys=["image", "label"]),
-            ]
-        )
-
-        self.val_transforms = Compose(
-            [
-                # LoadImaged(keys=["image", "label"]),
-                # EnsureChannelFirstd(keys=["image", "label"]),
-                EnsureTyped(keys=["image", "label"]),
-            ]
-        )
-        self.btn_close.setVisible(False)
-
-        # TODO : multithreading ?
-        if self.worker is not None:
-            if self.worker.is_running:
-                pass
-            else:
-                self.worker.start()
-                self.btn_start.setText("Stop")
-        else:
-            self.worker = self.train()
-            self.worker.started.connect(lambda: print("Worker is running..."))
-            self.worker.finished.connect(lambda: print("Worker stopped"))
-
-        if self.worker.is_running:
-            print("Stop training requested")
-            self.model.stop_training = True
-            self.btn_start.setText("Start training")
-            self.btn_close.setVisible(True)
-            self.worker = None
-        else:
-            self.worker.start()
-            self.btn_start.setText("Stop")
-
-    @thread_worker
-    def train(self):
-
-        device = self.get_device()
-
-        data_dicts = self.create_train_dataset_dict()
-
-        # TODO param : % of validation from training set
-        train_files, val_files = data_dicts, data_dicts
         # print("train/val")
         # print(train_files)
         # print(val_files)
+
 
         train_ds = PatchDataset(
             data=train_files,
@@ -359,7 +325,7 @@ class Trainer(ModelFramework):
         # TODO : more parameters/flexibility
         post_pred = AsDiscrete(threshold=0.3)
         post_label = EnsureType()
-        val_interval = 2
+
         max_epochs = self.epoch_choice.value()
         loss_function = self.get_loss(self.loss_choice.currentText())
         optimizer = torch.optim.Adam(model.parameters(), 1e-3)
@@ -367,8 +333,7 @@ class Trainer(ModelFramework):
 
         best_metric = -1
         best_metric_epoch = -1
-        epoch_loss_values = []
-        metric_values = []
+
 
         time = utils.get_date_time()
         weights_filename = (
@@ -416,10 +381,10 @@ class Trainer(ModelFramework):
                     f"Train_loss: {loss.item():.4f}"
                 )
             epoch_loss /= step
-            epoch_loss_values.append(epoch_loss)
+            self.epoch_loss_values.append(epoch_loss)
             print(f"Epoch {epoch + 1} Average loss: {epoch_loss:.4f}")
 
-            if (epoch + 1) % val_interval == 0:
+            if (epoch + 1) % self.val_interval == 0:
                 model.eval()
                 with torch.no_grad():
                     for val_data in val_loader:
@@ -449,7 +414,7 @@ class Trainer(ModelFramework):
                     metric = dice_metric.aggregate().item()
                     dice_metric.reset()
 
-                    metric_values.append(metric)
+                    self.metric_values.append(metric)
                     if metric > best_metric:
                         best_metric = metric
                         best_metric_epoch = epoch + 1
@@ -470,20 +435,26 @@ class Trainer(ModelFramework):
             f"at epoch: {best_metric_epoch}"
         )
 
+
+        # self.close()
+
+
+    def plot_loss(self):
+        #loss plot
         canvas = FigureCanvas(Figure(figsize=(2, 15)))
 
         train_loss = canvas.figure.add_subplot(2, 1, 1)
         # canvas.figure.suptitle("Loss plot\n", fontsize=8)
         train_loss.set_title("Epoch Average Loss")
 
-        x = [i + 1 for i in range(len(epoch_loss_values))]
-        y = epoch_loss_values
+        x = [i + 1 for i in range(len(self.epoch_loss_values))]
+        y = self.epoch_loss_values
         train_loss.set_xlabel("epoch")
         train_loss.plot(x, y)
         dice_metric = canvas.figure.add_subplot(2, 1, 2)
         dice_metric.set_title("Val Mean Dice")
-        x = [val_interval * (i + 1) for i in range(len(metric_values))]
-        y = metric_values
+        x = [self.val_interval * (i + 1) for i in range(len(self.metric_values))]
+        y = self.metric_values
         dice_metric.set_xlabel("epoch")
         dice_metric.plot(x, y)
 
@@ -495,10 +466,6 @@ class Trainer(ModelFramework):
         canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
 
         self._viewer.window.add_dock_widget(canvas, name=" ", area="right")
-
-        # self.close()
-        self.btn_start.setText("Start training")
-        self.btn_close.setVisible(True)
 
     def close(self):
         """Close the widget"""
