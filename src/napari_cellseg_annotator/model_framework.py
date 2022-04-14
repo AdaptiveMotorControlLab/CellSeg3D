@@ -15,6 +15,7 @@ from qtpy.QtWidgets import (
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.models import model_SegResNet as SegResNet
 from napari_cellseg_annotator.models import model_VNet as VNet
+from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
 
 warnings.formatwarning = utils.format_Warning
 
@@ -46,7 +47,11 @@ class ModelFramework(QTabWidget):
         self.device = "cpu"
         """Device to train on, chosen automatically by :py:func:`get_device`"""
 
-        self.models_dict = {"VNet": VNet, "SegResNet": SegResNet}
+        self.models_dict = {
+            "VNet": VNet,
+            "SegResNet": SegResNet,
+            "TRAILMAP test": TMAP,
+        }
         """dict: dictionary of available models, with string for widget display as key
 
         Currently implemented : SegResNet, VNet"""

@@ -24,12 +24,14 @@ from monai.transforms import (
 
 # Qt
 from qtpy.QtWidgets import (
+    QWidget,
     QVBoxLayout,
     QPushButton,
     QSizePolicy,
     QLabel,
     QCheckBox,
     QSpinBox,
+    QLayout,
 )
 from tifffile import imwrite
 
@@ -144,25 +146,28 @@ class Inferer(ModelFramework):
 
     def build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
-        vbox = QVBoxLayout()
 
-        vbox.addWidget(
+        tab = QWidget()
+        tab_layout = QVBoxLayout()
+        tab_layout.setSizeConstraint(QLayout.SetFixedSize)
+
+        tab_layout.addWidget(
             utils.combine_blocks(self.filetype_choice, self.lbl_filetype)
         )  # file extension
-        vbox.addWidget(
+        tab_layout.addWidget(
             utils.combine_blocks(self.btn_image_files, self.lbl_image_files)
         )  # in folder
-        vbox.addWidget(
+        tab_layout.addWidget(
             utils.combine_blocks(self.btn_result_path, self.lbl_result_path)
         )  # out folder
 
-        vbox.addWidget(
+        tab_layout.addWidget(
             utils.combine_blocks(self.model_choice, self.lbl_model_choice)
         )  # model choice
-        vbox.addWidget(
+        tab_layout.addWidget(
             utils.combine_blocks(self.view_checkbox, self.lbl_view)
         )  # view_after bool
-        vbox.addWidget(
+        tab_layout.addWidget(
             utils.combine_blocks(
                 self.display_number_choice, self.lbl_display_number
             )
@@ -172,18 +177,19 @@ class Inferer(ModelFramework):
 
         # TODO : add custom model handling ? using exec() to read user provided model class
         # self.lbl_label.setText("model.pth directory :")
-        vbox.addWidget(QLabel("", self))
-        vbox.addWidget(self.btn_start)
-        vbox.addWidget(self.btn_close)
+        tab_layout.addWidget(QLabel("", self))
+        tab_layout.addWidget(self.btn_start)
+        tab_layout.addWidget(self.btn_close)
 
         ##################################################################
         # TODO remove once done ?
 
         if self.test_button:
-            vbox.addWidget(self.btntest)
+            tab_layout.addWidget(self.btntest)
         ##################################################################
 
-        self.setLayout(vbox)
+        tab.setLayout(tab_layout)
+        self.addTab(tab, "Inference")
 
         ########################
         # TODO : remove once done

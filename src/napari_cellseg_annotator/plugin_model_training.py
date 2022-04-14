@@ -11,6 +11,7 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
+
 # MONAI
 from monai.data import (
     DataLoader,
@@ -18,7 +19,14 @@ from monai.data import (
     decollate_batch,
     pad_list_data_collate,
 )
-from monai.losses import DiceLoss, FocalLoss, DiceFocalLoss
+from monai.losses import (
+    DiceLoss,
+    DiceCELoss,
+    FocalLoss,
+    DiceFocalLoss,
+    TverskyLoss,
+    GeneralizedDiceLoss,
+)
 from monai.metrics import DiceMetric
 from monai.transforms import (
     AsDiscrete,
@@ -31,8 +39,12 @@ from monai.transforms import (
     SpatialPadd,
     RandShiftIntensityd,
     Rand3DElasticd,
+    RandFlipd,
+    RandRotate90d,
+    RandAffined,
 )
 from napari.qt.threading import thread_worker
+
 # Qt
 from qtpy.QtWidgets import (
     QWidget,
@@ -103,7 +115,10 @@ class Trainer(ModelFramework):
         self.loss_dict = {
             "Dice loss": DiceLoss(sigmoid=True),
             "Focal loss": FocalLoss(),
-            "Dice-Focal Loss": DiceFocalLoss(sigmoid=True, lambda_dice=0.2),
+            "Dice-Focal loss": DiceFocalLoss(sigmoid=True, lambda_dice=0.2),
+            "Generalized Dice loss": GeneralizedDiceLoss(sigmoid=True),
+            "DiceCELoss": DiceCELoss(sigmoid=True),
+            "Tversky loss": TverskyLoss(sigmoid=True),
         }
 
         self.metric_values = []
@@ -233,7 +248,6 @@ class Trainer(ModelFramework):
 
         self.btn_close.setVisible(False)
 
-
         if self.worker is not None:
             if self.worker.is_running:
                 pass
@@ -264,7 +278,9 @@ class Trainer(ModelFramework):
             self.model = None
         for obj in gc.get_objects():
             try:
-                if torch.is_tensor(obj) or (hasattr((obj,'data') and torch.is_tensor(obj.data))):
+                if torch.is_tensor(obj) or (
+                    hasattr((obj, "data") and torch.is_tensor(obj.data))
+                ):
                     # print(type(obj), obj.size())
                     del obj
             except:
@@ -319,9 +335,9 @@ class Trainer(ModelFramework):
         loss = self.epoch_loss_values
         metric = self.metric_values
         epoch = len(loss)
-        if epoch < self.val_interval*2:
+        if epoch < self.val_interval * 2:
             return
-        elif epoch == self.val_interval*2:
+        elif epoch == self.val_interval * 2:
             bckgrd_color = (0, 0, 0, 0)  # '#262930'
             with plt.style.context("dark_background"):
 
@@ -412,6 +428,11 @@ class Trainer(ModelFramework):
                     keys=["image", "label"],
                     sigma_range=(0.3, 0.7),
                     magnitude_range=(0.3, 0.7),
+                ),
+                RandFlipd(keys=["image", "label"]),
+                RandRotate90d(keys=["image", "label"]),
+                RandAffined(
+                    keys=["image", "label"],
                 ),
                 EnsureTyped(keys=["image", "label"]),
             ]
@@ -507,7 +528,6 @@ class Trainer(ModelFramework):
             self.epoch_loss_values.append(epoch_loss)
             print(f"Epoch {epoch + 1} Average loss: {epoch_loss:.4f}")
 
-
             if (epoch + 1) % val_interval == 0:
                 model.eval()
                 with torch.no_grad():
@@ -532,6 +552,9 @@ class Trainer(ModelFramework):
                         val_labels = [
                             post_label(res_tensor) for res_tensor in labs
                         ]
+
+                        # print(len(val_outputs))
+                        # print(len(val_labels))
 
                         dice_metric(y_pred=val_outputs, y=val_labels)
 
