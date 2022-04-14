@@ -10,6 +10,7 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
+
 # MONAI
 from monai.data import (
     DataLoader,
@@ -32,6 +33,7 @@ from monai.transforms import (
     Rand3DElasticd,
 )
 from napari.qt.threading import thread_worker
+
 # Qt
 from qtpy.QtWidgets import (
     QWidget,
@@ -238,7 +240,18 @@ class Trainer(ModelFramework):
                 self.worker.start()
                 self.btn_start.setText("Running...")
         else:
-            self.worker = self.train()
+
+            self.worker = self.train(
+                device=self.get_device(),
+                model_id=self.get_model(self.model_choice.currentText()),
+                data_dicts=self.create_train_dataset_dict(),
+                max_epochs=self.epoch_choice.value(),
+                loss_function=self.get_loss(self.loss_choice.currentText()),
+                val_interval=self.val_interval,
+                batch_size=self.batch_choice.value(),
+                results_path=self.results_path,
+                num_samples=self.sample_choice.value(),
+            )
             self.worker.started.connect(lambda: print("Worker is running..."))
             self.worker.finished.connect(lambda: print("Worker stopped"))
             self.worker.finished.connect(self.exit_train)
@@ -247,115 +260,134 @@ class Trainer(ModelFramework):
 
         if self.worker.is_running:
             print("Stop request, waiting for next validation step...")
+            self.btn_start.setText("Stopping...")
             self.worker.quit()
         else:
-            self.worker.start()
+            # self.worker.start()
             self.btn_start.setText("Running...")
 
     def exit_train(self):
+        self.worker = None
+        if self.model is not None:
+            del self.model
+            self.model = None
         self.btn_start.setText("Start")
         self.btn_close.setVisible(True)
 
-    def plot_loss(self):
-
+    def plot_loss(self, loss, dice_metric):
         with plt.style.context("dark_background"):
-            bckgrd_color = (0, 0, 0, 0)  # '#262930'
-            # loss plot
-            self.canvas = FigureCanvas(Figure(figsize=(10, 3)))
-
-            self.train_loss_plot = self.canvas.figure.add_subplot(1, 2, 1)
+            # update loss
             self.train_loss_plot.set_title("Epoch average loss")
             self.train_loss_plot.set_xlabel("Epoch")
             self.train_loss_plot.set_ylabel("Loss")
-            self.train_loss_plot.ticklabel_format(
-                axis="y", style="sci", scilimits=(-5, 0)
-            )
-
-            x = [i + 1 for i in range(len(self.epoch_loss_values))]
-            y = self.epoch_loss_values
+            x = [i + 1 for i in range(len(loss))]
+            y = loss
             self.train_loss_plot.plot(x, y)
-            # start, end = x[0], x[-1]
-            # self.train_loss_plot.xaxis.set_ticks(np.arange(start, end, len(x) / 10))
+            # update metrics
+            x = [self.val_interval * (i + 1) for i in range(len(dice_metric))]
+            y = dice_metric
 
-            # dice metric validation plot
-            self.dice_metric_plot = self.canvas.figure.add_subplot(1, 2, 2)
+            epoch_min = (np.argmax(y) + 1) * self.val_interval
+            dice_min = np.max(y)
+
+            self.dice_metric_plot.plot(x, y)
             self.dice_metric_plot.set_title(
                 "Validation metric : Mean Dice coefficient"
             )
             self.dice_metric_plot.set_xlabel("Epoch")
-            self.dice_metric_plot.ticklabel_format(
-                axis="y", style="sci", scilimits=(-5, 0)
-            )
-
-            x = [
-                self.val_interval * (i + 1)
-                for i in range(len(self.metric_values))
-            ]
-            y = self.metric_values
-
-            epoch_min = (np.argmax(y) + 1) * self.val_interval
-            dice_min = np.max(y)
-
-            self.dice_metric_plot.plot(x, y)
 
             self.dice_metric_plot.scatter(
                 epoch_min, dice_min, c="r", label="Maximum Dice coeff."
             )
-            self.dice_metric_plot.legend(facecolor="#262930")
-            # start, end = x[0], x[-1]
-            # self.dice_metric_plot.xaxis.set_ticks(np.arange(start, end, len(x) / 5))
-
-            self.canvas.figure.set_facecolor(bckgrd_color)
-            self.dice_metric_plot.set_facecolor(bckgrd_color)
-            self.train_loss_plot.set_facecolor(bckgrd_color)
-
-            # self.canvas.figure.tight_layout()
-
-            self.canvas.figure.subplots_adjust(
-                left=0.1, bottom=0.2, right=0.95, top=0.9, wspace=0.2, hspace=0
+            self.dice_metric_plot.legend(
+                facecolor="#262930", loc="upper right"
             )
+            self.canvas.draw_idle()
 
-        self.canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+    def update_loss_plot(self):
+        print("plot upd")
+        print(len(self.epoch_loss_values))
+        print(self.epoch_loss_values)
+        print(self.metric_values)
 
-        # tab_index = self.addTab(self.canvas, "Loss plot")
-        # self.setCurrentIndex(tab_index)
-        self._viewer.window.add_dock_widget(self.canvas, area="bottom")
-
-    def update_loss_plot(self, epoch, loss, dice_metric):
-
+        loss = self.epoch_loss_values
+        metric = self.metric_values
+        epoch = len(loss)
         if epoch < 4:
             return
         elif epoch == 4:
-            self.plot_loss()
+            bckgrd_color = (0, 0, 0, 0)  # '#262930'
+            with plt.style.context("dark_background"):
+
+                self.canvas = FigureCanvas(Figure(figsize=(10, 3)))
+                # loss plot
+                self.train_loss_plot = self.canvas.figure.add_subplot(1, 2, 1)
+                # dice metric validation plot
+                self.dice_metric_plot = self.canvas.figure.add_subplot(1, 2, 2)
+
+                self.canvas.figure.set_facecolor(bckgrd_color)
+                self.dice_metric_plot.set_facecolor(bckgrd_color)
+                self.train_loss_plot.set_facecolor(bckgrd_color)
+
+                # self.canvas.figure.tight_layout()
+
+                self.canvas.figure.subplots_adjust(
+                    left=0.1,
+                    bottom=0.2,
+                    right=0.95,
+                    top=0.9,
+                    wspace=0.2,
+                    hspace=0,
+                )
+
+            self.canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+
+            # tab_index = self.addTab(self.canvas, "Loss plot")
+            # self.setCurrentIndex(tab_index)
+            self._viewer.window.add_dock_widget(self.canvas, area="bottom")
+            self.plot_loss(loss, metric)
         else:
-            # update loss
-            x = [i + 1 for i in range(len(self.epoch_loss_values))]
-            y = self.epoch_loss_values
-            self.train_loss_plot.plot(x, y)
-            # update metrics
-            x = [
-                self.val_interval * (i + 1)
-                for i in range(len(self.metric_values))
-            ]
-            y = self.metric_values
+            with plt.style.context("dark_background"):
 
-            epoch_min = (np.argmax(y) + 1) * self.val_interval
-            dice_min = np.max(y)
+                self.train_loss_plot.cla()
+                self.dice_metric_plot.cla()
 
-            self.dice_metric_plot.plot(x, y)
-
-            self.dice_metric_plot.scatter(
-                epoch_min, dice_min, c="r", label="Maximum Dice coeff."
-            )
-            self.dice_metric_plot.legend(facecolor="#262930")
-            self.canvas.draw_idle()
+                self.plot_loss(loss, metric)
 
     @thread_worker(connect={"yielded": update_loss_plot})
-    def train(self):
+    def train(
+        self,
+        device,
+        model_id,
+        data_dicts,
+        num_samples,
+        max_epochs,
+        batch_size,
+        loss_function,
+        val_interval,
+        results_path,
+    ):
+        """
 
-        device = self.get_device()
+        Args:
+            model_id:
+            data_dicts:
+            num_samples:
+            max_epochs:
+            batch_size:
+            loss_function:
+            val_interval:
+            results_path:
 
-        data_dicts = self.create_train_dataset_dict()
+        Returns:
+
+        """
+
+        model = model_id.get_net()
+        model = model.to(device)
+
+        epoch_loss_values = []
+        metric_values = []
 
         # TODO param : % of validation from training set
         train_files, val_files = (
@@ -365,7 +397,7 @@ class Trainer(ModelFramework):
         # print("train/val")
         # print(train_files)
         # print(val_files)
-        self.sample_loader = Compose(
+        sample_loader = Compose(
             [
                 LoadImaged(keys=["image", "label"]),
                 EnsureChannelFirstd(keys=["image", "label"]),
@@ -373,7 +405,7 @@ class Trainer(ModelFramework):
                     keys=["image", "label"],
                     roi_size=(110, 110, 110),
                     max_roi_size=(120, 120, 120),
-                    num_samples=self.num_samples,
+                    num_samples=num_samples,
                 ),
                 SpatialPadd(
                     keys=["image", "label"], spatial_size=(128, 128, 128)
@@ -382,7 +414,7 @@ class Trainer(ModelFramework):
             ]
         )
 
-        self.train_transforms = Compose(  # TODO : figure out which ones ?
+        train_transforms = Compose(  # TODO : figure out which ones ?
             [
                 RandShiftIntensityd(keys=["image"], offsets=0.7),
                 Rand3DElasticd(
@@ -394,7 +426,7 @@ class Trainer(ModelFramework):
             ]
         )
 
-        self.val_transforms = Compose(
+        val_transforms = Compose(
             [
                 # LoadImaged(keys=["image", "label"]),
                 # EnsureChannelFirstd(keys=["image", "label"]),
@@ -404,14 +436,14 @@ class Trainer(ModelFramework):
 
         train_ds = PatchDataset(
             data=train_files,
-            transform=self.train_transforms,
-            patch_func=self.sample_loader,
-            samples_per_image=self.num_samples,
+            transform=train_transforms,
+            patch_func=sample_loader,
+            samples_per_image=num_samples,
         )
 
         train_loader = DataLoader(
             train_ds,
-            batch_size=self.batch_size,
+            batch_size=batch_size,
             shuffle=True,
             num_workers=4,
             collate_fn=pad_list_data_collate,
@@ -419,25 +451,17 @@ class Trainer(ModelFramework):
 
         val_ds = PatchDataset(
             data=val_files,
-            transform=self.val_transforms,
-            patch_func=self.sample_loader,
-            samples_per_image=self.num_samples,
+            transform=val_transforms,
+            patch_func=sample_loader,
+            samples_per_image=num_samples,
         )
 
-        val_loader = DataLoader(
-            val_ds, batch_size=self.batch_size, num_workers=4
-        )
-
-        model_id = self.get_model(self.model_choice.currentText())
-        model = model_id.get_net()
-        model = model.to(device)
+        val_loader = DataLoader(val_ds, batch_size=batch_size, num_workers=4)
 
         # TODO : more parameters/flexibility
         post_pred = AsDiscrete(threshold=0.3)
         post_label = EnsureType()
 
-        max_epochs = self.epoch_choice.value()
-        loss_function = self.get_loss(self.loss_choice.currentText())
         optimizer = torch.optim.Adam(model.parameters(), 1e-3)
         dice_metric = DiceMetric(include_background=True, reduction="mean")
 
@@ -445,9 +469,7 @@ class Trainer(ModelFramework):
         best_metric_epoch = -1
 
         time = utils.get_date_time()
-        weights_filename = (
-            f"{self.model_choice.currentText()}_best_metric" + f"_{time}.pth"
-        )
+        weights_filename = f"{model_id}_best_metric" + f"_{time}.pth"
         if device.type == "cuda":
             print("\nUsing GPU :")
             print(torch.cuda.get_device_name(0))
@@ -490,10 +512,10 @@ class Trainer(ModelFramework):
                     f"Train_loss: {loss.item():.4f}"
                 )
             epoch_loss /= step
-            self.epoch_loss_values.append(epoch_loss)
+            epoch_loss_values.append(epoch_loss)
             print(f"Epoch {epoch + 1} Average loss: {epoch_loss:.4f}")
 
-            if (epoch + 1) % self.val_interval == 0:
+            if (epoch + 1) % val_interval == 0:
                 model.eval()
                 with torch.no_grad():
                     for val_data in val_loader:
@@ -523,14 +545,16 @@ class Trainer(ModelFramework):
                     metric = dice_metric.aggregate().item()
                     dice_metric.reset()
 
-                    self.metric_values.append(metric)
-                    yield epoch, self.epoch_loss_values, self.metric_values
+                    metric_values.append(metric)
+
+                    yield self
+
                     if metric > best_metric:
                         best_metric = metric
                         best_metric_epoch = epoch + 1
                         torch.save(
                             model.state_dict(),
-                            os.path.join(self.results_path, weights_filename),
+                            os.path.join(results_path, weights_filename),
                         )
                         print("Saved best metric model")
                     print(
