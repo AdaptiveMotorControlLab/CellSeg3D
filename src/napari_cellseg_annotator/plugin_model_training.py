@@ -1,4 +1,5 @@
 import os
+import gc
 import warnings
 from pathlib import Path
 
@@ -97,6 +98,7 @@ class Trainer(ModelFramework):
 
         self.model = None  # TODO : custom model loading ?
         self.worker = None
+        self.data = None
 
         self.loss_dict = {
             "Dice loss": DiceLoss(sigmoid=True),
@@ -227,6 +229,7 @@ class Trainer(ModelFramework):
             return
         self.num_samples = self.sample_choice.value()
         self.batch_size = self.batch_choice.value()
+        self.data = self.create_train_dataset_dict()
 
         self.btn_close.setVisible(False)
 
@@ -236,7 +239,7 @@ class Trainer(ModelFramework):
                 pass
             else:
                 self.worker.start()
-                self.btn_start.setText("Running...")
+                self.btn_start.setText("Running... Click to stop")
         else:
 
             self.worker = self.train()
@@ -252,15 +255,30 @@ class Trainer(ModelFramework):
             self.worker.quit()
         else:
             # self.worker.start()
-            self.btn_start.setText("Running...")
+            self.btn_start.setText("Running...  Click to stop")
 
     def exit_train(self):
         self.worker = None
         if self.model is not None:
             del self.model
             self.model = None
+        for obj in gc.get_objects():
+            try:
+                if torch.is_tensor(obj) or (hasattr((obj,'data') and torch.is_tensor(obj.data))):
+                    # print(type(obj), obj.size())
+                    del obj
+            except:
+                pass
+        gc.collect()
+        del self.epoch_loss_values
+        del self.metric_values
+        del self.data
+
         self.btn_start.setText("Start")
         self.btn_close.setVisible(True)
+
+        # self.close()
+        # del self
 
     def plot_loss(self, loss, dice_metric):
         with plt.style.context("dark_background"):
@@ -294,16 +312,16 @@ class Trainer(ModelFramework):
 
     def update_loss_plot(self):
 
-        print(len(self.epoch_loss_values))
-        print(self.epoch_loss_values)
-        print(self.metric_values)
+        # print(len(self.epoch_loss_values))
+        # print(self.epoch_loss_values)
+        # print(self.metric_values)
 
         loss = self.epoch_loss_values
         metric = self.metric_values
         epoch = len(loss)
-        if epoch < 4:
+        if epoch < self.val_interval*2:
             return
-        elif epoch == 4:
+        elif epoch == self.val_interval*2:
             bckgrd_color = (0, 0, 0, 0)  # '#262930'
             with plt.style.context("dark_background"):
 
@@ -348,7 +366,7 @@ class Trainer(ModelFramework):
         device = self.get_device()
         model_id = self.get_model(self.model_choice.currentText())
         model_name = self.model_choice.currentText()
-        data_dicts = self.create_train_dataset_dict()
+        data_dicts = self.data
         max_epochs = self.epoch_choice.value()
         loss_function = self.get_loss(self.loss_choice.currentText())
         val_interval = self.val_interval
@@ -480,14 +498,15 @@ class Trainer(ModelFramework):
                 loss = loss_function(outputs, labels)
                 loss.backward()
                 optimizer.step()
-                epoch_loss += loss.item()
+                epoch_loss += loss.detach().item()
                 print(
                     f"{step}/{len(train_ds) // train_loader.batch_size}, "
-                    f"Train_loss: {loss.item():.4f}"
+                    f"Train_loss: {loss.detach().item():.4f}"
                 )
             epoch_loss /= step
             self.epoch_loss_values.append(epoch_loss)
             print(f"Epoch {epoch + 1} Average loss: {epoch_loss:.4f}")
+
 
             if (epoch + 1) % val_interval == 0:
                 model.eval()
@@ -516,7 +535,7 @@ class Trainer(ModelFramework):
 
                         dice_metric(y_pred=val_outputs, y=val_labels)
 
-                    metric = dice_metric.aggregate().item()
+                    metric = dice_metric.aggregate().detach().item()
                     dice_metric.reset()
 
                     self.metric_values.append(metric)
