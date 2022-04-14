@@ -10,7 +10,6 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
-
 # MONAI
 from monai.data import (
     DataLoader,
@@ -33,7 +32,6 @@ from monai.transforms import (
     Rand3DElasticd,
 )
 from napari.qt.threading import thread_worker
-
 # Qt
 from qtpy.QtWidgets import (
     QWidget,
@@ -232,7 +230,7 @@ class Trainer(ModelFramework):
 
         self.btn_close.setVisible(False)
 
-        # TODO : multithreading ?
+
         if self.worker is not None:
             if self.worker.is_running:
                 pass
@@ -241,17 +239,7 @@ class Trainer(ModelFramework):
                 self.btn_start.setText("Running...")
         else:
 
-            self.worker = self.train(
-                device=self.get_device(),
-                model_id=self.get_model(self.model_choice.currentText()),
-                data_dicts=self.create_train_dataset_dict(),
-                max_epochs=self.epoch_choice.value(),
-                loss_function=self.get_loss(self.loss_choice.currentText()),
-                val_interval=self.val_interval,
-                batch_size=self.batch_choice.value(),
-                results_path=self.results_path,
-                num_samples=self.sample_choice.value(),
-            )
+            self.worker = self.train()
             self.worker.started.connect(lambda: print("Worker is running..."))
             self.worker.finished.connect(lambda: print("Worker stopped"))
             self.worker.finished.connect(self.exit_train)
@@ -305,7 +293,7 @@ class Trainer(ModelFramework):
             self.canvas.draw_idle()
 
     def update_loss_plot(self):
-        print("plot upd")
+
         print(len(self.epoch_loss_values))
         print(self.epoch_loss_values)
         print(self.metric_values)
@@ -355,33 +343,18 @@ class Trainer(ModelFramework):
                 self.plot_loss(loss, metric)
 
     @thread_worker(connect={"yielded": update_loss_plot})
-    def train(
-        self,
-        device,
-        model_id,
-        data_dicts,
-        num_samples,
-        max_epochs,
-        batch_size,
-        loss_function,
-        val_interval,
-        results_path,
-    ):
-        """
+    def train(self):
 
-        Args:
-            model_id:
-            data_dicts:
-            num_samples:
-            max_epochs:
-            batch_size:
-            loss_function:
-            val_interval:
-            results_path:
-
-        Returns:
-
-        """
+        device = self.get_device()
+        model_id = self.get_model(self.model_choice.currentText())
+        model_name = self.model_choice.currentText()
+        data_dicts = self.create_train_dataset_dict()
+        max_epochs = self.epoch_choice.value()
+        loss_function = self.get_loss(self.loss_choice.currentText())
+        val_interval = self.val_interval
+        batch_size = self.batch_choice.value()
+        results_path = self.results_path
+        num_samples = self.sample_choice.value()
 
         model = model_id.get_net()
         model = model.to(device)
@@ -469,7 +442,8 @@ class Trainer(ModelFramework):
         best_metric_epoch = -1
 
         time = utils.get_date_time()
-        weights_filename = f"{model_id}_best_metric" + f"_{time}.pth"
+
+        weights_filename = f"{model_name}_best_metric" + f"_{time}.pth"
         if device.type == "cuda":
             print("\nUsing GPU :")
             print(torch.cuda.get_device_name(0))
@@ -512,7 +486,7 @@ class Trainer(ModelFramework):
                     f"Train_loss: {loss.item():.4f}"
                 )
             epoch_loss /= step
-            epoch_loss_values.append(epoch_loss)
+            self.epoch_loss_values.append(epoch_loss)
             print(f"Epoch {epoch + 1} Average loss: {epoch_loss:.4f}")
 
             if (epoch + 1) % val_interval == 0:
@@ -545,7 +519,7 @@ class Trainer(ModelFramework):
                     metric = dice_metric.aggregate().item()
                     dice_metric.reset()
 
-                    metric_values.append(metric)
+                    self.metric_values.append(metric)
 
                     yield self
 
