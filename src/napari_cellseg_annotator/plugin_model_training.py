@@ -259,7 +259,13 @@ class Trainer(ModelFramework):
             self.worker = self.train()
             self.worker.started.connect(lambda: print("Worker is running..."))
             self.worker.finished.connect(lambda: print("Worker stopped"))
-            self.worker.finished.connect(self.exit_train)
+            self.worker.finished.connect(
+                lambda: self.btn_start.setText("Start")
+            )
+            self.worker.finished.connect(
+                lambda: self.btn_close.setVisible(True)
+            )
+            self.worker.finished.connect(self.clean_cache)
             if self.get_device().type == "cuda":
                 self.worker.finished.connect(self.empty_cuda_cache)
 
@@ -271,28 +277,15 @@ class Trainer(ModelFramework):
             # self.worker.start()
             self.btn_start.setText("Running...  Click to stop")
 
-    def exit_train(self):
+    def clean_cache(self):
         self.worker = None
         if self.model is not None:
             del self.model
             self.model = None
-        for obj in gc.get_objects():
-            try:
-                if torch.is_tensor(obj) or (
-                    hasattr((obj, "data") and torch.is_tensor(obj.data))
-                ):
-                    # print(type(obj), obj.size())
-                    del obj
-            except:
-                pass
-        gc.collect()
+
         del self.epoch_loss_values
         del self.metric_values
         del self.data
-
-        self.btn_start.setText("Start")
-        self.btn_close.setVisible(True)
-
         # self.close()
         # del self
 

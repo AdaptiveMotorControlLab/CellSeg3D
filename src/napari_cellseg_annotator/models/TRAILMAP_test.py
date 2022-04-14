@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 
+
 def get_weights_file():
     return "TRAILMAP_test.pth"
 
@@ -26,16 +27,13 @@ class TRAILMAP_test(nn.Module):
         self.conv1 = self.encoderBlock(32, 64, 3)  # l1
         self.conv2 = self.encoderBlock(64, 128, 3)  # l2
         self.conv3 = self.encoderBlock(128, 256, 3)  # l3
-        # self.conv4 = self.encoderBlock(256, 512, 3)
 
         self.bridge = self.bridgeBlock(256, 512, 3)
-        # self.bridge = self.bridgeBlock(512, 1024, 3)
 
-        # self.up5 = self.decoderBlock(512 + 1024, 512, 2)  # l4
+
         self.up5 = self.decoderBlock(256 + 512, 256, 2)
-        # self.up6 = self.decoderBlock(512 + 256, 256, 2)  # l3
+
         self.up6 = self.decoderBlock(128 + 256, 128, 2)
-        # self.up7 = self.decoderBlock(128 + 256, 128, 2)
         self.up7 = self.decoderBlock(128 + 64, 64, 2)  # l2
         self.up8 = self.decoderBlock(64 + 32, 32, 2)  # l1
         self.out = self.outBlock(32, out_ch, 1)
@@ -46,14 +44,7 @@ class TRAILMAP_test(nn.Module):
         conv1 = self.conv1(conv0)  # l1
         conv2 = self.conv2(conv1)  # l2
         conv3 = self.conv3(conv2)  # l3
-        # conv4 = self.conv4(conv3)
-        # print("x")
-        # print(x.shape)
-        # print("down")
-        # print(conv1.shape)
-        # print(conv2.shape)
-        # print(conv3.shape)
-        # print(conv4.shape)
+
 
         bridge = self.bridge(conv3)  # bridge
         # print("bridge :")
