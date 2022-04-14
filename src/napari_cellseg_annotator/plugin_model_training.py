@@ -1,18 +1,15 @@
 import os
 import warnings
 from pathlib import Path
-import numpy as np
 
+import matplotlib.pyplot as plt
 import napari
+import numpy as np
 import torch
-
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
-from matplotlib.pylab import MaxNLocator
-
 # MONAI
 from monai.data import (
     DataLoader,
@@ -35,7 +32,6 @@ from monai.transforms import (
     Rand3DElasticd,
 )
 from napari.qt.threading import thread_worker
-
 # Qt
 from qtpy.QtWidgets import (
     QWidget,
@@ -108,9 +104,11 @@ class Trainer(ModelFramework):
             "Dice-Focal Loss": DiceFocalLoss(sigmoid=True, lambda_dice=0.2),
         }
 
-
         self.metric_values = []
         self.epoch_loss_values = []
+        self.canvas = None
+        self.train_loss_plot = None
+        self.dice_metric_plot = None
 
         ################################
         # interface
@@ -243,22 +241,116 @@ class Trainer(ModelFramework):
             self.worker = self.train()
             self.worker.started.connect(lambda: print("Worker is running..."))
             self.worker.finished.connect(lambda: print("Worker stopped"))
-            self.worker.finished.connect(self.train_results)
+            self.worker.finished.connect(self.exit_train)
             if self.get_device().type == "cuda":
                 self.worker.finished.connect(self.empty_cuda_cache)
 
         if self.worker.is_running:
-            print("Still working...")
+            print("Stop request, waiting for next validation step...")
+            self.worker.quit()
         else:
             self.worker.start()
             self.btn_start.setText("Running...")
 
-    def train_results(self):
+    def exit_train(self):
         self.btn_start.setText("Start")
         self.btn_close.setVisible(True)
-        self.plot_loss()
 
-    @thread_worker
+    def plot_loss(self):
+
+        with plt.style.context("dark_background"):
+            bckgrd_color = (0, 0, 0, 0)  # '#262930'
+            # loss plot
+            self.canvas = FigureCanvas(Figure(figsize=(10, 3)))
+
+            self.train_loss_plot = self.canvas.figure.add_subplot(1, 2, 1)
+            self.train_loss_plot.set_title("Epoch average loss")
+            self.train_loss_plot.set_xlabel("Epoch")
+            self.train_loss_plot.set_ylabel("Loss")
+            self.train_loss_plot.ticklabel_format(
+                axis="y", style="sci", scilimits=(-5, 0)
+            )
+
+            x = [i + 1 for i in range(len(self.epoch_loss_values))]
+            y = self.epoch_loss_values
+            self.train_loss_plot.plot(x, y)
+            # start, end = x[0], x[-1]
+            # self.train_loss_plot.xaxis.set_ticks(np.arange(start, end, len(x) / 10))
+
+            # dice metric validation plot
+            self.dice_metric_plot = self.canvas.figure.add_subplot(1, 2, 2)
+            self.dice_metric_plot.set_title(
+                "Validation metric : Mean Dice coefficient"
+            )
+            self.dice_metric_plot.set_xlabel("Epoch")
+            self.dice_metric_plot.ticklabel_format(
+                axis="y", style="sci", scilimits=(-5, 0)
+            )
+
+            x = [
+                self.val_interval * (i + 1)
+                for i in range(len(self.metric_values))
+            ]
+            y = self.metric_values
+
+            epoch_min = (np.argmax(y) + 1) * self.val_interval
+            dice_min = np.max(y)
+
+            self.dice_metric_plot.plot(x, y)
+
+            self.dice_metric_plot.scatter(
+                epoch_min, dice_min, c="r", label="Maximum Dice coeff."
+            )
+            self.dice_metric_plot.legend(facecolor="#262930")
+            # start, end = x[0], x[-1]
+            # self.dice_metric_plot.xaxis.set_ticks(np.arange(start, end, len(x) / 5))
+
+            self.canvas.figure.set_facecolor(bckgrd_color)
+            self.dice_metric_plot.set_facecolor(bckgrd_color)
+            self.train_loss_plot.set_facecolor(bckgrd_color)
+
+            # self.canvas.figure.tight_layout()
+
+            self.canvas.figure.subplots_adjust(
+                left=0.1, bottom=0.2, right=0.95, top=0.9, wspace=0.2, hspace=0
+            )
+
+        self.canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+
+        # tab_index = self.addTab(self.canvas, "Loss plot")
+        # self.setCurrentIndex(tab_index)
+        self._viewer.window.add_dock_widget(self.canvas, area="bottom")
+
+    def update_loss_plot(self, epoch, loss, dice_metric):
+
+        if epoch < 4:
+            return
+        elif epoch == 4:
+            self.plot_loss()
+        else:
+            # update loss
+            x = [i + 1 for i in range(len(self.epoch_loss_values))]
+            y = self.epoch_loss_values
+            self.train_loss_plot.plot(x, y)
+            # update metrics
+            x = [
+                self.val_interval * (i + 1)
+                for i in range(len(self.metric_values))
+            ]
+            y = self.metric_values
+
+            epoch_min = (np.argmax(y) + 1) * self.val_interval
+            dice_min = np.max(y)
+
+            self.dice_metric_plot.plot(x, y)
+
+            self.dice_metric_plot.scatter(
+                epoch_min, dice_min, c="r", label="Maximum Dice coeff."
+            )
+            self.dice_metric_plot.legend(facecolor="#262930")
+            self.canvas.draw_idle()
+
+    @thread_worker(connect={"yielded": update_loss_plot})
     def train(self):
 
         device = self.get_device()
@@ -432,6 +524,7 @@ class Trainer(ModelFramework):
                     dice_metric.reset()
 
                     self.metric_values.append(metric)
+                    yield epoch, self.epoch_loss_values, self.metric_values
                     if metric > best_metric:
                         best_metric = metric
                         best_metric_epoch = epoch + 1
@@ -453,74 +546,6 @@ class Trainer(ModelFramework):
         )
 
         # self.close()
-
-    def plot_loss(self):
-        with plt.style.context("dark_background"):
-            # loss plot
-            canvas = FigureCanvas(Figure(figsize=(10, 3)))
-
-            train_loss = canvas.figure.add_subplot(1, 2, 1)
-            train_loss.set_title("Epoch average loss")
-
-            x = [i + 1 for i in range(len(self.epoch_loss_values))]
-            y = self.epoch_loss_values
-            train_loss.set_xlabel("Epoch")
-            train_loss.set_ylabel("Loss")
-            train_loss.plot(x, y)
-            # start, end = x[0], x[-1]
-            # train_loss.xaxis.set_ticks(np.arange(start, end, len(x) / 10))
-            train_loss.ticklabel_format(
-                axis="y", style="sci", scilimits=(-5, 0)
-            )
-
-            bckgrd_color = (0, 0, 0, 0)  #'#262930'
-            # dice metric validation plot
-            dice_metric = canvas.figure.add_subplot(1, 2, 2)
-            dice_metric.set_title("Validation metric : Mean Dice coefficient")
-
-            x = [
-                self.val_interval * (i + 1)
-                for i in range(len(self.metric_values))
-            ]
-            y = self.metric_values
-
-            epoch_min = (np.argmax(y) + 1) * self.val_interval
-            dice_min = np.max(y)
-
-            dice_metric.set_xlabel("Epoch")
-            dice_metric.plot(x, y)
-            print(epoch_min)
-            print(dice_min)
-            dice_metric.scatter(
-                epoch_min, dice_min, c="r", label="Maximum Dice coeff."
-            )
-            dice_metric.legend(facecolor="#262930")
-            # start, end = x[0], x[-1]
-            # dice_metric.xaxis.set_ticks(np.arange(start, end, len(x) / 5))
-            dice_metric.ticklabel_format(
-                axis="y", style="sci", scilimits=(-5, 0)
-            )
-
-            canvas.figure.set_facecolor(bckgrd_color)
-            dice_metric.set_facecolor(bckgrd_color)
-            train_loss.set_facecolor(bckgrd_color)
-
-            # canvas.figure.tight_layout()
-
-            canvas.figure.subplots_adjust(
-                left=0.1, bottom=0.2, right=0.95, top=0.9, wspace=0.2, hspace=0
-            )
-
-        canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
-
-        # tab_index = self.addTab(canvas, "Loss plot")
-        # self.setCurrentIndex(tab_index)
-        self._viewer.window.add_dock_widget(canvas, area="bottom")
-
-    def save_checkpoint(self):
-        return
-
-    # TODO : yield with generator
 
     def close(self):
         """Close the widget"""
