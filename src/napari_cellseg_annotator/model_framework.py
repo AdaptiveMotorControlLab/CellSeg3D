@@ -231,15 +231,16 @@ class ModelFramework(QTabWidget):
             self.lbl_model_path.setText(self.results_path)
             self.update_default()
 
-    def get_device(self):
+    def get_device(self, show = True):
         """Automatically discovers any cuda device and uses it for tensor operations.
         If none is available (CUDA not installed), uses cpu instead."""
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu"
         )
-        print(f"Using {self.device} device")
-        print("Using torch :")
-        print(torch.__version__)
+        if show:
+            print(f"Using {self.device} device")
+            print("Using torch :")
+            print(torch.__version__)
         return self.device
 
     def empty_cuda_cache(self):

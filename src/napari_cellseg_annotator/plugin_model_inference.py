@@ -83,6 +83,11 @@ class Inferer(ModelFramework):
 
         self.worker = None
         """Worker for inference"""
+        self.inf_data = []
+
+        self.image_id = []
+
+        self.out = []
 
         self.view_checkbox = QCheckBox()
         self.view_checkbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -176,28 +181,29 @@ class Inferer(ModelFramework):
         tab.setLayout(tab_layout)
         self.addTab(tab, "Inference")
 
-
-    def show_results(self, show, inf_data, image_id, out):
-        # check that viewer checkbox is on and that max number of displays has not been reached.
-        if not show:
-            return
+    # @staticmethod #, show, inf_data, image_id, out
+    def show_results(self):
         viewer = self._viewer
-        in_data = np.array(inf_data["image"]).astype(np.float32)
+        # check that viewer checkbox is on and that max number of displays has not been reached.
+        for inf_data, out, image_id in zip(self.inf_data, self.out, self.image_id) :
 
-        original_layer = viewer.add_image(
-            in_data,
-            colormap="inferno",
-            name=f"original_{image_id}",
-            scale=[1, 1, 1],
-            opacity=0.7,
-        )
+            original = np.array(inf_data["image"]).astype(np.float32)
+            print("why")
+            original_layer = viewer.add_image(
+                original,
+                colormap="inferno",
+                name=f"original_{image_id}",
+                scale=[1, 1, 1],
+                opacity=0.7,
+            )
 
-        out_layer = viewer.add_image(
-            out[0],
-            colormap="twilight_shifted",
-            name=f"pred_{image_id}",
-            opacity=0.8,
-        )
+            out_layer = viewer.add_image(
+                out,
+                colormap="twilight_shifted",
+                name=f"pred_{image_id}",
+                opacity=0.8,
+            )
+        self.inf_data = self.out = self.image_id = []
 
     def start(self):
         """Start the inference process and does the following:
@@ -238,7 +244,7 @@ class Inferer(ModelFramework):
         else:
 
             self.worker = self.inference()
-            self.worker.started.connect(lambda: print("Worker is running..."))
+            self.worker.started.connect(lambda: print("\nWorker is running..."))
             self.worker.finished.connect(lambda: print("Worker finished"))
             self.worker.finished.connect(
                 lambda: self.btn_start.setText("Start")
@@ -246,9 +252,11 @@ class Inferer(ModelFramework):
             self.worker.finished.connect(
                 lambda: self.btn_close.setVisible(True)
             )
-            # self.worker.yielded.connect(self.show_results)
+            self.worker.finished.connect(self.reset_worker)
+            self.worker.finished.connect(self.show_results)
 
-            if self.device.type == "cuda":
+
+            if self.get_device(show=False) == "cuda":
                 self.worker.finished.connect(self.empty_cuda_cache)
             self.btn_close.setVisible(False)
 
@@ -262,7 +270,8 @@ class Inferer(ModelFramework):
             self.worker.start()
             self.btn_start.setText("Running...  Click to stop")
 
-
+    def reset_worker(self):
+        self.worker= None
 
     @thread_worker
     def inference(self):
@@ -353,16 +362,19 @@ class Inferer(ModelFramework):
                 )
 
                 # print(filename)
-                imwrite(filename, out)
+                # imwrite(filename, out)
 
                 print(f"File n°{image_id} saved as :")
                 print(filename)
-                show = (
-                    self.view_checkbox.isChecked()
-                    and i < self.display_number_choice.value()
-                )
-
-                #yield self, show, inf_data, image_id, out
 
 
-        return
+
+                if self.view_checkbox.isChecked() and i < self.display_number_choice.value():
+                    self.inf_data.append(inf_data)
+                    self.image_id.append(image_id)
+                    print(out)
+                    self.out.append(out[0])
+
+                yield
+
+
