@@ -16,7 +16,7 @@ From here you can access the guides on the several modules available for your ta
 
 * Review : :ref:`loader_module_guide`
 * Inference: :ref:`inference_module_guide`
-* Training : WIP
+* Training : :ref:`training_module_guide`
 * Cropping utility (3D) : :ref:`cropping_module_guide`
 
 

@@ -191,7 +191,9 @@ def check(project_path, ext):
     check_annotations_dir(project_path)
 
 
-def open_file_dialog(widget, possible_paths=[], load_as_folder: bool = False):
+def open_file_dialog(
+    widget, possible_paths=[""], load_as_folder: bool = False
+):
     """Opens a window to choose a file directory using QFileDialog.
 
     Args:
@@ -200,13 +202,8 @@ def open_file_dialog(widget, possible_paths=[], load_as_folder: bool = False):
         or an array of strings containing the paths
         load_as_folder (bool): Whether to open a folder or a single file. If True, will allow to open folder as a single file (2D stack interpreted as 3D)
     """
-    possible_paths.append(os.path.expanduser("~"))
-    default_path = [p for p in possible_paths if p != "" and len(p) >= 3][0]
 
-    # print("paths :")
-    # print(possible_paths)
-    # print(default_path)
-
+    default_path = parse_default_path(possible_paths)
     if not load_as_folder:
         f_name = QFileDialog.getOpenFileName(
             widget, "Choose file", default_path, "Image file (*.tif *.tiff)"
@@ -218,6 +215,22 @@ def open_file_dialog(widget, possible_paths=[], load_as_folder: bool = False):
             widget, "Open directory", default_path
         )
         return filenames
+
+
+def parse_default_path(possible_paths):
+
+    # print("paths :")
+    # print(default_paths)
+    # print(default_path)
+
+    default_paths = [
+        p for p in possible_paths if (p != "" and p != [""] and len(p) >= 3)
+    ]
+    if len(default_paths) == 0:
+        default_path = os.path.expanduser("~")
+    else:
+        default_path = max(default_paths)
+    return default_path
 
 
 def get_date_time():

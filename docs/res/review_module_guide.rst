@@ -50,6 +50,6 @@ Using these, you can check your labels, correct them, save them and keep track o
 Source code
 -------------------------------------------------
 
-* :doc:`plugin_loader`
+* :doc:`plugin_review`
 * :doc:`launch_review`
 * :doc:`plugin_base`

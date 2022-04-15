@@ -8,6 +8,7 @@ from qtpy.QtWidgets import (
     QLabel,
     QComboBox,
     QCheckBox,
+    QLineEdit,
 )
 
 from napari_cellseg_annotator import utils
@@ -51,11 +52,13 @@ class BasePlugin(QWidget):
         self.btn_image = QPushButton("Open", self)
         """Button to load image folder"""
         self.btn_image.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.lbl_image = QLabel("Images directory", self)
+        self.lbl_image = QLineEdit("Images directory", self)
+        self.lbl_image.setReadOnly(True)
         self.btn_image.clicked.connect(self.show_dialog_images)
 
-        self.lbl_label = QLabel("Labels directory", self)
+        self.lbl_label = QLineEdit("Labels directory", self)
         """Button to load label folder"""
+        self.lbl_label.setReadOnly(True)
         self.btn_label = QPushButton("Open", self)
         self.btn_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn_label.clicked.connect(self.show_dialog_labels)
@@ -66,7 +69,7 @@ class BasePlugin(QWidget):
             QSizePolicy.Fixed, QSizePolicy.Fixed
         )
 
-        self.file_handling_box = QCheckBox("Load as folder")
+        self.file_handling_box = QCheckBox("Load as folder ?")
         """Checkbox to choose single file or directory loader handling"""
         self.file_handling_box.clicked.connect(self.show_filetype_choice)
 

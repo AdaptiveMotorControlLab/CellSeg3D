@@ -25,12 +25,12 @@ warnings.formatwarning = utils.format_Warning
 global_launched_before = False
 
 
-class Loader(BasePlugin):
+class Reviewer(BasePlugin):
     """A plugin for selecting volumes and labels file and launching the review process.
     Inherits from : :doc:`plugin_base`"""
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
-        """Creates a Loader plugin with several buttons :
+        """Creates a Reviewer plugin with several buttons :
 
         * Open file prompt to select volumes directory
 
@@ -50,7 +50,7 @@ class Loader(BasePlugin):
         self.textbox = QLineEdit(self)
         self.textbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-        self.checkBox = QCheckBox("Create new dataset?")
+        self.checkBox = QCheckBox("Create new dataset ?")
         self.checkBox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         self.btn_start = QPushButton("Start reviewing", self)
@@ -93,9 +93,6 @@ class Loader(BasePlugin):
                 " make sure to save your work beforehand"
             )
 
-        vbox.addWidget(
-            utils.combine_blocks(self.filetype_choice, self.file_handling_box)
-        )
         self.filetype_choice.setVisible(False)
 
         vbox.addWidget(utils.combine_blocks(self.btn_image, self.lbl_image))
@@ -103,6 +100,7 @@ class Loader(BasePlugin):
         vbox.addWidget(utils.combine_blocks(self.btn_label, self.lbl_label))
         # vbox.addWidget(self.lblft2)
 
+        vbox.addWidget(self.file_handling_box)
         vbox.addWidget(utils.combine_blocks(self.textbox, self.lbl_mod))
 
         vbox.addWidget(self.checkBox)
@@ -117,7 +115,7 @@ class Loader(BasePlugin):
         ##################################################################
         self.setLayout(vbox)
         # self.show()
-        # self._viewer.window.add_dock_widget(self, name="Loader", area="right")
+        # self._viewer.window.add_dock_widget(self, name="Reviewer", area="right")
 
     def run_review(self):
 
@@ -205,7 +203,8 @@ class Loader(BasePlugin):
                 self.filetype,
                 self.file_handling_box.isChecked(),
             )
-            self._viewer.window.remove_dock_widget(self)
+            self.close()
+
             global_launched_before = True
 
         return view1
@@ -235,4 +234,7 @@ class Loader(BasePlugin):
         if global_launched_before:
             global_launched_before = False
         print("close req")
-        self._viewer.window.remove_dock_widget(self)
+        try:
+            self._viewer.window.remove_dock_widget(self)
+        except LookupError:
+            return

@@ -3,6 +3,7 @@ import warnings
 from pathlib import Path
 
 import napari
+from napari.qt.threading import thread_worker
 import numpy as np
 import torch
 from monai.data import (
@@ -70,11 +71,8 @@ class Inferer(ModelFramework):
 
         * Padding OK ?
 
-        * Add option to choose number of images to display in napari (1,3,all)
-
         * Save toggle ?
 
-        * Prevent launch if not all args are set to avoid undefined behaviour
 
         Args:
             viewer (napari.viewer.Viewer): napari viewer to display the widget in
@@ -82,6 +80,9 @@ class Inferer(ModelFramework):
         super().__init__(viewer)
 
         self._viewer = viewer
+
+        self.worker = None
+        """Worker for inference"""
 
         self.view_checkbox = QCheckBox()
         self.view_checkbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -107,15 +108,6 @@ class Inferer(ModelFramework):
         self.btn_model_path.setVisible(False)
         self.lbl_model_path.setVisible(False)
 
-        #####################################################################
-        # TODO remove once done
-        self.test_button = True
-        if self.test_button:
-            self.btntest = QPushButton("test", self)
-            self.btntest.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-            self.btntest.clicked.connect(self.run_test)
-        #####################################################################
-
         self.build()
 
     def create_inference_dict(self):
@@ -129,7 +121,7 @@ class Inferer(ModelFramework):
         return data_dicts
 
     def check_ready(self):
-        if self.images_filepaths != [] and self.results_path != "":
+        if self.images_filepaths != [""] and self.results_path != "":
             return True
         else:
             warnings.formatwarning = utils.format_Warning
@@ -181,38 +173,31 @@ class Inferer(ModelFramework):
         tab_layout.addWidget(self.btn_start)
         tab_layout.addWidget(self.btn_close)
 
-        ##################################################################
-        # TODO remove once done ?
-
-        if self.test_button:
-            tab_layout.addWidget(self.btntest)
-        ##################################################################
-
         tab.setLayout(tab_layout)
         self.addTab(tab, "Inference")
 
-        ########################
-        # TODO : remove once done
 
-    def run_test(self):
+    def show_results(self, show, inf_data, image_id, out):
+        # check that viewer checkbox is on and that max number of displays has not been reached.
+        if not show:
+            return
+        viewer = self._viewer
+        in_data = np.array(inf_data["image"]).astype(np.float32)
 
-        self.images_filepaths = [
-            "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
-        ]
-        path = os.path.dirname(self.images_filepaths[0])
-        # print("test")
-        # print(path)
-        self._default_path = [path]
-        self.lbl_image_files.setText(path)
+        original_layer = viewer.add_image(
+            in_data,
+            colormap="inferno",
+            name=f"original_{image_id}",
+            scale=[1, 1, 1],
+            opacity=0.7,
+        )
 
-        self.results_path = "C:/Users/Cyril/Desktop/test"
-        self.lbl_result_path.setText(self.results_path)
-        self._default_res_path = [self.results_path]
-        self.start()
-
-    # self.close()
-
-    ########################
+        out_layer = viewer.add_image(
+            out[0],
+            colormap="twilight_shifted",
+            name=f"pred_{image_id}",
+            opacity=0.8,
+        )
 
     def start(self):
         """Start the inference process and does the following:
@@ -242,7 +227,45 @@ class Inferer(ModelFramework):
         """
 
         if not self.check_ready():
-            raise ValueError("Aborting")
+            raise ValueError("Aborting, please choose correct paths")
+
+        if self.worker is not None:
+            if self.worker.is_running:
+                pass
+            else:
+                self.worker.start()
+                self.btn_start.setText("Running... Click to stop")
+        else:
+
+            self.worker = self.inference()
+            self.worker.started.connect(lambda: print("Worker is running..."))
+            self.worker.finished.connect(lambda: print("Worker finished"))
+            self.worker.finished.connect(
+                lambda: self.btn_start.setText("Start")
+            )
+            self.worker.finished.connect(
+                lambda: self.btn_close.setVisible(True)
+            )
+            # self.worker.yielded.connect(self.show_results)
+
+            if self.device.type == "cuda":
+                self.worker.finished.connect(self.empty_cuda_cache)
+            self.btn_close.setVisible(False)
+
+        if self.worker.is_running:
+            print(
+                "Stop request, waiting for next inference & saving to occur..."
+            )
+            self.btn_start.setText("Stopping...")
+            self.worker.quit()
+        else:
+            self.worker.start()
+            self.btn_start.setText("Running...  Click to stop")
+
+
+
+    @thread_worker
+    def inference(self):
 
         device = self.get_device()
 
@@ -289,6 +312,7 @@ class Inferer(ModelFramework):
             torch.load(os.path.join(WEIGHTS_DIR, weights), map_location=device)
         )
 
+        # use multithreading ?
         model.eval()
         with torch.no_grad():
             for i, inf_data in enumerate(inference_loader):
@@ -333,31 +357,12 @@ class Inferer(ModelFramework):
 
                 print(f"File n°{image_id} saved as :")
                 print(filename)
-
-                # check that viewer checkbox is on and that max number of displays has not been reached.
-                if (
+                show = (
                     self.view_checkbox.isChecked()
                     and i < self.display_number_choice.value()
-                ):
+                )
 
-                    viewer = self._viewer
+                #yield self, show, inf_data, image_id, out
 
-                    in_data = np.array(inf_data["image"]).astype(np.float32)
 
-                    original_layer = viewer.add_image(
-                        in_data,
-                        colormap="inferno",
-                        name=f"original_{image_id}",
-                        scale=[1, 1, 1],
-                        opacity=0.7,
-                    )
-
-                    out_layer = viewer.add_image(
-                        out[0],
-                        colormap="twilight_shifted",
-                        name=f"pred_{image_id}",
-                        opacity=0.8,
-                    )
-        if self.get_device().type == "cuda":
-            self.empty_cuda_cache()
         return

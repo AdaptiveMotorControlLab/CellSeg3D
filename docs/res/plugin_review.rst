@@ -1,4 +1,4 @@
-plugin_loader.py
+plugin_review.py
 ====================================================
 
 
@@ -10,7 +10,7 @@ Class : Loader
 
 Methods
 **********************
-.. autoclass:: napari_cellseg_annotator.plugin_loader::Loader
+.. autoclass:: napari_cellseg_annotator.plugin_review::Reviewer
    :members:  __init__, run_review, build, close
    :noindex:
 
@@ -22,7 +22,7 @@ Methods
 Attributes
 *********************
 
-.. autoclass:: napari_cellseg_annotator.plugin_loader::Loader
+.. autoclass:: napari_cellseg_annotator.plugin_review::Reviewer
    :members:  _viewer, image_path, label_path, filetype
 
 

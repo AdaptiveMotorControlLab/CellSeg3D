@@ -3,7 +3,7 @@ from torch import nn
 
 
 def get_weights_file():
-    return "TRAILMAP_test.pth"
+    return "TMP_test.pth"
 
 
 def get_net():
@@ -30,7 +30,6 @@ class TRAILMAP_test(nn.Module):
 
         self.bridge = self.bridgeBlock(256, 512, 3)
 
-
         self.up5 = self.decoderBlock(256 + 512, 256, 2)
 
         self.up6 = self.decoderBlock(128 + 256, 128, 2)
@@ -44,7 +43,6 @@ class TRAILMAP_test(nn.Module):
         conv1 = self.conv1(conv0)  # l1
         conv2 = self.conv2(conv1)  # l2
         conv3 = self.conv3(conv2)  # l3
-
 
         bridge = self.bridge(conv3)  # bridge
         # print("bridge :")

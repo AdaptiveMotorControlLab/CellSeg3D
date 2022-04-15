@@ -199,7 +199,7 @@ def launch_review(
 
         # canvas.figure.tight_layout()
         canvas.figure.subplots_adjust(
-            left=0, bottom=0.1, right=1, top=0.95, wspace=0, hspace=0.4
+            left=0.1, bottom=0.1, right=1, top=0.95, wspace=0, hspace=0.4
         )
 
     canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)

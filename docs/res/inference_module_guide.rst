@@ -13,10 +13,12 @@ Model         Link to original paper
 ===========   ================================================================================================
 VNet          `Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation`_
 SegResNet     `3D MRI brain tumor segmentation using autoencoder regularization`_
+TRAILMAP      An emulation in Pytorch of the `TRAIlMAP project on GitHub`_
 ===========   ================================================================================================
 
 .. _Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation: https://arxiv.org/pdf/1606.04797.pdf
 .. _3D MRI brain tumor segmentation using autoencoder regularization: https://arxiv.org/pdf/1810.11654.pdf
+.. _TRAILMAP project on GitHub: https://github.com/AlbertPun/TRAILMAP
 
 Interface and functionalities
 --------------------------------

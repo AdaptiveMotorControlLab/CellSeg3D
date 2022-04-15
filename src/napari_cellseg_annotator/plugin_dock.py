@@ -174,9 +174,10 @@ class Datamanager(QWidget):
         """
         self.slice_num = slice_num
         # print(self.df)
-        self.button.setText(
-            self.df.at[self.df.index[self.slice_num], "train"]
-        )  # puts  button values at value of 1st csv item
+        if len(self.df) > 1:
+            self.button.setText(
+                self.df.at[self.df.index[self.slice_num], "train"]
+            )  # puts  button values at value of 1st csv item
 
     def button_func(self):  # updates csv every time you press button...
         if self.button.text() == "Not Checked":

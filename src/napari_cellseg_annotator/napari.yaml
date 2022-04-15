@@ -5,16 +5,8 @@ schema_version: 0.0.1
 contributions:
   commands:
   - id: napari-cellseg-annotator.load
-    title: Create review loader
-    python_name: napari_cellseg_annotator.plugins:Loader
-
-#  - id: napari-cellseg-annotator.train
-#    title: Create Trainer
-#    python_name: napari_cellseg_annotator.plugins:Trainer
-#
-#  - id: napari-cellseg-annotator.predict
-#    title: Create Predicter
-#    python_name: napari_cellseg_annotator.plugins:Predicter
+    title: Create reviewer
+    python_name: napari_cellseg_annotator.plugins:Reviewer
 
   - id: napari-cellseg-annotator.help
     title: Create Help
@@ -35,13 +27,13 @@ contributions:
 
   widgets:
   - command: napari-cellseg-annotator.load
-    display_name: Review loader
+    display_name: Reviewer
 
   - command: napari-cellseg-annotator.infer
-    display_name: Inference loader
+    display_name: Inference module
 
   - command: napari-cellseg-annotator.train
-    display_name: Training loader
+    display_name: Training module
 
   - command: napari-cellseg-annotator.crop
     display_name: Crop utility

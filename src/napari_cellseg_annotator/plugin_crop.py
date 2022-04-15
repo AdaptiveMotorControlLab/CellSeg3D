@@ -73,13 +73,11 @@ class Cropping(BasePlugin):
         """Build buttons in a layout and add them to the napari Viewer"""
         vbox = QVBoxLayout()
 
-        vbox.addWidget(
-            utils.combine_blocks(self.filetype_choice, self.file_handling_box)
-        )
-        self.filetype_choice.setVisible(False)
-
         vbox.addWidget(utils.combine_blocks(self.btn_image, self.lbl_image))
         vbox.addWidget(utils.combine_blocks(self.btn_label, self.lbl_label))
+
+        vbox.addWidget(self.file_handling_box)
+        self.filetype_choice.setVisible(False)
 
         [
             vbox.addWidget(utils.combine_blocks(cont[0], cont[1]))

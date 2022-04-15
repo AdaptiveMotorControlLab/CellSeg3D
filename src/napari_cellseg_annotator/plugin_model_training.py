@@ -1,5 +1,6 @@
 import os
 import gc
+import copy
 import warnings
 from pathlib import Path
 
@@ -61,11 +62,73 @@ from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.model_framework import ModelFramework
 
 
-# TODO : setup training + check #param entries to add more flexibility/advanced options
-
-
 class Trainer(ModelFramework):
-    def __init__(self, viewer: "napari.viewer.Viewer"):
+    """A plugin to train pre-defined Pytorch models for one-channel segmentation directly in napari.
+    Features parameter selection for training, dynamic loss plotting and automatic saving of the best weights during
+    training through validation."""
+
+    def __init__(
+        self,
+        viewer: "napari.viewer.Viewer",
+        data_path="",
+        label_path="",
+        results_path="",
+        model_index=0,
+        loss_index=0,
+        epochs=10,
+        samples=15,
+        batch=1,
+        val_interval=2,
+    ):
+        """Creates a Trainer widget with the following functionalities :
+
+        * A filetype choice to select images in a folder
+
+        * A button to choose the folder containing the images of the dataset. Validation files are chosen automatically from the whole dataset.
+
+        * A button to choose the label folder (must have matching number and name of images)
+
+        * A button to choose where to save the results (weights). Defaults to the plugin's models/saved_weights folder
+
+        * A dropdown menu to choose which model to train
+
+        * A dropdown menu to choose which loss function to use (see https://docs.monai.io/en/stable/losses.html)
+
+        * A spin box to choose the number of epochs to train for
+
+        * A spin box to choose the batch size during training
+
+        * A spin box to choose the number of samples to take from an image when training
+
+        TODO:
+
+        * Choice of validation proportion, validation interval, sampling behaviour
+
+        * Custom model loading
+
+
+        Args:
+            viewer: napari viewer to display the widget in
+
+            data_path (str): path to images
+
+            label_path (str): path to labels
+
+            results_path (str): path to results
+
+            model_index (int): model to select by default
+
+            loss_index (int): loss to select by default
+
+            epochs (uint): number of epochs
+
+            samples (uint):  number of samples
+
+            batch (uint): batch size
+
+            val_interval (uint) : epoch interval for validation
+
+        """
 
         super().__init__(viewer)
 
@@ -82,10 +145,13 @@ class Trainer(ModelFramework):
         directory = os.path.dirname(os.path.realpath(__file__)) + str(
             Path("/models/dataset/volumes")
         )
+        self.data_path = directory
 
         lab_directory = os.path.dirname(os.path.realpath(__file__)) + str(
             Path("/models/dataset/lab_sem")
         )
+        self.label_path = lab_directory
+
         self.images_filepaths = sorted(
             glob.glob(os.path.join(directory, "*.tif"))
         )
@@ -97,46 +163,67 @@ class Trainer(ModelFramework):
         #######################
         #######################
         #######################
+        if results_path == "":
+            self.results_path = os.path.dirname(
+                os.path.realpath(__file__)
+            ) + str(Path("/models/saved_weights"))
+        else:
+            self.results_path = results_path
 
-        self.results_path = os.path.dirname(os.path.realpath(__file__)) + str(
-            Path("/models/saved_weights")
-        )
+        if data_path != "":
+            self.data_path = data_path
 
-        # default values
-        self.num_samples = 2
-        self.batch_size = 1
-        self.epochs = 4
-        self.val_interval = 2
+        if label_path != "":
+            self.label_path = label_path
+
+        # recover default values
+        self.num_samples = samples
+        """Number of samples to extract"""
+        self.batch_size = batch
+
+        self.epochs = epochs
+
+        self.val_interval = val_interval
 
         self.model = None  # TODO : custom model loading ?
         self.worker = None
+        """Training worker for multithreading"""
         self.data = None
 
         self.loss_dict = {
             "Dice loss": DiceLoss(sigmoid=True),
             "Focal loss": FocalLoss(),
-            "Dice-Focal loss": DiceFocalLoss(sigmoid=True, lambda_dice=0.2),
+            "Dice-Focal loss": DiceFocalLoss(sigmoid=True, lambda_dice=0.5),
             "Generalized Dice loss": GeneralizedDiceLoss(sigmoid=True),
             "DiceCELoss": DiceCELoss(sigmoid=True),
             "Tversky loss": TverskyLoss(sigmoid=True),
         }
+        """Dict of loss functions"""
 
         self.metric_values = []
+        """List of dice metric validation values"""
         self.epoch_loss_values = []
+        """List of loss values per epoch"""
         self.canvas = None
+        """Canvas to plot loss and dice metric in"""
         self.train_loss_plot = None
+        """Plot for loss"""
         self.dice_metric_plot = None
+        """Plot for dice metric"""
+
+        self.model_choice.setCurrentIndex(model_index)
 
         ################################
         # interface
         self.epoch_choice = QSpinBox()
         self.epoch_choice.setValue(self.epochs)
         self.epoch_choice.setRange(2, 1000)
-        self.epoch_choice.setSingleStep(2)
+        # self.epoch_choice.setSingleStep(2)
         self.epoch_choice.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.lbl_epoch_choice = QLabel("Number of epochs : ", self)
 
         self.loss_choice = QComboBox()
+        self.loss_choice.setCurrentIndex(loss_index)
         self.loss_choice.addItems(sorted(self.loss_dict.keys()))
         self.lbl_loss_choice = QLabel("Loss function", self)
 
@@ -154,6 +241,14 @@ class Trainer(ModelFramework):
         self.batch_choice.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.lbl_batch_choice = QLabel("Batch size : ", self)
 
+        self.val_interval_choice = QSpinBox()
+        self.val_interval_choice.setValue(self.val_interval)
+        self.val_interval_choice.setRange(1, 10)
+        self.val_interval_choice.setSizePolicy(
+            QSizePolicy.Fixed, QSizePolicy.Fixed
+        )
+        self.lbl_val_interv_choice = QLabel("Validation interval : ", self)
+
         self.btn_start = QPushButton("Start training")
         self.btn_start.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn_start.clicked.connect(self.start)
@@ -164,7 +259,17 @@ class Trainer(ModelFramework):
         self.build()
 
     def check_ready(self):
-        if self.images_filepaths != [] and self.labels_filepaths != []:
+        """
+        Checks that the paths to the images and labels are correctly set
+
+        Returns:
+
+            * True if paths are set correctly (!=[])
+
+            * False and displays a warning if not
+
+        """
+        if self.images_filepaths != [""] and self.labels_filepaths != [""]:
             return True
         else:
             warnings.formatwarning = utils.format_Warning
@@ -172,59 +277,111 @@ class Trainer(ModelFramework):
             return False
 
     def build(self):
+        """Builds the layout of the widget and creates the following tabs and prompts:
 
-        param_tab = QWidget()
+        * Model parameters :
 
-        param_tab_layout = QVBoxLayout()
-        param_tab_layout.setSizeConstraint(QLayout.SetFixedSize)
+            * Choice of file type for data
 
-        param_tab_layout.addWidget(
+            * Dialog for images folder
+
+            * Dialog for label folder
+
+            * Dialog for results folder
+
+            * Model choice
+
+            * Number of samples to extract from images
+
+            * Next tab
+
+            * Close
+
+        * Training parameters :
+
+            * Loss function choice
+
+            * Batch size choice
+
+            * Epochs choice"""
+
+        model_tab = QWidget()
+        ###### first tab : model and dataset choices
+        model_tab_layout = QVBoxLayout()
+        model_tab_layout.setSizeConstraint(QLayout.SetFixedSize)
+
+        model_tab_layout.addWidget(
             utils.combine_blocks(self.filetype_choice, self.lbl_filetype)
         )  # file extension
 
-        param_tab_layout.addWidget(
+        model_tab_layout.addWidget(
             utils.combine_blocks(self.btn_image_files, self.lbl_image_files)
         )  # volumes
-        param_tab_layout.addWidget(
+        if self.data_path != "":
+            self.lbl_image_files.setText(self.data_path)
+
+        model_tab_layout.addWidget(
             utils.combine_blocks(self.btn_label_files, self.lbl_label_files)
         )  # labels
+        if self.label_path != "":
+            self.lbl_label_files.setText(self.label_path)
 
-        # param_tab_layout.addWidget(
+        # model_tab_layout.addWidget( # TODO : add custom model choice
         #     utils.combine_blocks(self.model_choice, self.lbl_model_choice)
         # )  # model choice
 
-        param_tab_layout.addWidget(
+        model_tab_layout.addWidget(
             utils.combine_blocks(self.btn_result_path, self.lbl_result_path)
         )  # results folder
+        if self.results_path != "":
+            self.lbl_result_path.setText(self.results_path)
 
-        param_tab_layout.addWidget(QLabel("", self))
-        param_tab_layout.addWidget(
+        model_tab_layout.addWidget(QLabel("", self))
+        model_tab_layout.addWidget(
             utils.combine_blocks(self.model_choice, self.lbl_model_choice)
         )  # model choice
-        param_tab_layout.addWidget(
-            utils.combine_blocks(self.loss_choice, self.lbl_loss_choice)
-        )  # loss choice
-        param_tab_layout.addWidget(
-            utils.combine_blocks(self.epoch_choice, self.lbl_epoch_choice)
-        )  # epochs
-        param_tab_layout.addWidget(
+
+        model_tab_layout.addWidget(
             utils.combine_blocks(self.sample_choice, self.lbl_sample_choice)
         )  # number of samples
-        param_tab_layout.addWidget(
+
+        model_tab_layout.addWidget(self.btn_next)
+        model_tab_layout.addWidget(QLabel("", self))
+        model_tab_layout.addWidget(self.btn_close)
+
+        train_tab = QWidget()
+        ####### second tab : training parameters
+        train_tab_layout = QVBoxLayout()
+        train_tab_layout.setSizeConstraint(QLayout.SetFixedSize)
+
+        train_tab_layout.addWidget(
+            utils.combine_blocks(self.loss_choice, self.lbl_loss_choice)
+        )  # loss choice
+        train_tab_layout.addWidget(
             utils.combine_blocks(self.batch_choice, self.lbl_batch_choice)
         )  # batch size
+        train_tab_layout.addWidget(
+            utils.combine_blocks(self.epoch_choice, self.lbl_epoch_choice)
+        )  # epochs
+        train_tab_layout.addWidget(
+            utils.combine_blocks(
+                self.val_interval_choice, self.lbl_val_interv_choice
+            )
+        )
 
-        param_tab_layout.addWidget(QLabel("", self))
+        train_tab_layout.addWidget(self.btn_prev)
+        train_tab_layout.addWidget(QLabel("", self))
+        train_tab_layout.addWidget(self.btn_start)
 
-        param_tab_layout.addWidget(self.btn_start)
-        param_tab_layout.addWidget(self.btn_close)
-        # TODO : what to train ? predefined model ? custom model ?
+        model_tab.setLayout(model_tab_layout)
+        self.addTab(model_tab, "Model parameters")
 
-        param_tab.setLayout(param_tab_layout)
-
-        self.addTab(param_tab, "Basic parameters")
+        train_tab.setLayout(train_tab_layout)
+        self.addTab(train_tab, "Training parameters")
 
     def show_dialog_lab(self):
+        """Shows the  dialog to load label files in a path, loads them (see :doc:model_framework) and changes the widget
+        label :py:attr:`self.lbl_label` accordingly"""
         f_name = utils.open_file_dialog(self, self._default_path)
 
         if f_name:
@@ -232,21 +389,39 @@ class Trainer(ModelFramework):
             self.lbl_label.setText(self.label_path)
 
     def show_dialog_dat(self):
+        """Shows the  dialog to load images files in a path, loads them (see :doc:model_framework) and changes the
+        widget label :py:attr:`self.lbl_dat` accordingly"""
         f_name = utils.open_file_dialog(self, self._default_path)
 
         if f_name:
             self.data_path = f_name
-            self.lbl_dat.setText(self.label_path)
+            self.lbl_dat.setText(self.data_path)
 
     def start(self):
+        """
+        Initiates the :py:func:`train` function as a worker and does the following :
+
+        * Checks that filepaths are set correctly using :py:func:`check_ready`
+
+        * If self.worker is None : creates a worker and starts the training
+
+        * If the button is clicked while training, stops the model once it reaches the next training iteration
+
+        * When the worker yields after a validation step, plots the loss if epoch >= validation_step (to avoid empty plot on first validation)
+
+        * When the worker finishes, clears the memory (tries to for now)
+
+        TODO:
+
+        * Fix memory leak
+
+
+        Returns: Returns empty immediately if the file paths are not set correctly.
+
+        """
 
         if not self.check_ready():
             return
-        self.num_samples = self.sample_choice.value()
-        self.batch_size = self.batch_choice.value()
-        self.data = self.create_train_dataset_dict()
-
-        self.btn_close.setVisible(False)
 
         if self.worker is not None:
             if self.worker.is_running:
@@ -256,9 +431,15 @@ class Trainer(ModelFramework):
                 self.btn_start.setText("Running... Click to stop")
         else:
 
+            self.num_samples = self.sample_choice.value()
+            self.batch_size = self.batch_choice.value()
+            self.val_interval = self.val_interval_choice.value()
+            self.data = self.create_train_dataset_dict()
+            self.btn_close.setVisible(False)
+
             self.worker = self.train()
             self.worker.started.connect(lambda: print("Worker is running..."))
-            self.worker.finished.connect(lambda: print("Worker stopped"))
+            self.worker.finished.connect(lambda: print("Worker finished"))
             self.worker.finished.connect(
                 lambda: self.btn_start.setText("Start")
             )
@@ -278,6 +459,8 @@ class Trainer(ModelFramework):
             self.btn_start.setText("Running...  Click to stop")
 
     def clean_cache(self):
+        """Attempts to clear memory after training"""
+        del self.worker
         self.worker = None
         if self.model is not None:
             del self.model
@@ -290,6 +473,7 @@ class Trainer(ModelFramework):
         # del self
 
     def plot_loss(self, loss, dice_metric):
+        """Creates two subplots to plot the training loss and validation metric"""
         with plt.style.context("dark_background"):
             # update loss
             self.train_loss_plot.set_title("Epoch average loss")
@@ -314,12 +498,19 @@ class Trainer(ModelFramework):
             self.dice_metric_plot.scatter(
                 epoch_min, dice_min, c="r", label="Maximum Dice coeff."
             )
-            self.dice_metric_plot.legend(
-                facecolor="#262930", loc="upper right"
-            )
+            self.dice_metric_plot.legend(facecolor="#262930", loc="upper left")
             self.canvas.draw_idle()
 
     def update_loss_plot(self):
+        """
+        Updates the plots on subsequent validation steps.
+        Creates the plot on the second validation step (epoch == val_interval*2).
+        Updates the plot on subsequent validation steps.
+        Epoch is obtained from the length of the loss vector.
+
+        Returns: returns empty if the epoch is < than 2 * validation interval.
+
+        """
 
         # print(len(self.epoch_loss_values))
         # print(self.epoch_loss_values)
@@ -371,6 +562,8 @@ class Trainer(ModelFramework):
 
     @thread_worker(connect={"yielded": update_loss_plot})
     def train(self):
+        """Trains the Pytorch model for num_epochs, with the selected model and data, using the chosen batch size,
+        validation interval, loss function, and number of samples."""
 
         device = self.get_device()
         model_id = self.get_model(self.model_choice.currentText())
@@ -378,7 +571,7 @@ class Trainer(ModelFramework):
         data_dicts = self.data
         max_epochs = self.epoch_choice.value()
         loss_function = self.get_loss(self.loss_choice.currentText())
-        val_interval = self.val_interval
+        val_interval = self.val_interval_choice.value()
         batch_size = self.batch_choice.value()
         results_path = self.results_path
         num_samples = self.sample_choice.value()
@@ -577,6 +770,20 @@ class Trainer(ModelFramework):
             f"Train completed, best_metric: {best_metric:.4f} "
             f"at epoch: {best_metric_epoch}"
         )
+        print("del")
+        # del device
+        # del model_id
+        # del model_name
+        # del model
+        # del data_dicts
+        # del max_epochs
+        # del loss_function
+        # del val_interval
+        # del batch_size
+        # del results_path
+        # del num_samples
+        # del best_metric
+        # del best_metric_epoch
 
         # self.close()
 
