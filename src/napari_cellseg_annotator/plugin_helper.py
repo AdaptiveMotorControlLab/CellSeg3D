@@ -1,11 +1,9 @@
 import napari
-from qtpy.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QPushButton,
-    QSpinBox,
-    QSizePolicy,
-)
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QSpinBox
+from qtpy.QtWidgets import QVBoxLayout
+from qtpy.QtWidgets import QWidget
 
 from napari_cellseg_annotator import utils
 
@@ -59,8 +57,8 @@ class Helper(QWidget):
     def update_loss_plot(self):
         if not self.test:
             return
-        import numpy as np
         import matplotlib.pyplot as plt
+        import numpy as np
 
         length = 50
         epoch = self.epoch.value()
@@ -75,12 +73,12 @@ class Helper(QWidget):
             return
         elif epoch == 4:
 
+            import matplotlib.pyplot as plt
+            import numpy as np
             from matplotlib.backends.backend_qt5agg import (
                 FigureCanvasQTAgg as FigureCanvas,
             )
             from matplotlib.figure import Figure
-            import matplotlib.pyplot as plt
-            import numpy as np
 
             bckgrd_color = (0, 0, 0, 0)  # '#262930'
             with plt.style.context("dark_background"):

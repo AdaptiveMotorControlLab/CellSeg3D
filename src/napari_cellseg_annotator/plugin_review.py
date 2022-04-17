@@ -6,14 +6,12 @@ import napari
 import numpy as np
 import skimage.io as io
 from qtpy import QtGui
-from qtpy.QtWidgets import (
-    QVBoxLayout,
-    QPushButton,
-    QSizePolicy,
-    QLabel,
-    QLineEdit,
-    QCheckBox,
-)
+from qtpy.QtWidgets import QCheckBox
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QLineEdit
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QVBoxLayout
 
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.launch_review import launch_review

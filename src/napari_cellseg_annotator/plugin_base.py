@@ -1,15 +1,13 @@
 import os
 
 import napari
-from qtpy.QtWidgets import (
-    QWidget,
-    QPushButton,
-    QSizePolicy,
-    QLabel,
-    QComboBox,
-    QCheckBox,
-    QLineEdit,
-)
+from qtpy.QtWidgets import QCheckBox
+from qtpy.QtWidgets import QComboBox
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QLineEdit
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QWidget
 
 from napari_cellseg_annotator import utils
 

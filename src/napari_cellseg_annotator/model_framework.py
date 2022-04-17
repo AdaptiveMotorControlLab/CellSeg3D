@@ -4,14 +4,12 @@ import warnings
 
 import napari
 import torch
-from qtpy.QtWidgets import (
-    QTabWidget,
-    QPushButton,
-    QSizePolicy,
-    QLabel,
-    QComboBox,
-    QLineEdit,
-)
+from qtpy.QtWidgets import QComboBox
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QLineEdit
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QTabWidget
 
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.models import model_SegResNet as SegResNet
@@ -231,7 +229,7 @@ class ModelFramework(QTabWidget):
             self.lbl_model_path.setText(self.results_path)
             self.update_default()
 
-    def get_device(self, show = True):
+    def get_device(self, show=True):
         """Automatically discovers any cuda device and uses it for tensor operations.
         If none is available (CUDA not installed), uses cpu instead."""
         self.device = torch.device(

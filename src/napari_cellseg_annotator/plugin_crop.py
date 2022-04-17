@@ -1,15 +1,15 @@
 import napari
 import numpy as np
-from magicgui.widgets import Slider, Container
+from magicgui.widgets import Container
+from magicgui.widgets import Slider
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QSpinBox
+from qtpy.QtWidgets import QVBoxLayout
+
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.plugin_base import BasePlugin
-from qtpy.QtWidgets import (
-    QVBoxLayout,
-    QPushButton,
-    QSizePolicy,
-    QLabel,
-    QSpinBox,
-)
 
 DEFAULT_CROP_SIZE = 64
 

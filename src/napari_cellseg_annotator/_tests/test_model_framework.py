@@ -1,7 +1,9 @@
-from napari_cellseg_annotator import model_framework
-import torch
-import pytest
 import warnings
+
+import pytest
+import torch
+
+from napari_cellseg_annotator import model_framework
 
 
 def test_get_padding_dim(make_napari_viewer):

@@ -1,5 +1,6 @@
-import numpy as np
 import os
+
+import numpy as np
 
 from napari_cellseg_annotator import utils
 
