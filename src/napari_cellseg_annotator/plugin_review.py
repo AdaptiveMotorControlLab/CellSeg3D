@@ -143,12 +143,7 @@ class Reviewer(BasePlugin):
                 os.path.dirname(self.image_path), self.textbox.text()
             )
             os.makedirs(self.label_path, exist_ok=True)
-            filenames = [
-                fn.name
-                for fn in sorted(
-                    list(Path(self.image_path).glob("./*" + self.filetype))
-                )
-            ]
+
             for i in range(len(labels)):
                 io.imsave(
                     os.path.join(
