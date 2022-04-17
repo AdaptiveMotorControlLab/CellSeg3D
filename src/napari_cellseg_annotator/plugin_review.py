@@ -161,7 +161,7 @@ class Reviewer(BasePlugin):
             labels_raw = utils.load_raw_masks(
                 self.label_path + "_raw", self.filetype
             )
-        except:
+        except ValueError:
             labels_raw = None
 
         global global_launched_before

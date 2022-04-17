@@ -105,12 +105,12 @@ class Cropping(BasePlugin):
         self.filetype = self.filetype_choice.currentText()
 
         if self.file_handling_box.isChecked():
-            self.input_path = (
+            self.image_path = (
                 "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
             )
             self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
         else:
-            self.input_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
+            self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
             self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels/testing_im.tif"
         self.start()
 
@@ -125,7 +125,7 @@ class Cropping(BasePlugin):
         ]
         self.filetype = self.filetype_choice.currentText()
         image = utils.load_images(
-            self.input_path, self.filetype, self.file_handling_box.isChecked()
+            self.image_path, self.filetype, self.file_handling_box.isChecked()
         )
         labels = utils.load_images(
             self.label_path, self.filetype, self.file_handling_box.isChecked()
