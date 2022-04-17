@@ -1,7 +1,9 @@
 black
+isort
 pytest
 pytest-qt
-tox
 sphinx
 sphinx-autodoc-typehints
 sphinx-rtd-theme
+tox
+twine
