@@ -4,19 +4,17 @@ import warnings
 
 import napari
 import torch
-from qtpy.QtWidgets import (
-    QWidget,
-    QPushButton,
-    QSizePolicy,
-    QLabel,
-    QComboBox,
-)
+from qtpy.QtWidgets import QComboBox
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QWidget
 
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.models import model_SegResNet as SegResNet
 from napari_cellseg_annotator.models import model_VNet as VNet
 
-warnings.formatwarning = utils.format_Warning
+warnings.formatwarning = utils.format_warning
 
 
 class ModelFramework(QWidget):

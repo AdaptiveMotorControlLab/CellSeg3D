@@ -1,6 +1,9 @@
 import napari
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QVBoxLayout
+from qtpy.QtWidgets import QWidget
+
 from napari_cellseg_annotator import utils
-from qtpy.QtWidgets import QWidget, QVBoxLayout, QPushButton
 
 
 class Helper(QWidget):

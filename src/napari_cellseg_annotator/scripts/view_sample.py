@@ -1,5 +1,4 @@
 import napari
-
 from dask_image.imread import imread
 
 # Visual

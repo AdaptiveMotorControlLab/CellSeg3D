@@ -7,15 +7,13 @@ import matplotlib.pyplot as plt
 import napari
 import numpy as np
 import pandas as pd
-from PIL import Image
-from PyQt5.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QPushButton,
-    QSizePolicy,
-    QLabel,
-)
 from napari.qt import thread_worker
+from PIL import Image
+from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import QPushButton
+from PyQt5.QtWidgets import QSizePolicy
+from PyQt5.QtWidgets import QVBoxLayout
+from PyQt5.QtWidgets import QWidget
 
 from napari_cellseg_annotator import utils
 
@@ -124,8 +122,8 @@ class Trainer(QWidget):
                 self.worker.start()
                 self.btn4.setText("Stop")
         else:
-            ori_imgs, ori_filenames = utils.load_X_gray(self.opath)
-            label_imgs, label_filenames = utils.load_Y_gray(
+            ori_imgs, ori_filenames = utils.load_x_gray(self.opath)
+            label_imgs, label_filenames = utils.load_y_gray(
                 self.labelpath, normalize=False
             )
             train_csv = self.get_newest_csv()

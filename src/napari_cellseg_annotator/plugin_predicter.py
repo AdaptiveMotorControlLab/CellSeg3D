@@ -4,14 +4,12 @@ from pathlib import Path
 
 import napari
 import pandas as pd
-from qtpy.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QPushButton,
-    QSizePolicy,
-    QLabel,
-    QCheckBox,
-)
+from qtpy.QtWidgets import QCheckBox
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QVBoxLayout
+from qtpy.QtWidgets import QWidget
 
 from napari_cellseg_annotator import utils
 
@@ -119,7 +117,7 @@ class Predicter(QWidget):
         return csv, str(csvs[-1])
 
     def predicter(self):
-        ori_imgs, ori_filenames = utils.load_X_gray(self.opath)
+        ori_imgs, ori_filenames = utils.load_x_gray(self.opath)
         input_shape = (512, 512, 1)
         num_classes = 1
 

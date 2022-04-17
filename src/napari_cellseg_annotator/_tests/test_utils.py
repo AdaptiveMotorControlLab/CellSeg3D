@@ -1,5 +1,6 @@
-from napari_cellseg_annotator import utils
 import numpy as np
+
+from napari_cellseg_annotator import utils
 
 
 def test_normalize_x():

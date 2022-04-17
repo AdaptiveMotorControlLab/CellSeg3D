@@ -8,10 +8,9 @@ import numpy as np
 import pandas as pd
 from qtpy.QtCore import QUrl
 from qtpy.QtGui import QDesktopServices
-from qtpy.QtWidgets import (
-    QFileDialog,
-)
-from qtpy.QtWidgets import QWidget, QHBoxLayout
+from qtpy.QtWidgets import QFileDialog
+from qtpy.QtWidgets import QHBoxLayout
+from qtpy.QtWidgets import QWidget
 from skimage import io
 from skimage.filters import gaussian
 from tqdm import tqdm
@@ -191,7 +190,7 @@ def check(project_path, ext):
     check_annotations_dir(project_path)
 
 
-def open_file_dialog(widget, possible_paths=[], load_as_folder: bool = False):
+def open_file_dialog(widget, possible_paths=None, load_as_folder: bool = False):
     """Opens a window to choose a file directory using QFileDialog.
 
     Args:
@@ -200,6 +199,8 @@ def open_file_dialog(widget, possible_paths=[], load_as_folder: bool = False):
         or an array of strings containing the paths
         load_as_folder (bool): Whether to open a folder or a single file. If True, will allow to open folder as a single file (2D stack interpreted as 3D)
     """
+    if possible_paths is None:
+        possible_paths = []
     possible_paths.append(os.path.expanduser("~"))
     default_path = [p for p in possible_paths if p != "" and len(p) >= 3][0]
 
@@ -260,16 +261,6 @@ def load_images(dir_or_path, filetype="", as_folder: bool = False):
     return images_original
 
 
-def load_predicted_masks(mito_mask_dir, er_mask_dir, filetype):
-
-    images_mito_label = load_images(mito_mask_dir, filetype)
-    images_mito_label = images_mito_label.compute()
-    images_er_label = load_images(er_mask_dir, filetype)
-    images_er_label = images_er_label.compute()
-    base_label = (images_mito_label > 127) * 1 + (images_er_label > 127) * 2
-    return base_label
-
-
 def load_saved_masks(mod_mask_dir, filetype, as_folder: bool):
     images_label = load_images(mod_mask_dir, filetype, as_folder)
     images_label = images_label.compute()
@@ -292,37 +283,15 @@ def save_masks(labels, out_path):
         io.imsave(os.path.join(out_path, str(i).zfill(4) + ".png"), label)
 
 
-def load_X_gray(folder_path):
-    image_files = []
-    for file in os.listdir(folder_path):
-        base, ext = os.path.splitext(file)
-        if ext == ".png":
-            image_files.append(file)
-        else:
-            pass
-
-    image_files.sort()
-
-    img = cv2.imread(
-        folder_path + os.sep + image_files[0], cv2.IMREAD_GRAYSCALE
-    )
-
-    images = np.zeros(
-        (len(image_files), img.shape[0], img.shape[1], 1), np.float32
-    )
-    for i, image_file in tqdm(enumerate(image_files)):
-        image = cv2.imread(
-            folder_path + os.sep + image_file, cv2.IMREAD_GRAYSCALE
-        )
-        image = image[:, :, np.newaxis]
-        images[i] = normalize_x(image)
-
-    print(images.shape)
-
-    return images, image_files
+def load_y_gray(folder_path, thresh=None, normalize=False):
+    load_gray(folder_path, thresh, normalize, direction="y")
 
 
-def load_Y_gray(folder_path, thresh=None, normalize=False):
+def load_x_gray(folder_path):
+    load_gray(folder_path, direction="x")
+
+
+def load_gray(folder_path, thresh=None, normalize=False, direction="x"):
     image_files = []
     for file in os.listdir(folder_path):
         base, ext = os.path.splitext(file)
@@ -348,10 +317,15 @@ def load_Y_gray(folder_path, thresh=None, normalize=False):
         if thresh:
             ret, image = cv2.threshold(image, thresh, 255, cv2.THRESH_BINARY)
         image = image[:, :, np.newaxis]
-        if normalize:
-            images[i] = normalize_y(image)
+        if direction == "y":
+            if normalize:
+                images[i] = normalize_y(image)
+            else:
+                images[i] = image
+        elif direction == "x":
+            images[i] = normalize_x(image)
         else:
-            images[i] = image
+            raise ValueError("Direction must be either 'x' or 'y'")
 
     print(images.shape)
 
@@ -376,7 +350,7 @@ def select_train_data(dataframe, ori_imgs, label_imgs, ori_filenames):
     return np.array(train_ori_imgs), np.array(train_label_imgs)
 
 
-def format_Warning(message, category, filename, lineno, line=""):
+def format_warning(message, category, filename, lineno, line=""):
     """Formats a warning message, use in code with ``warnings.formatwarning = utils.format_Warning``
 
     Args:
@@ -401,30 +375,11 @@ def format_Warning(message, category, filename, lineno, line=""):
     )
 
 
-# def dice_coeff(y_true, y_pred):
-#     smooth = 1.
-#     y_true_f = K.flatten(y_true)
-#     y_pred_f = K.flatten(y_pred)
-#     intersection = K.sum(y_true_f * y_pred_f)
-#     score = (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
-#     return score
-
-
-# def dice_loss(y_true, y_pred):
-#     loss = 1 - dice_coeff(y_true, y_pred)
-#     return loss
-
-
-# def bce_dice_loss(y_true, y_pred):
-#     loss = binary_crossentropy(y_true, y_pred) + dice_loss(y_true, y_pred)
-#     return loss
-
-
 def divide_imgs(images):
     H = -(-images.shape[1] // 412)
     W = -(-images.shape[2] // 412)
 
-    diveded_imgs = np.zeros((images.shape[0] * H * W, 512, 512, 1), np.float32)
+    divided_imgs = np.zeros((images.shape[0] * H * W, 512, 512, 1), np.float32)
     print(H, W)
 
     for z in range(images.shape[0]):
@@ -607,10 +562,10 @@ def divide_imgs(images):
                                 ]
                 h = max(0, h)
                 w = max(0, w)
-                diveded_imgs[z * H * W + w * H + h] = cropped_img
+                divided_imgs[z * H * W + w * H + h] = cropped_img
                 # print(z*H*W+ w*H+h)
 
-    return diveded_imgs
+    return divided_imgs
 
 
 def merge_imgs(imgs, original_image_shape):

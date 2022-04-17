@@ -13,7 +13,7 @@ Launching the review process
 
 First, you will be asked to load your images and labels; you can use the checkbox above the Open buttons to
 choose whether you want to load a single 3D **.tif** image or a folder of 2D images as a 3D stack.
-Folders can be stacks of either .png or .tif files, ideally numbered with the index of the slice at the end.
+Folders can be stacks of either **.png** or **.tif** files, ideally numbered with the index of the slice at the end.
 
 .. note::
     Only single .tif files or folder of several .png or .tif are supported.
@@ -38,7 +38,7 @@ Interface & functionalities
 
 Once you have launched the review process, you will have access to the following functionalities:
 
-**1.** A dialog to choose the folder in which you want to save the verified and/or corrected annotations, and a button to save the labels. They will be saved as png, with one file per slice.
+**1.** A dialog to choose the folder in which you want to save the verified and/or corrected annotations, and a button to save the labels. They will be saved as **.png**, with one file per slice.
 
 **2.** A button to update the status of the slice in the csv file (in this case : checked/not checked)
 

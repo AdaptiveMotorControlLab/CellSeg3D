@@ -5,21 +5,20 @@ from pathlib import Path
 import napari
 import numpy as np
 import skimage.io as io
+from PyQt5 import QtCore
 from qtpy import QtGui
-from qtpy.QtWidgets import (
-    QVBoxLayout,
-    QPushButton,
-    QSizePolicy,
-    QLabel,
-    QLineEdit,
-    QCheckBox,
-)
+from qtpy.QtWidgets import QCheckBox
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QLineEdit
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QVBoxLayout
 
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.launch_review import launch_review
 from napari_cellseg_annotator.plugin_base import BasePlugin
 
-warnings.formatwarning = utils.format_Warning
+warnings.formatwarning = utils.format_warning
 
 
 global_launched_before = False
@@ -76,7 +75,9 @@ class Loader(BasePlugin):
             self.btntest.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
             self.btntest.clicked.connect(self.run_test)
         #####################################################################
-
+        self.filetype = None
+        self.image_path = None
+        self.label_path = None
         self.build()
 
     def build(self):
@@ -94,26 +95,36 @@ class Loader(BasePlugin):
             )
 
         vbox.addWidget(
-            utils.combine_blocks(self.filetype_choice, self.file_handling_box)
+            utils.combine_blocks(self.filetype_choice, self.file_handling_box),
+            alignment=QtCore.Qt.AlignJustify,
         )
         self.filetype_choice.setVisible(False)
 
-        vbox.addWidget(utils.combine_blocks(self.btn_image, self.lbl_image))
+        vbox.addWidget(
+            utils.combine_blocks(self.btn_image, self.lbl_image),
+            alignment=QtCore.Qt.AlignJustify,
+        )
 
-        vbox.addWidget(utils.combine_blocks(self.btn_label, self.lbl_label))
+        vbox.addWidget(
+            utils.combine_blocks(self.btn_label, self.lbl_label),
+            alignment=QtCore.Qt.AlignJustify,
+        )
         # vbox.addWidget(self.lblft2)
 
-        vbox.addWidget(utils.combine_blocks(self.textbox, self.lbl_mod))
+        vbox.addWidget(
+            utils.combine_blocks(self.textbox, self.lbl_mod),
+            alignment=QtCore.Qt.AlignJustify,
+        )
 
-        vbox.addWidget(self.checkBox)
-        vbox.addWidget(self.btn_start)
-        vbox.addWidget(self.btn_close)
+        vbox.addWidget(self.checkBox, alignment=QtCore.Qt.AlignJustify)
+        vbox.addWidget(self.btn_start, alignment=QtCore.Qt.AlignJustify)
+        vbox.addWidget(self.btn_close, alignment=QtCore.Qt.AlignJustify)
 
         ##################################################################
         # remove once done ?
 
         if self.test_button:
-            vbox.addWidget(self.btntest)
+            vbox.addWidget(self.btntest, alignment=QtCore.Qt.AlignLeft)
         ##################################################################
         self.setLayout(vbox)
         # self.show()
@@ -147,12 +158,6 @@ class Loader(BasePlugin):
                 os.path.dirname(self.image_path), self.textbox.text()
             )
             os.makedirs(self.label_path, exist_ok=True)
-            filenames = [
-                fn.name
-                for fn in sorted(
-                    list(Path(self.image_path).glob("./*" + self.filetype))
-                )
-            ]
             for i in range(len(labels)):
                 io.imsave(
                     os.path.join(
@@ -170,7 +175,7 @@ class Loader(BasePlugin):
             labels_raw = utils.load_raw_masks(
                 self.label_path + "_raw", self.filetype
             )
-        except:
+        except ValueError:
             labels_raw = None
 
         global global_launched_before

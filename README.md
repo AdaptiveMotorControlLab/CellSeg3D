@@ -27,8 +27,25 @@ You can install `napari-cellseg-annotator` via [pip]:
 
     pip install napari-cellseg-annotator
 
+For local installation, please run:
+
+```
+pip install -e .
+```
 
 
+## Usage
+
+To use the plugin, please run:
+```
+napari
+```
+Then go into Plugins > napari-cellseg-annotator, and choose which tool to use.
+
+- **Review loader**: This module allows you to review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.
+- **Inference loader**: This module allows you to use pre-trained segmentation algorithms on volumes to automatically label cells.
+- **Training loader**:  This module allows you to train segmentation algorithms from labeled volumes.
+- **Crop utility**: This module allows you to crop your volumes and labels dynamically, by selecting a fixed size volume and moving it around the image.
 
 ## Contributing
 

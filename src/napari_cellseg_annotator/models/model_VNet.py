@@ -12,8 +12,6 @@ def get_weights_file():
     return "VNet.pth"
 
 
-
-
 def get_output(model, input):
     return model(input)
 

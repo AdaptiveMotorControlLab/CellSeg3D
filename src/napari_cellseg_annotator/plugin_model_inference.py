@@ -5,32 +5,26 @@ from pathlib import Path
 import napari
 import numpy as np
 import torch
-from monai.data import (
-    DataLoader,
-    Dataset,
-)
+from monai.data import DataLoader
+from monai.data import Dataset
 
 # MONAI
 from monai.inferers import sliding_window_inference
-from monai.transforms import (
-    AsDiscrete,
-    EnsureChannelFirstd,
-    Compose,
-    LoadImaged,
-    EnsureTyped,
-    EnsureType,
-    SpatialPadd,
-)
+from monai.transforms import AsDiscrete
+from monai.transforms import Compose
+from monai.transforms import EnsureChannelFirstd
+from monai.transforms import EnsureType
+from monai.transforms import EnsureTyped
+from monai.transforms import LoadImaged
+from monai.transforms import SpatialPadd
 
 # Qt
-from qtpy.QtWidgets import (
-    QVBoxLayout,
-    QPushButton,
-    QSizePolicy,
-    QLabel,
-    QCheckBox,
-    QSpinBox,
-)
+from qtpy.QtWidgets import QCheckBox
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QSpinBox
+from qtpy.QtWidgets import QVBoxLayout
 from tifffile import imwrite
 
 # local
@@ -130,7 +124,7 @@ class Inferer(ModelFramework):
         if self.images_filepaths != [] and self.results_path != "":
             return True
         else:
-            warnings.formatwarning = utils.format_Warning
+            warnings.formatwarning = utils.format_warning
             warnings.warn("Image and label paths are not correctly set")
             return False
 
@@ -198,7 +192,6 @@ class Inferer(ModelFramework):
         # print(path)
         self._default_path = [path]
         self.lbl_image_files.setText(path)
-
 
         self.results_path = "C:/Users/Cyril/Desktop/test"
         self.lbl_result_path.setText(self.results_path)

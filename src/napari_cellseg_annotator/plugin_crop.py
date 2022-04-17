@@ -1,15 +1,16 @@
 import napari
 import numpy as np
-from magicgui.widgets import Slider, Container
+from PyQt5 import QtCore
+from magicgui.widgets import Container
+from magicgui.widgets import Slider
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QSpinBox
+from qtpy.QtWidgets import QVBoxLayout
+
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.plugin_base import BasePlugin
-from qtpy.QtWidgets import (
-    QVBoxLayout,
-    QPushButton,
-    QSizePolicy,
-    QLabel,
-    QSpinBox,
-)
 
 DEFAULT_CROP_SIZE = 64
 
@@ -66,7 +67,9 @@ class Cropping(BasePlugin):
             self.btntest.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
             self.btntest.clicked.connect(self.run_test)
         #####################################################################
-
+        self.filetype = None
+        self.input_path = None
+        self.label_path = None
         self.build()
 
     def build(self):
@@ -74,26 +77,35 @@ class Cropping(BasePlugin):
         vbox = QVBoxLayout()
 
         vbox.addWidget(
-            utils.combine_blocks(self.filetype_choice, self.file_handling_box)
+            utils.combine_blocks(self.filetype_choice, self.file_handling_box), alignment=QtCore.Qt.AlignAbsolute,
         )
         self.filetype_choice.setVisible(False)
 
-        vbox.addWidget(utils.combine_blocks(self.btn_image, self.lbl_image))
-        vbox.addWidget(utils.combine_blocks(self.btn_label, self.lbl_label))
+        vbox.addWidget(
+            utils.combine_blocks(self.btn_image, self.lbl_image),
+            alignment=QtCore.Qt.AlignAbsolute,
+        )
+        vbox.addWidget(
+            utils.combine_blocks(self.btn_label, self.lbl_label),
+            alignment=QtCore.Qt.AlignAbsolute,
+        )
 
         [
-            vbox.addWidget(utils.combine_blocks(cont[0], cont[1]))
+            vbox.addWidget(
+                utils.combine_blocks(cont[0], cont[1]),
+                alignment=QtCore.Qt.AlignAbsolute,
+            )
             for cont in self.box_widgets
         ]
 
-        vbox.addWidget(self.btn_start)
-        vbox.addWidget(self.btn_close)
+        vbox.addWidget(self.btn_start, alignment=QtCore.Qt.AlignCenter)
+        vbox.addWidget(self.btn_close, alignment=QtCore.Qt.AlignCenter)
 
         ##################################################################
         # remove once done ?
 
         if self.test_button:
-            vbox.addWidget(self.btntest)
+            vbox.addWidget(self.btntest, alignment=QtCore.Qt.AlignCenter)
         ##################################################################
 
         self.setLayout(vbox)

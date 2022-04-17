@@ -3,12 +3,10 @@ import shutil
 from pathlib import Path
 
 import pandas as pd
-from qtpy.QtWidgets import (
-    QWidget,
-    QPushButton,
-    QHBoxLayout,
-    QVBoxLayout,
-)
+from qtpy.QtWidgets import QHBoxLayout
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QVBoxLayout
+from qtpy.QtWidgets import QWidget
 
 GUI_MAXIMUM_WIDTH = 225
 GUI_MAXIMUM_HEIGHT = 350

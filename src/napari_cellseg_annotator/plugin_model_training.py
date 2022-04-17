@@ -8,41 +8,38 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
+
 # MONAI
-from monai.data import (
-    DataLoader,
-    PatchDataset,
-    decollate_batch,
-    pad_list_data_collate,
-)
-from monai.losses import DiceLoss, FocalLoss, DiceFocalLoss
+from monai.data import DataLoader
+from monai.data import decollate_batch
+from monai.data import pad_list_data_collate
+from monai.data import PatchDataset
+from monai.losses import DiceFocalLoss
+from monai.losses import DiceLoss
+from monai.losses import FocalLoss
 from monai.metrics import DiceMetric
-from monai.transforms import (
-    AsDiscrete,
-    EnsureChannelFirstd,
-    Compose,
-    LoadImaged,
-    EnsureType,
-    EnsureTyped,
-    RandSpatialCropSamplesd,
-    SpatialPadd,
-    RandShiftIntensityd,
-    Rand3DElasticd,
-)
+from monai.transforms import AsDiscrete
+from monai.transforms import Compose
+from monai.transforms import EnsureChannelFirstd
+from monai.transforms import EnsureType
+from monai.transforms import EnsureTyped
+from monai.transforms import LoadImaged
+from monai.transforms import Rand3DElasticd
+from monai.transforms import RandShiftIntensityd
+from monai.transforms import RandSpatialCropSamplesd
+from monai.transforms import SpatialPadd
 from napari.qt.threading import thread_worker
+
 # Qt
-from qtpy.QtWidgets import (
-    QVBoxLayout,
-    QPushButton,
-    QSizePolicy,
-    QLabel,
-    QComboBox,
-    QSpinBox,
-)
+from qtpy.QtWidgets import QComboBox
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QSpinBox
+from qtpy.QtWidgets import QVBoxLayout
 
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.model_framework import ModelFramework
-
 
 # TODO : setup training + check #param entries to add more flexibility/advanced options
 
@@ -179,7 +176,7 @@ class Trainer(ModelFramework):
         if self.images_filepaths != [] and self.labels_filepaths != []:
             return True
         else:
-            warnings.formatwarning = utils.format_Warning
+            warnings.formatwarning = utils.format_warning
             warnings.warn("Image and label paths are not correctly set")
             return False
 
@@ -274,7 +271,6 @@ class Trainer(ModelFramework):
             self.worker.start()
             self.btn_start.setText("Running...")
 
-
     @thread_worker
     def train(self):
 
@@ -284,13 +280,12 @@ class Trainer(ModelFramework):
 
         # TODO param : % of validation from training set
         train_files, val_files = (
-            data_dicts[0: int(len(data_dicts) * 0.9)],
-            data_dicts[int(len(data_dicts) * 0.9):],
+            data_dicts[0 : int(len(data_dicts) * 0.9)],
+            data_dicts[int(len(data_dicts) * 0.9) :],
         )
         # print("train/val")
         # print(train_files)
         # print(val_files)
-
 
         train_ds = PatchDataset(
             data=train_files,
@@ -334,7 +329,6 @@ class Trainer(ModelFramework):
         best_metric = -1
         best_metric_epoch = -1
 
-
         time = utils.get_date_time()
         weights_filename = (
             f"{self.model_choice.currentText()}_best_metric" + f"_{time}.pth"
@@ -342,7 +336,7 @@ class Trainer(ModelFramework):
         if device.type == "cuda":
             print("\nUsing GPU :")
             print(torch.cuda.get_device_name(0))
-        else :
+        else:
             print("Using CPU")
 
         for epoch in range(max_epochs):
@@ -428,19 +422,17 @@ class Trainer(ModelFramework):
                         f"\nBest mean dice: {best_metric:.4f} "
                         f"at epoch: {best_metric_epoch}"
                     )
-        print("="*10)
+        print("=" * 10)
         print("Done !")
         print(
             f"Train completed, best_metric: {best_metric:.4f} "
             f"at epoch: {best_metric_epoch}"
         )
 
-
         # self.close()
 
-
     def plot_loss(self):
-        #loss plot
+        # loss plot
         canvas = FigureCanvas(Figure(figsize=(2, 15)))
 
         train_loss = canvas.figure.add_subplot(2, 1, 1)
@@ -453,7 +445,9 @@ class Trainer(ModelFramework):
         train_loss.plot(x, y)
         dice_metric = canvas.figure.add_subplot(2, 1, 2)
         dice_metric.set_title("Val Mean Dice")
-        x = [self.val_interval * (i + 1) for i in range(len(self.metric_values))]
+        x = [
+            self.val_interval * (i + 1) for i in range(len(self.metric_values))
+        ]
         y = self.metric_values
         dice_metric.set_xlabel("epoch")
         dice_metric.plot(x, y)
