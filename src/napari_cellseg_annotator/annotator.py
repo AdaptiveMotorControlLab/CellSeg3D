@@ -1,20 +1,20 @@
 import os
 import warnings
 from pathlib import Path
+
 import napari
 import numpy as np
-from qtpy.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QPushButton,
-    QSizePolicy,
-    QLabel,
-    QFileDialog,
-    QComboBox,
-    QLineEdit,
-    QCheckBox,
-)
+from qtpy.QtWidgets import QCheckBox
+from qtpy.QtWidgets import QComboBox
+from qtpy.QtWidgets import QFileDialog
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QLineEdit
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QVBoxLayout
+from qtpy.QtWidgets import QWidget
 from skimage import io
+
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.launch_review import launch_review
 
@@ -365,7 +365,7 @@ class Loader(QWidget):
 #                 self.worker.start()
 #                 self.btn4.setText("Stop")
 #         else:
-#             ori_imgs, ori_filenames = utils.load_X_gray(self.opath)
+#             ori_imgs, ori_filenames = utils.load_x_gray(self.opath)
 #             label_imgs, label_filenames = utils.load_Y_gray(
 #                 self.labelpath, normalize=False
 #             )
@@ -518,7 +518,7 @@ class Loader(QWidget):
 #         return csv, str(csvs[-1])
 #
 #     def predicter(self):
-#         ori_imgs, ori_filenames = utils.load_X_gray(self.opath)
+#         ori_imgs, ori_filenames = utils.load_x_gray(self.opath)
 #         input_shape = (512, 512, 1)
 #         num_classes = 1
 #

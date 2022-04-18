@@ -3,37 +3,31 @@ import warnings
 from pathlib import Path
 
 import napari
-from napari.qt.threading import thread_worker
 import numpy as np
 import torch
-from monai.data import (
-    DataLoader,
-    Dataset,
-)
+from monai.data import DataLoader
+from monai.data import Dataset
 
 # MONAI
 from monai.inferers import sliding_window_inference
-from monai.transforms import (
-    AsDiscrete,
-    EnsureChannelFirstd,
-    Compose,
-    LoadImaged,
-    EnsureTyped,
-    EnsureType,
-    SpatialPadd,
-)
+from monai.transforms import AsDiscrete
+from monai.transforms import Compose
+from monai.transforms import EnsureChannelFirstd
+from monai.transforms import EnsureType
+from monai.transforms import EnsureTyped
+from monai.transforms import LoadImaged
+from monai.transforms import SpatialPadd
+from napari.qt.threading import thread_worker
 
 # Qt
-from qtpy.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QPushButton,
-    QSizePolicy,
-    QLabel,
-    QCheckBox,
-    QSpinBox,
-    QLayout,
-)
+from qtpy.QtWidgets import QCheckBox
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QLayout
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QSpinBox
+from qtpy.QtWidgets import QVBoxLayout
+from qtpy.QtWidgets import QWidget
 from tifffile import imwrite
 
 # local
@@ -185,7 +179,9 @@ class Inferer(ModelFramework):
     def show_results(self):
         viewer = self._viewer
         # check that viewer checkbox is on and that max number of displays has not been reached.
-        for inf_data, out, image_id in zip(self.inf_data, self.out, self.image_id) :
+        for inf_data, out, image_id in zip(
+            self.inf_data, self.out, self.image_id
+        ):
 
             original = np.array(inf_data["image"]).astype(np.float32)
             print("why")
@@ -244,7 +240,9 @@ class Inferer(ModelFramework):
         else:
 
             self.worker = self.inference()
-            self.worker.started.connect(lambda: print("\nWorker is running..."))
+            self.worker.started.connect(
+                lambda: print("\nWorker is running...")
+            )
             self.worker.finished.connect(lambda: print("Worker finished"))
             self.worker.finished.connect(
                 lambda: self.btn_start.setText("Start")
@@ -254,7 +252,6 @@ class Inferer(ModelFramework):
             )
             self.worker.finished.connect(self.reset_worker)
             self.worker.finished.connect(self.show_results)
-
 
             if self.get_device(show=False) == "cuda":
                 self.worker.finished.connect(self.empty_cuda_cache)
@@ -271,7 +268,7 @@ class Inferer(ModelFramework):
             self.btn_start.setText("Running...  Click to stop")
 
     def reset_worker(self):
-        self.worker= None
+        self.worker = None
 
     @thread_worker
     def inference(self):
@@ -367,14 +364,13 @@ class Inferer(ModelFramework):
                 print(f"File n°{image_id} saved as :")
                 print(filename)
 
-
-
-                if self.view_checkbox.isChecked() and i < self.display_number_choice.value():
+                if (
+                    self.view_checkbox.isChecked()
+                    and i < self.display_number_choice.value()
+                ):
                     self.inf_data.append(inf_data)
                     self.image_id.append(image_id)
                     print(out)
                     self.out.append(out[0])
 
                 yield
-
-

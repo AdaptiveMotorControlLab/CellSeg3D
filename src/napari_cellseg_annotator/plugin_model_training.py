@@ -1,6 +1,6 @@
-import os
-import gc
 import copy
+import gc
+import os
 import warnings
 from pathlib import Path
 
@@ -14,49 +14,41 @@ from matplotlib.backends.backend_qt5agg import (
 from matplotlib.figure import Figure
 
 # MONAI
-from monai.data import (
-    DataLoader,
-    PatchDataset,
-    decollate_batch,
-    pad_list_data_collate,
-)
-from monai.losses import (
-    DiceLoss,
-    DiceCELoss,
-    FocalLoss,
-    DiceFocalLoss,
-    TverskyLoss,
-    GeneralizedDiceLoss,
-)
+from monai.data import DataLoader
+from monai.data import decollate_batch
+from monai.data import pad_list_data_collate
+from monai.data import PatchDataset
+from monai.losses import DiceCELoss
+from monai.losses import DiceFocalLoss
+from monai.losses import DiceLoss
+from monai.losses import FocalLoss
+from monai.losses import GeneralizedDiceLoss
+from monai.losses import TverskyLoss
 from monai.metrics import DiceMetric
-from monai.transforms import (
-    AsDiscrete,
-    EnsureChannelFirstd,
-    Compose,
-    LoadImaged,
-    EnsureType,
-    EnsureTyped,
-    RandSpatialCropSamplesd,
-    SpatialPadd,
-    RandShiftIntensityd,
-    Rand3DElasticd,
-    RandFlipd,
-    RandRotate90d,
-    RandAffined,
-)
+from monai.transforms import AsDiscrete
+from monai.transforms import Compose
+from monai.transforms import EnsureChannelFirstd
+from monai.transforms import EnsureType
+from monai.transforms import EnsureTyped
+from monai.transforms import LoadImaged
+from monai.transforms import Rand3DElasticd
+from monai.transforms import RandAffined
+from monai.transforms import RandFlipd
+from monai.transforms import RandRotate90d
+from monai.transforms import RandShiftIntensityd
+from monai.transforms import RandSpatialCropSamplesd
+from monai.transforms import SpatialPadd
 from napari.qt.threading import thread_worker
 
 # Qt
-from qtpy.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QPushButton,
-    QSizePolicy,
-    QLayout,
-    QLabel,
-    QComboBox,
-    QSpinBox,
-)
+from qtpy.QtWidgets import QComboBox
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QLayout
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QSpinBox
+from qtpy.QtWidgets import QVBoxLayout
+from qtpy.QtWidgets import QWidget
 
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.model_framework import ModelFramework

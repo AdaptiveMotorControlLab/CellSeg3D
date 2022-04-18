@@ -6,14 +6,12 @@ import napari
 import numpy as np
 import skimage.io as io
 from qtpy import QtGui
-from qtpy.QtWidgets import (
-    QVBoxLayout,
-    QPushButton,
-    QSizePolicy,
-    QLabel,
-    QLineEdit,
-    QCheckBox,
-)
+from qtpy.QtWidgets import QCheckBox
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QLineEdit
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QVBoxLayout
 
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.launch_review import launch_review
@@ -145,12 +143,7 @@ class Reviewer(BasePlugin):
                 os.path.dirname(self.image_path), self.textbox.text()
             )
             os.makedirs(self.label_path, exist_ok=True)
-            filenames = [
-                fn.name
-                for fn in sorted(
-                    list(Path(self.image_path).glob("./*" + self.filetype))
-                )
-            ]
+
             for i in range(len(labels)):
                 io.imsave(
                     os.path.join(
@@ -168,7 +161,7 @@ class Reviewer(BasePlugin):
             labels_raw = utils.load_raw_masks(
                 self.label_path + "_raw", self.filetype
             )
-        except:
+        except ValueError:
             labels_raw = None
 
         global global_launched_before

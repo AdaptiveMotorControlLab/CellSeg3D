@@ -8,10 +8,9 @@ import numpy as np
 import pandas as pd
 from qtpy.QtCore import QUrl
 from qtpy.QtGui import QDesktopServices
-from qtpy.QtWidgets import (
-    QFileDialog,
-)
-from qtpy.QtWidgets import QWidget, QHBoxLayout
+from qtpy.QtWidgets import QFileDialog
+from qtpy.QtWidgets import QHBoxLayout
+from qtpy.QtWidgets import QWidget
 from skimage import io
 from skimage.filters import gaussian
 from tqdm import tqdm

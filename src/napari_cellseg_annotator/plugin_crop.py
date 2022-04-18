@@ -1,15 +1,15 @@
 import napari
 import numpy as np
-from magicgui.widgets import Slider, Container
+from magicgui.widgets import Container
+from magicgui.widgets import Slider
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QSpinBox
+from qtpy.QtWidgets import QVBoxLayout
+
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.plugin_base import BasePlugin
-from qtpy.QtWidgets import (
-    QVBoxLayout,
-    QPushButton,
-    QSizePolicy,
-    QLabel,
-    QSpinBox,
-)
 
 DEFAULT_CROP_SIZE = 64
 
@@ -105,12 +105,12 @@ class Cropping(BasePlugin):
         self.filetype = self.filetype_choice.currentText()
 
         if self.file_handling_box.isChecked():
-            self.input_path = (
+            self.image_path = (
                 "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
             )
             self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
         else:
-            self.input_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
+            self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
             self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels/testing_im.tif"
         self.start()
 
@@ -125,7 +125,7 @@ class Cropping(BasePlugin):
         ]
         self.filetype = self.filetype_choice.currentText()
         image = utils.load_images(
-            self.input_path, self.filetype, self.file_handling_box.isChecked()
+            self.image_path, self.filetype, self.file_handling_box.isChecked()
         )
         labels = utils.load_images(
             self.label_path, self.filetype, self.file_handling_box.isChecked()

@@ -1,5 +1,6 @@
-from napari_cellseg_annotator import plugin_review as rev
 import os
+
+from napari_cellseg_annotator import plugin_review as rev
 
 
 def test_launch_review(make_napari_viewer, qtbot):
