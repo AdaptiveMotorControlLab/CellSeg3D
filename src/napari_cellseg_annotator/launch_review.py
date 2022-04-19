@@ -160,7 +160,7 @@ def launch_review(
 
         dirname = Path(r_path)
         # def saver():
-        out_dir = gui.dirname.value
+        out_dir = file_widget.dirname.value
         # print("The directory is:", out_dir)
         return dirname, utils.save_masks(layer1.data, out_dir)
 
