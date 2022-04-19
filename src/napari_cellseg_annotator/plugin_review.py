@@ -3,6 +3,7 @@ import warnings
 
 import napari
 import numpy as np
+import pims
 import skimage.io as io
 from qtpy import QtGui
 from qtpy.QtWidgets import QCheckBox
@@ -161,7 +162,7 @@ class Reviewer(BasePlugin):
             labels_raw = utils.load_raw_masks(
                 self.label_path + "_raw", self.filetype
             )
-        except ValueError:
+        except pims.UnknownFormatError:
             labels_raw = None
 
         global global_launched_before
