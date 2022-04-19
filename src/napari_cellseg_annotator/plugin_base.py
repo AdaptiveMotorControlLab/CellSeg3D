@@ -3,7 +3,6 @@ import os
 import napari
 from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QComboBox
-from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QSizePolicy
@@ -87,7 +86,7 @@ class BasePlugin(QWidget):
         raise NotImplementedError
 
     def show_filetype_choice(self):
-        """Method to show/hide the filetype choice when loading as folder is (de)selected"""
+        """Method to show/hide the filetype choice when "loading as folder" is (de)selected"""
         show = self.file_handling_box.isChecked()
         if show is not None:
             self.filetype_choice.setVisible(show)

@@ -1,6 +1,5 @@
 import os
 import warnings
-from pathlib import Path
 
 import napari
 import numpy as np
@@ -102,6 +101,7 @@ class Reviewer(BasePlugin):
         vbox.addWidget(utils.combine_blocks(self.textbox, self.lbl_mod))
 
         vbox.addWidget(self.checkBox)
+        utils.add_blank(self, vbox)
         vbox.addWidget(self.btn_start)
         vbox.addWidget(self.btn_close)
 
@@ -161,7 +161,7 @@ class Reviewer(BasePlugin):
             labels_raw = utils.load_raw_masks(
                 self.label_path + "_raw", self.filetype
             )
-        except:
+        except ValueError:
             labels_raw = None
 
         global global_launched_before

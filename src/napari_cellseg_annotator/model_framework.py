@@ -12,9 +12,9 @@ from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QTabWidget
 
 from napari_cellseg_annotator import utils
+from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
 from napari_cellseg_annotator.models import model_SegResNet as SegResNet
 from napari_cellseg_annotator.models import model_VNet as VNet
-from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
 
 warnings.formatwarning = utils.format_Warning
 
@@ -49,9 +49,6 @@ class ModelFramework(QTabWidget):
         """str: path to output folder,to save results in"""
         self.model_path = ""
         """str: path to custom model defined by user"""
-
-        self.device = "cpu"
-        """Device to train on, chosen automatically by :py:func:`get_device`"""
 
         self.models_dict = {
             "VNet": VNet,
@@ -196,7 +193,7 @@ class ModelFramework(QTabWidget):
         """Show file dialog to set :py:attr:`images_filepaths`"""
         filenames = self.load_dataset_paths()
         # print(filenames)
-        if filenames != "" and filenames != [""]:
+        if filenames != "" and filenames != [""] and filenames != []:
             self.images_filepaths = filenames
             # print(filenames)
             path = os.path.dirname(filenames[0])
@@ -229,60 +226,23 @@ class ModelFramework(QTabWidget):
             self.lbl_model_path.setText(self.results_path)
             self.update_default()
 
-    def get_device(self, show=True):
+    @staticmethod
+    def get_device(show=True):
         """Automatically discovers any cuda device and uses it for tensor operations.
         If none is available (CUDA not installed), uses cpu instead."""
-        self.device = torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu"
-        )
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         if show:
-            print(f"Using {self.device} device")
+            print(f"Using {device} device")
             print("Using torch :")
             print(torch.__version__)
-        return self.device
+        return device
 
-    def empty_cuda_cache(self):
+    @staticmethod
+    def empty_cuda_cache():
+        # TODO move to utils ?
         print("Empyting cache...")
         torch.cuda.empty_cache()
         print("Cache emptied")
-
-    def get_padding_dim(self, image_shape):
-        """
-        Finds the nearest and superior power of two for each image dimension to pad it for CNN processing,
-        for either 2D or 3D images. E.g. an image size of 30x40x100 will result in a padding of 32x64x128.
-        Shows a warning if the padding dimensions are very large.
-
-
-        Args:
-            image_shape (torch.size): an array of the dimensions of the image in D/H/W if 3D or H/W if 2D
-
-        Returns:
-            array(int): padding value for each dim
-        """
-        padding = []
-
-        dims = len(image_shape)
-        print(f"Dimension of data for padding : {dims}D")
-        if dims != 2 and dims != 3:
-            raise ValueError(
-                "Please check the dimensions of the input, only 2 or 3-dimensional data is supported currently"
-            )
-
-        for p in range(dims):
-            n = 0
-            pad = -1
-            while pad < image_shape[p]:
-                pad = 2**n
-                n += 1
-                if pad >= 1024:
-                    warnings.warn(
-                        "Warning : a very large dimension for automatic padding has been computed.\n"
-                        "Ensure your images are of an appropriate size and/or that you have enough memory."
-                        f"The padding value is currently {pad}."
-                    )
-
-            padding.append(pad)
-        return padding
 
     def build(self):
         raise NotImplementedError("Should be defined in children classes")

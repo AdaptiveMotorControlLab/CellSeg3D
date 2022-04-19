@@ -1,4 +1,5 @@
 import napari
+from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QSpinBox
@@ -42,10 +43,10 @@ class Helper(QWidget):
 
     def build(self):
         vbox = QVBoxLayout()
-        vbox.addWidget(self.btn1)
-        vbox.addWidget(self.btn2)
-        vbox.addWidget(self.btnc)
-        vbox.addWidget(self.epoch)
+        vbox.addWidget(self.btn1, alignment=Qt.AlignmentFlag.AlignLeft)
+        vbox.addWidget(self.btn2, alignment=Qt.AlignmentFlag.AlignAbsolute)
+        vbox.addWidget(self.btnc, alignment=Qt.AlignmentFlag.AlignAbsolute)
+        vbox.addWidget(self.epoch, alignment=Qt.AlignmentFlag.AlignAbsolute)
         self.setLayout(vbox)
         # self.show()
         # self._viewer.window.add_dock_widget(self, name="Help/About...", area="right")

@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 
 import pandas as pd
+from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QHBoxLayout
 from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QVBoxLayout
@@ -45,10 +46,12 @@ class Datamanager(QWidget):
 
         io_panel = QWidget()
         io_layout = QHBoxLayout()
-        io_layout.addWidget(self.button)
+        io_layout.addWidget(
+            self.button, alignment=Qt.AlignmentFlag.AlignAbsolute
+        )
         io_panel.setLayout(io_layout)
         io_panel.setMaximumWidth(GUI_MAXIMUM_WIDTH)
-        layout.addWidget(io_panel)
+        layout.addWidget(io_panel, alignment=Qt.AlignmentFlag.AlignAbsolute)
 
         # set the layout
         # layout.setAlignment(Qt.AlignTop)
@@ -63,6 +66,8 @@ class Datamanager(QWidget):
         self.slice_num = 0
         self.filetype = ""
         self.image_dims = self.viewer.layers[0].data.shape
+        self.as_folder = False
+        """Whether to load as folder or single file"""
 
     def prepare(self, label_dir, filetype, model_type, checkbox, as_folder):
         """Initialize the Datamanager, which loads the csv file and updates it

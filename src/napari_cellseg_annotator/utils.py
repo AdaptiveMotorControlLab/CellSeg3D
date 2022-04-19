@@ -1,4 +1,5 @@
 import os
+import warnings
 from datetime import datetime
 from pathlib import Path
 
@@ -7,9 +8,11 @@ import dask_image.imread
 import numpy as np
 import pandas as pd
 from qtpy.QtCore import QUrl
+from qtpy.QtCore import Qt
 from qtpy.QtGui import QDesktopServices
 from qtpy.QtWidgets import QFileDialog
 from qtpy.QtWidgets import QHBoxLayout
+from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QWidget
 from skimage import io
 from skimage.filters import gaussian
@@ -27,7 +30,7 @@ def combine_blocks(button, label):
 
     Args:
         button (QWidget): Button widget to be displayed right of the label
-        label (QWidget): Labrel widget to be added on the left of button
+        label (QWidget): Label widget to be added on the left of button
 
     Returns:
         QWidget: new QWidget containing the merged widget and label
@@ -41,7 +44,7 @@ def combine_blocks(button, label):
 
 
 def open_url(url):
-    """Opens the url given as a string in OS default browser using QDesktopServices.openUrl.
+    """Opens the url given as a string in OS default browser using :py:func:`QDesktopServices.openUrl`.
 
     Args:
         url (str): Url to be opened
@@ -73,6 +76,53 @@ def normalize_y(image):
     """
     image = image / 255
     return image
+
+
+def get_padding_dim(image_shape, anisotropy_factor=None):
+    """
+    Finds the nearest and superior power of two for each image dimension to pad it for CNN processing,
+    for either 2D or 3D images. E.g. an image size of 30x40x100 will result in a padding of 32x64x128.
+    Shows a warning if the padding dimensions are very large.
+
+    TODO : move to utils !
+
+    Args:
+        image_shape (torch.size): an array of the dimensions of the image in D/H/W if 3D or H/W if 2D
+
+    Returns:
+        array(int): padding value for each dim
+    """
+    padding = []
+
+    dims = len(image_shape)
+    print(f"Dimension of data for padding : {dims}D")
+    print(f"Image shape is : {image_shape}")
+    if dims != 2 and dims != 3:
+        raise ValueError(
+            "Please check the dimensions of the input, only 2 or 3-dimensional data is supported currently"
+        )
+
+    for i in range(dims):
+        n = 0
+        pad = -1
+        size = image_shape[i]
+        if anisotropy_factor is not None:
+            # TODO : GOING TO CAUSE ISSUES WITH CERTAIN ANISOTROPY FACTORS
+            size = int(size / anisotropy_factor[i])
+        while pad < size:
+            pad = 2**n
+            n += 1
+            if pad >= 1024:
+                warnings.warn(
+                    "Warning : a very large dimension for automatic padding has been computed.\n"
+                    "Ensure your images are of an appropriate size and/or that you have enough memory."
+                    f"The padding value is currently {pad}."
+                )
+
+        padding.append(pad)
+
+    print(f"Padding dims are {padding}")
+    return padding
 
 
 def denormalize_y(image):
@@ -235,6 +285,19 @@ def parse_default_path(possible_paths):
 def get_date_time():
     """Get date and time in the following format : year_month_day_hour_minute_second"""
     return "{:%Y_%m_%d_%H_%M_%S}".format(datetime.now())
+
+
+def add_blank(widget, layout):
+    """
+    Adds a space between consecutive buttons/labels in a layout when building a widget
+
+    Args:
+        widget (QWidget): widget to add blank in
+        layout (QLayout): layout to add blank in
+    """
+    layout.addWidget(
+        QLabel("", widget), alignment=Qt.AlignmentFlag.AlignAbsolute
+    )
 
 
 def load_images(dir_or_path, filetype="", as_folder: bool = False):

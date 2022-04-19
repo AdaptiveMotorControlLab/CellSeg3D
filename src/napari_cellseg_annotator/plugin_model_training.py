@@ -1,5 +1,3 @@
-import copy
-import gc
 import os
 import warnings
 from pathlib import Path
@@ -8,16 +6,14 @@ import matplotlib.pyplot as plt
 import napari
 import numpy as np
 import torch
-from matplotlib.backends.backend_qt5agg import (
-    FigureCanvasQTAgg as FigureCanvas,
-)
+from matplotlib.backends.backend_qt5agg import \
+    FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-
 # MONAI
 from monai.data import DataLoader
+from monai.data import PatchDataset
 from monai.data import decollate_batch
 from monai.data import pad_list_data_collate
-from monai.data import PatchDataset
 from monai.losses import DiceCELoss
 from monai.losses import DiceFocalLoss
 from monai.losses import DiceLoss
@@ -31,6 +27,7 @@ from monai.transforms import EnsureChannelFirstd
 from monai.transforms import EnsureType
 from monai.transforms import EnsureTyped
 from monai.transforms import LoadImaged
+from monai.transforms import Orientationd
 from monai.transforms import Rand3DElasticd
 from monai.transforms import RandAffined
 from monai.transforms import RandFlipd
@@ -39,8 +36,8 @@ from monai.transforms import RandShiftIntensityd
 from monai.transforms import RandSpatialCropSamplesd
 from monai.transforms import SpatialPadd
 from napari.qt.threading import thread_worker
-
 # Qt
+from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLayout
@@ -300,20 +297,23 @@ class Trainer(ModelFramework):
         model_tab = QWidget()
         ###### first tab : model and dataset choices
         model_tab_layout = QVBoxLayout()
-        model_tab_layout.setSizeConstraint(QLayout.SetFixedSize)
+        model_tab_layout.setSizeConstraint(QLayout.SetMinimumSize)
 
         model_tab_layout.addWidget(
-            utils.combine_blocks(self.filetype_choice, self.lbl_filetype)
+            utils.combine_blocks(self.filetype_choice, self.lbl_filetype),
+            alignment=Qt.AlignmentFlag.AlignLeft,
         )  # file extension
 
         model_tab_layout.addWidget(
-            utils.combine_blocks(self.btn_image_files, self.lbl_image_files)
+            utils.combine_blocks(self.btn_image_files, self.lbl_image_files),
+            alignment=Qt.AlignmentFlag.AlignLeft,
         )  # volumes
         if self.data_path != "":
             self.lbl_image_files.setText(self.data_path)
 
         model_tab_layout.addWidget(
-            utils.combine_blocks(self.btn_label_files, self.lbl_label_files)
+            utils.combine_blocks(self.btn_label_files, self.lbl_label_files),
+            alignment=Qt.AlignmentFlag.AlignLeft,
         )  # labels
         if self.label_path != "":
             self.lbl_label_files.setText(self.label_path)
@@ -323,23 +323,33 @@ class Trainer(ModelFramework):
         # )  # model choice
 
         model_tab_layout.addWidget(
-            utils.combine_blocks(self.btn_result_path, self.lbl_result_path)
+            utils.combine_blocks(self.btn_result_path, self.lbl_result_path),
+            alignment=Qt.AlignmentFlag.AlignLeft,
         )  # results folder
         if self.results_path != "":
             self.lbl_result_path.setText(self.results_path)
 
-        model_tab_layout.addWidget(QLabel("", self))
+        utils.add_blank(self, model_tab_layout)
         model_tab_layout.addWidget(
-            utils.combine_blocks(self.model_choice, self.lbl_model_choice)
+            utils.combine_blocks(self.model_choice, self.lbl_model_choice),
+            alignment=Qt.AlignmentFlag.AlignLeft,
         )  # model choice
 
         model_tab_layout.addWidget(
-            utils.combine_blocks(self.sample_choice, self.lbl_sample_choice)
+            self.lbl_sample_choice, alignment=Qt.AlignmentFlag.AlignLeft
+        )
+        model_tab_layout.addWidget(
+            self.sample_choice, alignment=Qt.AlignmentFlag.AlignLeft
         )  # number of samples
+        # TODO add transfo tab and add there ?
+        utils.add_blank(self, model_tab_layout)
 
-        model_tab_layout.addWidget(self.btn_next)
-        model_tab_layout.addWidget(QLabel("", self))
-        model_tab_layout.addWidget(self.btn_close)
+        model_tab_layout.addWidget(
+            self.btn_next, alignment=Qt.AlignmentFlag.AlignLeft
+        )
+        model_tab_layout.addWidget(
+            self.btn_close, alignment=Qt.AlignmentFlag.AlignLeft
+        )
 
         train_tab = QWidget()
         ####### second tab : training parameters
@@ -347,23 +357,30 @@ class Trainer(ModelFramework):
         train_tab_layout.setSizeConstraint(QLayout.SetFixedSize)
 
         train_tab_layout.addWidget(
-            utils.combine_blocks(self.loss_choice, self.lbl_loss_choice)
+            utils.combine_blocks(self.loss_choice, self.lbl_loss_choice),
+            alignment=Qt.AlignmentFlag.AlignLeft,
         )  # loss choice
         train_tab_layout.addWidget(
-            utils.combine_blocks(self.batch_choice, self.lbl_batch_choice)
+            utils.combine_blocks(self.batch_choice, self.lbl_batch_choice),
+            alignment=Qt.AlignmentFlag.AlignLeft,
         )  # batch size
         train_tab_layout.addWidget(
-            utils.combine_blocks(self.epoch_choice, self.lbl_epoch_choice)
+            utils.combine_blocks(self.epoch_choice, self.lbl_epoch_choice),
+            alignment=Qt.AlignmentFlag.AlignLeft,
         )  # epochs
         train_tab_layout.addWidget(
             utils.combine_blocks(
                 self.val_interval_choice, self.lbl_val_interv_choice
-            )
+            ),
+            alignment=Qt.AlignmentFlag.AlignLeft,
         )
-
-        train_tab_layout.addWidget(self.btn_prev)
-        train_tab_layout.addWidget(QLabel("", self))
-        train_tab_layout.addWidget(self.btn_start)
+        utils.add_blank(self, train_tab_layout)
+        train_tab_layout.addWidget(
+            self.btn_prev, alignment=Qt.AlignmentFlag.AlignLeft
+        )
+        train_tab_layout.addWidget(
+            self.btn_start, alignment=Qt.AlignmentFlag.AlignLeft
+        )
 
         model_tab.setLayout(model_tab_layout)
         self.addTab(model_tab, "Model parameters")
@@ -582,16 +599,22 @@ class Trainer(ModelFramework):
         # print("train/val")
         # print(train_files)
         # print(val_files)
+        # TODO : param stretch factor if anisotrpoic
         sample_loader = Compose(
             [
                 LoadImaged(keys=["image", "label"]),
                 EnsureChannelFirstd(keys=["image", "label"]),
                 RandSpatialCropSamplesd(
                     keys=["image", "label"],
-                    roi_size=(110, 110, 110),
+                    roi_size=(
+                        110,
+                        110,
+                        110,
+                    ),  # TODO multiply by axis_stretch_factor
                     max_roi_size=(120, 120, 120),
                     num_samples=num_samples,
                 ),
+                Orientationd(keys=["image", "label"], axcodes="PLI"),
                 SpatialPadd(
                     keys=["image", "label"], spatial_size=(128, 128, 128)
                 ),

@@ -2,6 +2,7 @@ import napari
 import numpy as np
 from magicgui.widgets import Container
 from magicgui.widgets import Slider
+from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QSizePolicy
@@ -39,18 +40,22 @@ class Cropping(BasePlugin):
         self.btn_start.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn_start.clicked.connect(self.start)
 
-        def make_sizebox_container(axis: str):
+        def make_sizebox_container(ax):
+
             sizebox = QSpinBox()
             sizebox.setMinimum(1)
             sizebox.setMaximum(1000)
             sizebox.setValue(DEFAULT_CROP_SIZE)
-            lblsize = QLabel("Size in " + axis + " of cropped volume :", self)
-            return [sizebox, lblsize]
+            return sizebox
 
         self.box_widgets = [make_sizebox_container(ax) for ax in "xyz"]
+        self.box_lbl = [
+            QLabel("Size in " + axis + " of cropped volume :")
+            for axis in "xyz"
+        ]
 
-        for wid in self.box_widgets:
-            wid[0].setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        for box in self.box_widgets:
+            box.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self._x = 0
         self._y = 0
         self._z = 0
@@ -73,25 +78,34 @@ class Cropping(BasePlugin):
         """Build buttons in a layout and add them to the napari Viewer"""
         vbox = QVBoxLayout()
 
-        vbox.addWidget(utils.combine_blocks(self.btn_image, self.lbl_image))
-        vbox.addWidget(utils.combine_blocks(self.btn_label, self.lbl_label))
+        vbox.addWidget(
+            utils.combine_blocks(self.btn_image, self.lbl_image),
+            alignment=Qt.AlignmentFlag.AlignLeft,
+        )
+        vbox.addWidget(
+            utils.combine_blocks(self.btn_label, self.lbl_label),
+            alignment=Qt.AlignmentFlag.AlignLeft,
+        )
 
-        vbox.addWidget(self.file_handling_box)
+        vbox.addWidget(
+            self.file_handling_box, alignment=Qt.AlignmentFlag.AlignLeft
+        )
         self.filetype_choice.setVisible(False)
-
+        utils.add_blank(self, vbox)
         [
-            vbox.addWidget(utils.combine_blocks(cont[0], cont[1]))
-            for cont in self.box_widgets
+            vbox.addWidget(widget, alignment=Qt.AlignmentFlag.AlignLeft)
+            for list in zip(self.box_widgets, self.box_lbl)
+            for widget in list
         ]
-
-        vbox.addWidget(self.btn_start)
-        vbox.addWidget(self.btn_close)
+        utils.add_blank(self, vbox)
+        vbox.addWidget(self.btn_start, alignment=Qt.AlignmentFlag.AlignLeft)
+        vbox.addWidget(self.btn_close, alignment=Qt.AlignmentFlag.AlignLeft)
 
         ##################################################################
         # remove once done ?
 
         if self.test_button:
-            vbox.addWidget(self.btntest)
+            vbox.addWidget(self.btntest, alignment=Qt.AlignmentFlag.AlignLeft)
         ##################################################################
 
         self.setLayout(vbox)
@@ -121,7 +135,7 @@ class Cropping(BasePlugin):
         and adds control widgets to the napari Viewer for moving the cropped volume.
         """
         self._crop_size_x, self._crop_size_y, self._crop_size_z = [
-            box[0].value() for box in self.box_widgets
+            box.value() for box in self.box_widgets
         ]
         self.filetype = self.filetype_choice.currentText()
         image = utils.load_images(

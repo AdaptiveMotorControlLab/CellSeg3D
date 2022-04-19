@@ -1,35 +1,4 @@
-import warnings
-
-import pytest
-import torch
-
 from napari_cellseg_annotator import model_framework
-
-
-def test_get_padding_dim(make_napari_viewer):
-    view = make_napari_viewer()
-    tensor = torch.randn(100, 30, 40)
-    size = tensor.size()
-    widget = model_framework.ModelFramework(view)
-
-    pad = widget.get_padding_dim(size)
-
-    assert pad == [128, 32, 64]
-
-    tensor = torch.randn(2000, 30, 40)
-    size = tensor.size()
-
-    warn = warnings.warn(
-        "Warning : a very large dimension for automatic padding has been computed.\n"
-        "Ensure your images are of an appropriate size and/or that you have enough memory."
-        "The padding value is currently 2048."
-    )
-
-    pad = widget.get_padding_dim(size)
-
-    pytest.warns(warn, (lambda: widget.get_padding_dim(size)))
-
-    assert pad == [2048, 32, 64]
 
 
 def test_update_default(make_napari_viewer):

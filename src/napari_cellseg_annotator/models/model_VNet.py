@@ -7,8 +7,8 @@ def get_net():
 
 
 def get_weights_file():
-    # return "dice_VNet.pth"
-    return "VNet.pth"
+    return "dice_VNet.pth"
+    # return "VNet.pth"
 
 
 def get_output(model, input):
