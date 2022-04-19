@@ -28,6 +28,7 @@ from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QSpinBox
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
+from tifffile import imwrite
 
 # local
 from napari_cellseg_annotator import utils
@@ -284,7 +285,7 @@ class Inferer(ModelFramework):
                 data["original"],
                 colormap="inferno",
                 name=f"original_{image_id}",
-                scale=[1, 1, 1],
+                scale=[1, 1, (1.5 / 5)],
                 opacity=0.7,
             )
 
@@ -292,6 +293,7 @@ class Inferer(ModelFramework):
                 data["result"],
                 colormap="twilight_shifted",
                 name=f"pred_{image_id}",
+                scale=[1, 1, (1.5 / 5)],
                 opacity=0.8,
             )
 
@@ -394,7 +396,7 @@ class Inferer(ModelFramework):
                 )
 
                 # print(filename)
-                # imwrite(filename, out)
+                imwrite(filename, out)
 
                 print(f"File n°{image_id} saved as :")
                 print(filename)

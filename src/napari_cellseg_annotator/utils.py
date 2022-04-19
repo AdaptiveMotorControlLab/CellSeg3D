@@ -96,7 +96,7 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
 
     dims = len(image_shape)
     print(f"Dimension of data for padding : {dims}D")
-    print(f"Image shape is : {image_shape}")
+    # print(f"Image shape is : {image_shape}")
     if dims != 2 and dims != 3:
         raise ValueError(
             "Please check the dimensions of the input, only 2 or 3-dimensional data is supported currently"

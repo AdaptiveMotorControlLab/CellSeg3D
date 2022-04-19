@@ -4,9 +4,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from magicgui import magicgui
-from matplotlib.backends.backend_qt5agg import (
-    FigureCanvasQTAgg as FigureCanvas,
-)
+from matplotlib.backends.backend_qt5agg import \
+    FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from qtpy.QtWidgets import QSizePolicy
 from scipy import ndimage
