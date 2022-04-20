@@ -1,5 +1,8 @@
+import os
+
 import napari
 import numpy as np
+from magicgui import magicgui
 from magicgui.widgets import Container
 from magicgui.widgets import Slider
 from qtpy.QtCore import Qt
@@ -8,6 +11,7 @@ from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QSpinBox
 from qtpy.QtWidgets import QVBoxLayout
+from tifffile import imwrite
 
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.plugin_base import BasePlugin
@@ -63,6 +67,11 @@ class Cropping(BasePlugin):
         self._crop_size_y = DEFAULT_CROP_SIZE
         self._crop_size_z = DEFAULT_CROP_SIZE
 
+        self.image = None
+        self.image_layer = None
+        self.label = None
+        self.label_layer = None
+
         #####################################################################
         # TODO remove once done
         self.test_button = True
@@ -89,6 +98,9 @@ class Cropping(BasePlugin):
 
         vbox.addWidget(
             self.file_handling_box, alignment=Qt.AlignmentFlag.AlignLeft
+        )
+        vbox.addWidget(
+            self.filetype_choice, alignment=Qt.AlignmentFlag.AlignLeft
         )
         self.filetype_choice.setVisible(False)
         utils.add_blank(self, vbox)
@@ -129,19 +141,61 @@ class Cropping(BasePlugin):
         self.start()
 
     ###########################################
+    def quicksave(self):
+
+        viewer = self._viewer
+
+        time = utils.get_date_time()
+        if self.filetype == ".tif":
+            if viewer.layers["cropped"] is not None:
+                im_filename = os.path.basename(self.image_path).split(".")[0]
+                im_dir = os.path.split(self.image_path)[0]
+                viewer.layers["cropped"].save(
+                    im_dir + "/" + im_filename + "_cropped_" + time + ".tif"
+                )
+
+            if viewer.layers["cropped_labels"] is not None:
+                im_filename = os.path.basename(self.image_path).split(".")[0]
+                im_dir = os.path.split(self.image_path)[0]
+                name = (
+                    im_dir
+                    + "/"
+                    + im_filename
+                    + "_label_cropped_"
+                    + time
+                    + ".tif"
+                )
+                dat = viewer.layers["cropped_labels"].data
+                imwrite(name, data=dat)
+
+        elif self.filetype == ".png":
+            if viewer.layers["cropped"] is not None:
+                im_filename = os.path.basename(self.image_path).split(".")[0]
+                im_dir = os.path.split(self.image_path)[0]
+                # TODO : change save behav. depending on filetype ? could use save_stack
+
+                dat = viewer.layers["cropped"].data
+                dir_name = im_dir + "/cropped_" + time
+                utils.save_stack(dat, dir_name, filetype=self.filetype)
+            if viewer.layers["cropped_labels"] is not None:
+
+                im_filename = os.path.basename(self.image_path).split(".")[0]
+                im_dir = os.path.split(self.image_path)[0]
+
+                dir_name = im_dir + "/label_cropped_" + time
+                dat = viewer.layers["cropped_labels"].data
+                utils.save_stack(dat, dir_name, filetype=self.filetype)
 
     def start(self):
         """Launches cropping process by loading the files from the chosen folders,
         and adds control widgets to the napari Viewer for moving the cropped volume.
         """
-        self._crop_size_x, self._crop_size_y, self._crop_size_z = [
-            box.value() for box in self.box_widgets
-        ]
+
         self.filetype = self.filetype_choice.currentText()
-        image = utils.load_images(
+        self.image = utils.load_images(
             self.image_path, self.filetype, self.file_handling_box.isChecked()
         )
-        labels = utils.load_images(
+        self.labels = utils.load_images(
             self.label_path, self.filetype, self.file_handling_box.isChecked()
         )
 
@@ -150,13 +204,37 @@ class Cropping(BasePlugin):
         vw.dims.ndisplay = 3
 
         # add image and labels
-        input_image = vw.add_image(
-            image, colormap="inferno", contrast_limits=[200, 1000], opacity=0.7
+        self.image_layer = vw.add_image(
+            self.image,
+            colormap="inferno",
+            contrast_limits=[200, 1000],
+            opacity=0.7,
         )
-        label_layer = vw.add_labels(labels, visible=False)
+        self.label_layer = vw.add_labels(self.labels, visible=False)
 
-        label_stack = labels
-        image_stack = np.array(image)
+        @magicgui(call_button="Quicksave")
+        def save_widget():
+            return self.quicksave()
+
+        self._viewer.window.add_dock_widget(save_widget, name="", area="left")
+
+        self.add_crop_sliders()
+
+    def close(self):
+        """Can be re-implemented in children classes"""
+        self._viewer.window.remove_dock_widget(self)
+        self._viewer.window.remove_dock_widget("all")
+
+    def add_crop_sliders(self):
+
+        vw = self._viewer
+
+        label_stack = self.labels
+        image_stack = np.array(self.image)
+
+        self._crop_size_x, self._crop_size_y, self._crop_size_z = [
+            box.value() for box in self.box_widgets
+        ]
 
         self._x = 0
         self._y = 0
@@ -174,12 +252,12 @@ class Cropping(BasePlugin):
             name="cropped",
             blending="additive",
             colormap="twilight_shifted",
-            scale=input_image.scale,
+            scale=self.image_layer.scale,
         )
         labels_crop_layer = vw.add_labels(
-            labels[:cropz, :cropy, :cropx],
+            self.labels[:cropz, :cropy, :cropx],
             name="cropped_labels",
-            scale=label_layer.scale,
+            scale=self.label_layer.scale,
         )
 
         def set_slice(axis, value):
@@ -210,8 +288,8 @@ class Cropping(BasePlugin):
             self._y = j
             self._z = i
 
-        # spinbox = SpinBox(name="crop_dims", min=1, value=self._crop_size, max=max(image_stack.shape), step=1)
-        # spinbox.changed.connect(lambda event : change_size(event))
+            # spinbox = SpinBox(name="crop_dims", min=1, value=self._crop_size, max=max(image_stack.shape), step=1)
+            # spinbox.changed.connect(lambda event : change_size(event))
 
         sliders = [
             Slider(name=axis, min=0, max=end, step=step)
@@ -221,40 +299,41 @@ class Cropping(BasePlugin):
             slider.changed.connect(
                 lambda event, axis=axis: set_slice(axis, event)
             )
-        # TEST : trying to dynamically change the size of the cropped volume
-        # @spinbox.changed.connect
-        def change_size(value: int):
-
-            print(value)
-            i = self._x
-            j = self._y
-            k = self._z
-
-            self._crop_size = value
-
-            cropx = value
-            cropy = value
-            cropz = value
-            highres_crop_layer.data = image_stack[
-                i : i + cropz, j : j + cropy, k : k + cropx
-            ]
-            highres_crop_layer.refresh()
-            labels_crop_layer.data = label_stack[
-                i : i + cropz, j : j + cropy, k : k + cropx
-            ]
-            labels_crop_layer.refresh()
-
         container_widget = Container(layout="vertical")
         container_widget.extend(sliders)
         # vw.window.add_dock_widget([spinbox, container_widget], area="right")
         vw.window.add_dock_widget(container_widget, area="right")
+        # TEST : trying to dynamically change the size of the cropped volume
+        # BROKEN for now
+        # @spinbox.changed.connect
+        # def change_size(value: int):
+        #
+        #     print(value)
+        #     i = self._x
+        #     j = self._y
+        #     k = self._z
+        #
+        #     self._crop_size = value
+        #
+        #     cropx = value
+        #     cropy = value
+        #     cropz = value
+        #     highres_crop_layer.data = image_stack[
+        #         i : i + cropz, j : j + cropy, k : k + cropx
+        #     ]
+        #     highres_crop_layer.refresh()
+        #     labels_crop_layer.data = label_stack[
+        #         i : i + cropz, j : j + cropy, k : k + cropx
+        #     ]
+        #     labels_crop_layer.refresh()
+        #
 
 
 #################################
 #################################
 #################################
-# code for mutiple sliders, one for each dim
-# broken for now
+# code for dynamically changing cropped volume with sliders, one for each dim
+# WARNING : broken for now
 
 #  def change_size(axis, value) :
 

@@ -98,7 +98,11 @@ class Reviewer(BasePlugin):
         vbox.addWidget(utils.combine_blocks(self.btn_label, self.lbl_label))
         # vbox.addWidget(self.lblft2)
 
-        vbox.addWidget(self.file_handling_box)
+        vbox.addWidget(
+            utils.combine_blocks(self.filetype_choice, self.file_handling_box)
+        )
+
+        self.filetype_choice.setVisible(False)
         vbox.addWidget(utils.combine_blocks(self.textbox, self.lbl_mod))
 
         vbox.addWidget(self.checkBox)
@@ -139,7 +143,8 @@ class Reviewer(BasePlugin):
         if (
             self.label_path == ""
         ):  # saves empty images of the same size as original images
-            labels = np.zeros_like(images.compute())  # dask to numpy
+            if self.file_handling_box.isChecked():
+                labels = np.zeros_like(images.compute())  # dask to numpy
             self.label_path = os.path.join(
                 os.path.dirname(self.image_path), self.textbox.text()
             )
@@ -163,6 +168,9 @@ class Reviewer(BasePlugin):
                 self.label_path + "_raw", self.filetype
             )
         except pims.UnknownFormatError:
+            labels_raw = None
+        except FileNotFoundError:
+            # TODO : might not work, test with predi labels later
             labels_raw = None
 
         global global_launched_before
@@ -227,7 +235,7 @@ class Reviewer(BasePlugin):
         global global_launched_before  # if user closes window rather than launching review, does not count as active session
         if global_launched_before:
             global_launched_before = False
-        print("close req")
+        # print("close req")
         try:
             self._viewer.window.remove_dock_widget(self)
         except LookupError:

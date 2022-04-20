@@ -450,7 +450,9 @@ class Trainer(ModelFramework):
             self.btn_close.setVisible(False)
 
             self.worker = self.train()
-            self.worker.started.connect(lambda: print("\nWorker is running..."))
+            self.worker.started.connect(
+                lambda: print("\nWorker is running...")
+            )
             self.worker.finished.connect(lambda: print("\nWorker finished"))
             self.worker.finished.connect(
                 lambda: self.btn_start.setText("Start")
@@ -515,7 +517,9 @@ class Trainer(ModelFramework):
             self.dice_metric_plot.legend(facecolor="#262930", loc="upper left")
             self.canvas.draw_idle()
 
-            self.canvas.figure.savefig((self.results_path + "/loss_plot.png"), format="png")
+            self.canvas.figure.savefig(
+                (self.results_path + "/loss_plot.png"), format="png"
+            )
 
     def update_loss_plot(self):
         """

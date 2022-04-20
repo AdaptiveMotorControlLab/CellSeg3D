@@ -125,5 +125,5 @@ class BasePlugin(QWidget):
         self._default_path = [self.image_path, self.label_path]
 
     def close(self):
-        """Should be implemented in children classes"""
+        """Can be re-implemented in children classes if needed"""
         self._viewer.window.remove_dock_widget(self)

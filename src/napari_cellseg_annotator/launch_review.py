@@ -162,7 +162,7 @@ def launch_review(
         # def saver():
         out_dir = file_widget.dirname.value
         # print("The directory is:", out_dir)
-        return dirname, utils.save_masks(layer1.data, out_dir)
+        return dirname, utils.save_stack(layer1.data, out_dir)
 
     # gui = file_widget.show(run=True)  # dirpicker.show(run=True)
 
@@ -249,7 +249,10 @@ def launch_review(
         crop_slice = tuple(
             slice(np.maximum(0, n), x) for n, x in zip(min_vals, max_vals)
         )
-        crop_temp = layer.data[crop_slice].persist().compute()
+        if as_folder:
+            crop_temp = layer.data[crop_slice].persist().compute()
+        else:
+            crop_temp = layer.data[crop_slice]
         cropped_img = np.zeros((100, 100, 100), np.uint8)
         cropped_img[
             -yohaku_minus[0] : 100 - yohaku_plus[0],

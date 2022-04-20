@@ -7,6 +7,7 @@ import cv2
 import dask_image.imread
 import numpy as np
 import pandas as pd
+import tifffile
 from qtpy.QtCore import QUrl
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QDesktopServices
@@ -319,11 +320,11 @@ def add_blank(widget, layout):
 def load_images(dir_or_path, filetype="", as_folder: bool = False):
     """Loads the images in ``directory``, with different behaviour depending on ``filetype`` and ``as_folder``
 
-    * If ``as_folder`` is True, will load the path as a single image.
+    * If ``as_folder`` is False, will load the path as a single 3D **.tif** image.
 
-    * If False, it will try to load a folder as stack of images. In this case ``filetype`` must be specified.
+    * If True, it will try to load a folder as stack of images. In this case ``filetype`` must be specified.
 
-    If False :
+    If True :
 
         * For ``filetype == ".tif"`` : loads all tif files in the folder as a 3D dataset.
 
@@ -348,7 +349,10 @@ def load_images(dir_or_path, filetype="", as_folder: bool = False):
     else:
         raise ValueError("If loading as a folder, filetype must be specified")
 
-    images_original = dask_image.imread.imread(filename_pattern_original)
+    if as_folder:
+        images_original = dask_image.imread.imread(filename_pattern_original)
+    else:
+        images_original = tifffile.imread(filename_pattern_original)
 
     return images_original
 
@@ -356,8 +360,10 @@ def load_images(dir_or_path, filetype="", as_folder: bool = False):
 def load_predicted_masks(mito_mask_dir, er_mask_dir, filetype):
 
     images_mito_label = load_images(mito_mask_dir, filetype)
+    # TODO : check that there is no problem with compute when loading as single file
     images_mito_label = images_mito_label.compute()
     images_er_label = load_images(er_mask_dir, filetype)
+    # TODO : check that there is no problem with compute when loading as single file
     images_er_label = images_er_label.compute()
     base_label = (images_mito_label > 127) * 1 + (images_er_label > 127) * 2
     return base_label
@@ -365,24 +371,36 @@ def load_predicted_masks(mito_mask_dir, er_mask_dir, filetype):
 
 def load_saved_masks(mod_mask_dir, filetype, as_folder: bool):
     images_label = load_images(mod_mask_dir, filetype, as_folder)
-    images_label = images_label.compute()
+    if as_folder:
+        images_label = images_label.compute()
     base_label = images_label
     return base_label
 
 
 def load_raw_masks(raw_mask_dir, filetype):
     images_raw = load_images(raw_mask_dir, filetype)
+    # TODO : check that there is no problem with compute when loading as single file
     images_raw = images_raw.compute()
     base_label = np.where((126 < images_raw) & (images_raw < 171), 255, 0)
     return base_label
 
 
-def save_masks(labels, out_path):
-    num = labels.shape[0]
+def save_stack(images, out_path, filetype=".png", check_warnings=False):
+    """Saves the files in labels at location out_path as a stack of len(labels) .png files
+
+    Args:
+        labels: array of label images
+        out_path: path to the directory for saving
+    """
+    num = images.shape[0]
     os.makedirs(out_path, exist_ok=True)
     for i in range(num):
-        label = labels[i]
-        io.imsave(os.path.join(out_path, str(i).zfill(4) + ".png"), label)
+        label = images[i]
+        io.imsave(
+            os.path.join(out_path, str(i).zfill(4) + filetype),
+            label,
+            check_contrast=check_warnings,
+        )
 
 
 def load_X_gray(folder_path):

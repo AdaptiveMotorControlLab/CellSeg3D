@@ -27,13 +27,13 @@ contributions:
 
   widgets:
   - command: napari-cellseg-annotator.load
-    display_name: Reviewer
+    display_name: Review
 
   - command: napari-cellseg-annotator.infer
-    display_name: Inference module
+    display_name: Inference
 
   - command: napari-cellseg-annotator.train
-    display_name: Training module
+    display_name: Training
 
   - command: napari-cellseg-annotator.crop
     display_name: Crop utility
