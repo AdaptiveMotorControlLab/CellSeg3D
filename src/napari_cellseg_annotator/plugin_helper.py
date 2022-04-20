@@ -30,7 +30,7 @@ class Helper(QWidget):
         # self.btnc.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btnc.clicked.connect(self.close)
 
-        self.test = True
+        self.test = False
 
         if self.test:
             self.epoch = QSpinBox()
@@ -44,9 +44,9 @@ class Helper(QWidget):
     def build(self):
         vbox = QVBoxLayout()
         vbox.addWidget(self.btn1, alignment=Qt.AlignmentFlag.AlignLeft)
-        vbox.addWidget(self.btn2, alignment=Qt.AlignmentFlag.AlignAbsolute)
-        vbox.addWidget(self.btnc, alignment=Qt.AlignmentFlag.AlignAbsolute)
-        vbox.addWidget(self.epoch, alignment=Qt.AlignmentFlag.AlignAbsolute)
+        vbox.addWidget(self.btn2, alignment=Qt.AlignmentFlag.AlignLeft)
+        vbox.addWidget(self.btnc, alignment=Qt.AlignmentFlag.AlignLeft)
+        # vbox.addWidget(self.epoch, alignment=Qt.AlignmentFlag.AlignAbsolute)
         self.setLayout(vbox)
         # self.show()
         # self._viewer.window.add_dock_widget(self, name="Help/About...", area="right")
