@@ -16,11 +16,11 @@ from monai.transforms import EnsureType
 from monai.transforms import EnsureTyped
 from monai.transforms import LoadImaged
 from monai.transforms import SpatialPadd
-from monai.transforms import Zoomd
 from napari.qt.threading import thread_worker
 from qtpy.QtCore import Qt
 # Qt
 from qtpy.QtWidgets import QCheckBox
+from qtpy.QtWidgets import QDoubleSpinBox
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLayout
 from qtpy.QtWidgets import QPushButton
@@ -78,10 +78,10 @@ class Inferer(ModelFramework):
         self.worker = None
         """Worker for inference"""
 
-        self.view_checkbox = QCheckBox()
+        self.view_checkbox = QCheckBox("View results in napari ?")
         self.view_checkbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.view_checkbox.stateChanged.connect(self.toggle_display_number)
-        self.lbl_view = QLabel("View results in napari ?", self)
+        # self.lbl_view = QLabel("View results in napari ?", self)
 
         self.display_number_choice = QSpinBox()
         self.display_number_choice.setRange(1, 10)
@@ -89,6 +89,30 @@ class Inferer(ModelFramework):
             QSizePolicy.Fixed, QSizePolicy.Fixed
         )
         self.lbl_display_number = QLabel("How many ? (max. 10)", self)
+
+        self.aniso_checkbox = QCheckBox("Anisotropic dataset ?")
+        self.aniso_checkbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.aniso_checkbox.stateChanged.connect(self.toggle_display_aniso)
+        # self.lbl_aniso = QLabel("Anisotropic dataset ?", self)
+
+        def make_anisotropy_choice(ax):
+            widget = QDoubleSpinBox()
+            widget.setMinimum(1)
+            widget.setMaximum(10)
+            widget.setValue(1.5)
+            widget.setSingleStep(1.0)
+            return widget
+
+        self.aniso_box_widgets = [make_anisotropy_choice(ax) for ax in "xyz"]
+        self.aniso_box_lbl = [
+            QLabel("Resolution in " + axis + " (microns) :") for axis in "xyz"
+        ]
+
+        self.aniso_box_widgets[-1].setValue(5.0)
+
+        for w in self.aniso_box_widgets:
+            w.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.aniso_resolutions = []
 
         self.btn_start = QPushButton("Start inference")
         self.btn_start.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -131,6 +155,16 @@ class Inferer(ModelFramework):
             self.display_number_choice.setVisible(False)
             self.lbl_display_number.setVisible(False)
 
+    def toggle_display_aniso(self):
+        if self.aniso_checkbox.isChecked():
+            for w, lbl in zip(self.aniso_box_widgets, self.aniso_box_lbl):
+                w.setVisible(True)
+                lbl.setVisible(True)
+        else:
+            for w, lbl in zip(self.aniso_box_widgets, self.aniso_box_lbl):
+                w.setVisible(False)
+                lbl.setVisible(False)
+
     def build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
 
@@ -151,12 +185,31 @@ class Inferer(ModelFramework):
             alignment=Qt.AlignmentFlag.AlignLeft,
         )  # out folder
 
+        utils.add_blank(self, tab_layout)
+
+        tab_layout.addWidget(
+            self.aniso_checkbox, alignment=Qt.AlignmentFlag.AlignLeft
+        )
+
+        [
+            tab_layout.addWidget(widget, alignment=Qt.AlignmentFlag.AlignLeft)
+            for wdgts in zip(self.aniso_box_lbl, self.aniso_box_widgets)
+            for widget in wdgts
+        ]
+        for w in self.aniso_box_widgets:
+            w.setVisible(False)
+        for w in self.aniso_box_lbl:
+            w.setVisible(False)
+        # anisotropy
+
+        utils.add_blank(self, tab_layout)
+
         tab_layout.addWidget(
             utils.combine_blocks(self.model_choice, self.lbl_model_choice),
             alignment=Qt.AlignmentFlag.AlignLeft,
         )  # model choice
         tab_layout.addWidget(
-            utils.combine_blocks(self.view_checkbox, self.lbl_view),
+            self.view_checkbox,  # utils.combine_blocks(self.view_checkbox, self.lbl_view),
             alignment=Qt.AlignmentFlag.AlignLeft,
         )  # view_after bool
         tab_layout.addWidget(
@@ -230,6 +283,14 @@ class Inferer(ModelFramework):
 
             weights = self.get_model(model_key).get_weights_file()
 
+            if self.aniso_checkbox.isChecked():
+                self.aniso_resolutions = [
+                    w.value() for w in self.aniso_box_widgets
+                ]
+                zoom = utils.anisotropy_zoom_factor(self.aniso_resolutions)
+            else:
+                zoom = None
+
             self.worker = self.inference(
                 device,
                 model_dict,
@@ -246,6 +307,7 @@ class Inferer(ModelFramework):
             yield_connect = lambda data: self.show_results(
                 data,
                 viewer=self._viewer,
+                zoom=zoom,
                 nbr_to_show=self.display_number_choice.value(),
                 show=self.view_checkbox.isChecked(),
             )
@@ -258,6 +320,7 @@ class Inferer(ModelFramework):
             self.worker.finished.connect(
                 lambda: self.btn_close.setVisible(True)
             )
+            self.worker.finished.connect(self.reset_worker)
 
             if self.get_device(show=False) == "cuda":
                 self.worker.finished.connect(self.empty_cuda_cache)
@@ -273,10 +336,17 @@ class Inferer(ModelFramework):
             self.worker.start()
             self.btn_start.setText("Running...  Click to stop")
 
+    def reset_worker(self):
+        self.worker = None
+        self.empty_cuda_cache()
+
     @staticmethod
-    def show_results(data, viewer, nbr_to_show=0, show=False):
+    def show_results(data, viewer, zoom=[1, 1, 1], nbr_to_show=0, show=False):
         # check that viewer checkbox is on and that max number of displays has not been reached.
         image_id = data["image_id"]
+
+        zoom = [1 / z for z in zoom]
+
         if show and image_id <= nbr_to_show:
 
             viewer.dims.ndisplay = 3
@@ -285,7 +355,7 @@ class Inferer(ModelFramework):
                 data["original"],
                 colormap="inferno",
                 name=f"original_{image_id}",
-                scale=[1, 1, (1.5 / 5)],
+                scale=zoom,
                 opacity=0.7,
             )
 
@@ -293,7 +363,7 @@ class Inferer(ModelFramework):
                 data["result"],
                 colormap="twilight_shifted",
                 name=f"pred_{image_id}",
-                scale=[1, 1, (1.5 / 5)],
+                scale=zoom,
                 opacity=0.8,
             )
 
@@ -314,17 +384,27 @@ class Inferer(ModelFramework):
         check = data["image"].shape
         # print(check)
         # TODO remove
-        z_aniso = 5 / 1.5
-        pad = utils.get_padding_dim(check, anisotropy_factor=[1, 1, z_aniso])
+        # z_aniso = 5 / 1.5
+        # if zoom is not None :
+        #     pad = utils.get_padding_dim(check, anisotropy_factor=zoom)
+        # else:
+        pad = utils.get_padding_dim(check)
         # print(pad)
 
-        # TODO : add toggle
-        anisotropic_transform = Zoomd(
-            keys=["image"],
-            zoom=(1, 1, 1 / z_aniso),
-            keep_size=False,
-            padding_mode="empty",
-        )
+        # if zoom is not None:
+        #     anisotropic_transform = Zoomd(
+        #         keys=["image"],
+        #         zoom=zoom,
+        #         keep_size=False,
+        #         padding_mode="empty",
+        #     )
+        # else :
+        #     anisotropic_transform = Zoomd(
+        #         keys=["image"],
+        #         zoom=[1,1,1],
+        #         keep_size=True,
+        #         padding_mode="empty",
+        #     )
 
         load_transforms = Compose(
             [
@@ -332,11 +412,12 @@ class Inferer(ModelFramework):
                 # AddChanneld(keys=["image"]), #already done
                 EnsureChannelFirstd(keys=["image"]),
                 # Orientationd(keys=["image"], axcodes="PLI"),
-                anisotropic_transform,
+                # anisotropic_transform,
                 SpatialPadd(keys=["image"], spatial_size=pad),
                 EnsureTyped(keys=["image"]),
             ]
         )
+
         post_process_transforms = Compose(
             EnsureType(),
             AsDiscrete(threshold=0.8),
@@ -354,7 +435,6 @@ class Inferer(ModelFramework):
             torch.load(os.path.join(WEIGHTS_DIR, weights), map_location=device)
         )
 
-        # use multithreading ?
         model.eval()
         with torch.no_grad():
             for i, inf_data in enumerate(inference_loader):

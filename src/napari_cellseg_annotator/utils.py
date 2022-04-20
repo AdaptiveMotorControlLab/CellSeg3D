@@ -125,6 +125,22 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
     return padding
 
 
+def anisotropy_zoom_factor(resolutions):
+    """
+
+    Args:
+        resolutions:
+
+    Returns:
+
+    """
+    # TODO docs
+
+    base = min(resolutions)
+    zoom_factors = [res / base for res in resolutions]
+    return zoom_factors
+
+
 def denormalize_y(image):
     """De-normalizes the values of an image array to be between [0;255] rather than [0;1]
 

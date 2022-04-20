@@ -76,8 +76,9 @@ class Helper(QWidget):
 
             import matplotlib.pyplot as plt
             import numpy as np
-            from matplotlib.backends.backend_qt5agg import \
-                FigureCanvasQTAgg as FigureCanvas
+            from matplotlib.backends.backend_qt5agg import (
+                FigureCanvasQTAgg as FigureCanvas,
+            )
             from matplotlib.figure import Figure
 
             bckgrd_color = (0, 0, 0, 0)  # '#262930'

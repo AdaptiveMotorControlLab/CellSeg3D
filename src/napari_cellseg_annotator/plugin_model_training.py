@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 import napari
 import numpy as np
 import torch
-from matplotlib.backends.backend_qt5agg import \
-    FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvasQTAgg as FigureCanvas,
+)
 from matplotlib.figure import Figure
 # MONAI
 from monai.data import DataLoader
@@ -347,6 +348,7 @@ class Trainer(ModelFramework):
         model_tab_layout.addWidget(
             self.btn_next, alignment=Qt.AlignmentFlag.AlignLeft
         )
+        utils.add_blank(self, model_tab_layout)
         model_tab_layout.addWidget(
             self.btn_close, alignment=Qt.AlignmentFlag.AlignLeft
         )
@@ -378,6 +380,7 @@ class Trainer(ModelFramework):
         train_tab_layout.addWidget(
             self.btn_prev, alignment=Qt.AlignmentFlag.AlignLeft
         )
+        utils.add_blank(self, train_tab_layout)
         train_tab_layout.addWidget(
             self.btn_start, alignment=Qt.AlignmentFlag.AlignLeft
         )
@@ -447,8 +450,8 @@ class Trainer(ModelFramework):
             self.btn_close.setVisible(False)
 
             self.worker = self.train()
-            self.worker.started.connect(lambda: print("Worker is running..."))
-            self.worker.finished.connect(lambda: print("Worker finished"))
+            self.worker.started.connect(lambda: print("\nWorker is running..."))
+            self.worker.finished.connect(lambda: print("\nWorker finished"))
             self.worker.finished.connect(
                 lambda: self.btn_start.setText("Start")
             )
@@ -456,8 +459,10 @@ class Trainer(ModelFramework):
                 lambda: self.btn_close.setVisible(True)
             )
             self.worker.finished.connect(self.clean_cache)
-            if self.get_device().type == "cuda":
+            if self.get_device(show=False).type == "cuda":
                 self.worker.finished.connect(self.empty_cuda_cache)
+
+            self.worker.errored.connect(lambda: print("Worker error"))
 
         if self.worker.is_running:
             print("Stop request, waiting for next validation step...")
@@ -509,6 +514,8 @@ class Trainer(ModelFramework):
             )
             self.dice_metric_plot.legend(facecolor="#262930", loc="upper left")
             self.canvas.draw_idle()
+
+            self.canvas.figure.savefig((self.results_path + "/loss_plot.png"), format="png")
 
     def update_loss_plot(self):
         """
@@ -599,7 +606,8 @@ class Trainer(ModelFramework):
         # print("train/val")
         # print(train_files)
         # print(val_files)
-        # TODO : param stretch factor if anisotrpoic
+        # TODO : param stretch factor if anisotropic ?
+        # TODO : param ROI size
         sample_loader = Compose(
             [
                 LoadImaged(keys=["image", "label"]),
