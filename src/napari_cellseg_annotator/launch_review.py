@@ -10,6 +10,7 @@ from matplotlib.backends.backend_qt5agg import (
 from matplotlib.figure import Figure
 from qtpy.QtWidgets import QSizePolicy
 from scipy import ndimage
+from tifffile import imwrite
 
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.plugin_dock import Datamanager
@@ -82,9 +83,9 @@ def launch_review(
     # TODO : cleanup, notably viewer argument ?
     view1 = viewer
     view1.add_image(
-        images_original, colormap="inferno", contrast_limits=[200, 1000]
+        images_original, name="volume", colormap="inferno", contrast_limits=[200, 1000]
     )  # anything bigger than 255 will get mapped to 255... they did it like this because it must have rgb images
-    view1.add_labels(base_label, name="base", seed=0.6)
+    view1.add_labels(base_label, name="labels", seed=0.6)
     if raw is not None:  # raw labels is from the prediction
         view1.add_image(
             ndimage.gaussian_filter(raw, sigma=3),
@@ -162,7 +163,28 @@ def launch_review(
         # def saver():
         out_dir = file_widget.dirname.value
         # print("The directory is:", out_dir)
-        return dirname, utils.save_stack(layer1.data, out_dir)
+
+        def quicksave():
+            if not as_folder:
+                if viewer.layers["labels"] is not None:
+                    time = utils.get_date_time()
+                    name = (
+                            str(out_dir)
+                            + "/labels_reviewed_"
+                            + time
+                            + ".tif"
+                    )
+                    dat = viewer.layers["labels"].data
+                    imwrite(name, data=dat)
+
+            else:
+                if viewer.layers["labels"] is not None:
+                    time = utils.get_date_time()
+                    dir_name = str(out_dir) + "/labels_cropped_" + time
+                    dat = viewer.layers["labels"].data
+                    utils.save_stack(dat, dir_name, filetype=filetype)
+
+        return dirname, quicksave()
 
     # gui = file_widget.show(run=True)  # dirpicker.show(run=True)
 

@@ -96,14 +96,17 @@ class Reviewer(BasePlugin):
 
         self.filetype_choice.setVisible(False)
 
+        utils.add_blank(self, vbox)
+        vbox.addWidget(
+            utils.combine_blocks(self.filetype_choice, self.file_handling_box)
+        )
+
         vbox.addWidget(utils.combine_blocks(self.btn_image, self.lbl_image))
 
         vbox.addWidget(utils.combine_blocks(self.btn_label, self.lbl_label))
         # vbox.addWidget(self.lblft2)
 
-        vbox.addWidget(
-            utils.combine_blocks(self.filetype_choice, self.file_handling_box)
-        )
+
 
         self.filetype_choice.setVisible(False)
         vbox.addWidget(utils.combine_blocks(self.textbox, self.lbl_mod))
@@ -119,7 +122,7 @@ class Reviewer(BasePlugin):
         if self.test_button:
             vbox.addWidget(self.btntest)
         ##################################################################
-        utils.make_scrollable(contained_layout=vbox, containing_widget=self, min_wh=[190, 100], base_wh=[195, 600])
+        utils.make_scrollable(contained_layout=vbox, containing_widget=self, min_wh=[185, 100], base_wh=[190, 600])
         # self.show()
         # self._viewer.window.add_dock_widget(self, name="Reviewer", area="right")
 
