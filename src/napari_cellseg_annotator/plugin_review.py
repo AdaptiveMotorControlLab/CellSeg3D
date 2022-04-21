@@ -82,7 +82,7 @@ class Reviewer(BasePlugin):
         """Build buttons in a layout and add them to the napari Viewer"""
 
         vbox = QVBoxLayout()
-        vbox.setContentsMargins(0,0,1,11)
+        vbox.setContentsMargins(0, 0, 1, 11)
         vbox.setSizeConstraint(QLayout.SetFixedSize)
 
         global global_launched_before
@@ -106,8 +106,6 @@ class Reviewer(BasePlugin):
         vbox.addWidget(utils.combine_blocks(self.btn_label, self.lbl_label))
         # vbox.addWidget(self.lblft2)
 
-
-
         self.filetype_choice.setVisible(False)
         vbox.addWidget(utils.combine_blocks(self.textbox, self.lbl_mod))
 
@@ -122,7 +120,12 @@ class Reviewer(BasePlugin):
         if self.test_button:
             vbox.addWidget(self.btntest)
         ##################################################################
-        utils.make_scrollable(contained_layout=vbox, containing_widget=self, min_wh=[185, 100], base_wh=[190, 600])
+        utils.make_scrollable(
+            contained_layout=vbox,
+            containing_widget=self,
+            min_wh=[185, 100],
+            base_wh=[190, 600],
+        )
         # self.show()
         # self._viewer.window.add_dock_widget(self, name="Reviewer", area="right")
 

@@ -416,7 +416,6 @@ class Trainer(ModelFramework):
             self.btn_start, alignment=Qt.AlignmentFlag.AlignLeft
         )  # start
 
-
         self.setSizePolicy(
             QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
         )
@@ -429,7 +428,7 @@ class Trainer(ModelFramework):
         utils.make_scrollable(
             contained_layout=train_tab_layout,
             containing_widget=train_tab,
-            min_wh=[250, 100]
+            min_wh=[250, 100],
         )
         self.addTab(train_tab, "Training parameters")
 

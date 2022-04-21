@@ -1,4 +1,5 @@
 import os
+import warnings
 
 import napari
 import numpy as np
@@ -84,6 +85,8 @@ class Cropping(BasePlugin):
         self.label = None
         self.label_layer = None
 
+        self.crop_labels = False
+
         #####################################################################
         # TODO remove once done
         self.test_button = True
@@ -160,25 +163,34 @@ class Cropping(BasePlugin):
 
         self.filetype = self.filetype_choice.currentText()
         self.as_folder = self.file_handling_box.isChecked()
+        self.crop_labels = self.crop_label_choice.isChecked()
 
         if self.as_folder:
             self.image_path = (
                 "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
             )
-            self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
+            if self.crop_labels :
+                self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
         else:
             self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
-            self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels/testing_im.tif"
+            if self.crop_labels:
+                self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels/testing_im.tif"
         self.start()
 
     ###########################################
     def quicksave(self):
+        """Quicksaves the cropped volume in the folder from which they originate, with their original file extension.
+
+        * If images are present, saves the cropped version as a single file or image stacks folder depending on what was loaded.
+
+        * If labels are present, saves the cropped version as a single file or 2D stacks folder depending on what was loaded.
+        """
 
         viewer = self._viewer
 
         time = utils.get_date_time()
         if not self.as_folder:
-            if viewer.layers["cropped"] is not None:
+            if self.image is not None:
                 im_filename = os.path.basename(self.image_path).split(".")[0]
                 im_dir = os.path.split(self.image_path)[0] + "/cropped"
                 os.makedirs(im_dir, exist_ok=True)
@@ -186,14 +198,14 @@ class Cropping(BasePlugin):
                     im_dir + "/" + im_filename + "_cropped_" + time + ".tif"
                 )
 
-            if viewer.layers["cropped_labels"] is not None:
+            if self.labels is not None:
                 im_filename = os.path.basename(self.label_path).split(".")[0]
                 im_dir = os.path.split(self.label_path)[0]
                 name = (
                     im_dir
                     + "/"
                     + im_filename
-                    + "_label_cropped_"
+                    + "_labels_cropped_"
                     + time
                     + ".tif"
                 )
@@ -201,33 +213,51 @@ class Cropping(BasePlugin):
                 imwrite(name, data=dat)
 
         else:
-            if viewer.layers["cropped"] is not None:
-                im_filename = os.path.basename(self.image_path).split(".")[0]
-                im_dir = os.path.split(self.image_path)[0]
-                dat = viewer.layers["cropped"].data
-                dir_name = im_dir + "/cropped_" + time
-                utils.save_stack(dat, dir_name, filetype=self.filetype)
-            if viewer.layers["cropped_labels"] is not None:
+            if self.image_layer is not None:
 
-                im_filename = os.path.basename(self.image_path).split(".")[0]
+                # im_filename = os.path.basename(self.image_path).split(".")[0]
+                im_dir = os.path.split(self.image_path)[0]
+
+                dat = viewer.layers["cropped"].data
+                dir_name = im_dir + "/volume_cropped_" + time
+                utils.save_stack(dat, dir_name, filetype=self.filetype)
+
+            if self.label_layer is not None:
+
+                # im_filename = os.path.basename(self.image_path).split(".")[0]
                 im_dir = os.path.split(self.label_path)[0]
 
-                dir_name = im_dir + "/label_cropped_" + time
+                dir_name = im_dir + "/labels_cropped_" + time
                 dat = viewer.layers["cropped_labels"].data
                 utils.save_stack(dat, dir_name, filetype=self.filetype)
+
+    def check_ready(self):
+
+        if self.image_path == "" or (self.crop_labels and self.label_path == ""):
+            warnings.warn("Please set all required paths correctly")
+            return False
+        return True
 
     def start(self):
         """Launches cropping process by loading the files from the chosen folders,
         and adds control widgets to the napari Viewer for moving the cropped volume.
         """
+
         self.as_folder = self.file_handling_box.isChecked()
         self.filetype = self.filetype_choice.currentText()
+        self.crop_labels = self.crop_label_choice.isChecked()
+
+        if not self.check_ready():
+            return
+
         self.image = utils.load_images(
             self.image_path, self.filetype, self.as_folder
         )
-        self.labels = utils.load_images(
-            self.label_path, self.filetype, self.as_folder
-        )
+
+        if self.crop_labels:
+            self.labels = utils.load_images(
+                self.label_path, self.filetype, self.as_folder
+            )
 
         vw = self._viewer
 
@@ -240,7 +270,9 @@ class Cropping(BasePlugin):
             contrast_limits=[200, 1000],
             opacity=0.7,
         )
-        self.label_layer = vw.add_labels(self.labels, visible=False)
+
+        if self.crop_labels:
+            self.label_layer = vw.add_labels(self.labels, visible=False)
 
         @magicgui(call_button="Quicksave")
         def save_widget():
@@ -267,7 +299,8 @@ class Cropping(BasePlugin):
 
         vw = self._viewer
 
-        label_stack = self.labels
+
+
         image_stack = np.array(self.image)
 
         self._crop_size_x, self._crop_size_y, self._crop_size_z = [
@@ -292,13 +325,16 @@ class Cropping(BasePlugin):
             colormap="twilight_shifted",
             scale=self.image_layer.scale,
         )
-        labels_crop_layer = vw.add_labels(
-            self.labels[:cropz, :cropy, :cropx],
-            name="cropped_labels",
-            scale=self.label_layer.scale,
-        )
 
-        def set_slice(axis, value):
+        if self.crop_labels:
+            label_stack = self.labels
+            labels_crop_layer = vw.add_labels(
+                self.labels[:cropz, :cropy, :cropx],
+                name="cropped_labels",
+                scale=self.label_layer.scale,
+            )
+
+        def set_slice(axis, value, crp_lbl):
             """ "Update cropped volume posistion"""
             idx = int(value)
             scale = np.asarray(highres_crop_layer.scale)
@@ -317,11 +353,14 @@ class Cropping(BasePlugin):
             ]
             highres_crop_layer.translate = scale * izyx
             highres_crop_layer.refresh()
-            labels_crop_layer.data = label_stack[
-                i : i + cropz, j : j + cropy, k : k + cropx
-            ]
-            labels_crop_layer.translate = scale * izyx
-            labels_crop_layer.refresh()
+
+            if crp_lbl:
+                labels_crop_layer.data = label_stack[
+                    i : i + cropz, j : j + cropy, k : k + cropx
+                ]
+                labels_crop_layer.translate = scale * izyx
+                labels_crop_layer.refresh()
+
             self._x = k
             self._y = j
             self._z = i
@@ -335,7 +374,7 @@ class Cropping(BasePlugin):
         ]
         for axis, slider in enumerate(sliders):
             slider.changed.connect(
-                lambda event, axis=axis: set_slice(axis, event)
+                lambda event, axis=axis: set_slice(axis, event, self.crop_labels)
             )
         container_widget = Container(layout="vertical")
         container_widget.extend(sliders)

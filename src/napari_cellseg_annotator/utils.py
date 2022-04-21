@@ -6,7 +6,8 @@ from pathlib import Path
 import cv2
 import numpy as np
 from dask_image.imread import imread as dask_imread
-from pandas import Series, DataFrame
+from pandas import DataFrame
+from pandas import Series
 from qtpy.QtCore import QUrl
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QDesktopServices

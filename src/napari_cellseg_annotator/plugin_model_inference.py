@@ -170,7 +170,7 @@ class Inferer(ModelFramework):
 
         tab = QWidget()
         tab_layout = QVBoxLayout()
-        tab_layout.setContentsMargins(0,0,1,1)
+        tab_layout.setContentsMargins(0, 0, 1, 1)
         tab_layout.setSizeConstraint(QLayout.SetFixedSize)
 
         tab_layout.addWidget(
@@ -233,7 +233,11 @@ class Inferer(ModelFramework):
             self.btn_close, alignment=Qt.AlignmentFlag.AlignLeft
         )
 
-        utils.make_scrollable(containing_widget=tab, contained_layout=tab_layout, base_wh=[100, 500])
+        utils.make_scrollable(
+            containing_widget=tab,
+            contained_layout=tab_layout,
+            base_wh=[100, 500],
+        )
         # tab.setLayout(tab_layout)
         self.addTab(tab, "Inference")
 

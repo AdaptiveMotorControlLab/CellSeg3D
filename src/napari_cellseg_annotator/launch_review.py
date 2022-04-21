@@ -83,7 +83,10 @@ def launch_review(
     # TODO : cleanup, notably viewer argument ?
     view1 = viewer
     view1.add_image(
-        images_original, name="volume", colormap="inferno", contrast_limits=[200, 1000]
+        images_original,
+        name="volume",
+        colormap="inferno",
+        contrast_limits=[200, 1000],
     )  # anything bigger than 255 will get mapped to 255... they did it like this because it must have rgb images
     view1.add_labels(base_label, name="labels", seed=0.6)
     if raw is not None:  # raw labels is from the prediction
@@ -168,12 +171,7 @@ def launch_review(
             if not as_folder:
                 if viewer.layers["labels"] is not None:
                     time = utils.get_date_time()
-                    name = (
-                            str(out_dir)
-                            + "/labels_reviewed_"
-                            + time
-                            + ".tif"
-                    )
+                    name = str(out_dir) + "/labels_reviewed_" + time + ".tif"
                     dat = viewer.layers["labels"].data
                     imwrite(name, data=dat)
 

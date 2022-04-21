@@ -129,8 +129,8 @@ class Helper(QWidget):
                 self.plot_loss(loss, dice_metric)
 
     def plot_loss(self, loss, dice_metric):
-        import numpy as np
         import matplotlib.pyplot as plt
+        import numpy as np
 
         if not self.test:
             return
