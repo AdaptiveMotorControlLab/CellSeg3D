@@ -8,6 +8,7 @@ import skimage.io as io
 from qtpy import QtGui
 from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QLayout
 from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QSizePolicy
@@ -81,6 +82,8 @@ class Reviewer(BasePlugin):
         """Build buttons in a layout and add them to the napari Viewer"""
 
         vbox = QVBoxLayout()
+        vbox.setContentsMargins(0,0,1,11)
+        vbox.setSizeConstraint(QLayout.SetFixedSize)
 
         global global_launched_before
         if global_launched_before:
@@ -116,7 +119,7 @@ class Reviewer(BasePlugin):
         if self.test_button:
             vbox.addWidget(self.btntest)
         ##################################################################
-        self.setLayout(vbox)
+        utils.make_scrollable(contained_layout=vbox, containing_widget=self, min_wh=[190, 100], base_wh=[195, 600])
         # self.show()
         # self._viewer.window.add_dock_widget(self, name="Reviewer", area="right")
 
@@ -137,13 +140,14 @@ class Reviewer(BasePlugin):
             napari.viewer.Viewer: self.viewer
         """
         self.filetype = self.filetype_choice.currentText()
+        self.as_folder = self.file_handling_box.isChecked()
         images = utils.load_images(
-            self.image_path, self.filetype, self.file_handling_box.isChecked()
+            self.image_path, self.filetype, self.as_folder
         )
         if (
             self.label_path == ""
         ):  # saves empty images of the same size as original images
-            if self.file_handling_box.isChecked():
+            if self.as_folder:
                 labels = np.zeros_like(images.compute())  # dask to numpy
             self.label_path = os.path.join(
                 os.path.dirname(self.image_path), self.textbox.text()
@@ -161,7 +165,7 @@ class Reviewer(BasePlugin):
             labels = utils.load_saved_masks(
                 self.label_path,
                 self.filetype,
-                self.file_handling_box.isChecked(),
+                self.as_folder,
             )
         try:
             labels_raw = utils.load_raw_masks(
@@ -185,7 +189,7 @@ class Reviewer(BasePlugin):
                 self.textbox.text(),
                 self.checkBox.isChecked(),
                 self.filetype,
-                self.file_handling_box.isChecked(),
+                self.as_folder,
             )
             warnings.warn(
                 "Opening several loader sessions in one window is not supported; opening in new window"
@@ -203,7 +207,7 @@ class Reviewer(BasePlugin):
                 self.textbox.text(),
                 self.checkBox.isChecked(),
                 self.filetype,
-                self.file_handling_box.isChecked(),
+                self.as_folder,
             )
             self.close()
 
@@ -215,7 +219,8 @@ class Reviewer(BasePlugin):
     # TODO : remove once done
     def run_test(self):
         self.filetype = self.filetype_choice.currentText()
-        if self.file_handling_box.isChecked():
+        self.as_folder = self.file_handling_box.isChecked()
+        if self.as_folder:
             self.image_path = (
                 "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
             )

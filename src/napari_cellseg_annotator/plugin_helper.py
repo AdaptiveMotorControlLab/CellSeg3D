@@ -30,28 +30,35 @@ class Helper(QWidget):
         # self.btnc.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btnc.clicked.connect(self.close)
 
-        self.test = False
+        self.test = True
 
         if self.test:
+            self.dock = None
+
             self.epoch = QSpinBox()
             self.epoch.setValue(0)
+            self.epoch.setRange(0, 1000)
             self.epoch.setSingleStep(2)
             self.epoch.valueChanged.connect(self.update_loss_plot)
 
         self.build()
-        # self.update_loss_plot()
 
     def build(self):
         vbox = QVBoxLayout()
         vbox.addWidget(self.btn1, alignment=Qt.AlignmentFlag.AlignLeft)
         vbox.addWidget(self.btn2, alignment=Qt.AlignmentFlag.AlignLeft)
         vbox.addWidget(self.btnc, alignment=Qt.AlignmentFlag.AlignLeft)
-        # vbox.addWidget(self.epoch, alignment=Qt.AlignmentFlag.AlignAbsolute)
+        if self.test:
+            vbox.addWidget(
+                self.epoch, alignment=Qt.AlignmentFlag.AlignAbsolute
+            )
         self.setLayout(vbox)
         # self.show()
         # self._viewer.window.add_dock_widget(self, name="Help/About...", area="right")
 
     def close(self):
+        if self.test and self.dock is not None:
+            self._viewer.window.remove_dock_widget(self.dock)
         self._viewer.window.remove_dock_widget(self)
 
     ################ TESTING
@@ -61,8 +68,8 @@ class Helper(QWidget):
         import matplotlib.pyplot as plt
         import numpy as np
 
-        length = 50
         epoch = self.epoch.value()
+        length = epoch
         loss = np.random.rand(length)
         dice_metric = np.random.rand(int(length / 2))
 
@@ -84,7 +91,7 @@ class Helper(QWidget):
             bckgrd_color = (0, 0, 0, 0)  # '#262930'
             with plt.style.context("dark_background"):
 
-                self.canvas = FigureCanvas(Figure(figsize=(10, 3)))
+                self.canvas = FigureCanvas(Figure(figsize=(7, 2.5)))
                 # loss plot
                 self.train_loss_plot = self.canvas.figure.add_subplot(1, 2, 1)
                 # dice metric validation plot
@@ -94,7 +101,7 @@ class Helper(QWidget):
                 self.dice_metric_plot.set_facecolor(bckgrd_color)
                 self.train_loss_plot.set_facecolor(bckgrd_color)
 
-                # self.canvas.figure.tight_layout()
+                self.canvas.figure.tight_layout()
 
                 self.canvas.figure.subplots_adjust(
                     left=0.1,
@@ -109,7 +116,9 @@ class Helper(QWidget):
 
             # tab_index = self.addTab(self.canvas, "Loss plot")
             # self.setCurrentIndex(tab_index)
-            self._viewer.window.add_dock_widget(self.canvas, area="bottom")
+            self.dock = self._viewer.window.add_dock_widget(
+                self.canvas, area="bottom"
+            )
             self.plot_loss(loss, dice_metric)
         else:
             with plt.style.context("dark_background"):
@@ -121,33 +130,42 @@ class Helper(QWidget):
 
     def plot_loss(self, loss, dice_metric):
         import numpy as np
+        import matplotlib.pyplot as plt
 
         if not self.test:
             return
         self.val_interval = 2
 
         # update loss
-        self.train_loss_plot.set_title("Epoch average loss")
-        self.train_loss_plot.set_xlabel("Epoch")
-        self.train_loss_plot.set_ylabel("Loss")
-        x = [i + 1 for i in range(len(loss))]
-        y = loss
-        self.train_loss_plot.plot(x, y)
-        # update metrics
-        x = [self.val_interval * (i + 1) for i in range(len(dice_metric))]
-        y = dice_metric
+        with plt.style.context("dark_background"):
+            self.train_loss_plot.set_title("Epoch average loss")
+            self.train_loss_plot.set_xlabel("Epoch")
+            self.train_loss_plot.set_ylabel("Loss")
+            x = [i + 1 for i in range(len(loss))]
+            y = loss
+            self.train_loss_plot.plot(x, y)
+            # update metrics
+            x = [self.val_interval * (i + 1) for i in range(len(dice_metric))]
+            y = dice_metric
 
-        epoch_min = (np.argmax(y) + 1) * self.val_interval
-        dice_min = np.max(y)
+            epoch_min = (np.argmax(y) + 1) * self.val_interval
+            dice_min = np.max(y)
 
-        self.dice_metric_plot.plot(x, y)
-        self.dice_metric_plot.set_title(
-            "Validation metric : Mean Dice coefficient"
-        )
-        self.dice_metric_plot.set_xlabel("Epoch")
+            self.dice_metric_plot.plot(x, y, zorder=1)
+            self.dice_metric_plot.set_title(
+                "Validation metric : Mean Dice coefficient"
+            )
+            self.dice_metric_plot.set_xlabel("Epoch")
+            self.dice_metric_plot.set_ylabel("Dice")
 
-        self.dice_metric_plot.scatter(
-            epoch_min, dice_min, c="r", label="Maximum Dice coeff."
-        )
-        self.dice_metric_plot.legend(facecolor="#262930", loc="upper right")
-        self.canvas.draw_idle()
+            self.dice_metric_plot.scatter(
+                epoch_min,
+                dice_min,
+                c="r",
+                label="Maximum Dice coeff.",
+                zorder=5,
+            )
+            self.dice_metric_plot.legend(
+                facecolor="#262930", loc="lower right"
+            )
+            self.canvas.draw_idle()

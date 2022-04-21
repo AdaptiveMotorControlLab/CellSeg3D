@@ -23,4 +23,4 @@ Attributes
 *********************
 
 .. autoclass:: napari_cellseg_annotator.plugin_model_training::Trainer
-   :members:  _viewer, models_dict, worker, loss_dict, metric_values, epoch_loss_values, canvas, train_loss_plot, dice_metric_plot
+   :members:  _viewer, models_dict, worker, loss_dict, canvas, train_loss_plot, dice_metric_plot

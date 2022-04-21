@@ -128,7 +128,7 @@ class Inferer(ModelFramework):
 
     @staticmethod
     def create_inference_dict(images_filepaths):
-        """Create a dict with all image paths in :py:attr:`self.images_filepaths`
+        """Create a dict with all image paths in :py:attr:`~self.images_filepaths`
 
         Returns:
             dict: list of image paths from loaded folder"""
@@ -170,6 +170,7 @@ class Inferer(ModelFramework):
 
         tab = QWidget()
         tab_layout = QVBoxLayout()
+        tab_layout.setContentsMargins(0,0,1,1)
         tab_layout.setSizeConstraint(QLayout.SetFixedSize)
 
         tab_layout.addWidget(
@@ -232,7 +233,8 @@ class Inferer(ModelFramework):
             self.btn_close, alignment=Qt.AlignmentFlag.AlignLeft
         )
 
-        tab.setLayout(tab_layout)
+        utils.make_scrollable(containing_widget=tab, contained_layout=tab_layout, base_wh=[100, 500])
+        # tab.setLayout(tab_layout)
         self.addTab(tab, "Inference")
 
     def start(self):
@@ -242,9 +244,9 @@ class Inferer(ModelFramework):
 
         * Loads the weights from the chosen model
 
-        * Creates a dict with all image paths (see :py:func:`create_inference_dict`)
+        * Creates a dict with all image paths (see :py:func:`~create_inference_dict`)
 
-        * Loads the images, pads them so their size is a power of two in every dim (see :py:func:`get_padding_dim`)
+        * Loads the images, pads them so their size is a power of two in every dim (see :py:func:`utils.get_padding_dim`)
 
         * Performs sliding window inference (from MONAI) on every image
 
@@ -254,11 +256,7 @@ class Inferer(ModelFramework):
 
         TODO:
 
-        * Turn prediction into a function ? (for threading maybe)
-
-        * Use os.makedirs(dir, exist_ok = True) ?
-
-        * Multithreading ?
+        * Use os.makedirs(dir, exist_ok = True) for results ?
 
         """
 
@@ -342,6 +340,15 @@ class Inferer(ModelFramework):
 
     @staticmethod
     def show_results(data, viewer, zoom=[1, 1, 1], nbr_to_show=0, show=False):
+        """
+        Display the inference results in napari as long as data["image_id"] is lower than nbr_to_show
+        Args:
+            data (dict): dict yielded by :py:func:`~inference()`, contains : "image_id" : index of the returned image, "original" : original volume used for inference, "result" : inference result
+            viewer (napari.Viewer.viewer): viewer to display in
+            zoom (array): array with the anisotropy factor for each dim from :py:func:`anisotropy_zoom_factor`
+            nbr_to_show: how many results to display before stopping
+            show: whether to display results (TODO : find a better way)
+        """
         # check that viewer checkbox is on and that max number of displays has not been reached.
         image_id = data["image_id"]
 
@@ -372,6 +379,20 @@ class Inferer(ModelFramework):
     def inference(
         device, model_dict, weights, images_filepaths, results_path, filetype
     ):
+        """
+
+        Args:
+            device: cuda or cpu device to use for torch
+            model_dict: the :py:attr:`~self.models_dict` dictionary to obtain the model name and class
+            weights: the loaded weights from the model
+            images_filepaths: the paths to the images of the dataset
+            results_path: the path to save the results
+            filetype: the file extension to use when saving
+
+        Yields:
+            dict: contains : "image_id" : index of the returned image, "original" : original volume used for inference, "result" : inference result
+
+        """
 
         model = model_dict["class"]
         model.to(device)

@@ -42,6 +42,7 @@ from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLayout
+from qtpy.QtWidgets import QProgressBar
 from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QSpinBox
@@ -70,29 +71,34 @@ class Trainer(ModelFramework):
         batch=1,
         val_interval=2,
     ):
-        """Creates a Trainer widget with the following functionalities :
+        """Creates a Trainer tab widget with the following functionalities :
 
-        * A filetype choice to select images in a folder
+        * First tab : Dataset parameters
+            * A filetype choice to select images in a folder
 
-        * A button to choose the folder containing the images of the dataset. Validation files are chosen automatically from the whole dataset.
+            * A button to choose the folder containing the images of the dataset. Validation files are chosen automatically from the whole dataset.
 
-        * A button to choose the label folder (must have matching number and name of images)
+            * A button to choose the label folder (must have matching number and name of images)
 
-        * A button to choose where to save the results (weights). Defaults to the plugin's models/saved_weights folder
+            * A button to choose where to save the results (weights). Defaults to the plugin's models/saved_weights folder
 
-        * A dropdown menu to choose which model to train
+            * A dropdown menu to choose which model to train
 
-        * A dropdown menu to choose which loss function to use (see https://docs.monai.io/en/stable/losses.html)
+        * Second tab : Training parameters
 
-        * A spin box to choose the number of epochs to train for
+            * A dropdown menu to choose which loss function to use (see https://docs.monai.io/en/stable/losses.html)
 
-        * A spin box to choose the batch size during training
+            * A spin box to choose the number of epochs to train for
 
-        * A spin box to choose the number of samples to take from an image when training
+            * A spin box to choose the batch size during training
+
+            * A spin box to choose the number of samples to take from an image when training
+
+            * A spin box to choose the validation interval
 
         TODO:
 
-        * Choice of validation proportion, validation interval, sampling behaviour
+        * Choice of validation proportion, sampling behaviour (toggle), maybe in a data pre-processing tab
 
         * Custom model loading
 
@@ -171,10 +177,10 @@ class Trainer(ModelFramework):
         """Number of samples to extract"""
         self.batch_size = batch
 
-        self.epochs = epochs
+        self.max_epochs = epochs
 
         self.val_interval = val_interval
-
+        """At which epochs to perform validation. E.g. if 2, will run validation on epochs 2,4,6..."""
         self.model = None  # TODO : custom model loading ?
         self.worker = None
         """Training worker for multithreading"""
@@ -190,23 +196,21 @@ class Trainer(ModelFramework):
         }
         """Dict of loss functions"""
 
-        self.metric_values = []
-        """List of dice metric validation values"""
-        self.epoch_loss_values = []
-        """List of loss values per epoch"""
         self.canvas = None
         """Canvas to plot loss and dice metric in"""
         self.train_loss_plot = None
         """Plot for loss"""
         self.dice_metric_plot = None
         """Plot for dice metric"""
+        self.dock_widgets = []
+        """Pointer to a dock widget containing the FigureCanvas, used to remove the docking widget with :py:func:`~close`"""
 
         self.model_choice.setCurrentIndex(model_index)
 
         ################################
         # interface
         self.epoch_choice = QSpinBox()
-        self.epoch_choice.setValue(self.epochs)
+        self.epoch_choice.setValue(self.max_epochs)
         self.epoch_choice.setRange(2, 1000)
         # self.epoch_choice.setSingleStep(2)
         self.epoch_choice.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -238,6 +242,10 @@ class Trainer(ModelFramework):
             QSizePolicy.Fixed, QSizePolicy.Fixed
         )
         self.lbl_val_interv_choice = QLabel("Validation interval : ", self)
+
+        self.progress = QProgressBar()
+        self.progress.setVisible(False)
+        """Dock widget containing the progress bar"""
 
         self.btn_start = QPushButton("Start training")
         self.btn_start.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -293,12 +301,22 @@ class Trainer(ModelFramework):
 
             * Batch size choice
 
-            * Epochs choice"""
+            * Epochs choice
+
+            * Validation interval choice
+
+            * Previous tab
+
+            * Start (see :py:func:`~start`)"""
 
         model_tab = QWidget()
+        model_tab.setSizePolicy(
+            QSizePolicy.MinimumExpanding, QSizePolicy.Fixed
+        )
         ###### first tab : model and dataset choices
         model_tab_layout = QVBoxLayout()
-        model_tab_layout.setSizeConstraint(QLayout.SetMinimumSize)
+        model_tab_layout.setContentsMargins(0, 0, 1, 11)
+        model_tab_layout.setSizeConstraint(QLayout.SetFixedSize)
 
         model_tab_layout.addWidget(
             utils.combine_blocks(self.filetype_choice, self.lbl_filetype),
@@ -330,7 +348,6 @@ class Trainer(ModelFramework):
         if self.results_path != "":
             self.lbl_result_path.setText(self.results_path)
 
-        utils.add_blank(self, model_tab_layout)
         model_tab_layout.addWidget(
             utils.combine_blocks(self.model_choice, self.lbl_model_choice),
             alignment=Qt.AlignmentFlag.AlignLeft,
@@ -347,48 +364,73 @@ class Trainer(ModelFramework):
 
         model_tab_layout.addWidget(
             self.btn_next, alignment=Qt.AlignmentFlag.AlignLeft
-        )
+        )  # next
         utils.add_blank(self, model_tab_layout)
         model_tab_layout.addWidget(
             self.btn_close, alignment=Qt.AlignmentFlag.AlignLeft
-        )
+        )  # close
 
+        #####################
         train_tab = QWidget()
+        train_tab.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Fixed)
         ####### second tab : training parameters
         train_tab_layout = QVBoxLayout()
+        train_tab_layout.setContentsMargins(0, 0, 1, 11)
         train_tab_layout.setSizeConstraint(QLayout.SetFixedSize)
 
         train_tab_layout.addWidget(
             utils.combine_blocks(self.loss_choice, self.lbl_loss_choice),
             alignment=Qt.AlignmentFlag.AlignLeft,
         )  # loss choice
+
+        spinbox_spacing = 110
+
         train_tab_layout.addWidget(
-            utils.combine_blocks(self.batch_choice, self.lbl_batch_choice),
+            utils.combine_blocks(
+                self.batch_choice, self.lbl_batch_choice, spinbox_spacing
+            ),
             alignment=Qt.AlignmentFlag.AlignLeft,
         )  # batch size
         train_tab_layout.addWidget(
-            utils.combine_blocks(self.epoch_choice, self.lbl_epoch_choice),
+            utils.combine_blocks(
+                self.epoch_choice, self.lbl_epoch_choice, spinbox_spacing
+            ),
             alignment=Qt.AlignmentFlag.AlignLeft,
         )  # epochs
         train_tab_layout.addWidget(
             utils.combine_blocks(
-                self.val_interval_choice, self.lbl_val_interv_choice
+                self.val_interval_choice,
+                self.lbl_val_interv_choice,
+                spinbox_spacing,
             ),
             alignment=Qt.AlignmentFlag.AlignLeft,
-        )
+        )  # validation interval
+
         utils.add_blank(self, train_tab_layout)
+
         train_tab_layout.addWidget(
             self.btn_prev, alignment=Qt.AlignmentFlag.AlignLeft
-        )
+        )  # previous
         utils.add_blank(self, train_tab_layout)
         train_tab_layout.addWidget(
             self.btn_start, alignment=Qt.AlignmentFlag.AlignLeft
+        )  # start
+
+
+        self.setSizePolicy(
+            QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
         )
 
-        model_tab.setLayout(model_tab_layout)
+        utils.make_scrollable(
+            contained_layout=model_tab_layout, containing_widget=model_tab
+        )  # , min_wh=[190, 100], max_wh=[200,1000])
         self.addTab(model_tab, "Model parameters")
 
-        train_tab.setLayout(train_tab_layout)
+        utils.make_scrollable(
+            contained_layout=train_tab_layout,
+            containing_widget=train_tab,
+            min_wh=[250, 100]
+        )
         self.addTab(train_tab, "Training parameters")
 
     def show_dialog_lab(self):
@@ -417,7 +459,7 @@ class Trainer(ModelFramework):
 
         * If self.worker is None : creates a worker and starts the training
 
-        * If the button is clicked while training, stops the model once it reaches the next training iteration
+        * If the button is clicked while training, stops the model once it finishes the next validation step and saves the results if better
 
         * When the worker yields after a validation step, plots the loss if epoch >= validation_step (to avoid empty plot on first validation)
 
@@ -432,7 +474,7 @@ class Trainer(ModelFramework):
 
         """
 
-        if not self.check_ready():
+        if not self.check_ready():  # issues a warning if not ready
             return
 
         if self.worker is not None:
@@ -447,32 +489,56 @@ class Trainer(ModelFramework):
             self.batch_size = self.batch_choice.value()
             self.val_interval = self.val_interval_choice.value()
             self.data = self.create_train_dataset_dict()
+            self.max_epochs = self.epoch_choice.value()
             self.btn_close.setVisible(False)
 
             self.worker = self.train()
-            self.worker.started.connect(
-                lambda: print("\nWorker is running...")
+
+            self.worker.start()
+
+            self.worker.started.connect(lambda: self.on_start())
+
+            self.worker.yielded.connect(
+                lambda data: self.on_yield(data, widget=self)
             )
-            self.worker.finished.connect(lambda: print("\nWorker finished"))
-            self.worker.finished.connect(
-                lambda: self.btn_start.setText("Start")
-            )
-            self.worker.finished.connect(
-                lambda: self.btn_close.setVisible(True)
-            )
-            self.worker.finished.connect(self.clean_cache)
-            if self.get_device(show=False).type == "cuda":
-                self.worker.finished.connect(self.empty_cuda_cache)
+            self.worker.finished.connect(lambda: self.on_finish())
 
             self.worker.errored.connect(lambda: print("Worker error"))
 
         if self.worker.is_running:
             print("Stop request, waiting for next validation step...")
-            self.btn_start.setText("Stopping...")
+            self.btn_start.setText("Stopping... Please wait")
             self.worker.quit()
         else:
             # self.worker.start()
             self.btn_start.setText("Running...  Click to stop")
+
+    def on_start(self):
+        print("\nWorker is running...")
+
+        progress_dock = self._viewer.window.add_dock_widget(
+            self.progress, name="Progress", area="left"
+        )
+        self.dock_widgets.append(progress_dock)
+        self.progress.setVisible(True)
+        self.progress.setValue(0)
+
+    def on_finish(self):
+        print("\nWorker finished")
+
+        self.btn_start.setText("Start")
+        self.btn_close.setVisible(True)
+        self.clean_cache
+
+    @staticmethod
+    def on_yield(data, widget):
+        # print(
+        #     f"\nCatching results : for epoch {data['epoch']}, loss is {data['losses']} and validation is {data['val_metrics']}"
+        # )
+        widget.progress.setValue(
+            100 * (data["epoch"] + 1) // widget.max_epochs
+        )
+        widget.update_loss_plot(data["losses"], data["val_metrics"])
 
     def clean_cache(self):
         """Attempts to clear memory after training"""
@@ -482,11 +548,11 @@ class Trainer(ModelFramework):
             del self.model
             self.model = None
 
-        del self.epoch_loss_values
-        del self.metric_values
         del self.data
         # self.close()
         # del self
+        if self.get_device(show=False).type == "cuda":
+            self.empty_cuda_cache
 
     def plot_loss(self, loss, dice_metric):
         """Creates two subplots to plot the training loss and validation metric"""
@@ -505,23 +571,34 @@ class Trainer(ModelFramework):
             epoch_min = (np.argmax(y) + 1) * self.val_interval
             dice_min = np.max(y)
 
-            self.dice_metric_plot.plot(x, y)
+            self.dice_metric_plot.plot(x, y, zorder=1)
             self.dice_metric_plot.set_title(
                 "Validation metric : Mean Dice coefficient"
             )
             self.dice_metric_plot.set_xlabel("Epoch")
+            self.dice_metric_plot.set_ylabel("Dice")
 
             self.dice_metric_plot.scatter(
-                epoch_min, dice_min, c="r", label="Maximum Dice coeff."
+                epoch_min,
+                dice_min,
+                c="r",
+                label="Maximum Dice coeff.",
+                zorder=5,
             )
-            self.dice_metric_plot.legend(facecolor="#262930", loc="upper left")
+            self.dice_metric_plot.legend(
+                facecolor="#262930", loc="lower right"
+            )
             self.canvas.draw_idle()
 
             self.canvas.figure.savefig(
-                (self.results_path + "/loss_plot.png"), format="png"
+                (
+                    self.results_path
+                    + f"/metric_plots_{utils.get_date_time()}.png"
+                ),
+                format="png",
             )
 
-    def update_loss_plot(self):
+    def update_loss_plot(self, loss, metric):
         """
         Updates the plots on subsequent validation steps.
         Creates the plot on the second validation step (epoch == val_interval*2).
@@ -529,15 +606,8 @@ class Trainer(ModelFramework):
         Epoch is obtained from the length of the loss vector.
 
         Returns: returns empty if the epoch is < than 2 * validation interval.
-
         """
 
-        # print(len(self.epoch_loss_values))
-        # print(self.epoch_loss_values)
-        # print(self.metric_values)
-
-        loss = self.epoch_loss_values
-        metric = self.metric_values
         epoch = len(loss)
         if epoch < self.val_interval * 2:
             return
@@ -545,7 +615,7 @@ class Trainer(ModelFramework):
             bckgrd_color = (0, 0, 0, 0)  # '#262930'
             with plt.style.context("dark_background"):
 
-                self.canvas = FigureCanvas(Figure(figsize=(10, 3)))
+                self.canvas = FigureCanvas(Figure(figsize=(7, 1.5)))
                 # loss plot
                 self.train_loss_plot = self.canvas.figure.add_subplot(1, 2, 1)
                 # dice metric validation plot
@@ -555,13 +625,13 @@ class Trainer(ModelFramework):
                 self.dice_metric_plot.set_facecolor(bckgrd_color)
                 self.train_loss_plot.set_facecolor(bckgrd_color)
 
-                # self.canvas.figure.tight_layout()
+                self.canvas.figure.tight_layout()
 
                 self.canvas.figure.subplots_adjust(
                     left=0.1,
-                    bottom=0.2,
+                    bottom=0.3,
                     right=0.95,
-                    top=0.9,
+                    top=0.8,
                     wspace=0.2,
                     hspace=0,
                 )
@@ -570,7 +640,10 @@ class Trainer(ModelFramework):
 
             # tab_index = self.addTab(self.canvas, "Loss plot")
             # self.setCurrentIndex(tab_index)
-            self._viewer.window.add_dock_widget(self.canvas, area="bottom")
+            plot_dock = self._viewer.window.add_dock_widget(
+                self.canvas, name="Loss plots", area="bottom"
+            )
+            self.dock_widgets.append(plot_dock)
             self.plot_loss(loss, metric)
         else:
             with plt.style.context("dark_background"):
@@ -580,8 +653,8 @@ class Trainer(ModelFramework):
 
                 self.plot_loss(loss, metric)
 
-    @thread_worker(connect={"yielded": update_loss_plot})
-    def train(self):
+    @thread_worker
+    def train(self):  # TODO : turn into static
         """Trains the Pytorch model for num_epochs, with the selected model and data, using the chosen batch size,
         validation interval, loss function, and number of samples."""
 
@@ -589,7 +662,7 @@ class Trainer(ModelFramework):
         model_id = self.get_model(self.model_choice.currentText())
         model_name = self.model_choice.currentText()
         data_dicts = self.data
-        max_epochs = self.epoch_choice.value()
+        max_epochs = self.max_epochs
         loss_function = self.get_loss(self.loss_choice.currentText())
         val_interval = self.val_interval_choice.value()
         batch_size = self.batch_choice.value()
@@ -600,7 +673,7 @@ class Trainer(ModelFramework):
         model = model.to(device)
 
         epoch_loss_values = []
-        metric_values = []
+        val_metric_values = []
 
         # TODO param : % of validation from training set
         train_files, val_files = (
@@ -738,7 +811,7 @@ class Trainer(ModelFramework):
                     f"Train_loss: {loss.detach().item():.4f}"
                 )
             epoch_loss /= step
-            self.epoch_loss_values.append(epoch_loss)
+            epoch_loss_values.append(epoch_loss)
             print(f"Epoch {epoch + 1} Average loss: {epoch_loss:.4f}")
 
             if (epoch + 1) % val_interval == 0:
@@ -774,9 +847,14 @@ class Trainer(ModelFramework):
                     metric = dice_metric.aggregate().detach().item()
                     dice_metric.reset()
 
-                    self.metric_values.append(metric)
+                    val_metric_values.append(metric)
 
-                    yield self
+                    train_report = {
+                        "epoch": epoch,
+                        "losses": epoch_loss_values,
+                        "val_metrics": val_metric_values,
+                    }
+                    yield train_report
 
                     if metric > best_metric:
                         best_metric = metric
@@ -797,7 +875,6 @@ class Trainer(ModelFramework):
             f"Train completed, best_metric: {best_metric:.4f} "
             f"at epoch: {best_metric_epoch}"
         )
-        print("del")
         # del device
         # del model_id
         # del model_name
@@ -815,5 +892,10 @@ class Trainer(ModelFramework):
         # self.close()
 
     def close(self):
-        """Close the widget"""
+        """Close the widget and the loss plots, if any"""
+        if len(self.dock_widgets) != 0:
+            [
+                self._viewer.window.remove_dock_widget(w)
+                for w in self.dock_widgets
+            ]
         self._viewer.window.remove_dock_widget(self)

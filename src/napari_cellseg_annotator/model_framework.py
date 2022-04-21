@@ -190,7 +190,7 @@ class ModelFramework(QTabWidget):
         return self.loss_dict[key]
 
     def load_image_dataset(self):
-        """Show file dialog to set :py:attr:`images_filepaths`"""
+        """Show file dialog to set :py:attr:`~images_filepaths`"""
         filenames = self.load_dataset_paths()
         # print(filenames)
         if filenames != "" and filenames != [""] and filenames != []:
@@ -202,7 +202,7 @@ class ModelFramework(QTabWidget):
             self._default_path[0] = path
 
     def load_label_dataset(self):
-        """Show file dialog to set :py:attr:`labels_filepaths`"""
+        """Show file dialog to set :py:attr:`~labels_filepaths`"""
         filenames = self.load_dataset_paths()
         if filenames != "" and filenames != [""]:
             self.labels_filepaths = filenames
@@ -211,7 +211,7 @@ class ModelFramework(QTabWidget):
             self.update_default()
 
     def load_results_path(self):
-        """Show file dialog to set :py:attr:`results_path`"""
+        """Show file dialog to set :py:attr:`~results_path`"""
         dir = utils.open_file_dialog(self, self._default_path, True)
         if dir != "" and type(dir) is str and os.path.isdir(dir):
             self.results_path = dir

@@ -18,4 +18,4 @@ Attributes
 *********************
 
 .. autoclass:: napari_cellseg_annotator.model_framework::ModelFramework
-   :members:  _viewer, images_filepaths, labels_filepaths, results_path, model_path, device
+   :members:  _viewer, images_filepaths, labels_filepaths, results_path, model_path

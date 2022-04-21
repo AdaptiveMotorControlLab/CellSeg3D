@@ -43,6 +43,8 @@ class BasePlugin(QWidget):
 
         self.filetype = ""
         """str: filetype, .tif or .png"""
+        self.as_folder = False
+        """bool: Whether to load a single file or a folder as a stack"""
 
         self._default_path = [self.image_path, self.label_path]
 

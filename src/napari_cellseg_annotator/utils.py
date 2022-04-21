@@ -4,19 +4,23 @@ from datetime import datetime
 from pathlib import Path
 
 import cv2
-import dask_image.imread
 import numpy as np
-import pandas as pd
-import tifffile
+from dask_image.imread import imread as dask_imread
+from pandas import Series, DataFrame
 from qtpy.QtCore import QUrl
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QDesktopServices
 from qtpy.QtWidgets import QFileDialog
-from qtpy.QtWidgets import QHBoxLayout
+from qtpy.QtWidgets import QGridLayout
 from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QLayout
+from qtpy.QtWidgets import QScrollArea
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 from skimage import io
 from skimage.filters import gaussian
+from tifffile import imread as tfl_imread
 from tqdm import tqdm
 
 """
@@ -26,20 +30,73 @@ Definition of utility functions
 """
 
 
-def combine_blocks(button, label):
+def make_scrollable(
+    contained_layout, containing_widget, min_wh=None, max_wh=None, base_wh=None
+):
+    """Creates a QScrollArea and sets it up, then adds the contained_widget to it,
+    and finally adds the scroll area in a layout and sets it to the contaning_widget
+
+
+    Args:
+        contained_layout (QLayout): the widget to be made scrollable
+        containing_widget (QWidget): the widget to add the resulting scroll area in
+        min_wh (array(int)): array of two ints for respectively the minimum width and minimum height of the scrollable area. Defaults to None, lets Qt decide if None
+        max_wh (array(int)): array of two ints for respectively the maximum width and maximum height of the scrollable area. Defaults to None, lets Qt decide if None
+        base_wh (array(int)): array of two ints for respectively the initial width and initial height of the scrollable area. Defaults to None, lets Qt decide if None
+    """
+    container_widget = QWidget()  # required to use QScrollArea.setWidget()
+    container_widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Maximum)
+    container_widget.setLayout(contained_layout)
+    container_widget.adjustSize()
+    # TODO : could we optimize the number of created objects ?
+    scroll = QScrollArea()
+    scroll.setWidget(container_widget)
+    scroll.setWidgetResizable(True)
+    scroll.setSizePolicy(
+        QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
+    )
+    if base_wh is not None:
+        scroll.setBaseSize(base_wh[0], base_wh[1])
+    if max_wh is not None:
+        scroll.setMaximumSize(max_wh[0], max_wh[1])
+    if min_wh is not None:
+        scroll.setMinimumSize(min_wh[0], min_wh[1])
+    scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+    scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    scroll.adjustSize()
+
+    layout = QVBoxLayout(containing_widget)
+    # layout.setContentsMargins(0,0,1,1)
+    layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
+    layout.addWidget(scroll)
+    containing_widget.setLayout(layout)
+
+
+def combine_blocks(button, label, min_spacing=0):
     """Combines two QWidget objects and puts them side by side (label on the left and button on the right)
 
     Args:
         button (QWidget): Button widget to be displayed right of the label
         label (QWidget): Label widget to be added on the left of button
+        min_spacing (int): Minimum spacing between the two widgets (from the start of label to the start of button)
 
     Returns:
         QWidget: new QWidget containing the merged widget and label
     """
     temp_widget = QWidget()
-    temp_layout = QHBoxLayout()
-    temp_layout.addWidget(label)
-    temp_layout.addWidget(button)
+    temp_widget.setSizePolicy(
+        QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
+    )
+    temp_layout = QGridLayout()
+    temp_layout.setColumnMinimumWidth(0, min_spacing)
+    # temp_layout.setColumnMinimumWidth(1,100)
+    # temp_layout.setSizeConstraint(QLayout.SetNoConstraint)
+    temp_layout.setContentsMargins(
+        0, 0, 1, 20
+    )  # determines spacing between widgets
+    temp_layout.addWidget(label, 0, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+    # temp_layout.addStretch(100)
+    temp_layout.addWidget(button, 0, 1, alignment=Qt.AlignmentFlag.AlignRight)
     temp_widget.setLayout(temp_layout)
     return temp_widget
 
@@ -191,13 +248,13 @@ def check_csv(project_path, ext):
             "path",
             "notes",
         ]
-        df = pd.DataFrame(index=[], columns=cols)
+        df = DataFrame(index=[], columns=cols)
         filename_pattern_original = os.path.join(
             project_path, f"dataset/Original_size/Original/*{ext}"
         )
-        images_original = dask_image.imread.imread(filename_pattern_original)
+        images_original = dask_imread(filename_pattern_original)
         z, y, x = images_original.shape
-        record = pd.Series(
+        record = Series(
             [
                 os.path.basename(project_path),
                 "dataset",
@@ -243,7 +300,7 @@ def check_zarr(project_path, ext):
         filename_pattern_original = os.path.join(
             project_path, f"dataset/Original_size/Original/*{ext}"
         )
-        images_original = dask_image.imread.imread(filename_pattern_original)
+        images_original = dask_imread(filename_pattern_original)
         images_original.to_zarr(
             os.path.join(project_path, f"dataset/Original_size/Original.zarr")
         )
@@ -350,9 +407,11 @@ def load_images(dir_or_path, filetype="", as_folder: bool = False):
         raise ValueError("If loading as a folder, filetype must be specified")
 
     if as_folder:
-        images_original = dask_image.imread.imread(filename_pattern_original)
+        images_original = dask_imread(filename_pattern_original)
     else:
-        images_original = tifffile.imread(filename_pattern_original)
+        images_original = tfl_imread(
+            filename_pattern_original
+        )  # tifffile imread
 
     return images_original
 

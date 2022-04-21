@@ -6,7 +6,9 @@ from magicgui import magicgui
 from magicgui.widgets import Container
 from magicgui.widgets import Slider
 from qtpy.QtCore import Qt
+from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QLayout
 from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QSpinBox
@@ -43,6 +45,16 @@ class Cropping(BasePlugin):
         self.btn_start = QPushButton("Start", self)
         self.btn_start.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn_start.clicked.connect(self.start)
+
+        self.crop_label_choice = QCheckBox("Crop labels as well ?")
+        self.crop_label_choice.setSizePolicy(
+            QSizePolicy.Fixed, QSizePolicy.Fixed
+        )
+        self.crop_label_choice.clicked.connect(self.toggle_label_path)
+        self.lbl_label.setVisible(False)
+        self.btn_label.setVisible(False)
+
+        self.dock_widgets = []  # container of docked widgets for removal
 
         def make_sizebox_container(ax):
 
@@ -83,12 +95,27 @@ class Cropping(BasePlugin):
 
         self.build()
 
+    def toggle_label_path(self):
+        if self.crop_label_choice:
+            self.lbl_label.setVisible(True)
+            self.btn_label.setVisible(True)
+        else:
+            self.lbl_label.setVisible(False)
+            self.btn_label.setVisible(False)
+
     def build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
+
         vbox = QVBoxLayout()
+        vbox.setContentsMargins(0, 0, 1, 11)
+        vbox.setSizeConstraint(QLayout.SetFixedSize)
 
         vbox.addWidget(
             utils.combine_blocks(self.btn_image, self.lbl_image),
+            alignment=Qt.AlignmentFlag.AlignLeft,
+        )
+        vbox.addWidget(
+            self.crop_label_choice,
             alignment=Qt.AlignmentFlag.AlignLeft,
         )
         vbox.addWidget(
@@ -120,7 +147,10 @@ class Cropping(BasePlugin):
             vbox.addWidget(self.btntest, alignment=Qt.AlignmentFlag.AlignLeft)
         ##################################################################
 
-        self.setLayout(vbox)
+        utils.make_scrollable(
+            vbox, self, min_wh=[180, 100], base_wh=[180, 600]
+        )
+        # self.setLayout(vbox)
         # self.show()
         # self._viewer.window.add_dock_widget(self, name="Crop utility", area="right")
 
@@ -129,8 +159,9 @@ class Cropping(BasePlugin):
     def run_test(self):
 
         self.filetype = self.filetype_choice.currentText()
+        self.as_folder = self.file_handling_box.isChecked()
 
-        if self.file_handling_box.isChecked():
+        if self.as_folder:
             self.image_path = (
                 "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
             )
@@ -146,17 +177,18 @@ class Cropping(BasePlugin):
         viewer = self._viewer
 
         time = utils.get_date_time()
-        if self.filetype == ".tif":
+        if not self.as_folder:
             if viewer.layers["cropped"] is not None:
                 im_filename = os.path.basename(self.image_path).split(".")[0]
-                im_dir = os.path.split(self.image_path)[0]
+                im_dir = os.path.split(self.image_path)[0] + "/cropped"
+                os.makedirs(im_dir, exist_ok=True)
                 viewer.layers["cropped"].save(
                     im_dir + "/" + im_filename + "_cropped_" + time + ".tif"
                 )
 
             if viewer.layers["cropped_labels"] is not None:
-                im_filename = os.path.basename(self.image_path).split(".")[0]
-                im_dir = os.path.split(self.image_path)[0]
+                im_filename = os.path.basename(self.label_path).split(".")[0]
+                im_dir = os.path.split(self.label_path)[0]
                 name = (
                     im_dir
                     + "/"
@@ -168,19 +200,17 @@ class Cropping(BasePlugin):
                 dat = viewer.layers["cropped_labels"].data
                 imwrite(name, data=dat)
 
-        elif self.filetype == ".png":
+        else:
             if viewer.layers["cropped"] is not None:
                 im_filename = os.path.basename(self.image_path).split(".")[0]
                 im_dir = os.path.split(self.image_path)[0]
-                # TODO : change save behav. depending on filetype ? could use save_stack
-
                 dat = viewer.layers["cropped"].data
                 dir_name = im_dir + "/cropped_" + time
                 utils.save_stack(dat, dir_name, filetype=self.filetype)
             if viewer.layers["cropped_labels"] is not None:
 
                 im_filename = os.path.basename(self.image_path).split(".")[0]
-                im_dir = os.path.split(self.image_path)[0]
+                im_dir = os.path.split(self.label_path)[0]
 
                 dir_name = im_dir + "/label_cropped_" + time
                 dat = viewer.layers["cropped_labels"].data
@@ -190,13 +220,13 @@ class Cropping(BasePlugin):
         """Launches cropping process by loading the files from the chosen folders,
         and adds control widgets to the napari Viewer for moving the cropped volume.
         """
-
+        self.as_folder = self.file_handling_box.isChecked()
         self.filetype = self.filetype_choice.currentText()
         self.image = utils.load_images(
-            self.image_path, self.filetype, self.file_handling_box.isChecked()
+            self.image_path, self.filetype, self.as_folder
         )
         self.labels = utils.load_images(
-            self.label_path, self.filetype, self.file_handling_box.isChecked()
+            self.label_path, self.filetype, self.as_folder
         )
 
         vw = self._viewer
@@ -216,14 +246,22 @@ class Cropping(BasePlugin):
         def save_widget():
             return self.quicksave()
 
-        self._viewer.window.add_dock_widget(save_widget, name="", area="left")
+        save = self._viewer.window.add_dock_widget(
+            save_widget, name="", area="left"
+        )
+        self.dock_widgets.append(save)
 
         self.add_crop_sliders()
 
     def close(self):
         """Can be re-implemented in children classes"""
+        if len(self.dock_widgets) != 0:
+            [
+                self._viewer.window.remove_dock_widget(w)
+                for w in self.dock_widgets
+            ]
+
         self._viewer.window.remove_dock_widget(self)
-        self._viewer.window.remove_dock_widget("all")
 
     def add_crop_sliders(self):
 
@@ -302,7 +340,8 @@ class Cropping(BasePlugin):
         container_widget = Container(layout="vertical")
         container_widget.extend(sliders)
         # vw.window.add_dock_widget([spinbox, container_widget], area="right")
-        vw.window.add_dock_widget(container_widget, area="right")
+        wdgts = vw.window.add_dock_widget(container_widget, area="right")
+        self.dock_widgets.append(wdgts)
         # TEST : trying to dynamically change the size of the cropped volume
         # BROKEN for now
         # @spinbox.changed.connect
