@@ -10,11 +10,12 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
+
 # MONAI
 from monai.data import DataLoader
-from monai.data import PatchDataset
 from monai.data import decollate_batch
 from monai.data import pad_list_data_collate
+from monai.data import PatchDataset
 from monai.losses import DiceCELoss
 from monai.losses import DiceFocalLoss
 from monai.losses import DiceLoss
@@ -37,6 +38,7 @@ from monai.transforms import RandShiftIntensityd
 from monai.transforms import RandSpatialCropSamplesd
 from monai.transforms import SpatialPadd
 from napari.qt.threading import thread_worker
+
 # Qt
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QComboBox
@@ -160,9 +162,7 @@ class Trainer(ModelFramework):
         #######################
         #######################
         if results_path == "":
-            self.results_path = os.path.dirname(
-                os.path.realpath(__file__)
-            ) + str(Path("/models/saved_weights"))
+            self.results_path = "C:/Users/Cyril/Desktop/test/models"
         else:
             self.results_path = results_path
 
@@ -320,19 +320,19 @@ class Trainer(ModelFramework):
 
         model_tab_layout.addWidget(
             utils.combine_blocks(self.filetype_choice, self.lbl_filetype),
-            alignment=Qt.AlignmentFlag.AlignLeft,
+            alignment=utils.LEFT_AL,
         )  # file extension
 
         model_tab_layout.addWidget(
             utils.combine_blocks(self.btn_image_files, self.lbl_image_files),
-            alignment=Qt.AlignmentFlag.AlignLeft,
+            alignment=utils.LEFT_AL,
         )  # volumes
         if self.data_path != "":
             self.lbl_image_files.setText(self.data_path)
 
         model_tab_layout.addWidget(
             utils.combine_blocks(self.btn_label_files, self.lbl_label_files),
-            alignment=Qt.AlignmentFlag.AlignLeft,
+            alignment=utils.LEFT_AL,
         )  # labels
         if self.label_path != "":
             self.lbl_label_files.setText(self.label_path)
@@ -343,31 +343,31 @@ class Trainer(ModelFramework):
 
         model_tab_layout.addWidget(
             utils.combine_blocks(self.btn_result_path, self.lbl_result_path),
-            alignment=Qt.AlignmentFlag.AlignLeft,
+            alignment=utils.LEFT_AL,
         )  # results folder
         if self.results_path != "":
             self.lbl_result_path.setText(self.results_path)
 
         model_tab_layout.addWidget(
             utils.combine_blocks(self.model_choice, self.lbl_model_choice),
-            alignment=Qt.AlignmentFlag.AlignLeft,
+            alignment=utils.LEFT_AL,
         )  # model choice
 
         model_tab_layout.addWidget(
-            self.lbl_sample_choice, alignment=Qt.AlignmentFlag.AlignLeft
+            self.lbl_sample_choice, alignment=utils.LEFT_AL
         )
         model_tab_layout.addWidget(
-            self.sample_choice, alignment=Qt.AlignmentFlag.AlignLeft
+            self.sample_choice, alignment=utils.LEFT_AL
         )  # number of samples
         # TODO add transfo tab and add there ?
         utils.add_blank(self, model_tab_layout)
 
         model_tab_layout.addWidget(
-            self.btn_next, alignment=Qt.AlignmentFlag.AlignLeft
+            self.btn_next, alignment=utils.LEFT_AL
         )  # next
         utils.add_blank(self, model_tab_layout)
         model_tab_layout.addWidget(
-            self.btn_close, alignment=Qt.AlignmentFlag.AlignLeft
+            self.btn_close, alignment=utils.LEFT_AL
         )  # close
 
         #####################
@@ -380,7 +380,7 @@ class Trainer(ModelFramework):
 
         train_tab_layout.addWidget(
             utils.combine_blocks(self.loss_choice, self.lbl_loss_choice),
-            alignment=Qt.AlignmentFlag.AlignLeft,
+            alignment=utils.LEFT_AL,
         )  # loss choice
 
         spinbox_spacing = 110
@@ -389,13 +389,13 @@ class Trainer(ModelFramework):
             utils.combine_blocks(
                 self.batch_choice, self.lbl_batch_choice, spinbox_spacing
             ),
-            alignment=Qt.AlignmentFlag.AlignLeft,
+            alignment=utils.LEFT_AL,
         )  # batch size
         train_tab_layout.addWidget(
             utils.combine_blocks(
                 self.epoch_choice, self.lbl_epoch_choice, spinbox_spacing
             ),
-            alignment=Qt.AlignmentFlag.AlignLeft,
+            alignment=utils.LEFT_AL,
         )  # epochs
         train_tab_layout.addWidget(
             utils.combine_blocks(
@@ -403,17 +403,17 @@ class Trainer(ModelFramework):
                 self.lbl_val_interv_choice,
                 spinbox_spacing,
             ),
-            alignment=Qt.AlignmentFlag.AlignLeft,
+            alignment=utils.LEFT_AL,
         )  # validation interval
 
         utils.add_blank(self, train_tab_layout)
 
         train_tab_layout.addWidget(
-            self.btn_prev, alignment=Qt.AlignmentFlag.AlignLeft
+            self.btn_prev, alignment=utils.LEFT_AL
         )  # previous
         utils.add_blank(self, train_tab_layout)
         train_tab_layout.addWidget(
-            self.btn_start, alignment=Qt.AlignmentFlag.AlignLeft
+            self.btn_start, alignment=utils.LEFT_AL
         )  # start
 
         self.setSizePolicy(
@@ -472,8 +472,13 @@ class Trainer(ModelFramework):
         Returns: Returns empty immediately if the file paths are not set correctly.
 
         """
+        self.print_and_log("Starting...")
+        self.print_and_log("*" * 20)
 
         if not self.check_ready():  # issues a warning if not ready
+            err = "Aborting, please set all required paths"
+            self.print_and_log(err)
+            raise ValueError(err)
             return
 
         if self.worker is not None:
@@ -489,45 +494,77 @@ class Trainer(ModelFramework):
             self.val_interval = self.val_interval_choice.value()
             self.data = self.create_train_dataset_dict()
             self.max_epochs = self.epoch_choice.value()
-            self.btn_close.setVisible(False)
 
-            self.worker = self.train()
+            model_dict = {
+                "class": self.get_model(self.model_choice.currentText()),
+                "name": self.model_choice.currentText(),
+            }
+
+            self.worker = self.train(
+                device=self.get_device(),
+                model_dict=model_dict,
+                data_dicts=self.data,
+                max_epochs=self.max_epochs,
+                loss_function=self.get_loss(self.loss_choice.currentText()),
+                val_interval=self.val_interval,
+                batch_size=self.batch_size,
+                results_path=self.results_path,
+                num_samples=self.num_samples,
+                logger=lambda text: self.worker_print_and_log(self, text),
+            )
 
             self.worker.start()
+            self.btn_close.setVisible(False)
 
-            self.worker.started.connect(lambda: self.on_start())
+            self.worker.started.connect(self.on_start)
 
             self.worker.yielded.connect(
                 lambda data: self.on_yield(data, widget=self)
             )
-            self.worker.finished.connect(lambda: self.on_finish())
+            self.worker.finished.connect(self.on_finish)
 
-            self.worker.errored.connect(lambda: print("Worker error"))
+            self.worker.errored.connect(self.on_error)
 
         if self.worker.is_running:
-            print("Stop request, waiting for next validation step...")
-            self.btn_start.setText("Stopping... Please wait")
+            self.print_and_log(
+                f"Stop requested at {utils.get_time()}. \nWaiting for next validation step..."
+            )
+            self.btn_start.setText("Stopping... Please wait for next saving")
             self.worker.quit()
         else:
             # self.worker.start()
             self.btn_start.setText("Running...  Click to stop")
 
     def on_start(self):
-        print("\nWorker is running...")
 
-        progress_dock = self._viewer.window.add_dock_widget(
-            self.progress, name="Progress", area="left"
-        )
-        self.dock_widgets.append(progress_dock)
-        self.progress.setVisible(True)
-        self.progress.setValue(0)
+        self.display_status_report()
+
+        self.print_and_log(f"Worker started at {utils.get_time()}")
+        self.print_and_log("\nWorker is running...")
+        self.print_and_log(f"Saving results to : {self.results_path}")
 
     def on_finish(self):
-        print("\nWorker finished")
+        self.print_and_log(f"\nWorker finished at {utils.get_time()}")
+
+        self.print_and_log(f"Saving last loss plot at {self.results_path}")
+        if self.canvas is not None:
+            self.canvas.figure.savefig(
+                (
+                    self.results_path
+                    + f"/final_metric_plots_{utils.get_date_time()}.png"
+                ),
+                format="png",
+            )
+        self.print_and_log("Done")
+        self.print_and_log("*" * 10)
 
         self.btn_start.setText("Start")
         self.btn_close.setVisible(True)
-        self.clean_cache
+        self.clean_cache()
+
+    def on_error(self):
+        self.print_and_log(f"WORKER ERRORED at {utils.get_time()}")
+        self.clean_cache()
 
     @staticmethod
     def on_yield(data, widget):
@@ -541,17 +578,17 @@ class Trainer(ModelFramework):
 
     def clean_cache(self):
         """Attempts to clear memory after training"""
-        del self.worker
+        # del self.worker
         self.worker = None
-        if self.model is not None:
-            del self.model
-            self.model = None
+        # if self.model is not None:
+        #     del self.model
+        #     self.model = None
 
-        del self.data
+        # del self.data
         # self.close()
         # del self
         if self.get_device(show=False).type == "cuda":
-            self.empty_cuda_cache
+            self.empty_cuda_cache()
 
     def plot_loss(self, loss, dice_metric):
         """Creates two subplots to plot the training loss and validation metric"""
@@ -563,6 +600,8 @@ class Trainer(ModelFramework):
             x = [i + 1 for i in range(len(loss))]
             y = loss
             self.train_loss_plot.plot(x, y)
+            self.train_loss_plot.set_ylim(0, 1)
+
             # update metrics
             x = [self.val_interval * (i + 1) for i in range(len(dice_metric))]
             y = dice_metric
@@ -571,6 +610,7 @@ class Trainer(ModelFramework):
             dice_min = np.max(y)
 
             self.dice_metric_plot.plot(x, y, zorder=1)
+            self.dice_metric_plot.set_ylim(0, 1)
             self.dice_metric_plot.set_title(
                 "Validation metric : Mean Dice coefficient"
             )
@@ -589,13 +629,16 @@ class Trainer(ModelFramework):
             )
             self.canvas.draw_idle()
 
-            self.canvas.figure.savefig(
-                (
-                    self.results_path
-                    + f"/metric_plots_{utils.get_date_time()}.png"
-                ),
-                format="png",
-            )
+            plot_path = self.results_path + "/Loss_plots"
+            os.makedirs(plot_path, exist_ok=True)
+            if self.canvas is not None:
+                self.canvas.figure.savefig(
+                    (
+                        plot_path
+                        + f"/checkpoint_metric_plots_{utils.get_date_time()}.png"
+                    ),
+                    format="png",
+                )
 
     def update_loss_plot(self, loss, metric):
         """
@@ -614,7 +657,7 @@ class Trainer(ModelFramework):
             bckgrd_color = (0, 0, 0, 0)  # '#262930'
             with plt.style.context("dark_background"):
 
-                self.canvas = FigureCanvas(Figure(figsize=(7, 1.5)))
+                self.canvas = FigureCanvas(Figure(figsize=(10, 1.5)))
                 # loss plot
                 self.train_loss_plot = self.canvas.figure.add_subplot(1, 2, 1)
                 # dice metric validation plot
@@ -624,7 +667,7 @@ class Trainer(ModelFramework):
                 self.dice_metric_plot.set_facecolor(bckgrd_color)
                 self.train_loss_plot.set_facecolor(bckgrd_color)
 
-                self.canvas.figure.tight_layout()
+                # self.canvas.figure.tight_layout()
 
                 self.canvas.figure.subplots_adjust(
                     left=0.1,
@@ -635,7 +678,9 @@ class Trainer(ModelFramework):
                     hspace=0,
                 )
 
-            self.canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+            self.canvas.setSizePolicy(
+                QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
+            )
 
             # tab_index = self.addTab(self.canvas, "Loss plot")
             # self.setCurrentIndex(tab_index)
@@ -652,23 +697,26 @@ class Trainer(ModelFramework):
 
                 self.plot_loss(loss, metric)
 
+    @staticmethod
     @thread_worker
-    def train(self):  # TODO : turn into static
+    def train(
+        device,
+        model_dict,
+        data_dicts,
+        max_epochs,
+        loss_function,
+        val_interval,
+        batch_size,
+        results_path,
+        num_samples,
+        logger,
+    ):  # TODO : turn into static
         """Trains the Pytorch model for num_epochs, with the selected model and data, using the chosen batch size,
         validation interval, loss function, and number of samples."""
 
-        device = self.get_device()
-        model_id = self.get_model(self.model_choice.currentText())
-        model_name = self.model_choice.currentText()
-        data_dicts = self.data
-        max_epochs = self.max_epochs
-        loss_function = self.get_loss(self.loss_choice.currentText())
-        val_interval = self.val_interval_choice.value()
-        batch_size = self.batch_choice.value()
-        results_path = self.results_path
-        num_samples = self.sample_choice.value()
-
-        model = model_id.get_net()
+        model_name = model_dict["name"]
+        model_class = model_dict["class"]
+        model = model_class.get_net()
         model = model.to(device)
 
         epoch_loss_values = []
@@ -756,7 +804,7 @@ class Trainer(ModelFramework):
         val_loader = DataLoader(val_ds, batch_size=batch_size, num_workers=4)
 
         # TODO : more parameters/flexibility
-        post_pred = AsDiscrete(threshold=0.3)
+        post_pred = EnsureType()  # AsDiscrete(threshold=0.3)
         post_label = EnsureType()
 
         optimizer = torch.optim.Adam(model.parameters(), 1e-3)
@@ -769,26 +817,24 @@ class Trainer(ModelFramework):
 
         weights_filename = f"{model_name}_best_metric" + f"_{time}.pth"
         if device.type == "cuda":
-            print("\nUsing GPU :")
-            print(torch.cuda.get_device_name(0))
+            logger("\nUsing GPU :")
+            logger(torch.cuda.get_device_name(0))
         else:
-            print("Using CPU")
+            logger("Using CPU")
 
         for epoch in range(max_epochs):
-            print("-" * 10)
-            print(f"Epoch {epoch + 1}/{max_epochs}")
+            logger("-" * 10)
+            logger(f"Epoch {epoch + 1}/{max_epochs}")
             if device.type == "cuda":
-                print("Memory Usage:")
-                print(
-                    "Allocated:",
-                    round(torch.cuda.memory_allocated(0) / 1024**3, 1),
-                    "GB",
+                logger("Memory Usage:")
+                alloc_mem = round(
+                    torch.cuda.memory_allocated(0) / 1024**3, 1
                 )
-                print(
-                    "Cached:   ",
-                    round(torch.cuda.memory_reserved(0) / 1024**3, 1),
-                    "GB",
+                reserved_mem = round(
+                    torch.cuda.memory_reserved(0) / 1024**3, 1
                 )
+                logger(f"Allocated: {alloc_mem}GB")
+                logger(f"Cached: {reserved_mem}GB")
 
             model.train()
             epoch_loss = 0
@@ -800,18 +846,21 @@ class Trainer(ModelFramework):
                     batch_data["label"].to(device),
                 )
                 optimizer.zero_grad()
-                outputs = model_id.get_output(model, inputs)
+                outputs = ( # AsDiscrete(threshold=0.7)(
+                    model_class.get_output(model, inputs)
+                )
+                print(f"OUT : {outputs.shape}")
                 loss = loss_function(outputs, labels)
                 loss.backward()
                 optimizer.step()
                 epoch_loss += loss.detach().item()
-                print(
-                    f"{step}/{len(train_ds) // train_loader.batch_size}, "
+                logger(
+                    f"* {step}/{len(train_ds) // train_loader.batch_size}, "
                     f"Train_loss: {loss.detach().item():.4f}"
                 )
             epoch_loss /= step
             epoch_loss_values.append(epoch_loss)
-            print(f"Epoch {epoch + 1} Average loss: {epoch_loss:.4f}")
+            logger(f"-> Epoch: {epoch + 1}, Average loss: {epoch_loss:.4f}")
 
             if (epoch + 1) % val_interval == 0:
                 model.eval()
@@ -822,7 +871,7 @@ class Trainer(ModelFramework):
                             val_data["label"].to(device),
                         )
 
-                        val_outputs = model_id.get_validation(
+                        val_outputs = model_class.get_validation(
                             model, val_inputs
                         )
 
@@ -862,15 +911,14 @@ class Trainer(ModelFramework):
                             model.state_dict(),
                             os.path.join(results_path, weights_filename),
                         )
-                        print("Saved best metric model")
-                    print(
-                        f"Current epoch: {epoch + 1} Current mean dice: {metric:.4f}"
+                        logger("Saved best metric model")
+                    logger(
+                        f"> Current epoch: {epoch + 1}, Current mean dice: {metric:.4f}"
                         f"\nBest mean dice: {best_metric:.4f} "
                         f"at epoch: {best_metric_epoch}"
                     )
-        print("=" * 10)
-        print("Done !")
-        print(
+        logger("=" * 10)
+        logger(
             f"Train completed, best_metric: {best_metric:.4f} "
             f"at epoch: {best_metric_epoch}"
         )
@@ -889,12 +937,3 @@ class Trainer(ModelFramework):
         # del best_metric_epoch
 
         # self.close()
-
-    def close(self):
-        """Close the widget and the loss plots, if any"""
-        if len(self.dock_widgets) != 0:
-            [
-                self._viewer.window.remove_dock_widget(w)
-                for w in self.dock_widgets
-            ]
-        self._viewer.window.remove_dock_widget(self)

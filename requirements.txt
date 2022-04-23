@@ -66,6 +66,7 @@ napari-plugin-engine==0.1.9
 napari-svg==0.1.5
 nest-asyncio==1.5.4
 networkx==2.7
+nibabel
 npe2==0.1.2
 numpy==1.22.2
 numpydoc==1.2

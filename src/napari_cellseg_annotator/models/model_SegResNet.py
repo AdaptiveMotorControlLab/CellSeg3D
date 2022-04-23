@@ -1,4 +1,5 @@
 from monai.networks.nets import SegResNetVAE
+from monai.transforms import AsDiscrete
 
 
 def get_net():
@@ -13,8 +14,9 @@ def get_weights_file():
 
 
 def get_output(model, input):
-    out = model(input)
-    return out[0]
+    out = model(input)[0]
+    # out = AsDiscrete(threshold=0.7)(out)
+    return out
 
 
 def get_validation(model, val_inputs):

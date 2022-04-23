@@ -4,17 +4,23 @@ import warnings
 
 import napari
 import torch
+from qtpy.QtGui import QTextCursor
 from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QLayout
 from qtpy.QtWidgets import QLineEdit
+from qtpy.QtWidgets import QProgressBar
 from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QTabWidget
+from qtpy.QtWidgets import QTextEdit
+from qtpy.QtWidgets import QVBoxLayout
+from qtpy.QtWidgets import QWidget
 
 from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
 from napari_cellseg_annotator.models import model_SegResNet as SegResNet
 from napari_cellseg_annotator.models import model_VNet as VNet
+from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
 
 warnings.formatwarning = utils.format_Warning
 
@@ -32,6 +38,8 @@ class ModelFramework(QTabWidget):
         * A button to choose a results folder to save results in (e.g. dataset/inference_results)
 
         * A file extension choice to choose which file types to load in the data folders
+
+        * A docked module with a log, a progress bar and a save button (see :py:func:`~display_status_report`)
 
         Args:
             viewer (napari.viewer.Viewer): viewer to load the widget in
@@ -66,6 +74,10 @@ class ModelFramework(QTabWidget):
             self.results_path,
         ]
 
+        self.docked_widgets = []
+
+        self.worker = None
+
         #######################################################
         # interface
         self.btn_image_files = QPushButton("Open", self)
@@ -99,6 +111,7 @@ class ModelFramework(QTabWidget):
         self.lbl_result_path.setReadOnly(True)
         self.btn_result_path.clicked.connect(self.load_results_path)
 
+        # TODO : implement custom model
         self.btn_model_path = QPushButton("Open", self)
         self.btn_model_path.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.lbl_model_path = QLineEdit("Model directory", self)
@@ -126,7 +139,121 @@ class ModelFramework(QTabWidget):
         self.btn_close = QPushButton("Close", self)
         self.btn_close.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn_close.clicked.connect(self.close)
-        #######################################################
+
+        ###################################################
+        # status report docked widget
+        self.container_report = QWidget()
+        self.container_report.setSizePolicy(
+            QSizePolicy.Fixed, QSizePolicy.Minimum
+        )
+        self.container_docked = False  # check if already docked
+
+        self.progress = QProgressBar(self.container_report)
+        self.progress.setVisible(False)
+        """Widget for the progress bar"""
+
+        self.log = QTextEdit(self.container_report)
+        self.log.setVisible(False)
+        """Read-only display for process-related info. Use only for info destined to user."""
+
+        self.btn_save_log = QPushButton(
+            "Save log with results", self.container_report
+        )
+        self.btn_save_log.clicked.connect(self.save_log)
+        self.btn_save_log.setVisible(False)
+        #####################################################
+
+    def save_log(self):
+        """Saves the worker's log to disk at self.results_path when called"""
+        log = self.log.toPlainText()
+
+        if len(log) != 0:
+            with open(
+                self.results_path + f"/Log_report_{utils.get_date_time()}.txt",
+                "x",
+            ) as f:
+                f.write(log)
+                f.close()
+        else:
+            warnings.warn(
+                "No job has been completed yet, please start one or re-open the log window."
+            )
+
+    def print_and_log(self, text):
+        """Utility used to both print to terminal and log action to self.log. Use only for important user info.
+
+        Args:
+            text (str): Text to be printed and logged
+
+        """
+        print(text)
+        self.log.moveCursor(QTextCursor.End)
+        self.log.insertPlainText(f"\n{text}")
+
+    @staticmethod
+    def worker_print_and_log(widget, text):
+        """Utility used to both print to terminal and log action to self.log, modified to be usable in a static worker.
+        Use only for important user info.
+
+             Args:
+                 widget (QWidget): widget with a self.log (QTextEdit) attribute
+
+                 text (str): Text to be printed and logged
+
+        """
+        # TODO : fix warning for cursor instance
+        print(text)
+        widget.log.moveCursor(QTextCursor.End)
+        widget.log.insertPlainText(f"\n{text}")
+
+    def display_status_report(self):
+        """Adds a text log, a progress bar and a "save log" button on the left side of the viewer (usually when starting a worker)"""
+
+        if self.container_report is None or self.log is None:
+            warnings.warn(
+                "Status report widget has been closed. Trying to re-instantiate..."
+            )
+            self.container_report = QWidget()
+            self.container_report.setSizePolicy(
+                QSizePolicy.Fixed, QSizePolicy.Minimum
+            )
+            self.progress = QProgressBar(self.container_report)
+            self.log = QTextEdit(self.container_report)
+            self.btn_save_log = QPushButton(
+                "Save log with results", self.container_report
+            )
+            self.btn_save_log.clicked.connect(self.save_log)
+
+            self.container_docked = False  # check if already docked
+
+        if self.container_docked:
+            self.log.clear()
+        elif not self.container_docked:
+            temp_layout = QVBoxLayout()
+            temp_layout.setContentsMargins(10, 5, 5, 5)
+
+            temp_layout.addWidget(  # DO NOT USE alignment here, it will break auto-resizing
+                self.progress  # , alignment=utils.CENTER_AL
+            )
+            temp_layout.addWidget(self.log)  # , alignment=utils.CENTER_AL
+            temp_layout.addWidget(
+                self.btn_save_log  # , alignment=utils.CENTER_AL
+            )
+            self.container_report.setLayout(temp_layout)
+
+            report_dock = self._viewer.window.add_dock_widget(
+                self.container_report,
+                name="Status report",
+                area="left",
+                allowed_areas=["left"],
+            )
+            self.docked_widgets.append(report_dock)
+            self.container_docked = True
+
+        self.log.setVisible(True)
+        self.progress.setVisible(True)
+        self.btn_save_log.setVisible(True)
+        self.progress.setValue(0)
 
     def update_default(self):
         """Update default path for smoother file dialogs"""
@@ -157,11 +284,12 @@ class ModelFramework(QTabWidget):
     def create_train_dataset_dict(self):
         """Creates data dictionary for MONAI transforms and training.
 
-        **Keys:**
+        Returns: a dict with the following :
+            **Keys:**
 
-        * "image": image
+            * "image": image
 
-        * "label" : corresponding label
+            * "label" : corresponding label
         """
 
         print("Images :\n")
@@ -237,16 +365,21 @@ class ModelFramework(QTabWidget):
             print(torch.__version__)
         return device
 
-    @staticmethod
-    def empty_cuda_cache():
-        # TODO move to utils ?
-        print("Empyting cache...")
-        torch.cuda.empty_cache()
-        print("Cache emptied")
+    def empty_cuda_cache(self):
+        """Empties the cuda cache if the device is a cuda device"""
+        if self.get_device(show=False).type == "cuda":
+            print("Empyting cache...")
+            torch.cuda.empty_cache()
+            print("Cache emptied")
 
     def build(self):
         raise NotImplementedError("Should be defined in children classes")
 
     def close(self):
-        """Removes widget from viewer"""
+        """Close the widget and the docked widgets, if any"""
+        if len(self.docked_widgets) != 0:
+            [
+                self._viewer.window.remove_dock_widget(w)
+                for w in self.docked_widgets
+            ]
         self._viewer.window.remove_dock_widget(self)

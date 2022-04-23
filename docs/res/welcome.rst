@@ -20,6 +20,48 @@ From here you can access the guides on the several modules available for your ta
 * Cropping utility (3D) : :ref:`cropping_module_guide`
 
 
+Requirements
+--------------------------------------------
+
+.. important::
+    A **CUDA-capable GPU** is not needed but **very strongly recommended**, especially for training.
+
+Requires manual installation of pytorch and some optional dependencies of MONAI.
+
+* For Pytorch, please see `PyTorch's website`_ for installation instructions, with or without CUDA depending on your hardware.
+
+* If you get errors from MONAI regarding missing readers, please see `MONAI's optional dependencies`_ page for instructions on getting the readers required by your images.
+
+.. _MONAI's optional dependencies: https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies
+.. _PyTorch's website: https://pytorch.org/get-started/locally/
+
+Installation
+--------------------------------------------
+
+You can install `napari-cellseg-annotator` via [pip]:
+
+    ``pip install napari-cellseg-annotator``
+
+For local installation, please run:
+
+    ``pip install -e .``
+
+
+
+Usage
+--------------------------------------------
+
+To use the plugin, please run:
+
+    ``napari``
+
+Then go into Plugins > napari-cellseg-annotator, and choose which tool to use.
+
+- **Review**: This module allows you to review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.
+- **Infer**: This module allows you to use pre-trained segmentation algorithms on volumes to automatically label cells.
+- **Train**:  This module allows you to train segmentation algorithms from labeled volumes.
+- **Crop utility**: This module allows you to crop your volumes and labels dynamically, by selecting a fixed size volume and moving it around the image.
+
 
 
 

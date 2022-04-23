@@ -21,6 +21,15 @@ and review the napari docs for plugin developers:
 https://napari.org/plugins/stable/index.html
 -->
 
+## Requirements
+
+Requires manual installation of pytorch and MONAI.
+For Pytorch, please see [PyTorch]'s website for installation instructions.
+A CUDA-capable GPU is not needed but very strongly recommended, especially for training.
+
+If you get errors from MONAI regarding missing readers, please see [MONAI's optional dependencies] page for instructions on getting the readers required by your images.
+
+
 ## Installation
 
 You can install `napari-cellseg-annotator` via [pip]:
@@ -42,9 +51,9 @@ napari
 ```
 Then go into Plugins > napari-cellseg-annotator, and choose which tool to use.
 
-- **Reviewer**: This module allows you to review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.
-- **Inferer**: This module allows you to use pre-trained segmentation algorithms on volumes to automatically label cells.
-- **Trainer**:  This module allows you to train segmentation algorithms from labeled volumes.
+- **Review**: This module allows you to review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.
+- **Infer**: This module allows you to use pre-trained segmentation algorithms on volumes to automatically label cells.
+- **Train**:  This module allows you to train segmentation algorithms from labeled volumes.
 - **Crop utility**: This module allows you to crop your volumes and labels dynamically, by selecting a fixed size volume and moving it around the image.
 
 ## Contributing
@@ -76,3 +85,6 @@ If you encounter any problems, please [file an issue] along with a detailed desc
 [tox]: https://tox.readthedocs.io/en/latest/
 [pip]: https://pypi.org/project/pip/
 [PyPI]: https://pypi.org/
+
+[PyTorch]: https://pytorch.org/get-started/locally/
+[MONAI's optional dependencies]: https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies

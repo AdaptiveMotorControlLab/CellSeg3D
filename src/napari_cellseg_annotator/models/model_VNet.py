@@ -1,5 +1,7 @@
 from monai.inferers import sliding_window_inference
 from monai.networks.nets import VNet
+from monai.transforms import AsDiscrete
+from monai.transforms import LabelToMask
 
 
 def get_net():
@@ -7,12 +9,14 @@ def get_net():
 
 
 def get_weights_file():
-    return "dice_VNet.pth"
-    # return "VNet.pth"
+    # return "dice_VNet.pth"
+    return "VNet_40e.pth"
 
 
 def get_output(model, input):
-    return model(input)
+    out = model(input)
+    # out = AsDiscrete(threshold=0.7)(out)
+    return out
 
 
 def get_validation(model, val_inputs):

@@ -9,6 +9,8 @@ from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
+from napari_cellseg_annotator import utils
+
 GUI_MAXIMUM_WIDTH = 225
 GUI_MAXIMUM_HEIGHT = 350
 GUI_MINIMUM_HEIGHT = 300
@@ -46,12 +48,10 @@ class Datamanager(QWidget):
 
         io_panel = QWidget()
         io_layout = QHBoxLayout()
-        io_layout.addWidget(
-            self.button, alignment=Qt.AlignmentFlag.AlignAbsolute
-        )
+        io_layout.addWidget(self.button, alignment=utils.ABS_AL)
         io_panel.setLayout(io_layout)
         io_panel.setMaximumWidth(GUI_MAXIMUM_WIDTH)
-        layout.addWidget(io_panel, alignment=Qt.AlignmentFlag.AlignAbsolute)
+        layout.addWidget(io_panel, alignment=utils.ABS_AL)
 
         # set the layout
         # layout.setAlignment(Qt.AlignTop)

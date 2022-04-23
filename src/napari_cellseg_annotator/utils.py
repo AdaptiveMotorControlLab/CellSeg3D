@@ -8,8 +8,8 @@ import numpy as np
 from dask_image.imread import imread as dask_imread
 from pandas import DataFrame
 from pandas import Series
-from qtpy.QtCore import QUrl
 from qtpy.QtCore import Qt
+from qtpy.QtCore import QUrl
 from qtpy.QtGui import QDesktopServices
 from qtpy.QtWidgets import QFileDialog
 from qtpy.QtWidgets import QGridLayout
@@ -27,8 +27,21 @@ from tqdm import tqdm
 """
 utils.py
 ====================================
-Definition of utility functions
+Definitions of utility functions and variables
 """
+
+###############
+# aliases
+LEFT_AL = Qt.AlignmentFlag.AlignLeft
+"""Alias for Qt.AlignmentFlag.AlignLeft, to use in addWidget"""
+RIGHT_AL = Qt.AlignmentFlag.AlignRight
+"""Alias for Qt.AlignmentFlag.AlignRight, to use in addWidget"""
+CENTER_AL = Qt.AlignmentFlag.AlignCenter
+"""Alias for Qt.AlignmentFlag.AlignCenter, to use in addWidget"""
+ABS_AL = Qt.AlignmentFlag.AlignAbsolute
+"""Alias for Qt.AlignmentFlag.AlignAbsolute, to use in addWidget"""
+###############
+# functions
 
 
 def make_scrollable(
@@ -73,31 +86,45 @@ def make_scrollable(
     containing_widget.setLayout(layout)
 
 
-def combine_blocks(button, label, min_spacing=0):
+def combine_blocks(button, label, min_spacing=0, horizontal=True):
     """Combines two QWidget objects and puts them side by side (label on the left and button on the right)
 
     Args:
-        button (QWidget): Button widget to be displayed right of the label
-        label (QWidget): Label widget to be added on the left of button
+        horizontal (bool): whether to stack widgets laterally or horizontally
+        button (QWidget): Button widget to be displayed right/below of the label
+        label (QWidget): Label widget to be added on the left/above of button
         min_spacing (int): Minimum spacing between the two widgets (from the start of label to the start of button)
 
     Returns:
         QWidget: new QWidget containing the merged widget and label
     """
     temp_widget = QWidget()
-    temp_widget.setSizePolicy(
-        QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
-    )
+
     temp_layout = QGridLayout()
-    temp_layout.setColumnMinimumWidth(0, min_spacing)
+    if horizontal:
+        temp_widget.setSizePolicy(
+            QSizePolicy.MinimumExpanding, QSizePolicy.Maximum
+        )
+        temp_layout.setColumnMinimumWidth(0, min_spacing)
+        c1, c2, r1, r2 = 0, 1, 0, 0
+        temp_layout.setContentsMargins(
+            11, 3, 11, 11
+        )  # determines spacing between widgets
+    else:
+        temp_widget.setSizePolicy(
+            QSizePolicy.Maximum, QSizePolicy.MinimumExpanding
+        )
+        temp_layout.setRowMinimumHeight(0, min_spacing)
+        c1, c2, r1, r2 = 0, 0, 0, 1
+        temp_layout.setContentsMargins(
+            5, 5, 5, 5
+        )  # determines spacing between widgets
     # temp_layout.setColumnMinimumWidth(1,100)
-    # temp_layout.setSizeConstraint(QLayout.SetNoConstraint)
-    temp_layout.setContentsMargins(
-        0, 0, 1, 20
-    )  # determines spacing between widgets
-    temp_layout.addWidget(label, 0, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+    # temp_layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
+
+    temp_layout.addWidget(label, r1, c1, alignment=LEFT_AL)
     # temp_layout.addStretch(100)
-    temp_layout.addWidget(button, 0, 1, alignment=Qt.AlignmentFlag.AlignRight)
+    temp_layout.addWidget(button, r2, c2, alignment=LEFT_AL)
     temp_widget.setLayout(temp_layout)
     return temp_widget
 
@@ -137,13 +164,11 @@ def normalize_y(image):
     return image
 
 
-def get_padding_dim(image_shape, anisotropy_factor=None):
+def get_padding_dim(image_shape, anisotropy_factor=None, logger=print):
     """
     Finds the nearest and superior power of two for each image dimension to pad it for CNN processing,
     for either 2D or 3D images. E.g. an image size of 30x40x100 will result in a padding of 32x64x128.
     Shows a warning if the padding dimensions are very large.
-
-    TODO : move to utils !
 
     Args:
         image_shape (torch.size): an array of the dimensions of the image in D/H/W if 3D or H/W if 2D
@@ -155,11 +180,12 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
 
     dims = len(image_shape)
     print(f"Dimension of data for padding : {dims}D")
-    # print(f"Image shape is : {image_shape}")
+    print(f"Image shape is : {image_shape}")
     if dims != 2 and dims != 3:
-        raise ValueError(
-            "Please check the dimensions of the input, only 2 or 3-dimensional data is supported currently"
-        )
+        error = "Please check the dimensions of the input, only 2 or 3-dimensional data is supported currently"
+        if logger != print:
+            logger(error)
+        raise ValueError(error)
 
     for i in range(dims):
         n = 0
@@ -180,23 +206,23 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
 
         padding.append(pad)
 
-    print(f"Padding dims are {padding}")
+    logger(f"Padding sizes are {padding}")
     return padding
 
 
 def anisotropy_zoom_factor(resolutions):
-    """
+    """Computes a zoom factor to correct anisotropy, based on resolutions
 
     Args:
-        resolutions:
+        resolutions: array for resolution (float) in microns for each axis
 
-    Returns:
+    Returns: an array with the corresponding zoom factors for each axis
 
     """
     # TODO docs
 
     base = min(resolutions)
-    zoom_factors = [res / base for res in resolutions]
+    zoom_factors = [base / res for res in resolutions]
     return zoom_factors
 
 
@@ -342,6 +368,14 @@ def open_file_dialog(
 
 
 def parse_default_path(possible_paths):
+    """Returns a default path based on a vector of paths, some of which might be empty.
+
+    Args:
+        possible_paths: array of paths
+
+    Returns: the chosen default path
+
+    """
 
     # print("paths :")
     # print(default_paths)
@@ -362,6 +396,11 @@ def get_date_time():
     return "{:%Y_%m_%d_%H_%M_%S}".format(datetime.now())
 
 
+def get_time():
+    """Get time in the following format : hour_minute_second"""
+    return "{:%H:%M:%S}".format(datetime.now())
+
+
 def add_blank(widget, layout):
     """
     Adds a space between consecutive buttons/labels in a layout when building a widget
@@ -370,19 +409,17 @@ def add_blank(widget, layout):
         widget (QWidget): widget to add blank in
         layout (QLayout): layout to add blank in
     """
-    layout.addWidget(
-        QLabel("", widget), alignment=Qt.AlignmentFlag.AlignAbsolute
-    )
+    layout.addWidget(QLabel("", widget), alignment=ABS_AL)
 
 
 def load_images(dir_or_path, filetype="", as_folder: bool = False):
     """Loads the images in ``directory``, with different behaviour depending on ``filetype`` and ``as_folder``
 
-    * If ``as_folder`` is False, will load the path as a single 3D **.tif** image.
+    * If ``as_folder`` is **False**, will load the path as a single 3D **.tif** image.
 
-    * If True, it will try to load a folder as stack of images. In this case ``filetype`` must be specified.
+    * If **True**, it will try to load a folder as stack of images. In this case ``filetype`` must be specified.
 
-    If True :
+    If **True** :
 
         * For ``filetype == ".tif"`` : loads all tif files in the folder as a 3D dataset.
 

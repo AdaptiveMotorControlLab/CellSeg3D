@@ -20,7 +20,7 @@ choose whether you want to load a single 3D **.tif** image or a folder of 2D ima
 Folders can be stacks of either .png or .tif files, ideally numbered with the index of the slice at the end.
 
 .. note::
-    Only single .tif files or one folder of several .png or .tif (stack of 2D images) are supported.
+    Only single 3D **.tif** files or one folder of several **.png** or **.tif** (stack of 2D images) are supported.
 
 You can the choose the size of the cropped volume, which will be constant throughout the process; make sure it is correct beforehand.
 Support for dynamically changing the crop size might be added in the future.

@@ -9,9 +9,33 @@ open_url
 **************************************
 .. autofunction:: napari_cellseg_annotator.utils::open_url
 
+make_scrollable
+**************************************
+.. autofunction:: napari_cellseg_annotator.utils::make_scrollable
+
 combine_blocks
 **************************************
 .. autofunction:: napari_cellseg_annotator.utils::combine_blocks
+
+get_date_time
+**************************************
+.. autofunction:: napari_cellseg_annotator.utils::get_date_time
+
+get_time
+**************************************
+.. autofunction:: napari_cellseg_annotator.utils::get_time
+
+add_blank
+**************************************
+.. autofunction:: napari_cellseg_annotator.utils::add_blank
+
+save_stack
+**************************************
+.. autofunction:: napari_cellseg_annotator.utils::save_stack
+
+get_padding_dim
+**************************************
+.. autofunction:: napari_cellseg_annotator.utils::get_padding_dim
 
 normalize_x
 **************************************
@@ -29,9 +53,6 @@ load_images
 **************************************
 .. autofunction:: napari_cellseg_annotator.utils::load_images
 
-get_date_time
-**************************************
-.. autofunction:: napari_cellseg_annotator.utils::get_date_time
 
 open_file_dialog
 **************************************

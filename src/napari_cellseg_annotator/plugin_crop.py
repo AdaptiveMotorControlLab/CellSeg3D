@@ -99,7 +99,7 @@ class Cropping(BasePlugin):
         self.build()
 
     def toggle_label_path(self):
-        if self.crop_label_choice:
+        if self.crop_label_choice.isChecked():
             self.lbl_label.setVisible(True)
             self.btn_label.setVisible(True)
         else:
@@ -115,39 +115,38 @@ class Cropping(BasePlugin):
 
         vbox.addWidget(
             utils.combine_blocks(self.btn_image, self.lbl_image),
-            alignment=Qt.AlignmentFlag.AlignLeft,
+            alignment=utils.LEFT_AL,
         )
         vbox.addWidget(
             self.crop_label_choice,
-            alignment=Qt.AlignmentFlag.AlignLeft,
-        )
-        vbox.addWidget(
-            utils.combine_blocks(self.btn_label, self.lbl_label),
-            alignment=Qt.AlignmentFlag.AlignLeft,
-        )
+            alignment=utils.LEFT_AL,
+        )  # whether to crop labels or no
+        self.crop_label_choice.toggle()
+        self.toggle_label_path()
 
         vbox.addWidget(
-            self.file_handling_box, alignment=Qt.AlignmentFlag.AlignLeft
+            utils.combine_blocks(self.btn_label, self.lbl_label),
+            alignment=utils.LEFT_AL,
         )
-        vbox.addWidget(
-            self.filetype_choice, alignment=Qt.AlignmentFlag.AlignLeft
-        )
+
+        vbox.addWidget(self.file_handling_box, alignment=utils.LEFT_AL)
+        vbox.addWidget(self.filetype_choice, alignment=utils.LEFT_AL)
         self.filetype_choice.setVisible(False)
         utils.add_blank(self, vbox)
         [
-            vbox.addWidget(widget, alignment=Qt.AlignmentFlag.AlignLeft)
-            for list in zip(self.box_widgets, self.box_lbl)
+            vbox.addWidget(widget, alignment=utils.LEFT_AL)
+            for list in zip(self.box_lbl, self.box_widgets)
             for widget in list
         ]
         utils.add_blank(self, vbox)
-        vbox.addWidget(self.btn_start, alignment=Qt.AlignmentFlag.AlignLeft)
-        vbox.addWidget(self.btn_close, alignment=Qt.AlignmentFlag.AlignLeft)
+        vbox.addWidget(self.btn_start, alignment=utils.LEFT_AL)
+        vbox.addWidget(self.btn_close, alignment=utils.LEFT_AL)
 
         ##################################################################
         # remove once done ?
 
         if self.test_button:
-            vbox.addWidget(self.btntest, alignment=Qt.AlignmentFlag.AlignLeft)
+            vbox.addWidget(self.btntest, alignment=utils.LEFT_AL)
         ##################################################################
 
         utils.make_scrollable(
@@ -169,7 +168,7 @@ class Cropping(BasePlugin):
             self.image_path = (
                 "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
             )
-            if self.crop_labels :
+            if self.crop_labels:
                 self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
         else:
             self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
@@ -198,7 +197,7 @@ class Cropping(BasePlugin):
                     im_dir + "/" + im_filename + "_cropped_" + time + ".tif"
                 )
 
-            if self.labels is not None:
+            if self.label is not None:
                 im_filename = os.path.basename(self.label_path).split(".")[0]
                 im_dir = os.path.split(self.label_path)[0]
                 name = (
@@ -213,7 +212,7 @@ class Cropping(BasePlugin):
                 imwrite(name, data=dat)
 
         else:
-            if self.image_layer is not None:
+            if self.image is not None:
 
                 # im_filename = os.path.basename(self.image_path).split(".")[0]
                 im_dir = os.path.split(self.image_path)[0]
@@ -222,7 +221,7 @@ class Cropping(BasePlugin):
                 dir_name = im_dir + "/volume_cropped_" + time
                 utils.save_stack(dat, dir_name, filetype=self.filetype)
 
-            if self.label_layer is not None:
+            if self.label is not None:
 
                 # im_filename = os.path.basename(self.image_path).split(".")[0]
                 im_dir = os.path.split(self.label_path)[0]
@@ -233,7 +232,9 @@ class Cropping(BasePlugin):
 
     def check_ready(self):
 
-        if self.image_path == "" or (self.crop_labels and self.label_path == ""):
+        if self.image_path == "" or (
+            self.crop_labels and self.label_path == ""
+        ):
             warnings.warn("Please set all required paths correctly")
             return False
         return True
@@ -298,8 +299,6 @@ class Cropping(BasePlugin):
     def add_crop_sliders(self):
 
         vw = self._viewer
-
-
 
         image_stack = np.array(self.image)
 
@@ -374,7 +373,9 @@ class Cropping(BasePlugin):
         ]
         for axis, slider in enumerate(sliders):
             slider.changed.connect(
-                lambda event, axis=axis: set_slice(axis, event, self.crop_labels)
+                lambda event, axis=axis: set_slice(
+                    axis, event, self.crop_labels
+                )
             )
         container_widget = Container(layout="vertical")
         container_widget.extend(sliders)

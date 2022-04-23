@@ -68,6 +68,7 @@ class Controller(QWidget):
         container.setLayout(layout)
         self.viewer.window.add_dock_widget(container, area="left")
 
+
 def create_connected_widget(viewer):
     """Builds a widget that can control a function in another thread."""
     w = Controller(viewer)
