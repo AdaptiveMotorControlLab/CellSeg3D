@@ -99,6 +99,8 @@ def create_connected_widget(viewer):
     def on_yield(x, test):
         # Receive events and update widget progress
         w.progress_bar.setValue(100 * x // steps)
+        w.log.insertPlainText(str(x)+"\n")
+        w.log.verticalScrollBar().setValue(w.log.verticalScrollBar().maximum())
         w.status.setText(f"worker yielded {x}")
         print(test)
 

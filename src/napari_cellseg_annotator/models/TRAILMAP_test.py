@@ -4,8 +4,9 @@ from torch import nn
 
 
 def get_weights_file():
-    return "TMP_TEST_40e.pth"
-    # return "TMP_test.pth"
+    # return "TMP_TEST_40e.pth"
+    return "TRAILMAP_DFl_best.pth.pth"
+
 
 
 def get_net():
@@ -52,18 +53,18 @@ class TRAILMAP_test(nn.Module):
         # print(bridge.shape)
 
         up5 = self.up5(torch.cat([conv3, bridge], 1))  # l3
-        print("up")
-        print(up5.shape)
+        # print("up")
+        # print(up5.shape)
         up6 = self.up6(torch.cat([up5, conv2], 1))  # l2
-        print(up6.shape)
+        # print(up6.shape)
         up7 = self.up7(torch.cat([up6, conv1], 1))  # l1
-        print(up7.shape)
+        # print(up7.shape)
 
         up8 = self.up8(torch.cat([up7, conv0], 1))  # l1
-        print(up8.shape)
+        # print(up8.shape)
         out = self.out(up8)
-        print("out:")
-        print(out.shape)
+        # print("out:")
+        # print(out.shape)
         return out
 
     def encoderBlock(self, in_ch, out_ch, kernel_size, padding="same"):

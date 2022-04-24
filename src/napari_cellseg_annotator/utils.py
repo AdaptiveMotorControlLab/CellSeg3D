@@ -36,6 +36,8 @@ LEFT_AL = Qt.AlignmentFlag.AlignLeft
 """Alias for Qt.AlignmentFlag.AlignLeft, to use in addWidget"""
 RIGHT_AL = Qt.AlignmentFlag.AlignRight
 """Alias for Qt.AlignmentFlag.AlignRight, to use in addWidget"""
+HCENTER_AL = Qt.AlignmentFlag.AlignHCenter
+"""Alias for Qt.AlignmentFlag.AlignHCenter, to use in addWidget"""
 CENTER_AL = Qt.AlignmentFlag.AlignCenter
 """Alias for Qt.AlignmentFlag.AlignCenter, to use in addWidget"""
 ABS_AL = Qt.AlignmentFlag.AlignAbsolute

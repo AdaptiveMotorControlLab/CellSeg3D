@@ -4,7 +4,6 @@ import warnings
 
 import napari
 import torch
-from qtpy.QtGui import QTextCursor
 from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLineEdit
@@ -186,7 +185,7 @@ class ModelFramework(QTabWidget):
 
         """
         print(text)
-        self.log.moveCursor(QTextCursor.End)
+        self.log.verticalScrollBar().setValue(self.log.verticalScrollBar().maximum())
         self.log.insertPlainText(f"\n{text}")
 
     @staticmethod
@@ -202,7 +201,8 @@ class ModelFramework(QTabWidget):
         """
         # TODO : fix warning for cursor instance
         print(text)
-        widget.log.moveCursor(QTextCursor.End)
+        # widget.log.moveCursor(QTextCursor.End)
+        widget.log.verticalScrollBar().setValue(widget.log.verticalScrollBar().maximum())
         widget.log.insertPlainText(f"\n{text}")
 
     def display_status_report(self):

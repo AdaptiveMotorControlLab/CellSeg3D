@@ -5,7 +5,7 @@ from pathlib import Path
 import napari
 import numpy as np
 import torch
-from monai.data import CacheDataset
+from monai.data import Dataset
 from monai.data import DataLoader
 # MONAI
 from monai.inferers import sliding_window_inference
@@ -630,7 +630,7 @@ class Inferer(ModelFramework):
         # LabelFilter(applied_labels=[0]),
 
         logging("\nLoading dataset...")
-        inference_ds = CacheDataset(
+        inference_ds = Dataset(
             data=images_dict, transform=load_transforms
         )
         inference_loader = DataLoader(

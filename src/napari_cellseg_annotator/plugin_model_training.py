@@ -22,6 +22,7 @@ from monai.losses import FocalLoss
 from monai.losses import GeneralizedDiceLoss
 from monai.losses import TverskyLoss
 from monai.metrics import DiceMetric
+from monai.transforms import AsDiscrete
 from monai.transforms import Compose
 from monai.transforms import EnsureChannelFirstd
 from monai.transforms import EnsureType
@@ -187,7 +188,7 @@ class Trainer(ModelFramework):
             "Focal loss": FocalLoss(),
             "Dice-Focal loss": DiceFocalLoss(sigmoid=True, lambda_dice=0.5),
             "Generalized Dice loss": GeneralizedDiceLoss(sigmoid=True),
-            "DiceCELoss": DiceCELoss(sigmoid=True),
+            "DiceCELoss": DiceCELoss(sigmoid=True, lambda_ce=0.5),
             "Tversky loss": TverskyLoss(sigmoid=True),
         }
         """Dict of loss functions"""
@@ -468,8 +469,6 @@ class Trainer(ModelFramework):
         Returns: Returns empty immediately if the file paths are not set correctly.
 
         """
-        self.print_and_log("Starting...")
-        self.print_and_log("*" * 20)
 
         if not self.check_ready():  # issues a warning if not ready
             err = "Aborting, please set all required paths"
@@ -484,6 +483,8 @@ class Trainer(ModelFramework):
                 self.worker.start()
                 self.btn_start.setText("Running... Click to stop")
         else:
+            self.print_and_log("Starting...")
+            self.print_and_log("*" * 20)
 
             self.num_samples = self.sample_choice.value()
             self.batch_size = self.batch_choice.value()
@@ -774,7 +775,7 @@ class Trainer(ModelFramework):
                 EnsureTyped(keys=["image", "label"]),
             ]
         )
-
+        logger("Loading dataset...")
         train_ds = PatchDataset(
             data=train_files,
             transform=train_transforms,
@@ -798,10 +799,7 @@ class Trainer(ModelFramework):
         )
 
         val_loader = DataLoader(val_ds, batch_size=batch_size, num_workers=4)
-
-        # TODO : more parameters/flexibility
-        post_pred = EnsureType()  # AsDiscrete(threshold=0.3)
-        post_label = EnsureType()
+        logger("\nDone")
 
         optimizer = torch.optim.Adam(model.parameters(), 1e-3)
         dice_metric = DiceMetric(include_background=True, reduction="mean")
@@ -809,9 +807,9 @@ class Trainer(ModelFramework):
         best_metric = -1
         best_metric_epoch = -1
 
-        time = utils.get_date_time()
+        # time = utils.get_date_time()
 
-        weights_filename = f"{model_name}_best_metric" + f"_{time}.pth"
+
         if device.type == "cuda":
             logger("\nUsing GPU :")
             logger(torch.cuda.get_device_name(0))
@@ -845,7 +843,7 @@ class Trainer(ModelFramework):
                 outputs = model_class.get_output(  # AsDiscrete(threshold=0.7)(
                     model, inputs
                 )
-                print(f"OUT : {outputs.shape}")
+                # print(f"OUT : {outputs.shape}")
                 loss = loss_function(outputs, labels)
                 loss.backward()
                 optimizer.step()
@@ -875,6 +873,11 @@ class Trainer(ModelFramework):
 
                         labs = decollate_batch(val_labels)
 
+                        # TODO : more parameters/flexibility
+                        post_pred = Compose(AsDiscrete(threshold=0.3),EnsureType())  #
+                        post_label = EnsureType()
+
+
                         val_outputs = [
                             post_pred(res_tensor) for res_tensor in pred
                         ]
@@ -899,6 +902,8 @@ class Trainer(ModelFramework):
                         "val_metrics": val_metric_values,
                     }
                     yield train_report
+
+                    weights_filename = f"{model_name}_best_metric" + f"_{epoch}_epoch.pth"
 
                     if metric > best_metric:
                         best_metric = metric
