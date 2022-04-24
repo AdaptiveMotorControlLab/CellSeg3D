@@ -10,12 +10,11 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
-
 # MONAI
 from monai.data import DataLoader
+from monai.data import PatchDataset
 from monai.data import decollate_batch
 from monai.data import pad_list_data_collate
-from monai.data import PatchDataset
 from monai.losses import DiceCELoss
 from monai.losses import DiceFocalLoss
 from monai.losses import DiceLoss
@@ -23,7 +22,6 @@ from monai.losses import FocalLoss
 from monai.losses import GeneralizedDiceLoss
 from monai.losses import TverskyLoss
 from monai.metrics import DiceMetric
-from monai.transforms import AsDiscrete
 from monai.transforms import Compose
 from monai.transforms import EnsureChannelFirstd
 from monai.transforms import EnsureType
@@ -38,9 +36,7 @@ from monai.transforms import RandShiftIntensityd
 from monai.transforms import RandSpatialCropSamplesd
 from monai.transforms import SpatialPadd
 from napari.qt.threading import thread_worker
-
 # Qt
-from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLayout
@@ -846,8 +842,8 @@ class Trainer(ModelFramework):
                     batch_data["label"].to(device),
                 )
                 optimizer.zero_grad()
-                outputs = ( # AsDiscrete(threshold=0.7)(
-                    model_class.get_output(model, inputs)
+                outputs = model_class.get_output(  # AsDiscrete(threshold=0.7)(
+                    model, inputs
                 )
                 print(f"OUT : {outputs.shape}")
                 loss = loss_function(outputs, labels)

@@ -5,10 +5,8 @@ from pathlib import Path
 import napari
 import numpy as np
 import torch
-from tifffile import imwrite
+from monai.data import CacheDataset
 from monai.data import DataLoader
-from monai.data import Dataset
-
 # MONAI
 from monai.inferers import sliding_window_inference
 from monai.transforms import AsDiscrete
@@ -20,7 +18,6 @@ from monai.transforms import LoadImaged
 from monai.transforms import SpatialPadd
 from monai.transforms import Zoom
 from napari.qt.threading import thread_worker
-
 # Qt
 from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QDoubleSpinBox
@@ -32,7 +29,7 @@ from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QSpinBox
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
-
+from tifffile import imwrite
 
 # local
 from napari_cellseg_annotator import utils
@@ -245,8 +242,8 @@ class Inferer(ModelFramework):
         tab_layout.setContentsMargins(0, 0, 1, 1)
         tab_layout.setSizeConstraint(QLayout.SetFixedSize)
 
-        L, T, R, B = 7, 20, 3, 11  # margins for group boxes
-
+        L, T, R, B = 7, 20, 7, 11  # margins for group boxes
+        #################################
         #################################
         io_group = QGroupBox("I/O")
         io_group.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -266,11 +263,32 @@ class Inferer(ModelFramework):
             utils.combine_blocks(self.btn_result_path, self.lbl_result_path),
             alignment=utils.LEFT_AL,
         )  # out folder
+
         io_group.setLayout(io_layout)
         tab_layout.addWidget(io_group, alignment=utils.LEFT_AL)
         #################################
         utils.add_blank(self, tab_layout)
+        #################################
+        #################################
+        model_param_group = QGroupBox("Model choice")
+        model_param_group.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        model_param_layout = QVBoxLayout()
+        model_param_layout.setContentsMargins(L, T, R, B)
+        model_param_layout.setSizeConstraint(QLayout.SetFixedSize)
 
+        model_param_layout.addWidget(
+            # utils.combine_blocks(
+            self.model_choice,  # , self.lbl_model_choice, horizontal=False),
+            alignment=utils.LEFT_AL,
+        )  # model choice
+        self.lbl_model_choice.setVisible(False)
+
+        model_param_group.setLayout(model_param_layout)
+        tab_layout.addWidget(model_param_group)
+        #################################
+        utils.add_blank(self, tab_layout)
+        #################################
+        #################################
         post_proc_group = QGroupBox("Post-processing")
         post_proc_group.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         post_proc_layout = QVBoxLayout()
@@ -299,12 +317,13 @@ class Inferer(ModelFramework):
         post_proc_layout.addWidget(
             self.thresholding_count, alignment=utils.CENTER_AL
         )
-        self.thresholding_count.setVisible(False)  # threesholding
+        self.thresholding_count.setVisible(False)  # thresholding
 
         post_proc_group.setLayout(post_proc_layout)
         tab_layout.addWidget(post_proc_group, alignment=utils.LEFT_AL)
         ###################################
         utils.add_blank(self, tab_layout)
+        ###################################
         ###################################
         display_opt_group = QGroupBox("Display options")
         display_opt_group.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -312,10 +331,6 @@ class Inferer(ModelFramework):
         display_opt_layout.setContentsMargins(L, T, R, B)
         display_opt_layout.setSizeConstraint(QLayout.SetFixedSize)
 
-        display_opt_layout.addWidget(
-            utils.combine_blocks(self.model_choice, self.lbl_model_choice),
-            alignment=utils.LEFT_AL,
-        )  # model choice
         display_opt_layout.addWidget(
             self.view_checkbox,  # utils.combine_blocks(self.view_checkbox, self.lbl_view),
             alignment=utils.LEFT_AL,
@@ -343,17 +358,17 @@ class Inferer(ModelFramework):
         display_opt_group.setLayout(display_opt_layout)
         tab_layout.addWidget(display_opt_group)
         ###################################
-        ###################################
         utils.add_blank(self, tab_layout)
+        ###################################
+        ###################################
         tab_layout.addWidget(self.btn_start, alignment=utils.LEFT_AL)
         tab_layout.addWidget(self.btn_close, alignment=utils.LEFT_AL)
-
+        ###################################
         utils.make_scrollable(
             containing_widget=tab,
             contained_layout=tab_layout,
             base_wh=[100, 500],
         )
-        # tab.setLayout(tab_layout)
         self.addTab(tab, "Inference")
 
     def start(self):
@@ -451,13 +466,13 @@ class Inferer(ModelFramework):
                 self.worker.finished.connect(self.empty_cuda_cache)
             self.btn_close.setVisible(False)
 
-        if self.worker.is_running: # if worker is running, tries to stop
+        if self.worker.is_running:  # if worker is running, tries to stop
             self.print_and_log(
                 "Stop request, waiting for next inference & saving to occur..."
             )
             self.btn_start.setText("Stopping...")
             self.worker.quit()
-        else: # once worker is started, update buttons
+        else:  # once worker is started, update buttons
             self.worker.start()
             self.btn_start.setText("Running...  Click to stop")
 
@@ -467,10 +482,9 @@ class Inferer(ModelFramework):
 
         self.show_res = self.view_checkbox.isChecked()
         self.show_original = self.show_original_checkbox.isChecked()
-
         self.print_and_log(f"Worker started at {utils.get_time()}")
-        self.print_and_log("Worker is running...")
         self.print_and_log(f"Saving results to : {self.results_path}")
+        self.print_and_log("Worker is running...")
 
     def on_error(self):
         """Catches errors and tries to clean up. TODO : upgrade"""
@@ -486,7 +500,6 @@ class Inferer(ModelFramework):
         """Catches finished signal from worker, resets workspace for next run."""
         self.print_and_log(f"\nWorker finished at {utils.get_time()}")
         self.print_and_log("*" * 20)
-        self.print_and_log("Done")
         self.btn_start.setText("Start")
         self.btn_close.setVisible(True)
 
@@ -526,7 +539,7 @@ class Inferer(ModelFramework):
                 original_layer = viewer.add_image(
                     data["original"],
                     colormap="inferno",
-                    name=f"original_{image_id}_{model_name}",
+                    name=f"original_{image_id}",
                     scale=zoom,
                     opacity=0.7,
                 )
@@ -590,6 +603,7 @@ class Inferer(ModelFramework):
         # if zoom is not None :
         #     pad = utils.get_padding_dim(check, anisotropy_factor=zoom)
         # else:
+        logging("\nChecking dimensions...")
         pad = utils.get_padding_dim(check, logger=logging)
         # print(pad)
 
@@ -615,20 +629,28 @@ class Inferer(ModelFramework):
 
         # LabelFilter(applied_labels=[0]),
 
-        inference_ds = Dataset(data=images_dict, transform=load_transforms)
+        logging("\nLoading dataset...")
+        inference_ds = CacheDataset(
+            data=images_dict, transform=load_transforms
+        )
         inference_loader = DataLoader(
             inference_ds, batch_size=1, num_workers=1
         )
-
+        logging("Done")
         # print(f"wh dir : {WEIGHTS_DIR}")
         # print(weights)
+        logging("\nLoading weights...")
         model.load_state_dict(
             torch.load(os.path.join(WEIGHTS_DIR, weights), map_location=device)
         )
+        logging("Done")
 
         model.eval()
         with torch.no_grad():
             for i, inf_data in enumerate(inference_loader):
+
+                logging("-" * 10)
+                logging(f"Inference started on image {i+1}...")
 
                 inputs = inf_data["image"]
                 # print(inputs.shape)
@@ -698,6 +720,7 @@ class Inferer(ModelFramework):
 
                 original = np.array(inf_data["image"]).astype(np.float32)
 
+                # logging(f"Inference completed on image {i+1}")
                 yield {
                     "image_id": i + 1,
                     "original": original,
