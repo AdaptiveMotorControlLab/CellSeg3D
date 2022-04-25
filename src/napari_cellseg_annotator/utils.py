@@ -166,7 +166,7 @@ def normalize_y(image):
     return image
 
 
-def get_padding_dim(image_shape, anisotropy_factor=None, logger=print):
+def get_padding_dim(image_shape, anisotropy_factor=None):
     """
     Finds the nearest and superior power of two for each image dimension to pad it for CNN processing,
     for either 2D or 3D images. E.g. an image size of 30x40x100 will result in a padding of 32x64x128.
@@ -185,8 +185,7 @@ def get_padding_dim(image_shape, anisotropy_factor=None, logger=print):
     print(f"Image shape is : {image_shape}")
     if dims != 2 and dims != 3:
         error = "Please check the dimensions of the input, only 2 or 3-dimensional data is supported currently"
-        if logger != print:
-            logger(error)
+        print(error)
         raise ValueError(error)
 
     for i in range(dims):
@@ -208,7 +207,7 @@ def get_padding_dim(image_shape, anisotropy_factor=None, logger=print):
 
         padding.append(pad)
 
-    logger(f"Padding sizes are {padding}")
+    print(f"Padding sizes are {padding}")
     return padding
 
 

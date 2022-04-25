@@ -48,7 +48,7 @@ class Datamanager(QWidget):
 
         io_panel = QWidget()
         io_layout = QHBoxLayout()
-        io_layout.addWidget(self.button, alignment=utils.ABS_AL)
+        io_layout.addWidget(self.button)  # , alignment=utils.ABS_AL)
         io_panel.setLayout(io_layout)
         io_panel.setMaximumWidth(GUI_MAXIMUM_WIDTH)
         layout.addWidget(io_panel, alignment=utils.ABS_AL)

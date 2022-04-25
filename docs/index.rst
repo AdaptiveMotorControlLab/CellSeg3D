@@ -22,6 +22,7 @@ Welcome to napari-cellseg-annotator's documentation!
     res/plugin_crop
     res/launch_review
     res/model_framework
+    res/model_workers
     res/plugin_model_inference
     res/plugin_model_training
     res/utils

@@ -5,7 +5,7 @@ from torch import nn
 
 def get_weights_file():
     # return "TMP_TEST_40e.pth"
-    return "TRAILMAP_DFl_best.pth.pth"
+    return "TRAILMAP_DFl_best.pth"
 
 
 def get_net():
@@ -14,7 +14,7 @@ def get_net():
 
 def get_output(model, input):
     out = model(input)
-    # out = AsDiscrete(threshold=0.7)(out)
+
     return out
 
 

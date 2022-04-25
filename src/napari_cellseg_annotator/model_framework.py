@@ -1,6 +1,5 @@
 import glob
 import os
-import threading
 import warnings
 
 import napari
@@ -15,6 +14,8 @@ from qtpy.QtWidgets import QTabWidget
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
+from qtpy.QtCore import Signal
+
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.log_utility import Log
 from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
@@ -22,7 +23,6 @@ from napari_cellseg_annotator.models import model_SegResNet as SegResNet
 from napari_cellseg_annotator.models import model_VNet as VNet
 
 warnings.formatwarning = utils.format_Warning
-
 
 
 class ModelFramework(QTabWidget):
@@ -77,7 +77,7 @@ class ModelFramework(QTabWidget):
         self.docked_widgets = []
 
         self.worker = None
-        self.lock = threading.Lock()
+        self.signal_log = Signal(str)
 
         #######################################################
         # interface
@@ -164,6 +164,8 @@ class ModelFramework(QTabWidget):
         self.btn_save_log.setVisible(False)
         #####################################################
 
+    def send_log(self,text):
+        self.log.print_and_log(text)
     def save_log(self):
         """Saves the worker's log to disk at self.results_path when called"""
         log = self.log.toPlainText()

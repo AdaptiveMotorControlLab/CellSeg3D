@@ -11,10 +11,8 @@ Class : Inferer
 Methods
 **********************
 .. autoclass:: napari_cellseg_annotator.plugin_model_inference::Inferer
-   :members:  __init__, start, build,on_start,on_error,on_finish,on_yield,inference, create_inference_dict,check_ready,toggle_display_number,toggle_display_aniso,toggle_display_thresh, close
+   :members:  __init__, start, build,on_start,on_error,on_finish,on_yield,check_ready,toggle_display_number,toggle_display_aniso,toggle_display_thresh, close
    :noindex:
-
-
 
 
 

@@ -5,38 +5,21 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import napari
 import numpy as np
-import torch
+
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
+
 # MONAI
-from monai.data import DataLoader
-from monai.data import PatchDataset
-from monai.data import decollate_batch
-from monai.data import pad_list_data_collate
+
 from monai.losses import DiceCELoss
 from monai.losses import DiceFocalLoss
 from monai.losses import DiceLoss
 from monai.losses import FocalLoss
 from monai.losses import GeneralizedDiceLoss
 from monai.losses import TverskyLoss
-from monai.metrics import DiceMetric
-from monai.transforms import AsDiscrete
-from monai.transforms import Compose
-from monai.transforms import EnsureChannelFirstd
-from monai.transforms import EnsureType
-from monai.transforms import EnsureTyped
-from monai.transforms import LoadImaged
-from monai.transforms import Orientationd
-from monai.transforms import Rand3DElasticd
-from monai.transforms import RandAffined
-from monai.transforms import RandFlipd
-from monai.transforms import RandRotate90d
-from monai.transforms import RandShiftIntensityd
-from monai.transforms import RandSpatialCropSamplesd
-from monai.transforms import SpatialPadd
-from napari.qt.threading import thread_worker
+
 # Qt
 from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QLabel
@@ -48,8 +31,10 @@ from qtpy.QtWidgets import QSpinBox
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
+# local
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.model_framework import ModelFramework
+from napari_cellseg_annotator.model_workers import TrainingWorker
 
 
 class Trainer(ModelFramework):
@@ -65,10 +50,10 @@ class Trainer(ModelFramework):
         results_path="",
         model_index=0,
         loss_index=0,
-        epochs=10,
-        samples=15,
+        epochs=5,
+        samples=2,
         batch=1,
-        val_interval=2,
+        val_interval=1,
     ):
         """Creates a Trainer tab widget with the following functionalities :
 
@@ -180,7 +165,7 @@ class Trainer(ModelFramework):
         """At which epochs to perform validation. E.g. if 2, will run validation on epochs 2,4,6..."""
         self.model = None  # TODO : custom model loading ?
         self.worker = None
-        """Training worker for multithreading"""
+        """Training worker for multithreading, should be a TrainingWorker instance from :doc:model_workers.py"""
         self.data = None
 
         self.loss_dict = {
@@ -201,7 +186,6 @@ class Trainer(ModelFramework):
         """Plot for dice metric"""
         self.plot_dock = None
         """Docked widget with plots"""
-
 
         self.model_choice.setCurrentIndex(model_index)
 
@@ -448,6 +432,9 @@ class Trainer(ModelFramework):
             self.data_path = f_name
             self.lbl_dat.setText(self.data_path)
 
+    def send_log(self, text):
+        self.log.print_and_log(text)
+
     def start(self):
         """
         Initiates the :py:func:`train` function as a worker and does the following :
@@ -511,7 +498,7 @@ class Trainer(ModelFramework):
                 f"Notice : Saving results to : {self.results_path}"
             )
 
-            self.worker = self.train(
+            self.worker = TrainingWorker(
                 device=self.get_device(),
                 model_dict=model_dict,
                 data_dicts=self.data,
@@ -521,11 +508,11 @@ class Trainer(ModelFramework):
                 batch_size=self.batch_size,
                 results_path=self.results_path,
                 num_samples=self.num_samples,
-                log=self.log.print_and_log,
             )
 
-            self.worker.start()
             self.btn_close.setVisible(False)
+
+            self.worker.log_signal.connect(self.log.print_and_log)
 
             self.worker.started.connect(self.on_start)
 
@@ -543,11 +530,11 @@ class Trainer(ModelFramework):
             self.btn_start.setText("Stopping... Please wait for next saving")
             self.worker.quit()
         else:
-            # self.worker.start()
+            self.worker.start()
             self.btn_start.setText("Running...  Click to stop")
 
     def on_start(self):
-
+        """Catches started signal from worker"""
         if self.plot_dock is not None:
             self._viewer.window.remove_dock_widget(self.plot_dock)
             self.plot_dock = None
@@ -558,6 +545,7 @@ class Trainer(ModelFramework):
         self.log.print_and_log("\nWorker is running...")
 
     def on_finish(self):
+        """Catches finished signal from worker"""
         self.log.print_and_log(f"\nWorker finished at {utils.get_time()}")
 
         self.log.print_and_log(f"Saving last loss plot at {self.results_path}")
@@ -580,6 +568,7 @@ class Trainer(ModelFramework):
         # self.clean_cache()
 
     def on_error(self):
+        """Catches errored signal from worker"""
         self.log.print_and_log(f"WORKER ERRORED at {utils.get_time()}")
         self.worker = None
         self.empty_cuda_cache()
@@ -717,256 +706,10 @@ class Trainer(ModelFramework):
                 self.plot_loss(loss, metric)
 
     def reset_loss_plot(self):
-        if self.train_loss_plot is not None and self.dice_metric_plot is not None:
+        if (
+            self.train_loss_plot is not None
+            and self.dice_metric_plot is not None
+        ):
             with plt.style.context("dark_background"):
                 self.train_loss_plot.cla()
                 self.dice_metric_plot.cla()
-
-    @staticmethod
-    @thread_worker
-    def train(
-        device,
-        model_dict,
-        data_dicts,
-        max_epochs,
-        loss_function,
-        val_interval,
-        batch_size,
-        results_path,
-        num_samples,
-        log,
-    ):  # TODO : turn into static
-        """Trains the Pytorch model for num_epochs, with the selected model and data, using the chosen batch size,
-        validation interval, loss function, and number of samples."""
-
-
-        model_name = model_dict["name"]
-        model_class = model_dict["class"]
-        model = model_class.get_net()
-        model = model.to(device)
-
-        epoch_loss_values = []
-        val_metric_values = []
-
-        # TODO param : % of validation from training set
-        train_files, val_files = (
-            data_dicts[0:int(len(data_dicts) * 0.9)],
-            data_dicts[int(len(data_dicts) * 0.9):],
-        )
-        print("Training files :")
-        [print(f"{train_file}\n") for train_file in train_files]
-        print("*"*20)
-        print("*"*20)
-        print("Validation files :")
-        [print(f"{val_file}\n") for val_file in val_files]
-        # TODO : param stretch factor if anisotropic ?
-        # TODO : param ROI size
-        sample_loader = Compose(
-            [
-                LoadImaged(keys=["image", "label"]),
-                EnsureChannelFirstd(keys=["image", "label"]),
-                RandSpatialCropSamplesd(
-                    keys=["image", "label"],
-                    roi_size=(
-                        110,
-                        110,
-                        110,
-                    ),  # TODO multiply by axis_stretch_factor
-                    max_roi_size=(120, 120, 120),
-                    num_samples=num_samples,
-                ),
-                Orientationd(keys=["image", "label"], axcodes="PLI"),
-                SpatialPadd(
-                    keys=["image", "label"], spatial_size=(128, 128, 128)
-                ),
-                EnsureTyped(keys=["image", "label"]),
-            ]
-        )
-
-        train_transforms = Compose(  # TODO : figure out which ones ?
-            [
-                RandShiftIntensityd(keys=["image"], offsets=0.7),
-                Rand3DElasticd(
-                    keys=["image", "label"],
-                    sigma_range=(0.3, 0.7),
-                    magnitude_range=(0.3, 0.7),
-                ),
-                RandFlipd(keys=["image", "label"]),
-                RandRotate90d(keys=["image", "label"]),
-                RandAffined(
-                    keys=["image", "label"],
-                ),
-                EnsureTyped(keys=["image", "label"]),
-            ]
-        )
-
-        val_transforms = Compose(
-            [
-                # LoadImaged(keys=["image", "label"]),
-                # EnsureChannelFirstd(keys=["image", "label"]),
-                EnsureTyped(keys=["image", "label"]),
-            ]
-        )
-        log("Loading dataset...\n")
-        train_ds = PatchDataset(
-            data=train_files,
-            transform=train_transforms,
-            patch_func=sample_loader,
-            samples_per_image=num_samples,
-        )
-
-        train_loader = DataLoader(
-            train_ds,
-            batch_size=batch_size,
-            shuffle=True,
-            num_workers=4,
-            collate_fn=pad_list_data_collate,
-        )
-
-        val_ds = PatchDataset(
-            data=val_files,
-            transform=val_transforms,
-            patch_func=sample_loader,
-            samples_per_image=num_samples,
-        )
-
-        val_loader = DataLoader(val_ds, batch_size=batch_size, num_workers=4)
-        # log("\nDone")
-
-        optimizer = torch.optim.Adam(model.parameters(), 1e-3)
-        dice_metric = DiceMetric(include_background=True, reduction="mean")
-
-        best_metric = -1
-        best_metric_epoch = -1
-
-        # time = utils.get_date_time()
-
-        if device.type == "cuda":
-            log("\nUsing GPU :")
-            log(torch.cuda.get_device_name(0))
-        else:
-            log("Using CPU")
-
-        for epoch in range(max_epochs):
-            log("-" * 10)
-            log(f"Epoch {epoch + 1}/{max_epochs}")
-            if device.type == "cuda":
-                log("Memory Usage:")
-                alloc_mem = round(
-                    torch.cuda.memory_allocated(0) / 1024**3, 1
-                )
-                reserved_mem = round(
-                    torch.cuda.memory_reserved(0) / 1024**3, 1
-                )
-                log(f"Allocated: {alloc_mem}GB")
-                log(f"Cached: {reserved_mem}GB")
-
-            model.train()
-            epoch_loss = 0
-            step = 0
-            for batch_data in train_loader:
-                step += 1
-                inputs, labels = (
-                    batch_data["image"].to(device),
-                    batch_data["label"].to(device),
-                )
-                optimizer.zero_grad()
-                outputs = model_class.get_output(model, inputs)
-                # print(f"OUT : {outputs.shape}")
-                loss = loss_function(outputs, labels)
-                loss.backward()
-                optimizer.step()
-                epoch_loss += loss.detach().item()
-                log(
-                    f"* {step}/{len(train_ds) // train_loader.batch_size}, "
-                    f"Train_loss: {loss.detach().item():.4f}"
-                )
-            epoch_loss /= step
-            epoch_loss_values.append(epoch_loss)
-            log(f"Epoch: {epoch + 1}, Average loss: {epoch_loss:.4f}")
-
-            if (epoch + 1) % val_interval == 0:
-                model.eval()
-                with torch.no_grad():
-                    for val_data in val_loader:
-                        val_inputs, val_labels = (
-                            val_data["image"].to(device),
-                            val_data["label"].to(device),
-                        )
-
-                        val_outputs = model_class.get_validation(
-                            model, val_inputs
-                        )
-
-                        pred = decollate_batch(val_outputs)
-
-                        labs = decollate_batch(val_labels)
-
-                        # TODO : more parameters/flexibility
-                        post_pred = Compose(
-                            AsDiscrete(threshold=0.6), EnsureType()
-                        )  #
-                        post_label = EnsureType()
-
-                        val_outputs = [
-                            post_pred(res_tensor) for res_tensor in pred
-                        ]
-
-                        val_labels = [
-                            post_label(res_tensor) for res_tensor in labs
-                        ]
-
-                        # print(len(val_outputs))
-                        # print(len(val_labels))
-
-                        dice_metric(y_pred=val_outputs, y=val_labels)
-
-                    metric = dice_metric.aggregate().detach().item()
-                    dice_metric.reset()
-
-                    val_metric_values.append(metric)
-
-                    train_report = {
-                        "epoch": epoch,
-                        "losses": epoch_loss_values,
-                        "val_metrics": val_metric_values,
-                    }
-                    yield train_report
-
-                    weights_filename = (
-                        f"{model_name}_best_metric" + f"_epoch_{epoch}.pth"
-                    )
-
-                    if metric > best_metric:
-                        best_metric = metric
-                        best_metric_epoch = epoch + 1
-                        torch.save(
-                            model.state_dict(),
-                            os.path.join(results_path, weights_filename),
-                        )
-                        log("Saved best metric model")
-                    log(
-                        f"Current epoch: {epoch + 1}, Current mean dice: {metric:.4f}"
-                        f"\nBest mean dice: {best_metric:.4f} "
-                        f"at epoch: {best_metric_epoch}"
-                    )
-        log("=" * 10)
-        log(
-            f"Train completed, best_metric: {best_metric:.4f} "
-            f"at epoch: {best_metric_epoch}"
-        )
-        # del device
-        # del model_id
-        # del model_name
-        # del model
-        # del data_dicts
-        # del max_epochs
-        # del loss_function
-        # del val_interval
-        # del batch_size
-        # del results_path
-        # del num_samples
-        # del best_metric
-        # del best_metric_epoch
-
-        # self.close()

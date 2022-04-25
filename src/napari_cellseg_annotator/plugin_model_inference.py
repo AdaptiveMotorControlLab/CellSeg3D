@@ -3,21 +3,7 @@ import warnings
 from pathlib import Path
 
 import napari
-import numpy as np
-import torch
-from monai.data import DataLoader
-from monai.data import Dataset
-# MONAI
-from monai.inferers import sliding_window_inference
-from monai.transforms import AsDiscrete
-from monai.transforms import Compose
-from monai.transforms import EnsureChannelFirstd
-from monai.transforms import EnsureType
-from monai.transforms import EnsureTyped
-from monai.transforms import LoadImaged
-from monai.transforms import SpatialPadd
-from monai.transforms import Zoom
-from napari.qt.threading import thread_worker
+
 # Qt
 from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QDoubleSpinBox
@@ -29,15 +15,11 @@ from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QSpinBox
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
-from tifffile import imwrite
 
 # local
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.model_framework import ModelFramework
-
-WEIGHTS_DIR = os.path.dirname(os.path.realpath(__file__)) + str(
-    Path("/models/saved_weights")
-)
+from napari_cellseg_annotator.model_workers import InferenceWorker
 
 
 class Inferer(ModelFramework):
@@ -83,7 +65,7 @@ class Inferer(ModelFramework):
         self._viewer = viewer
 
         self.worker = None
-        """Worker for inference"""
+        """Worker for inference, should be an InferenceWorker instance from :doc:model_workers.py"""
 
         self.transforms = None
 
@@ -182,15 +164,6 @@ class Inferer(ModelFramework):
         self.lbl_model_path.setVisible(False)
 
         self.build()
-
-    @staticmethod
-    def create_inference_dict(images_filepaths):
-        """Create a dict with all image paths in :py:attr:`~self.images_filepaths`
-
-        Returns:
-            dict: list of image paths from loaded folder"""
-        data_dicts = [{"image": image_name} for image_name in images_filepaths]
-        return data_dicts
 
     def check_ready(self):
         """Checks if the paths to the files are properly set"""
@@ -436,7 +409,9 @@ class Inferer(ModelFramework):
                 ],
             }
 
-            self.worker = self.inference(
+            self.show_res_nbr = self.display_number_choice.value()
+
+            self.worker = InferenceWorker(
                 device=device,
                 model_dict=model_dict,
                 weights=weights,
@@ -444,22 +419,17 @@ class Inferer(ModelFramework):
                 results_path=self.results_path,
                 filetype=self.filetype_choice.currentText(),
                 transforms=self.transforms,
-                log= self.log.print_and_log,
             )
-            # print("impath")
-            # print(self.images_filepaths)
-
-            self.worker.started.connect(self.on_start)
-
-            self.show_res_nbr = self.display_number_choice.value()
 
             yield_connect_show_res = lambda data: self.on_yield(
                 data,
                 widget=self,
             )
-            self.worker.yielded.connect(yield_connect_show_res)
-            self.worker.errored.connect(yield_connect_show_res)
 
+            self.worker.started.connect(self.on_start)
+            self.worker.log_signal.connect(self.log.print_and_log)
+            self.worker.yielded.connect(yield_connect_show_res)
+            # self.worker.errored.connect(yield_connect_show_res) #TODO fix
             self.worker.finished.connect(self.on_finish)
 
             if self.get_device(show=False) == "cuda":
@@ -554,174 +524,3 @@ class Inferer(ModelFramework):
                 name=f"pred_{image_id}_{model_name}",
                 opacity=0.8,
             )
-
-    @staticmethod
-    @thread_worker
-    def inference(
-        device,
-        model_dict,
-        weights,
-        images_filepaths,
-        results_path,
-        filetype,
-        transforms,
-        log,
-    ):
-        """
-
-        Args:
-            device: cuda or cpu device to use for torch
-            model_dict: the :py:attr:`~self.models_dict` dictionary to obtain the model name, class and instance
-            weights: the loaded weights from the model
-            images_filepaths: the paths to the images of the dataset
-            results_path: the path to save the results
-            filetype: the file extension to use when saving,
-            transforms: a dict containing transforms to perform at various times.
-
-        Yields:
-            dict: contains :
-                * "image_id" : index of the returned image
-
-                * "original" : original volume used for inference
-
-                * "result" : inference result
-
-        """
-
-        model = model_dict["instance"]
-        model.to(device)
-
-        images_dict = Inferer.create_inference_dict(images_filepaths)
-
-        # TODO : better solution than loading first image always ?
-        data = LoadImaged(keys=["image"])(images_dict[0])
-        # print(data)
-        check = data["image"].shape
-        # print(check)
-        # TODO remove
-        # z_aniso = 5 / 1.5
-        # if zoom is not None :
-        #     pad = utils.get_padding_dim(check, anisotropy_factor=zoom)
-        # else:
-        log("\nChecking dimensions...")
-        pad = utils.get_padding_dim(check, logger=log)
-        # print(pad)
-
-        load_transforms = Compose(
-            [
-                LoadImaged(keys=["image"]),
-                # AddChanneld(keys=["image"]), #already done
-                EnsureChannelFirstd(keys=["image"]),
-                # Orientationd(keys=["image"], axcodes="PLI"),
-                # anisotropic_transform,
-                SpatialPadd(keys=["image"], spatial_size=pad),
-                EnsureTyped(keys=["image"]),
-            ]
-        )
-
-        if not transforms["thresh"][0]:
-            post_process_transforms = EnsureType()
-        else:
-            t = transforms["thresh"][1]
-            post_process_transforms = Compose(
-                AsDiscrete(threshold=t), EnsureType()
-            )
-
-        # LabelFilter(applied_labels=[0]),
-
-        log("\nLoading dataset...")
-        inference_ds = Dataset(data=images_dict, transform=load_transforms)
-        inference_loader = DataLoader(
-            inference_ds, batch_size=1, num_workers=1
-        )
-        log("Done")
-        # print(f"wh dir : {WEIGHTS_DIR}")
-        # print(weights)
-        log("\nLoading weights...")
-        model.load_state_dict(
-            torch.load(os.path.join(WEIGHTS_DIR, weights), map_location=device)
-        )
-        log("Done")
-
-        model.eval()
-        with torch.no_grad():
-            for i, inf_data in enumerate(inference_loader):
-
-                log("-" * 10)
-                log(f"Inference started on image {i+1}...")
-
-                inputs = inf_data["image"]
-                # print(inputs.shape)
-                inputs = inputs.to(device)
-
-                model_output = lambda inputs: post_process_transforms(
-                    model_dict["class"].get_output(model, inputs)
-                )
-
-                outputs = sliding_window_inference(
-                    inputs,
-                    roi_size=None,
-                    sw_batch_size=1,
-                    predictor=model_output,
-                    device=device,
-                )
-
-                out = outputs.detach().cpu()
-
-                if transforms["zoom"][0]:
-                    zoom = transforms["zoom"][1]
-                    anisotropic_transform = Zoom(
-                        zoom=zoom,
-                        keep_size=False,
-                        padding_mode="empty",
-                    )
-                    out = anisotropic_transform(out[0])
-
-                out = post_process_transforms(out)
-                out = np.array(out).astype(np.float32)
-
-                # batch_len = out.shape[1]
-                # print("trying to check len")
-                # print(batch_len)
-                # if batch_len != 1 :
-                #     sum  = np.sum(out, axis=1)
-                #     print(sum.shape)
-                #     out = sum
-                #     print(out.shape)
-
-                image_id = i + 1
-                time = utils.get_date_time()
-                # print(time)
-
-                original_filename = os.path.basename(
-                    images_filepaths[i]
-                ).split(".")[0]
-
-                # File output save name : original-name_model_date+time_number.filetype
-                file_path = (
-                    results_path
-                    + "/"
-                    + original_filename
-                    + "_"
-                    + model_dict["name"]
-                    + f"_{time}_"
-                    + f"pred_{image_id}"
-                    + filetype
-                )
-
-                # print(filename)
-                imwrite(file_path, out)
-
-                log(f"\nFile n°{image_id} saved as :")
-                filename = os.path.split(file_path)[1]
-                log(filename)
-
-                original = np.array(inf_data["image"]).astype(np.float32)
-
-                # logging(f"Inference completed on image {i+1}")
-                yield {
-                    "image_id": i + 1,
-                    "original": original,
-                    "result": out,
-                    "model_name": model_dict["name"],
-                }

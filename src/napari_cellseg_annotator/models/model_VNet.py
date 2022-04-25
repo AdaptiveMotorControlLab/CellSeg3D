@@ -15,7 +15,6 @@ def get_weights_file():
 
 def get_output(model, input):
     out = model(input)
-    # out = AsDiscrete(threshold=0.7)(out)
     return out
 
 
