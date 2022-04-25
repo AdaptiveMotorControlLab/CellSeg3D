@@ -5,8 +5,9 @@ from pathlib import Path
 import napari
 import numpy as np
 import torch
-from monai.data import Dataset
 from monai.data import DataLoader
+from monai.data import Dataset
+
 # MONAI
 from monai.inferers import sliding_window_inference
 from monai.transforms import AsDiscrete
@@ -18,6 +19,7 @@ from monai.transforms import LoadImaged
 from monai.transforms import SpatialPadd
 from monai.transforms import Zoom
 from napari.qt.threading import thread_worker
+
 # Qt
 from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QDoubleSpinBox
@@ -630,9 +632,7 @@ class Inferer(ModelFramework):
         # LabelFilter(applied_labels=[0]),
 
         logging("\nLoading dataset...")
-        inference_ds = Dataset(
-            data=images_dict, transform=load_transforms
-        )
+        inference_ds = Dataset(data=images_dict, transform=load_transforms)
         inference_loader = DataLoader(
             inference_ds, batch_size=1, num_workers=1
         )

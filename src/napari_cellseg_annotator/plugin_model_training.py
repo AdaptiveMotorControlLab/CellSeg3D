@@ -10,11 +10,12 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
+
 # MONAI
 from monai.data import DataLoader
-from monai.data import PatchDataset
 from monai.data import decollate_batch
 from monai.data import pad_list_data_collate
+from monai.data import PatchDataset
 from monai.losses import DiceCELoss
 from monai.losses import DiceFocalLoss
 from monai.losses import DiceLoss
@@ -37,6 +38,7 @@ from monai.transforms import RandShiftIntensityd
 from monai.transforms import RandSpatialCropSamplesd
 from monai.transforms import SpatialPadd
 from napari.qt.threading import thread_worker
+
 # Qt
 from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QLabel
@@ -199,8 +201,9 @@ class Trainer(ModelFramework):
         """Plot for loss"""
         self.dice_metric_plot = None
         """Plot for dice metric"""
-        self.dock_widgets = []
-        """Pointer to a dock widget containing the FigureCanvas, used to remove the docking widget with :py:func:`~close`"""
+        self.plot_dock = None
+        """Docked widget with plots"""
+
 
         self.model_choice.setCurrentIndex(model_index)
 
@@ -497,6 +500,17 @@ class Trainer(ModelFramework):
                 "name": self.model_choice.currentText(),
             }
 
+            self.results_path = (
+                self.results_path
+                + f"/{model_dict['name']}_results_{utils.get_date_time()}"
+            )
+
+            os.makedirs(self.results_path, exist_ok=False)
+
+            self.print_and_log(
+                f"Notice : Saving results to : {self.results_path}"
+            )
+
             self.worker = self.train(
                 device=self.get_device(),
                 model_dict=model_dict,
@@ -538,7 +552,6 @@ class Trainer(ModelFramework):
 
         self.print_and_log(f"Worker started at {utils.get_time()}")
         self.print_and_log("\nWorker is running...")
-        self.print_and_log(f"Saving results to : {self.results_path}")
 
     def on_finish(self):
         self.print_and_log(f"\nWorker finished at {utils.get_time()}")
@@ -557,11 +570,16 @@ class Trainer(ModelFramework):
 
         self.btn_start.setText("Start")
         self.btn_close.setVisible(True)
-        self.clean_cache()
+
+        self.worker = None
+        self.empty_cuda_cache()
+        # self.clean_cache()
 
     def on_error(self):
         self.print_and_log(f"WORKER ERRORED at {utils.get_time()}")
-        self.clean_cache()
+        self.worker = None
+        self.empty_cuda_cache()
+        # self.clean_cache()
 
     @staticmethod
     def on_yield(data, widget):
@@ -573,19 +591,19 @@ class Trainer(ModelFramework):
         )
         widget.update_loss_plot(data["losses"], data["val_metrics"])
 
-    def clean_cache(self):
-        """Attempts to clear memory after training"""
-        # del self.worker
-        self.worker = None
-        # if self.model is not None:
-        #     del self.model
-        #     self.model = None
-
-        # del self.data
-        # self.close()
-        # del self
-        if self.get_device(show=False).type == "cuda":
-            self.empty_cuda_cache()
+    # def clean_cache(self):
+    #     """Attempts to clear memory after training"""
+    #     # del self.worker
+    #     self.worker = None
+    #     # if self.model is not None:
+    #     #     del self.model
+    #     #     self.model = None
+    #
+    #     # del self.data
+    #     # self.close()
+    #     # del self
+    #     if self.get_device(show=False).type == "cuda":
+    #         self.empty_cuda_cache()
 
     def plot_loss(self, loss, dice_metric):
         """Creates two subplots to plot the training loss and validation metric"""
@@ -681,10 +699,10 @@ class Trainer(ModelFramework):
 
             # tab_index = self.addTab(self.canvas, "Loss plot")
             # self.setCurrentIndex(tab_index)
-            plot_dock = self._viewer.window.add_dock_widget(
+            self.plot_dock = self._viewer.window.add_dock_widget(
                 self.canvas, name="Loss plots", area="bottom"
             )
-            self.dock_widgets.append(plot_dock)
+            self.docked_widgets.append(self.plot_dock)
             self.plot_loss(loss, metric)
         else:
             with plt.style.context("dark_background"):
@@ -693,6 +711,11 @@ class Trainer(ModelFramework):
                 self.dice_metric_plot.cla()
 
                 self.plot_loss(loss, metric)
+
+    # def reset_loss_plot(self):
+    #     with plt.style.context("dark_background"):
+    #         self.train_loss_plot.cla()
+    #         self.dice_metric_plot.cla()
 
     @staticmethod
     @thread_worker
@@ -721,12 +744,15 @@ class Trainer(ModelFramework):
 
         # TODO param : % of validation from training set
         train_files, val_files = (
-            data_dicts[0 : int(len(data_dicts) * 0.9)],
-            data_dicts[int(len(data_dicts) * 0.9) :],
+            data_dicts[0:int(len(data_dicts) * 0.9)],
+            data_dicts[int(len(data_dicts) * 0.9):],
         )
-        # print("train/val")
-        # print(train_files)
-        # print(val_files)
+        print("Training files :")
+        [print(f"{train_file}\n") for train_file in train_files]
+        print("*"*20)
+        print("*"*20)
+        print("Validation files :")
+        [print(f"{val_file}\n") for val_file in val_files]
         # TODO : param stretch factor if anisotropic ?
         # TODO : param ROI size
         sample_loader = Compose(
@@ -809,7 +835,6 @@ class Trainer(ModelFramework):
 
         # time = utils.get_date_time()
 
-
         if device.type == "cuda":
             logger("\nUsing GPU :")
             logger(torch.cuda.get_device_name(0))
@@ -840,9 +865,7 @@ class Trainer(ModelFramework):
                     batch_data["label"].to(device),
                 )
                 optimizer.zero_grad()
-                outputs = model_class.get_output(  # AsDiscrete(threshold=0.7)(
-                    model, inputs
-                )
+                outputs = model_class.get_output(model, inputs)
                 # print(f"OUT : {outputs.shape}")
                 loss = loss_function(outputs, labels)
                 loss.backward()
@@ -854,7 +877,7 @@ class Trainer(ModelFramework):
                 )
             epoch_loss /= step
             epoch_loss_values.append(epoch_loss)
-            logger(f"-> Epoch: {epoch + 1}, Average loss: {epoch_loss:.4f}")
+            logger(f"Epoch: {epoch + 1}, Average loss: {epoch_loss:.4f}")
 
             if (epoch + 1) % val_interval == 0:
                 model.eval()
@@ -874,9 +897,10 @@ class Trainer(ModelFramework):
                         labs = decollate_batch(val_labels)
 
                         # TODO : more parameters/flexibility
-                        post_pred = Compose(AsDiscrete(threshold=0.3),EnsureType())  #
+                        post_pred = Compose(
+                            AsDiscrete(threshold=0.6), EnsureType()
+                        )  #
                         post_label = EnsureType()
-
 
                         val_outputs = [
                             post_pred(res_tensor) for res_tensor in pred
@@ -903,7 +927,9 @@ class Trainer(ModelFramework):
                     }
                     yield train_report
 
-                    weights_filename = f"{model_name}_best_metric" + f"_{epoch}_epoch.pth"
+                    weights_filename = (
+                        f"{model_name}_best_metric" + f"_epoch_{epoch}.pth"
+                    )
 
                     if metric > best_metric:
                         best_metric = metric
@@ -914,7 +940,7 @@ class Trainer(ModelFramework):
                         )
                         logger("Saved best metric model")
                     logger(
-                        f"> Current epoch: {epoch + 1}, Current mean dice: {metric:.4f}"
+                        f"Current epoch: {epoch + 1}, Current mean dice: {metric:.4f}"
                         f"\nBest mean dice: {best_metric:.4f} "
                         f"at epoch: {best_metric_epoch}"
                     )

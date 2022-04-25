@@ -1,5 +1,6 @@
 import glob
 import os
+import time
 import warnings
 
 import napari
@@ -11,14 +12,15 @@ from qtpy.QtWidgets import QProgressBar
 from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QTabWidget
+from qtpy.QtGui import QTextCursor
 from qtpy.QtWidgets import QTextEdit
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
 from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
 from napari_cellseg_annotator.models import model_SegResNet as SegResNet
 from napari_cellseg_annotator.models import model_VNet as VNet
+from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
 
 warnings.formatwarning = utils.format_Warning
 
@@ -185,7 +187,11 @@ class ModelFramework(QTabWidget):
 
         """
         print(text)
-        self.log.verticalScrollBar().setValue(self.log.verticalScrollBar().maximum())
+        self.log.moveCursor(QTextCursor.End)
+        self.log.verticalScrollBar().setValue(
+            self.log.verticalScrollBar().maximum()
+        )
+        time.sleep(0.01)
         self.log.insertPlainText(f"\n{text}")
 
     @staticmethod
@@ -201,29 +207,32 @@ class ModelFramework(QTabWidget):
         """
         # TODO : fix warning for cursor instance
         print(text)
-        # widget.log.moveCursor(QTextCursor.End)
-        widget.log.verticalScrollBar().setValue(widget.log.verticalScrollBar().maximum())
+        widget.log.moveCursor(QTextCursor.End)
+        widget.log.verticalScrollBar().setValue(
+            widget.log.verticalScrollBar().maximum()
+        )
+        time.sleep(0.01)
         widget.log.insertPlainText(f"\n{text}")
 
     def display_status_report(self):
         """Adds a text log, a progress bar and a "save log" button on the left side of the viewer (usually when starting a worker)"""
 
-        if self.container_report is None or self.log is None:
-            warnings.warn(
-                "Status report widget has been closed. Trying to re-instantiate..."
-            )
-            self.container_report = QWidget()
-            self.container_report.setSizePolicy(
-                QSizePolicy.Fixed, QSizePolicy.Minimum
-            )
-            self.progress = QProgressBar(self.container_report)
-            self.log = QTextEdit(self.container_report)
-            self.btn_save_log = QPushButton(
-                "Save log with results", self.container_report
-            )
-            self.btn_save_log.clicked.connect(self.save_log)
-
-            self.container_docked = False  # check if already docked
+        # if self.container_report is None or self.log is None:
+        #     warnings.warn(
+        #         "Status report widget has been closed. Trying to re-instantiate..."
+        #     )
+        #     self.container_report = QWidget()
+        #     self.container_report.setSizePolicy(
+        #         QSizePolicy.Fixed, QSizePolicy.Minimum
+        #     )
+        #     self.progress = QProgressBar(self.container_report)
+        #     self.log = QTextEdit(self.container_report)
+        #     self.btn_save_log = QPushButton(
+        #         "Save log in results folder", self.container_report
+        #     )
+        #     self.btn_save_log.clicked.connect(self.save_log)
+        #
+        #     self.container_docked = False  # check if already docked
 
         if self.container_docked:
             self.log.clear()
@@ -374,11 +383,17 @@ class ModelFramework(QTabWidget):
     def build(self):
         raise NotImplementedError("Should be defined in children classes")
 
-    def close(self):
-        """Close the widget and the docked widgets, if any"""
+    def remove_docked_widgets(self):
+        """Removes docked widgets and resets checks for status report"""
         if len(self.docked_widgets) != 0:
             [
                 self._viewer.window.remove_dock_widget(w)
                 for w in self.docked_widgets
             ]
+            self.docked_widgets = []
+            self.container_docked = False
+
+    def close(self):
+        """Close the widget and the docked widgets, if any"""
+        self.remove_docked_widgets()
         self._viewer.window.remove_dock_widget(self)

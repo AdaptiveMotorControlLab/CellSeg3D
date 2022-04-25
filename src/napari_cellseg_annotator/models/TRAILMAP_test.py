@@ -8,7 +8,6 @@ def get_weights_file():
     return "TRAILMAP_DFl_best.pth.pth"
 
 
-
 def get_net():
     return TRAILMAP_test(1, 1)
 

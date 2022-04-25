@@ -55,7 +55,7 @@ class Cropping(BasePlugin):
         self.lbl_label.setVisible(False)
         self.btn_label.setVisible(False)
 
-        self.dock_widgets = []  # container of docked widgets for removal
+        self.docked_widgets = []  # container of docked widgets for removal
 
         def make_sizebox_container(ax):
 
@@ -282,16 +282,16 @@ class Cropping(BasePlugin):
         save = self._viewer.window.add_dock_widget(
             save_widget, name="", area="left"
         )
-        self.dock_widgets.append(save)
+        self.docked_widgets.append(save)
 
         self.add_crop_sliders()
 
     def close(self):
         """Can be re-implemented in children classes"""
-        if len(self.dock_widgets) != 0:
+        if len(self.docked_widgets) != 0:
             [
                 self._viewer.window.remove_dock_widget(w)
-                for w in self.dock_widgets
+                for w in self.docked_widgets
             ]
 
         self._viewer.window.remove_dock_widget(self)
@@ -381,7 +381,7 @@ class Cropping(BasePlugin):
         container_widget.extend(sliders)
         # vw.window.add_dock_widget([spinbox, container_widget], area="right")
         wdgts = vw.window.add_dock_widget(container_widget, area="right")
-        self.dock_widgets.append(wdgts)
+        self.docked_widgets.append(wdgts)
         # TEST : trying to dynamically change the size of the cropped volume
         # BROKEN for now
         # @spinbox.changed.connect
