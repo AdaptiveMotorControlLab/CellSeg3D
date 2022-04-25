@@ -10,12 +10,11 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
-
 # MONAI
 from monai.data import DataLoader
+from monai.data import PatchDataset
 from monai.data import decollate_batch
 from monai.data import pad_list_data_collate
-from monai.data import PatchDataset
 from monai.losses import DiceCELoss
 from monai.losses import DiceFocalLoss
 from monai.losses import DiceLoss
@@ -38,7 +37,6 @@ from monai.transforms import RandShiftIntensityd
 from monai.transforms import RandSpatialCropSamplesd
 from monai.transforms import SpatialPadd
 from napari.qt.threading import thread_worker
-
 # Qt
 from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QLabel
@@ -475,7 +473,7 @@ class Trainer(ModelFramework):
 
         if not self.check_ready():  # issues a warning if not ready
             err = "Aborting, please set all required paths"
-            self.print_and_log(err)
+            self.log.print_and_log(err)
             raise ValueError(err)
             return
 
@@ -486,8 +484,10 @@ class Trainer(ModelFramework):
                 self.worker.start()
                 self.btn_start.setText("Running... Click to stop")
         else:
-            self.print_and_log("Starting...")
-            self.print_and_log("*" * 20)
+            self.log.print_and_log("Starting...")
+            self.log.print_and_log("*" * 20)
+
+            self.reset_loss_plot()
 
             self.num_samples = self.sample_choice.value()
             self.batch_size = self.batch_choice.value()
@@ -507,7 +507,7 @@ class Trainer(ModelFramework):
 
             os.makedirs(self.results_path, exist_ok=False)
 
-            self.print_and_log(
+            self.log.print_and_log(
                 f"Notice : Saving results to : {self.results_path}"
             )
 
@@ -521,7 +521,7 @@ class Trainer(ModelFramework):
                 batch_size=self.batch_size,
                 results_path=self.results_path,
                 num_samples=self.num_samples,
-                logger=lambda text: self.worker_print_and_log(self, text),
+                log=self.log.print_and_log,
             )
 
             self.worker.start()
@@ -537,7 +537,7 @@ class Trainer(ModelFramework):
             self.worker.errored.connect(self.on_error)
 
         if self.worker.is_running:
-            self.print_and_log(
+            self.log.print_and_log(
                 f"Stop requested at {utils.get_time()}. \nWaiting for next validation step..."
             )
             self.btn_start.setText("Stopping... Please wait for next saving")
@@ -548,15 +548,19 @@ class Trainer(ModelFramework):
 
     def on_start(self):
 
+        if self.plot_dock is not None:
+            self._viewer.window.remove_dock_widget(self.plot_dock)
+            self.plot_dock = None
+
         self.display_status_report()
 
-        self.print_and_log(f"Worker started at {utils.get_time()}")
-        self.print_and_log("\nWorker is running...")
+        self.log.print_and_log(f"Worker started at {utils.get_time()}")
+        self.log.print_and_log("\nWorker is running...")
 
     def on_finish(self):
-        self.print_and_log(f"\nWorker finished at {utils.get_time()}")
+        self.log.print_and_log(f"\nWorker finished at {utils.get_time()}")
 
-        self.print_and_log(f"Saving last loss plot at {self.results_path}")
+        self.log.print_and_log(f"Saving last loss plot at {self.results_path}")
         if self.canvas is not None:
             self.canvas.figure.savefig(
                 (
@@ -565,8 +569,8 @@ class Trainer(ModelFramework):
                 ),
                 format="png",
             )
-        self.print_and_log("Done")
-        self.print_and_log("*" * 10)
+        self.log.print_and_log("Done")
+        self.log.print_and_log("*" * 10)
 
         self.btn_start.setText("Start")
         self.btn_close.setVisible(True)
@@ -576,7 +580,7 @@ class Trainer(ModelFramework):
         # self.clean_cache()
 
     def on_error(self):
-        self.print_and_log(f"WORKER ERRORED at {utils.get_time()}")
+        self.log.print_and_log(f"WORKER ERRORED at {utils.get_time()}")
         self.worker = None
         self.empty_cuda_cache()
         # self.clean_cache()
@@ -615,7 +619,7 @@ class Trainer(ModelFramework):
             x = [i + 1 for i in range(len(loss))]
             y = loss
             self.train_loss_plot.plot(x, y)
-            self.train_loss_plot.set_ylim(0, 1)
+            # self.train_loss_plot.set_ylim(0, 1)
 
             # update metrics
             x = [self.val_interval * (i + 1) for i in range(len(dice_metric))]
@@ -625,7 +629,7 @@ class Trainer(ModelFramework):
             dice_min = np.max(y)
 
             self.dice_metric_plot.plot(x, y, zorder=1)
-            self.dice_metric_plot.set_ylim(0, 1)
+            # self.dice_metric_plot.set_ylim(0, 1)
             self.dice_metric_plot.set_title(
                 "Validation metric : Mean Dice coefficient"
             )
@@ -712,10 +716,11 @@ class Trainer(ModelFramework):
 
                 self.plot_loss(loss, metric)
 
-    # def reset_loss_plot(self):
-    #     with plt.style.context("dark_background"):
-    #         self.train_loss_plot.cla()
-    #         self.dice_metric_plot.cla()
+    def reset_loss_plot(self):
+        if self.train_loss_plot is not None and self.dice_metric_plot is not None:
+            with plt.style.context("dark_background"):
+                self.train_loss_plot.cla()
+                self.dice_metric_plot.cla()
 
     @staticmethod
     @thread_worker
@@ -729,10 +734,11 @@ class Trainer(ModelFramework):
         batch_size,
         results_path,
         num_samples,
-        logger,
+        log,
     ):  # TODO : turn into static
         """Trains the Pytorch model for num_epochs, with the selected model and data, using the chosen batch size,
         validation interval, loss function, and number of samples."""
+
 
         model_name = model_dict["name"]
         model_class = model_dict["class"]
@@ -801,7 +807,7 @@ class Trainer(ModelFramework):
                 EnsureTyped(keys=["image", "label"]),
             ]
         )
-        logger("Loading dataset...")
+        log("Loading dataset...\n")
         train_ds = PatchDataset(
             data=train_files,
             transform=train_transforms,
@@ -825,7 +831,7 @@ class Trainer(ModelFramework):
         )
 
         val_loader = DataLoader(val_ds, batch_size=batch_size, num_workers=4)
-        logger("\nDone")
+        # log("\nDone")
 
         optimizer = torch.optim.Adam(model.parameters(), 1e-3)
         dice_metric = DiceMetric(include_background=True, reduction="mean")
@@ -836,24 +842,24 @@ class Trainer(ModelFramework):
         # time = utils.get_date_time()
 
         if device.type == "cuda":
-            logger("\nUsing GPU :")
-            logger(torch.cuda.get_device_name(0))
+            log("\nUsing GPU :")
+            log(torch.cuda.get_device_name(0))
         else:
-            logger("Using CPU")
+            log("Using CPU")
 
         for epoch in range(max_epochs):
-            logger("-" * 10)
-            logger(f"Epoch {epoch + 1}/{max_epochs}")
+            log("-" * 10)
+            log(f"Epoch {epoch + 1}/{max_epochs}")
             if device.type == "cuda":
-                logger("Memory Usage:")
+                log("Memory Usage:")
                 alloc_mem = round(
                     torch.cuda.memory_allocated(0) / 1024**3, 1
                 )
                 reserved_mem = round(
                     torch.cuda.memory_reserved(0) / 1024**3, 1
                 )
-                logger(f"Allocated: {alloc_mem}GB")
-                logger(f"Cached: {reserved_mem}GB")
+                log(f"Allocated: {alloc_mem}GB")
+                log(f"Cached: {reserved_mem}GB")
 
             model.train()
             epoch_loss = 0
@@ -871,13 +877,13 @@ class Trainer(ModelFramework):
                 loss.backward()
                 optimizer.step()
                 epoch_loss += loss.detach().item()
-                logger(
+                log(
                     f"* {step}/{len(train_ds) // train_loader.batch_size}, "
                     f"Train_loss: {loss.detach().item():.4f}"
                 )
             epoch_loss /= step
             epoch_loss_values.append(epoch_loss)
-            logger(f"Epoch: {epoch + 1}, Average loss: {epoch_loss:.4f}")
+            log(f"Epoch: {epoch + 1}, Average loss: {epoch_loss:.4f}")
 
             if (epoch + 1) % val_interval == 0:
                 model.eval()
@@ -938,14 +944,14 @@ class Trainer(ModelFramework):
                             model.state_dict(),
                             os.path.join(results_path, weights_filename),
                         )
-                        logger("Saved best metric model")
-                    logger(
+                        log("Saved best metric model")
+                    log(
                         f"Current epoch: {epoch + 1}, Current mean dice: {metric:.4f}"
                         f"\nBest mean dice: {best_metric:.4f} "
                         f"at epoch: {best_metric_epoch}"
                     )
-        logger("=" * 10)
-        logger(
+        log("=" * 10)
+        log(
             f"Train completed, best_metric: {best_metric:.4f} "
             f"at epoch: {best_metric_epoch}"
         )

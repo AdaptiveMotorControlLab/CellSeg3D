@@ -7,7 +7,6 @@ import numpy as np
 import torch
 from monai.data import DataLoader
 from monai.data import Dataset
-
 # MONAI
 from monai.inferers import sliding_window_inference
 from monai.transforms import AsDiscrete
@@ -19,7 +18,6 @@ from monai.transforms import LoadImaged
 from monai.transforms import SpatialPadd
 from monai.transforms import Zoom
 from napari.qt.threading import thread_worker
-
 # Qt
 from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QDoubleSpinBox
@@ -393,7 +391,7 @@ class Inferer(ModelFramework):
 
         if not self.check_ready():
             err = "Aborting, please choose correct paths"
-            self.print_and_log(err)
+            self.log.print_and_log(err)
             raise ValueError(err)
 
         if self.worker is not None:
@@ -403,8 +401,8 @@ class Inferer(ModelFramework):
                 self.worker.start()
                 self.btn_start.setText("Running... Click to stop")
         else:
-            self.print_and_log("Starting...")
-            self.print_and_log("*" * 20)
+            self.log.print_and_log("Starting...")
+            self.log.print_and_log("*" * 20)
 
             device = self.get_device()
 
@@ -446,7 +444,7 @@ class Inferer(ModelFramework):
                 results_path=self.results_path,
                 filetype=self.filetype_choice.currentText(),
                 transforms=self.transforms,
-                logging=lambda text: self.worker_print_and_log(self, text),
+                log= self.log.print_and_log,
             )
             # print("impath")
             # print(self.images_filepaths)
@@ -469,7 +467,7 @@ class Inferer(ModelFramework):
             self.btn_close.setVisible(False)
 
         if self.worker.is_running:  # if worker is running, tries to stop
-            self.print_and_log(
+            self.log.print_and_log(
                 "Stop request, waiting for next inference & saving to occur..."
             )
             self.btn_start.setText("Stopping...")
@@ -484,14 +482,14 @@ class Inferer(ModelFramework):
 
         self.show_res = self.view_checkbox.isChecked()
         self.show_original = self.show_original_checkbox.isChecked()
-        self.print_and_log(f"Worker started at {utils.get_time()}")
-        self.print_and_log(f"Saving results to : {self.results_path}")
-        self.print_and_log("Worker is running...")
+        self.log.print_and_log(f"Worker started at {utils.get_time()}")
+        self.log.print_and_log(f"Saving results to : {self.results_path}")
+        self.log.print_and_log("Worker is running...")
 
     def on_error(self):
         """Catches errors and tries to clean up. TODO : upgrade"""
-        self.print_and_log("Worker errored...")
-        self.print_and_log("Trying to clean up...")
+        self.log.print_and_log("Worker errored...")
+        self.log.print_and_log("Trying to clean up...")
         self.btn_start.setText("Start")
         self.btn_close.setVisible(True)
 
@@ -500,8 +498,8 @@ class Inferer(ModelFramework):
 
     def on_finish(self):
         """Catches finished signal from worker, resets workspace for next run."""
-        self.print_and_log(f"\nWorker finished at {utils.get_time()}")
-        self.print_and_log("*" * 20)
+        self.log.print_and_log(f"\nWorker finished at {utils.get_time()}")
+        self.log.print_and_log("*" * 20)
         self.btn_start.setText("Start")
         self.btn_close.setVisible(True)
 
@@ -567,7 +565,7 @@ class Inferer(ModelFramework):
         results_path,
         filetype,
         transforms,
-        logging,
+        log,
     ):
         """
 
@@ -605,8 +603,8 @@ class Inferer(ModelFramework):
         # if zoom is not None :
         #     pad = utils.get_padding_dim(check, anisotropy_factor=zoom)
         # else:
-        logging("\nChecking dimensions...")
-        pad = utils.get_padding_dim(check, logger=logging)
+        log("\nChecking dimensions...")
+        pad = utils.get_padding_dim(check, logger=log)
         # print(pad)
 
         load_transforms = Compose(
@@ -631,26 +629,26 @@ class Inferer(ModelFramework):
 
         # LabelFilter(applied_labels=[0]),
 
-        logging("\nLoading dataset...")
+        log("\nLoading dataset...")
         inference_ds = Dataset(data=images_dict, transform=load_transforms)
         inference_loader = DataLoader(
             inference_ds, batch_size=1, num_workers=1
         )
-        logging("Done")
+        log("Done")
         # print(f"wh dir : {WEIGHTS_DIR}")
         # print(weights)
-        logging("\nLoading weights...")
+        log("\nLoading weights...")
         model.load_state_dict(
             torch.load(os.path.join(WEIGHTS_DIR, weights), map_location=device)
         )
-        logging("Done")
+        log("Done")
 
         model.eval()
         with torch.no_grad():
             for i, inf_data in enumerate(inference_loader):
 
-                logging("-" * 10)
-                logging(f"Inference started on image {i+1}...")
+                log("-" * 10)
+                log(f"Inference started on image {i+1}...")
 
                 inputs = inf_data["image"]
                 # print(inputs.shape)
@@ -714,9 +712,9 @@ class Inferer(ModelFramework):
                 # print(filename)
                 imwrite(file_path, out)
 
-                logging(f"\nFile n°{image_id} saved as :")
+                log(f"\nFile n°{image_id} saved as :")
                 filename = os.path.split(file_path)[1]
-                logging(filename)
+                log(filename)
 
                 original = np.array(inf_data["image"]).astype(np.float32)
 

@@ -1,6 +1,6 @@
 import glob
 import os
-import time
+import threading
 import warnings
 
 import napari
@@ -12,17 +12,17 @@ from qtpy.QtWidgets import QProgressBar
 from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QTabWidget
-from qtpy.QtGui import QTextCursor
-from qtpy.QtWidgets import QTextEdit
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
 from napari_cellseg_annotator import utils
+from napari_cellseg_annotator.log_utility import Log
+from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
 from napari_cellseg_annotator.models import model_SegResNet as SegResNet
 from napari_cellseg_annotator.models import model_VNet as VNet
-from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
 
 warnings.formatwarning = utils.format_Warning
+
 
 
 class ModelFramework(QTabWidget):
@@ -77,6 +77,7 @@ class ModelFramework(QTabWidget):
         self.docked_widgets = []
 
         self.worker = None
+        self.lock = threading.Lock()
 
         #######################################################
         # interface
@@ -152,12 +153,12 @@ class ModelFramework(QTabWidget):
         self.progress.setVisible(False)
         """Widget for the progress bar"""
 
-        self.log = QTextEdit(self.container_report)
+        self.log = Log(self.container_report)
         self.log.setVisible(False)
         """Read-only display for process-related info. Use only for info destined to user."""
 
         self.btn_save_log = QPushButton(
-            "Save log with results", self.container_report
+            "Save log in results folder", self.container_report
         )
         self.btn_save_log.clicked.connect(self.save_log)
         self.btn_save_log.setVisible(False)
@@ -178,41 +179,6 @@ class ModelFramework(QTabWidget):
             warnings.warn(
                 "No job has been completed yet, please start one or re-open the log window."
             )
-
-    def print_and_log(self, text):
-        """Utility used to both print to terminal and log action to self.log. Use only for important user info.
-
-        Args:
-            text (str): Text to be printed and logged
-
-        """
-        print(text)
-        self.log.moveCursor(QTextCursor.End)
-        self.log.verticalScrollBar().setValue(
-            self.log.verticalScrollBar().maximum()
-        )
-        time.sleep(0.01)
-        self.log.insertPlainText(f"\n{text}")
-
-    @staticmethod
-    def worker_print_and_log(widget, text):
-        """Utility used to both print to terminal and log action to self.log, modified to be usable in a static worker.
-        Use only for important user info.
-
-             Args:
-                 widget (QWidget): widget with a self.log (QTextEdit) attribute
-
-                 text (str): Text to be printed and logged
-
-        """
-        # TODO : fix warning for cursor instance
-        print(text)
-        widget.log.moveCursor(QTextCursor.End)
-        widget.log.verticalScrollBar().setValue(
-            widget.log.verticalScrollBar().maximum()
-        )
-        time.sleep(0.01)
-        widget.log.insertPlainText(f"\n{text}")
 
     def display_status_report(self):
         """Adds a text log, a progress bar and a "save log" button on the left side of the viewer (usually when starting a worker)"""
