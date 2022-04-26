@@ -4,6 +4,7 @@ import warnings
 
 import napari
 import torch
+from qtpy.QtCore import Signal
 from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLineEdit
@@ -13,8 +14,6 @@ from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QTabWidget
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
-
-from qtpy.QtCore import Signal
 
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.log_utility import Log
@@ -75,9 +74,13 @@ class ModelFramework(QTabWidget):
         ]
 
         self.docked_widgets = []
+        """List of docked widgets (returned by :py:func:`viewer.window.add_dock_widget()),
+        can be used to remove docked widgets`"""
 
         self.worker = None
+        """Worker from model_workers.py, either inference or training"""
         self.signal_log = Signal(str)
+        """Signal emitted when something should be logged"""
 
         #######################################################
         # interface
@@ -164,8 +167,9 @@ class ModelFramework(QTabWidget):
         self.btn_save_log.setVisible(False)
         #####################################################
 
-    def send_log(self,text):
+    def send_log(self, text):
         self.log.print_and_log(text)
+
     def save_log(self):
         """Saves the worker's log to disk at self.results_path when called"""
         log = self.log.toPlainText()

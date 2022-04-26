@@ -1,6 +1,22 @@
-
 # MONAI
+import os
+from pathlib import Path
+
+import numpy as np
+import torch
+from monai.data import DataLoader
+from monai.data import Dataset
+from monai.data import PatchDataset
+from monai.data import decollate_batch
+from monai.data import pad_list_data_collate
+from monai.inferers import sliding_window_inference
 from monai.metrics import DiceMetric
+from monai.transforms import AsDiscrete
+from monai.transforms import Compose
+from monai.transforms import EnsureChannelFirstd
+from monai.transforms import EnsureType
+from monai.transforms import EnsureTyped
+from monai.transforms import LoadImaged
 from monai.transforms import Orientationd
 from monai.transforms import Rand3DElasticd
 from monai.transforms import RandAffined
@@ -8,34 +24,15 @@ from monai.transforms import RandFlipd
 from monai.transforms import RandRotate90d
 from monai.transforms import RandShiftIntensityd
 from monai.transforms import RandSpatialCropSamplesd
-from monai.data import Dataset
-from monai.inferers import sliding_window_inference
-from monai.transforms import AsDiscrete
-from monai.transforms import Compose
-from monai.transforms import EnsureChannelFirstd
-from monai.transforms import EnsureType
-from monai.transforms import EnsureTyped
-from monai.transforms import LoadImaged
 from monai.transforms import SpatialPadd
 from monai.transforms import Zoom
-from monai.data import DataLoader
-from monai.data import PatchDataset
-from monai.data import decollate_batch
-from monai.data import pad_list_data_collate
-# Qt
-from qtpy.QtCore import Signal
-
-import torch
-from tifffile import imwrite
-import os
-import numpy as np
-from pathlib import Path
-
 from napari.qt.threading import GeneratorWorker
 from napari.qt.threading import WorkerBaseSignals
+# Qt
+from qtpy.QtCore import Signal
+from tifffile import imwrite
 
 from napari_cellseg_annotator import utils
-
 
 """
 Writing something to log messages from outside the main thread is rather problematic (plenty of silent crashes...)
@@ -57,9 +54,7 @@ class LogSignal(WorkerBaseSignals):
 
     Separate from Worker instances as indicated `here`_"""
 
-    log_signal = Signal(
-        str
-    )
+    log_signal = Signal(str)
     """qtpy.QtCore.Signal: signal to be sent when some text should be logged"""
     # Should not be an instance variable but a class variable, not defined in __init__, see
     # https://stackoverflow.com/questions/2970312/pyqt4-qtcore-pyqtsignal-object-has-no-attribute-connect
@@ -214,7 +209,7 @@ class InferenceWorker(GeneratorWorker):
             for i, inf_data in enumerate(inference_loader):
 
                 self.log("-" * 10)
-                self.log(f"Inference started on image {i+1}...")
+                self.log(f"Inference started on image n°{i+1}...")
 
                 inputs = inf_data["image"]
                 # print(inputs.shape)
@@ -334,7 +329,7 @@ class TrainingWorker(GeneratorWorker):
 
         Args:
             text (str): text to logged
-            """
+        """
         self.log_signal.emit(text)
 
     def train(self):

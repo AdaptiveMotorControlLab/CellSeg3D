@@ -34,7 +34,7 @@ class Log(QTextEdit):
         with self.lock:
             print(text)
             self.moveCursor(QTextCursor.End)
-            # self.verticalScrollBar().setValue(
-            #     self.verticalScrollBar().maximum()
-            # )
             self.insertPlainText(f"\n{text}")
+            self.verticalScrollBar().setValue(
+                self.verticalScrollBar().maximum()
+            )
