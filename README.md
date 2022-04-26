@@ -59,6 +59,14 @@ Then go into Plugins > napari-cellseg-annotator, and choose which tool to use.
 - **Train**:  This module allows you to train segmentation algorithms from labeled volumes.
 - **Crop utility**: This module allows you to crop your volumes and labels dynamically, by selecting a fixed size volume and moving it around the image.
 
+## Testing 
+
+To run tests locally: 
+
+- Locally : run ``pytest`` in the plugin folder
+- Locally with coverage : In the plugin folder, run ``coverage run --source=src -m pytest`` then ``coverage.xml`` to generate a .xml coverage file.
+- With tox : run ``tox`` in the plugin folder (will simulate tests with several python and OS configs, requires substantial storage space)
+
 ## Contributing
 
 Contributions are very welcome. Tests can be run with [tox], please ensure

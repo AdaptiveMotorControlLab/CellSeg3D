@@ -1,11 +1,12 @@
 import os
-import shutil
+import warnings
+# import shutil
 from pathlib import Path
 
 import pandas as pd
-from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QHBoxLayout
 from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
@@ -29,14 +30,13 @@ class Datamanager(QWidget):
 
     """
 
-    def __init__(self, parent: "napari.viewer.Viewer", *args, **kwargs):
+    def __init__(self, parent: "napari.viewer.Viewer"):
         """Creates the datamanager widget in the specified viewer window.
 
         Args:
-            parent (napari.viewer.Viewer): napair Viewer for the widget to be displayed in"""
+            parent (napari.viewer.Viewer): napari Viewer for the widget to be displayed in"""
 
-        # TODO : use of args ?
-        super(Datamanager, self).__init__(*args, **kwargs)
+        super().__init__()
 
         layout = QVBoxLayout()
         self.viewer = parent
@@ -44,6 +44,7 @@ class Datamanager(QWidget):
 
         # add some buttons
         self.button = QPushButton("1", self)
+        self.button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.MinimumExpanding)
         self.button.clicked.connect(self.button_func)
 
         io_panel = QWidget()
@@ -156,7 +157,7 @@ class Datamanager(QWidget):
             labels = [str(filename) for i in range(self.image_dims[0])]
 
         else:
-            print("Error: Loading behaviour should be determined on launch")
+            raise ValueError("Error: Loading behaviour should be determined on launch")
 
         df = pd.DataFrame(
             {"filename": labels, "train": ["Not Checked"] * len(labels)}
@@ -183,6 +184,9 @@ class Datamanager(QWidget):
             )  # puts  button values at value of 1st csv item
 
     def button_func(self):  # updates csv every time you press button...
+        if self.viewer.dims.ndisplay != 2 :
+            #TODO test if undefined behaviour or if okay
+            warnings.warn("Please switch back to 2D mode !")
         if self.button.text() == "Not Checked":
             self.button.setText("Checked")
             self.df.at[self.df.index[self.slice_num], "train"] = "Checked"
@@ -192,41 +196,41 @@ class Datamanager(QWidget):
             self.df.at[self.df.index[self.slice_num], "train"] = "Not Checked"
             self.df.to_csv(self.csv_path)
 
-    def move_data(self):
-        shutil.copy(
-            self.df.at[self.df.index[self.slice_num], "filename"],
-            self.train_data_dir,
-        )
-
-    def delete_data(self):
-        os.remove(
-            os.path.join(
-                self.train_data_dir,
-                os.path.basename(
-                    self.df.at[self.df.index[self.slice_num], "filename"]
-                ),
-            )
-        )
-
-    def check_all_data_and_mod(self):
-        for i in range(len(self.df)):
-            if self.df.at[self.df.index[i], "train"] == "Checked":
-                try:
-                    shutil.copy(
-                        self.df.at[self.df.index[i], "filename"],
-                        self.train_data_dir,
-                    )
-                except:
-                    pass
-            else:
-                try:
-                    os.remove(
-                        os.path.join(
-                            self.train_data_dir,
-                            os.path.basename(
-                                self.df.at[self.df.index[i], "filename"]
-                            ),
-                        )
-                    )
-                except:
-                    pass
+    # def move_data(self):
+    #     shutil.copy(
+    #         self.df.at[self.df.index[self.slice_num], "filename"],
+    #         self.train_data_dir,
+    #     )
+    #
+    # def delete_data(self):
+    #     os.remove(
+    #         os.path.join(
+    #             self.train_data_dir,
+    #             os.path.basename(
+    #                 self.df.at[self.df.index[self.slice_num], "filename"]
+    #             ),
+    #         )
+    #     )
+    #
+    # def check_all_data_and_mod(self):
+    #     for i in range(len(self.df)):
+    #         if self.df.at[self.df.index[i], "train"] == "Checked":
+    #             try:
+    #                 shutil.copy(
+    #                     self.df.at[self.df.index[i], "filename"],
+    #                     self.train_data_dir,
+    #                 )
+    #             except:
+    #                 pass
+    #         else:
+    #             try:
+    #                 os.remove(
+    #                     os.path.join(
+    #                         self.train_data_dir,
+    #                         os.path.basename(
+    #                             self.df.at[self.df.index[i], "filename"]
+    #                         ),
+    #                     )
+    #                 )
+    #             except:
+    #                 pass
