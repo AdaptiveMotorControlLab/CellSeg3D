@@ -1,5 +1,4 @@
 import napari
-from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QSpinBox
@@ -59,6 +58,9 @@ class Helper(QWidget):
             self._viewer.window.remove_dock_widget(self.dock)
         self._viewer.window.remove_dock_widget(self)
 
+    ################
+    ################
+    ################
     ################ TESTING
     def update_loss_plot(self):
         if not self.test:
@@ -167,3 +169,7 @@ class Helper(QWidget):
                 facecolor="#262930", loc="lower right"
             )
             self.canvas.draw_idle()
+            ##########################
+            ##########################
+            ##########################
+            ########################## END of testing

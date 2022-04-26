@@ -42,6 +42,9 @@ For local installation, please run:
 pip install -e .
 ```
 
+## Documentation
+
+You can generate docs by running ``make html`` in the docs folder
 
 ## Usage
 

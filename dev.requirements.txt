@@ -1,4 +1,5 @@
 black
+coverage
 isort
 pytest
 pytest-qt

@@ -80,7 +80,21 @@ class InferenceWorker(GeneratorWorker):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~inference` function.
 
         Args:
-            Note: See :py:func:`~inference`
+            * device: cuda or cpu device to use for torch
+
+            * model_dict: the :py:attr:`~self.models_dict` dictionary to obtain the model name, class and instance
+
+            * weights: the loaded weights from the model
+
+            * images_filepaths: the paths to the images of the dataset
+
+            * results_path: the path to save the results to
+
+            * filetype: the file extension to use when saving,
+
+            * transforms: a dict containing transforms to perform at various times.
+
+        Note: See :py:func:`~self.inference`
         """
 
         super().__init__(self.inference)
@@ -127,7 +141,7 @@ class InferenceWorker(GeneratorWorker):
 
             * images_filepaths: the paths to the images of the dataset
 
-            * results_path: the path to save the results
+            * results_path: the path to save the results to
 
             * filetype: the file extension to use when saving,
 
@@ -307,6 +321,24 @@ class TrainingWorker(GeneratorWorker):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~train` function.
 
         Args:
+            * device : device to train on, cuda or cpu
+
+            * model_dict : dict containing the model's "name" and "class"
+
+            * data_dicts : dict from :py:func:`Trainer.create_train_dataset_dict`
+
+            * max_epochs : the amout of epochs to train for
+
+            * loss_function : the loss function to use for training
+
+            * val_interval : the interval at which to perform validation (e.g. if 2 will validate once every 2 epochs.) Also determines frequency of saving, depending on whether the metric is better or not
+
+            * batch_size : the batch size to use for training
+
+            * results_path : the path to save results in
+
+            * num_samples : the number of samples to extract from an image for training
+
            Note: See :py:func:`~train`
         """
 
@@ -333,8 +365,8 @@ class TrainingWorker(GeneratorWorker):
         self.log_signal.emit(text)
 
     def train(self):
-        """Trains the Pytorch model for num_epochs, with the selected model and data, using the chosen batch size,
-        validation interval, loss function, and number of samples.
+        """Trains the Pytorch model for the given number of epochs, with the selected model and data,
+        using the chosen batch size, validation interval, loss function, and number of samples.
         Will perform validation once every :py:obj:`val_interval` and save results if the mean dice is better
 
         Requires:
@@ -358,15 +390,9 @@ class TrainingWorker(GeneratorWorker):
         * num_samples : the number of samples to extract from an image for training
         """
 
-        print("train start")
-
-        #########################
-        #########################
         #########################
         # error_log = open(results_path +"/error_log.log" % multiprocessing.current_process().name, 'x')
         # faulthandler.enable(file=error_log, all_threads=True)
-        #########################
-        #########################
         #########################
 
         model_name = self.model_dict["name"]
@@ -388,8 +414,8 @@ class TrainingWorker(GeneratorWorker):
         print("* " * 20)
         print("Validation files :")
         [print(f"{val_file}\n") for val_file in val_files]
-        # TODO : param stretch factor if anisotropic ?
-        # TODO : param ROI size
+        # TODO : param stretch factor if anisotropic ? might be fine as is
+        # TODO : param patch ROI size
         sample_loader = Compose(
             [
                 LoadImaged(keys=["image", "label"]),
@@ -400,7 +426,7 @@ class TrainingWorker(GeneratorWorker):
                         110,
                         110,
                         110,
-                    ),  # TODO multiply by axis_stretch_factor
+                    ),  # multiply by axis_stretch_factor if anisotropy
                     max_roi_size=(120, 120, 120),
                     num_samples=self.num_samples,
                 ),

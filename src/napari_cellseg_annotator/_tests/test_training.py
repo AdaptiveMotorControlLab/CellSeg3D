@@ -20,26 +20,38 @@ def test_update_loss_plot(make_napari_viewer):
     view = make_napari_viewer()
     widget = train.Trainer(view)
 
-    widget.epoch_loss_values = [0, 1]
-    widget.metric_values = [0.2]
+    widget.val_interval = 1
 
-    widget.update_loss_plot()
+    epoch_loss_values = [1]
+    metric_values = []
+
+    widget.update_loss_plot(epoch_loss_values, metric_values)
 
     assert widget.dice_metric_plot is None
     assert widget.train_loss_plot is None
 
-    widget.epoch_loss_values = [0, 1, 0.5, 0.7]
-    widget.metric_values = [0.2, 0.3]
+    widget.val_interval = 2
 
-    widget.update_loss_plot()
+    epoch_loss_values = [0, 1]
+    metric_values = [0.2]
+
+    widget.update_loss_plot(epoch_loss_values, metric_values)
+
+    assert widget.dice_metric_plot is None
+    assert widget.train_loss_plot is None
+
+    epoch_loss_values = [0, 1, 0.5, 0.7]
+    metric_values = [0.2, 0.3]
+
+    widget.update_loss_plot(epoch_loss_values, metric_values)
 
     assert widget.dice_metric_plot is not None
     assert widget.train_loss_plot is not None
 
-    widget.epoch_loss_values = [0, 1, 0.5, 0.7, 0.5, 0.7]
-    widget.metric_values = [0.2, 0.3, 0.5, 0.7]
+    epoch_loss_values = [0, 1, 0.5, 0.7, 0.5, 0.7]
+    metric_values = [0.2, 0.3, 0.5, 0.7]
 
-    widget.update_loss_plot()
+    widget.update_loss_plot(epoch_loss_values, metric_values)
 
     assert widget.dice_metric_plot is not None
     assert widget.train_loss_plot is not None

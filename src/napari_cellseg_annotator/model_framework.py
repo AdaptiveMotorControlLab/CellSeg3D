@@ -4,7 +4,7 @@ import warnings
 
 import napari
 import torch
-from qtpy.QtCore import Signal
+# Qt
 from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLineEdit
@@ -15,6 +15,7 @@ from qtpy.QtWidgets import QTabWidget
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
+# local
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.log_utility import Log
 from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
@@ -79,8 +80,6 @@ class ModelFramework(QTabWidget):
 
         self.worker = None
         """Worker from model_workers.py, either inference or training"""
-        self.signal_log = Signal(str)
-        """Signal emitted when something should be logged"""
 
         #######################################################
         # interface
