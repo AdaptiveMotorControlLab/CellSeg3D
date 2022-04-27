@@ -210,19 +210,18 @@ class Inferer(ModelFramework):
     def build(self):
         """Puts all widgets in a layout and adds them to the napari Viewer"""
 
-        tab = QWidget()
-        tab_layout = QVBoxLayout()
-        tab_layout.setContentsMargins(0, 0, 1, 1)
-        tab_layout.setSizeConstraint(QLayout.SetFixedSize)
+        self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.MinimumExpanding)
+        ######
+        ############
+        ##################
+        tab, tab_layout = utils.make_container_widget(
+            0, 0, 1, 1
+        )  # tab that will contain all widgets
 
         L, T, R, B = 7, 20, 7, 11  # margins for group boxes
         #################################
         #################################
-        io_group = QGroupBox("I/O")
-        io_group.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        io_layout = QVBoxLayout()
-        io_layout.setContentsMargins(L, T, R, B)
-        io_layout.setSizeConstraint(QLayout.SetFixedSize)
+        io_group, io_layout = utils.make_group("Data", L, T, R, B)
 
         io_layout.addWidget(
             utils.combine_blocks(self.filetype_choice, self.lbl_filetype),
@@ -240,33 +239,31 @@ class Inferer(ModelFramework):
         io_group.setLayout(io_layout)
         tab_layout.addWidget(io_group, alignment=utils.LEFT_AL)
         #################################
+        #################################
         utils.add_blank(self, tab_layout)
         #################################
         #################################
-        model_param_group = QGroupBox("Model choice")
-        model_param_group.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        model_param_layout = QVBoxLayout()
-        model_param_layout.setContentsMargins(L, T, R, B)
-        model_param_layout.setSizeConstraint(QLayout.SetFixedSize)
+        # model group
 
-        model_param_layout.addWidget(
-            # utils.combine_blocks(
-            self.model_choice,  # , self.lbl_model_choice, horizontal=False),
-            alignment=utils.LEFT_AL,
+        utils.make_group(
+            "Model choice",
+            L,
+            T,
+            R,
+            B,
+            solo_dict={"widget": self.model_choice, "layout": tab_layout},
         )  # model choice
         self.lbl_model_choice.setVisible(False)
 
-        model_param_group.setLayout(model_param_layout)
-        tab_layout.addWidget(model_param_group)
+        #################################
         #################################
         utils.add_blank(self, tab_layout)
         #################################
         #################################
-        post_proc_group = QGroupBox("Post-processing")
-        post_proc_group.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        post_proc_layout = QVBoxLayout()
-        post_proc_layout.setContentsMargins(L, T, R, B)
-        post_proc_layout.setSizeConstraint(QLayout.SetFixedSize)
+        # post proc group
+        post_proc_group, post_proc_layout = utils.make_group(
+            "Post-processing", L, T, R, B
+        )
 
         post_proc_layout.addWidget(
             self.aniso_checkbox, alignment=utils.LEFT_AL
@@ -295,14 +292,13 @@ class Inferer(ModelFramework):
         post_proc_group.setLayout(post_proc_layout)
         tab_layout.addWidget(post_proc_group, alignment=utils.LEFT_AL)
         ###################################
+        ###################################
         utils.add_blank(self, tab_layout)
         ###################################
         ###################################
-        display_opt_group = QGroupBox("Display options")
-        display_opt_group.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        display_opt_layout = QVBoxLayout()
-        display_opt_layout.setContentsMargins(L, T, R, B)
-        display_opt_layout.setSizeConstraint(QLayout.SetFixedSize)
+        display_opt_group, display_opt_layout = utils.make_group(
+            "Display options", L, T, R, B
+        )
 
         display_opt_layout.addWidget(
             self.view_checkbox,  # utils.combine_blocks(self.view_checkbox, self.lbl_view),
@@ -336,11 +332,14 @@ class Inferer(ModelFramework):
         ###################################
         tab_layout.addWidget(self.btn_start, alignment=utils.LEFT_AL)
         tab_layout.addWidget(self.btn_close, alignment=utils.LEFT_AL)
-        ###################################
+        ##################
+        ############
+        ######
+        # end of tab, combine into scrollable
         utils.make_scrollable(
             containing_widget=tab,
             contained_layout=tab_layout,
-            base_wh=[100, 500],
+            min_wh=[100, 150],
         )
         self.addTab(tab, "Inference")
 

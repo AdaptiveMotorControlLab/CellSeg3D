@@ -18,4 +18,6 @@ def test_prepare(make_napari_viewer):
 
     assert widget.filetype == ".tif"
     assert widget.as_folder == False
-    assert Path(widget.csv_path) == Path(os.path.dirname(os.path.realpath(__file__)) + "/res/_train0.csv")
+    assert Path(widget.csv_path) == Path(
+        os.path.dirname(os.path.realpath(__file__)) + "/res/_train0.csv"
+    )

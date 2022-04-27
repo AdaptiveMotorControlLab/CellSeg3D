@@ -9,6 +9,7 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
+
 # MONAI
 from monai.losses import DiceCELoss
 from monai.losses import DiceFocalLoss
@@ -16,6 +17,7 @@ from monai.losses import DiceLoss
 from monai.losses import FocalLoss
 from monai.losses import GeneralizedDiceLoss
 from monai.losses import TverskyLoss
+
 # Qt
 from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QLabel
@@ -287,28 +289,29 @@ class Trainer(ModelFramework):
 
             * Start (see :py:func:`~start`)"""
 
-        model_tab = QWidget()
-        model_tab.setSizePolicy(
-            QSizePolicy.MinimumExpanding, QSizePolicy.Fixed
-        )
-        ###### first tab : model and dataset choices
-        model_tab_layout = QVBoxLayout()
-        model_tab_layout.setContentsMargins(0, 0, 1, 11)
-        model_tab_layout.setSizeConstraint(QLayout.SetFixedSize)
+        self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.MinimumExpanding)
+        ########
+        ################
+        ########################
+        # first tab : model and dataset choices
+        model_tab, model_tab_layout = utils.make_container_widget()
+        ################
+        # first group : Data
+        data_group, data_layout = utils.make_group("Data")
 
-        model_tab_layout.addWidget(
+        data_layout.addWidget(
             utils.combine_blocks(self.filetype_choice, self.lbl_filetype),
             alignment=utils.LEFT_AL,
         )  # file extension
 
-        model_tab_layout.addWidget(
+        data_layout.addWidget(
             utils.combine_blocks(self.btn_image_files, self.lbl_image_files),
             alignment=utils.LEFT_AL,
         )  # volumes
         if self.data_path != "":
             self.lbl_image_files.setText(self.data_path)
 
-        model_tab_layout.addWidget(
+        data_layout.addWidget(
             utils.combine_blocks(self.btn_label_files, self.lbl_label_files),
             alignment=utils.LEFT_AL,
         )  # labels
@@ -319,17 +322,18 @@ class Trainer(ModelFramework):
         #     utils.combine_blocks(self.model_choice, self.lbl_model_choice)
         # )  # model choice
 
-        model_tab_layout.addWidget(
+        data_layout.addWidget(
             utils.combine_blocks(self.btn_result_path, self.lbl_result_path),
             alignment=utils.LEFT_AL,
         )  # results folder
         if self.results_path != "":
             self.lbl_result_path.setText(self.results_path)
 
-        model_tab_layout.addWidget(
-            utils.combine_blocks(self.model_choice, self.lbl_model_choice),
-            alignment=utils.LEFT_AL,
-        )  # model choice
+        data_group.setLayout(data_layout)
+        model_tab_layout.addWidget(data_group, alignment=utils.LEFT_AL)
+        # end of first group : Data
+        utils.add_blank(widget=model_tab, layout=model_tab_layout)
+        ################
 
         model_tab_layout.addWidget(
             self.lbl_sample_choice, alignment=utils.LEFT_AL
@@ -338,7 +342,10 @@ class Trainer(ModelFramework):
             self.sample_choice, alignment=utils.LEFT_AL
         )  # number of samples
         # TODO add transfo tab and add there ?
+        ################
         utils.add_blank(self, model_tab_layout)
+        ################
+        # buttons
 
         model_tab_layout.addWidget(
             self.btn_next, alignment=utils.LEFT_AL
@@ -349,40 +356,79 @@ class Trainer(ModelFramework):
         )  # close
 
         #####################
-        train_tab = QWidget()
-        train_tab.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Fixed)
-        ####### second tab : training parameters
-        train_tab_layout = QVBoxLayout()
-        train_tab_layout.setContentsMargins(0, 0, 1, 11)
-        train_tab_layout.setSizeConstraint(QLayout.SetFixedSize)
+        #################
+        ######
 
-        train_tab_layout.addWidget(
-            utils.combine_blocks(self.loss_choice, self.lbl_loss_choice),
-            alignment=utils.LEFT_AL,
+        ######
+        ############
+        ##################
+        # second tab : training parameters
+        train_tab, train_tab_layout = utils.make_container_widget()
+        ##################
+        # solo groups for loss and model
+        utils.add_blank(train_tab, train_tab_layout)
+
+        utils.make_group(
+            "Model",
+            solo_dict={
+                "widget": self.model_choice,
+                "layout": train_tab_layout,
+            },
+        )  # model choice
+        self.lbl_model_choice.setVisible(False)
+
+        utils.add_blank(train_tab, train_tab_layout)
+
+        utils.make_group(
+            "Loss",
+            solo_dict={"widget": self.loss_choice, "layout": train_tab_layout},
         )  # loss choice
+        self.lbl_loss_choice.setVisible(False)
 
-        spinbox_spacing = 110
+        # end of solo groups for loss and model
+        ##################
+        utils.add_blank(train_tab, train_tab_layout)
+        ##################
+        # training params group
 
-        train_tab_layout.addWidget(
+        train_param_group_w, train_param_group_l = utils.make_group(
+            "Training parameters", R=1, B=5, T=11
+        )
+
+        spacing = 20
+        train_param_group_l.addWidget(
             utils.combine_blocks(
-                self.batch_choice, self.lbl_batch_choice, spinbox_spacing
+                self.batch_choice,
+                self.lbl_batch_choice,
+                min_spacing=spacing,
+                horizontal=False,
             ),
             alignment=utils.LEFT_AL,
         )  # batch size
-        train_tab_layout.addWidget(
+        train_param_group_l.addWidget(
             utils.combine_blocks(
-                self.epoch_choice, self.lbl_epoch_choice, spinbox_spacing
+                self.epoch_choice,
+                self.lbl_epoch_choice,
+                min_spacing=spacing,
+                horizontal=False,
             ),
             alignment=utils.LEFT_AL,
         )  # epochs
-        train_tab_layout.addWidget(
+        train_param_group_l.addWidget(
             utils.combine_blocks(
                 self.val_interval_choice,
                 self.lbl_val_interv_choice,
-                spinbox_spacing,
+                min_spacing=spacing,
+                horizontal=False,
             ),
             alignment=utils.LEFT_AL,
         )  # validation interval
+
+        train_param_group_w.setLayout(train_param_group_l)
+        train_tab_layout.addWidget(train_param_group_w)
+        # end of training params group
+        ##################
+        # buttons
 
         utils.add_blank(self, train_tab_layout)
 
@@ -393,10 +439,10 @@ class Trainer(ModelFramework):
         train_tab_layout.addWidget(
             self.btn_start, alignment=utils.LEFT_AL
         )  # start
-
-        self.setSizePolicy(
-            QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
-        )
+        ##################
+        ############
+        ######
+        # end of tab layouts
 
         utils.make_scrollable(
             contained_layout=model_tab_layout, containing_widget=model_tab
@@ -406,7 +452,7 @@ class Trainer(ModelFramework):
         utils.make_scrollable(
             contained_layout=train_tab_layout,
             containing_widget=train_tab,
-            min_wh=[250, 100],
+            min_wh=[100, 150],
         )
         self.addTab(train_tab, "Training parameters")
 

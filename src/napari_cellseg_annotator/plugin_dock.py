@@ -1,5 +1,6 @@
 import os
 import warnings
+
 # import shutil
 from pathlib import Path
 
@@ -44,7 +45,9 @@ class Datamanager(QWidget):
 
         # add some buttons
         self.button = QPushButton("1", self)
-        self.button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.MinimumExpanding)
+        self.button.setSizePolicy(
+            QSizePolicy.Fixed, QSizePolicy.MinimumExpanding
+        )
         self.button.clicked.connect(self.button_func)
 
         io_panel = QWidget()
@@ -157,7 +160,9 @@ class Datamanager(QWidget):
             labels = [str(filename) for i in range(self.image_dims[0])]
 
         else:
-            raise ValueError("Error: Loading behaviour should be determined on launch")
+            raise ValueError(
+                "Error: Loading behaviour should be determined on launch"
+            )
 
         df = pd.DataFrame(
             {"filename": labels, "train": ["Not Checked"] * len(labels)}
@@ -184,8 +189,8 @@ class Datamanager(QWidget):
             )  # puts  button values at value of 1st csv item
 
     def button_func(self):  # updates csv every time you press button...
-        if self.viewer.dims.ndisplay != 2 :
-            #TODO test if undefined behaviour or if okay
+        if self.viewer.dims.ndisplay != 2:
+            # TODO test if undefined behaviour or if okay
             warnings.warn("Please switch back to 2D mode !")
         if self.button.text() == "Not Checked":
             self.button.setText("Checked")

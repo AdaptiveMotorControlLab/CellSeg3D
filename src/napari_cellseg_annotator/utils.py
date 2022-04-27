@@ -13,6 +13,7 @@ from qtpy.QtCore import QUrl
 from qtpy.QtGui import QDesktopServices
 from qtpy.QtWidgets import QFileDialog
 from qtpy.QtWidgets import QGridLayout
+from qtpy.QtWidgets import QGroupBox
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLayout
 from qtpy.QtWidgets import QScrollArea
@@ -77,15 +78,75 @@ def make_scrollable(
         scroll.setMaximumSize(max_wh[0], max_wh[1])
     if min_wh is not None:
         scroll.setMinimumSize(min_wh[0], min_wh[1])
+
     scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
     scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-    scroll.adjustSize()
+    # scroll.adjustSize()
 
     layout = QVBoxLayout(containing_widget)
     # layout.setContentsMargins(0,0,1,1)
     layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
     layout.addWidget(scroll)
     containing_widget.setLayout(layout)
+
+
+def make_group(title, L=7, T=20, R=7, B=11, solo_dict=None):
+    """Creates a group with a header (`title`) and content margins for top/left/right/bottom `L, T, R, B` (in pixels)
+    Group widget and layout returned will have a Fixed size policy.
+
+    Args:
+        title (str): Title of the group
+        L (int): left margin
+        T (int): top margin
+        R (int): right margin
+        B (int): bottom margin
+        solo_dict (dict): shortcut if only one widget is to be added to the group. Should contain "widget" (QWidget) and "layout" (Qlayout), widget will be added to layout. Defaults to None
+
+    Returns:
+        If solo_dict is None:
+        QWidget : widget that contains the group. Fixed size.
+        QVBoxLayout :  layout to group widgets in. Fixed size.
+        Else : Returns None
+
+    """
+    group = QGroupBox(title)
+    group.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+    layout = QVBoxLayout()
+    layout.setContentsMargins(L, T, R, B)
+    layout.setSizeConstraint(QLayout.SetFixedSize)
+
+    if (
+        solo_dict is not None
+    ):  # use the dict to directly add a widget if it is alone in the group
+        external_lay = solo_dict["layout"]
+        external_wid = solo_dict["widget"]
+        layout.addWidget(external_wid)  # , alignment=LEFT_AL)
+        group.setLayout(layout)
+        external_lay.addWidget(group)
+        return
+
+    return group, layout
+
+
+def make_container_widget(L=0, T=0, R=1, B=11):
+    """Creates a QWidget and a layout for the purpose of containing other modules, with a Fixed layout.
+
+    Args:
+        L: left margin
+        T: top margin
+        R: right margin
+        B: bottom margin
+
+    Returns:
+        QWidget : widget that contains the other widgets. Fixed size.
+        QVBoxLayout :  layout to add contained widgets in. Fixed size.
+    """
+    container_widget = QWidget()
+    container_layout = QVBoxLayout()
+    container_layout.setContentsMargins(L, T, R, B)
+    container_layout.setSizeConstraint(QLayout.SetFixedSize)
+
+    return container_widget, container_layout
 
 
 def combine_blocks(button, label, min_spacing=0, horizontal=True):

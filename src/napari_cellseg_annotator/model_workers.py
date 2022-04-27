@@ -6,9 +6,9 @@ import numpy as np
 import torch
 from monai.data import DataLoader
 from monai.data import Dataset
-from monai.data import PatchDataset
 from monai.data import decollate_batch
 from monai.data import pad_list_data_collate
+from monai.data import PatchDataset
 from monai.inferers import sliding_window_inference
 from monai.metrics import DiceMetric
 from monai.transforms import AsDiscrete
@@ -28,6 +28,7 @@ from monai.transforms import SpatialPadd
 from monai.transforms import Zoom
 from napari.qt.threading import GeneratorWorker
 from napari.qt.threading import WorkerBaseSignals
+
 # Qt
 from qtpy.QtCore import Signal
 from tifffile import imwrite

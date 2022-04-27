@@ -4,6 +4,7 @@ import warnings
 
 import napari
 import torch
+
 # Qt
 from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QLabel
@@ -18,9 +19,9 @@ from qtpy.QtWidgets import QWidget
 # local
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.log_utility import Log
-from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
 from napari_cellseg_annotator.models import model_SegResNet as SegResNet
 from napari_cellseg_annotator.models import model_VNet as VNet
+from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
 
 warnings.formatwarning = utils.format_Warning
 
@@ -104,7 +105,7 @@ class ModelFramework(QTabWidget):
         self.filetype_choice.setSizePolicy(
             QSizePolicy.Fixed, QSizePolicy.Fixed
         )
-        self.lbl_filetype = QLabel("File type", self)
+        self.lbl_filetype = QLabel("File format", self)
 
         self.btn_result_path = QPushButton("Open", self)
         self.btn_result_path.setSizePolicy(

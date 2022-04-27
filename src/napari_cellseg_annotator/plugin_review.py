@@ -94,19 +94,22 @@ class Reviewer(BasePlugin):
                 " make sure to save your work beforehand"
             )
 
-        self.filetype_choice.setVisible(False)
-
         utils.add_blank(self, vbox)
-        vbox.addWidget(
+
+        data_group_w, data_group_l = utils.make_group("Data")
+
+        data_group_l.addWidget(
             utils.combine_blocks(self.filetype_choice, self.file_handling_box)
         )
-
-        vbox.addWidget(utils.combine_blocks(self.btn_image, self.lbl_image))
-
-        vbox.addWidget(utils.combine_blocks(self.btn_label, self.lbl_label))
-        # vbox.addWidget(self.lblft2)
-
         self.filetype_choice.setVisible(False)
+
+        data_group_l.addWidget(utils.combine_blocks(self.btn_image, self.lbl_image))
+
+        data_group_l.addWidget(utils.combine_blocks(self.btn_label, self.lbl_label))
+
+        data_group_w.setLayout(data_group_l)
+        vbox.addWidget(data_group_w)
+        # vbox.addWidget(self.lblft2)
         vbox.addWidget(utils.combine_blocks(self.textbox, self.lbl_mod))
 
         vbox.addWidget(self.checkBox)
