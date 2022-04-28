@@ -95,7 +95,7 @@ class Inferer(ModelFramework):
         self.view_checkbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.view_checkbox.stateChanged.connect(self.toggle_display_number)
 
-        self.display_number_choice = ui.make_n_spinboxes(1,1,10,1)
+        self.display_number_choice = ui.make_n_spinboxes(1, 1, 10, 1)
         self.display_number_choice.setSizePolicy(
             QSizePolicy.Fixed, QSizePolicy.Fixed
         )
@@ -144,6 +144,7 @@ class Inferer(ModelFramework):
         )
 
         self.btn_start = ui.make_button("Start inference", self.start)
+        self.btn_close = self.make_close_button()
 
         # hide unused widgets from parent class
         self.btn_label_files.setVisible(False)
@@ -317,7 +318,7 @@ class Inferer(ModelFramework):
         ###################################
         ###################################
         tab_layout.addWidget(self.btn_start, alignment=ui.LEFT_AL)
-        tab_layout.addWidget(self.make_close_button(), alignment=ui.LEFT_AL)
+        tab_layout.addWidget(self.btn_close, alignment=ui.LEFT_AL)
         ##################
         ############
         ######
@@ -368,7 +369,6 @@ class Inferer(ModelFramework):
             model_dict = {  # gather model info
                 "name": model_key,
                 "class": self.get_model(model_key),
-                "instance": self.get_model(model_key).get_net(),
             }
 
             weights = self.get_model(model_key).get_weights_file()
@@ -414,7 +414,7 @@ class Inferer(ModelFramework):
             self.worker.started.connect(self.on_start)
             self.worker.log_signal.connect(self.log.print_and_log)
             self.worker.yielded.connect(yield_connect_show_res)
-            # self.worker.errored.connect(yield_connect_show_res) #TODO fix
+            self.worker.errored.connect(yield_connect_show_res)  # TODO fix
             self.worker.finished.connect(self.on_finish)
 
             if self.get_device(show=False) == "cuda":

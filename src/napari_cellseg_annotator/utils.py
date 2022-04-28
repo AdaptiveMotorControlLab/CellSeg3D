@@ -63,8 +63,8 @@ def normalize_y(image):
 
 def get_padding_dim(image_shape, anisotropy_factor=None):
     """
-    Finds the nearest and superior power of two for each image dimension to pad it for CNN processing,
-    for either 2D or 3D images. E.g. an image size of 30x40x100 will result in a padding of 32x64x128.
+    Finds the nearest and superior power of two for each image dimension to zero-pad it for CNN processing,
+    accepts either 2D or 3D images shapes. E.g. an image size of 30x40x100 will result in a padding of 32x64x128.
     Shows a warning if the padding dimensions are very large.
 
     Args:

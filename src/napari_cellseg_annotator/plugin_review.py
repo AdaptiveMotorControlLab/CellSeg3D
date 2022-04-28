@@ -158,6 +158,9 @@ class Reviewer(BasePlugin):
             napari.viewer.Viewer: self.viewer
         """
 
+        self.filetype = self.filetype_choice.currentText()
+        self.as_folder = self.file_handling_box.isChecked()
+
         #################################
         #################################
         #################################
@@ -169,12 +172,10 @@ class Reviewer(BasePlugin):
             else:
                 self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
                 self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels/testing_im.tif"
-            #################################
-            #################################
-            #################################
+        #################################
+        #################################
+        #################################
 
-        self.filetype = self.filetype_choice.currentText()
-        self.as_folder = self.file_handling_box.isChecked()
         images = utils.load_images(
             self.image_path, self.filetype, self.as_folder
         )

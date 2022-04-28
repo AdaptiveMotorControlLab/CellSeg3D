@@ -230,18 +230,13 @@ class Trainer(ModelFramework):
 
         self.augment_choice = QCheckBox("Augment data")
 
-        self.patch_choice = QCheckBox("Extract patches from images")
-        self.patch_choice.clicked.connect(self.toggle_patch_dims)
-        self.patch_choice.toggle()
-        self.toggle_patch_dims()
-
         # TODO add self.tabs, self.close_buttons etc...
         self.close_buttons = [
             self.make_close_button() for i in range(NUMBER_TABS)
         ]
         """Close buttons list for each tab"""
 
-        self.patch_size_widgets = ui.make_n_spinboxes(3, 10,1023,120)
+        self.patch_size_widgets = ui.make_n_spinboxes(3, 10, 1023, 120)
 
         self.patch_size_lbl = [
             QLabel(f"Size of patch in {axis} :") for axis in "xyz"
@@ -251,7 +246,12 @@ class Trainer(ModelFramework):
             w.setVisible(False)
         for l in self.patch_size_lbl:
             l.setVisible(False)
-        self.sampling_container = None
+        self.sampling_container = QLabel()
+
+        self.patch_choice = QCheckBox("Extract patches from images")
+        self.patch_choice.clicked.connect(self.toggle_patch_dims)
+        # self.patch_choice.toggle()
+        # self.toggle_patch_dims()
 
         self.progress = QProgressBar()
         self.progress.setVisible(False)

@@ -150,6 +150,7 @@ def make_n_spinboxes(n=1, min=0, max=10, default=0, step=1, parent=None):
         return boxes[0]
     return boxes
 
+
 def make_group(title, L=7, T=20, R=7, B=11, solo_dict=None):
     """Creates a group with a header (`title`) and content margins for top/left/right/bottom `L, T, R, B` (in pixels)
     Group widget and layout returned will have a Fixed size policy.

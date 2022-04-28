@@ -159,18 +159,12 @@ class InferenceWorker(GeneratorWorker):
 
         """
 
-        model = self.model_dict["instance"]
-        model.to(self.device)
-
-        print("FILEPATHS PRINT")
-        print(self.images_filepaths)
-
         images_dict = self.create_inference_dict(self.images_filepaths)
 
         # TODO : better solution than loading first image always ?
-        data = LoadImaged(keys=["image"])(images_dict[0])
+        data_check = LoadImaged(keys=["image"])(images_dict[0])
         # print(data)
-        check = data["image"].shape
+        check = data_check["image"].shape
         # print(check)
         # TODO remove
         # z_aniso = 5 / 1.5
@@ -180,6 +174,19 @@ class InferenceWorker(GeneratorWorker):
         self.log("\nChecking dimensions...")
         pad = utils.get_padding_dim(check)
         # print(pad)
+
+        model = self.model_dict["class"].get_net()
+        if self.model_dict["name"] == "SegResNet":
+            model = self.model_dict["class"].get_net()(
+                input_image_size=[128, 128, 128],  # TODO FIX !
+                out_channels=1,
+                # dropout_prob=0.3,
+            )
+
+        model.to(self.device)
+
+        print("FILEPATHS PRINT")
+        print(self.images_filepaths)
 
         load_transforms = Compose(
             [
@@ -367,7 +374,7 @@ class TrainingWorker(GeneratorWorker):
         self.results_path = results_path
 
         self.num_samples = num_samples
-        self.sampling = True
+        self.sampling = sampling
         self.sample_size = sample_size
 
         self.do_augment = do_augmentation
@@ -420,9 +427,19 @@ class TrainingWorker(GeneratorWorker):
         model_name = self.model_dict["name"]
         model_class = self.model_dict["class"]
 
+        if not self.sampling:
+            self.log("Sampling is disabled")
+            data_check = LoadImaged(keys=["image"])(self.data_dicts[0])
+            check = data_check["image"].shape
+
         if model_name == "SegResNet":
+            if self.sampling:
+                size = self.sample_size
+            else:
+                size = check
+            print(f"Size of image : {size}")
             model = model_class.get_net()(
-                input_image_size=utils.get_padding_dim(self.sample_size),
+                input_image_size=utils.get_padding_dim(size),
                 out_channels=1,
                 dropout_prob=0.3,
             )
@@ -501,30 +518,51 @@ class TrainingWorker(GeneratorWorker):
         )
         # self.log("Loading dataset...\n")
         if self.sampling:
+
             train_ds = PatchDataset(
                 data=train_files,
                 transform=train_transforms,
                 patch_func=sample_loader,
                 samples_per_image=self.num_samples,
             )
-        else:
-            train_ds = CacheDataset(
-                dat=train_files, transform=train_transforms
+
+            val_ds = PatchDataset(
+                data=val_files,
+                transform=val_transforms,
+                patch_func=sample_loader,
+                samples_per_image=self.num_samples,
             )
 
+        else:
+            load_single_images = Compose(
+                [
+                    LoadImaged(keys=["image", "label"]),
+                    EnsureChannelFirstd(keys=["image", "label"]),
+                    Orientationd(keys=["image", "label"], axcodes="PLI"),
+                    SpatialPadd(
+                        keys=["image", "label"],
+                        spatial_size=(utils.get_padding_dim(check)),
+                    ),
+                    EnsureTyped(keys=["image", "label"]),
+                ]
+            )
+            print("Cache dataset : train")
+            train_ds = CacheDataset(
+                data=train_files,
+                transform=Compose(load_single_images, train_transforms),
+            )
+            print("Cache dataset : val")
+            val_ds = CacheDataset(
+                data=val_files,
+                transform=load_single_images
+            )
+        print("Dataloader")
         train_loader = DataLoader(
             train_ds,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=4,
             collate_fn=pad_list_data_collate,
-        )
-
-        val_ds = PatchDataset(
-            data=val_files,
-            transform=val_transforms,
-            patch_func=sample_loader,
-            samples_per_image=self.num_samples,
         )
 
         val_loader = DataLoader(
