@@ -67,14 +67,6 @@ class Reviewer(BasePlugin):
         pal = self.warn_label.palette()
         pal.setColor(QtGui.QPalette.WindowText, QtGui.QColor("red"))
         self.warn_label.setPalette(pal)
-        #####################################################################
-        # TODO remove once done
-        self.test_button = True
-        if self.test_button:
-            self.btntest = QPushButton("test", self)
-            self.btntest.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-            self.btntest.clicked.connect(self.run_test)
-        #####################################################################
 
         self.build()
 
@@ -95,7 +87,7 @@ class Reviewer(BasePlugin):
             )
 
         utils.add_blank(self, vbox)
-
+        ###########################
         data_group_w, data_group_l = utils.make_group("Data")
 
         data_group_l.addWidget(
@@ -103,30 +95,48 @@ class Reviewer(BasePlugin):
         )
         self.filetype_choice.setVisible(False)
 
-        data_group_l.addWidget(utils.combine_blocks(self.btn_image, self.lbl_image))
+        data_group_l.addWidget(
+            utils.combine_blocks(self.btn_image, self.lbl_image)
+        )
 
-        data_group_l.addWidget(utils.combine_blocks(self.btn_label, self.lbl_label))
+        data_group_l.addWidget(
+            utils.combine_blocks(self.btn_label, self.lbl_label)
+        )
 
         data_group_w.setLayout(data_group_l)
         vbox.addWidget(data_group_w)
-        # vbox.addWidget(self.lblft2)
-        vbox.addWidget(utils.combine_blocks(self.textbox, self.lbl_mod))
-
-        vbox.addWidget(self.checkBox)
+        ###########################
         utils.add_blank(self, vbox)
+        ###########################
+        # vbox.addWidget(self.lblft2)
+        csv_param_w, csv_param_l = utils.make_group("CSV parameters")
+
+        csv_param_l.addWidget(
+            utils.combine_blocks(
+                self.textbox,
+                self.lbl_mod,
+                horizontal=False,
+                l=5,
+                t=5,
+                r=5,
+                b=5,
+            )
+        )
+        csv_param_l.addWidget(self.checkBox)
+
+        csv_param_w.setLayout(csv_param_l)
+        vbox.addWidget(csv_param_w)
+        ###########################
+        utils.add_blank(self, vbox)
+        ###########################
+
         vbox.addWidget(self.btn_start)
         vbox.addWidget(self.btn_close)
 
-        ##################################################################
-        # remove once done ?
-
-        if self.test_button:
-            vbox.addWidget(self.btntest)
-        ##################################################################
         utils.make_scrollable(
             contained_layout=vbox,
             containing_widget=self,
-            min_wh=[185, 100],
+            min_wh=[185, 200],
             base_wh=[190, 600],
         )
         # self.show()
@@ -148,6 +158,22 @@ class Reviewer(BasePlugin):
         Returns:
             napari.viewer.Viewer: self.viewer
         """
+
+        #################################
+        #################################
+        #################################
+        # TODO test remove later
+        if utils.ENABLE_TEST_MODE():
+            if self.as_folder:
+                self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
+                self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
+            else:
+                self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
+                self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels/testing_im.tif"
+            #################################
+            #################################
+            #################################
+
         self.filetype = self.filetype_choice.currentText()
         self.as_folder = self.file_handling_box.isChecked()
         images = utils.load_images(
@@ -224,23 +250,6 @@ class Reviewer(BasePlugin):
 
         return view1
 
-    ########################
-    # TODO : remove once done
-    def run_test(self):
-        self.filetype = self.filetype_choice.currentText()
-        self.as_folder = self.file_handling_box.isChecked()
-        if self.as_folder:
-            self.image_path = (
-                "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
-            )
-            self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
-        else:
-            self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
-            self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels/testing_im.tif"
-        self.run_review()
-        # self.close()
-
-    ########################
     def close(self):
         """Close widget and remove it from window.
         Sets the check for an active session to false, so that if the user closes manually and doesn't launch the review,

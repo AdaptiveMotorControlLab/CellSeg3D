@@ -9,7 +9,6 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
-
 # MONAI
 from monai.losses import DiceCELoss
 from monai.losses import DiceFocalLoss
@@ -17,23 +16,21 @@ from monai.losses import DiceLoss
 from monai.losses import FocalLoss
 from monai.losses import GeneralizedDiceLoss
 from monai.losses import TverskyLoss
-
+from qtpy.QtWidgets import QCheckBox
 # Qt
 from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QLabel
-from qtpy.QtWidgets import QLayout
 from qtpy.QtWidgets import QProgressBar
 from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QSpinBox
-from qtpy.QtWidgets import QVBoxLayout
-from qtpy.QtWidgets import QWidget
 
 # local
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.model_framework import ModelFramework
 from napari_cellseg_annotator.model_workers import TrainingWorker
 
+NUMBER_TABS = 3
 
 class Trainer(ModelFramework):
     """A plugin to train pre-defined Pytorch models for one-channel segmentation directly in napari.
@@ -156,15 +153,18 @@ class Trainer(ModelFramework):
         self.num_samples = samples
         """Number of samples to extract"""
         self.batch_size = batch
-
+        """Batch size"""
         self.max_epochs = epochs
-
+        """Epochs"""
         self.val_interval = val_interval
         """At which epochs to perform validation. E.g. if 2, will run validation on epochs 2,4,6..."""
+        self.patch_size = []
+
         self.model = None  # TODO : custom model loading ?
         self.worker = None
         """Training worker for multithreading, should be a TrainingWorker instance from :doc:model_workers.py"""
         self.data = None
+        """Data dictionary containing file paths"""
 
         self.loss_dict = {
             "Dice loss": DiceLoss(sigmoid=True),
@@ -205,9 +205,7 @@ class Trainer(ModelFramework):
         self.sample_choice.setValue(self.num_samples)
         self.sample_choice.setRange(2, 50)
         self.sample_choice.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.lbl_sample_choice = QLabel(
-            "Number of samples from image : ", self
-        )
+        self.lbl_sample_choice = QLabel("Number of patches per image : ", self)
 
         self.batch_choice = QSpinBox()
         self.batch_choice.setValue(self.batch_size)
@@ -223,6 +221,32 @@ class Trainer(ModelFramework):
         )
         self.lbl_val_interv_choice = QLabel("Validation interval : ", self)
 
+        self.augment_choice = QCheckBox("Augment data")
+
+        self.patch_choice = QCheckBox("Extract patches from images")
+        self.patch_choice.clicked.connect(self.toggle_patch_dims)
+
+        # TODO add self.tabs, self.close_buttons etc...
+        self.close_buttons = [self.make_close_button() for i in range(NUMBER_TABS)]
+        """Close buttons list for each tab"""
+
+        def make_patch_size_choice():
+            widget = QSpinBox()
+            widget.setMinimum(1)
+            widget.setMaximum(1023)
+            widget.setValue(110)  # change default TODO
+            return widget
+
+        self.patch_size_widgets = [make_patch_size_choice() for axis in "xyz"]
+        self.patch_size_lbl = [
+            QLabel(f"Size of patch in {axis} :") for axis in "xyz"
+        ]
+        for w in self.patch_size_widgets:
+            w.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+            w.setVisible(False)
+        for l in self.patch_size_lbl:
+            l.setVisible(False)
+
         self.progress = QProgressBar()
         self.progress.setVisible(False)
         """Dock widget containing the progress bar"""
@@ -235,6 +259,14 @@ class Trainer(ModelFramework):
         self.lbl_model_path.setVisible(False)
 
         self.build()
+
+    def toggle_patch_dims(self):
+        if self.patch_choice.isChecked():
+            [w.setVisible(True) for w in self.patch_size_widgets]
+            [l.setVisible(True) for l in self.patch_size_lbl]
+        else:
+            [w.setVisible(False) for w in self.patch_size_widgets]
+            [l.setVisible(False) for l in self.patch_size_lbl]
 
     def check_ready(self):
         """
@@ -294,7 +326,7 @@ class Trainer(ModelFramework):
         ################
         ########################
         # first tab : model and dataset choices
-        model_tab, model_tab_layout = utils.make_container_widget()
+        data_tab, data_tab_layout = utils.make_container_widget()
         ################
         # first group : Data
         data_group, data_layout = utils.make_group("Data")
@@ -318,7 +350,7 @@ class Trainer(ModelFramework):
         if self.label_path != "":
             self.lbl_label_files.setText(self.label_path)
 
-        # model_tab_layout.addWidget( # TODO : add custom model choice
+        # data_tab_layout.addWidget( # TODO : add custom model choice
         #     utils.combine_blocks(self.model_choice, self.lbl_model_choice)
         # )  # model choice
 
@@ -330,39 +362,89 @@ class Trainer(ModelFramework):
             self.lbl_result_path.setText(self.results_path)
 
         data_group.setLayout(data_layout)
-        model_tab_layout.addWidget(data_group, alignment=utils.LEFT_AL)
+        data_tab_layout.addWidget(data_group, alignment=utils.LEFT_AL)
         # end of first group : Data
-        utils.add_blank(widget=model_tab, layout=model_tab_layout)
+        utils.add_blank(widget=data_tab, layout=data_tab_layout)
         ################
-
-        model_tab_layout.addWidget(
-            self.lbl_sample_choice, alignment=utils.LEFT_AL
-        )
-        model_tab_layout.addWidget(
-            self.sample_choice, alignment=utils.LEFT_AL
-        )  # number of samples
-        # TODO add transfo tab and add there ?
-        ################
-        utils.add_blank(self, model_tab_layout)
+        utils.add_blank(self, data_tab_layout)
         ################
         # buttons
 
-        model_tab_layout.addWidget(
-            self.btn_next, alignment=utils.LEFT_AL
+        data_tab_layout.addWidget(
+            self.make_next_button(), alignment=utils.LEFT_AL
         )  # next
-        utils.add_blank(self, model_tab_layout)
-        model_tab_layout.addWidget(
-            self.btn_close, alignment=utils.LEFT_AL
+        utils.add_blank(self, data_tab_layout)
+        data_tab_layout.addWidget(
+            self.close_buttons[0], alignment=utils.LEFT_AL
         )  # close
 
-        #####################
-        #################
+        ##################
+        ############
         ######
-
+        # second tab : image sizes, data augmentation, patches size and behaviour
         ######
         ############
         ##################
-        # second tab : training parameters
+
+        augment_tab_w, augment_tab_l = utils.make_container_widget()
+
+        patch_group_w, patch_group_l = utils.make_group("Sampling")
+        patch_group_l.addWidget(
+            self.patch_choice, alignment=utils.LEFT_AL
+        )  # extract patches or not
+
+        [
+            patch_group_l.addWidget(widget, alignment=utils.LEFT_AL)
+            for widgts in zip(self.patch_size_lbl, self.patch_size_widgets)
+            for widget in widgts
+        ]  # patch sizes
+
+        patch_group_w.setLayout(patch_group_l)
+        augment_tab_l.addWidget(patch_group_w)
+
+        utils.add_blank(patch_group_w, patch_group_l)
+
+        patch_group_l.addWidget(
+            self.lbl_sample_choice, alignment=utils.LEFT_AL
+        )
+        patch_group_l.addWidget(
+            self.sample_choice, alignment=utils.LEFT_AL
+        )  # number of samples
+        #######################
+        utils.add_blank(augment_tab_w, augment_tab_l)
+        #######################
+        augment_group_w, augment_group_l = utils.make_group("Augmentation")
+        augment_group_l.addWidget(
+            self.augment_choice, alignment=utils.LEFT_AL
+        )  # augment data toggle
+        self.augment_choice.toggle()
+        self.augment_choice.setCheckable(False)  # TODO add func
+
+        augment_group_w.setLayout(augment_group_l)
+        augment_tab_l.addWidget(augment_group_w)
+        #######################
+        utils.add_blank(augment_tab_w, augment_tab_l)
+        #######################
+
+        augment_tab_l.addWidget(
+            utils.combine_blocks(
+                first=self.make_prev_button(),
+                second=self.make_next_button(),
+                l=1,
+            ),
+            alignment=utils.LEFT_AL,
+        )
+
+        augment_tab_l.addWidget(
+            self.close_buttons[1], alignment=utils.LEFT_AL
+        )
+        ##################
+        ############
+        ######
+        # third tab : training parameters
+        ######
+        ############
+        ##################
         train_tab, train_tab_layout = utils.make_container_widget()
         ##################
         # solo groups for loss and model
@@ -402,6 +484,10 @@ class Trainer(ModelFramework):
                 self.lbl_batch_choice,
                 min_spacing=spacing,
                 horizontal=False,
+                l=5,
+                t=5,
+                r=5,
+                b=5,
             ),
             alignment=utils.LEFT_AL,
         )  # batch size
@@ -411,6 +497,10 @@ class Trainer(ModelFramework):
                 self.lbl_epoch_choice,
                 min_spacing=spacing,
                 horizontal=False,
+                l=5,
+                t=5,
+                r=5,
+                b=5,
             ),
             alignment=utils.LEFT_AL,
         )  # epochs
@@ -420,6 +510,10 @@ class Trainer(ModelFramework):
                 self.lbl_val_interv_choice,
                 min_spacing=spacing,
                 horizontal=False,
+                l=5,
+                t=5,
+                r=5,
+                b=5,
             ),
             alignment=utils.LEFT_AL,
         )  # validation interval
@@ -433,28 +527,43 @@ class Trainer(ModelFramework):
         utils.add_blank(self, train_tab_layout)
 
         train_tab_layout.addWidget(
-            self.btn_prev, alignment=utils.LEFT_AL
+            self.make_prev_button(), alignment=utils.LEFT_AL
         )  # previous
-        utils.add_blank(self, train_tab_layout)
+
         train_tab_layout.addWidget(
             self.btn_start, alignment=utils.LEFT_AL
         )  # start
+        utils.add_blank(self, train_tab_layout)
+
+        train_tab_layout.addWidget(
+            self.close_buttons[2],
+            alignment=utils.LEFT_AL,
+        )
         ##################
         ############
         ######
         # end of tab layouts
 
         utils.make_scrollable(
-            contained_layout=model_tab_layout, containing_widget=model_tab
-        )  # , min_wh=[190, 100], max_wh=[200,1000])
-        self.addTab(model_tab, "Model parameters")
+            contained_layout=data_tab_layout,
+            containing_widget=data_tab,
+            min_wh=[100, 150],
+        )  # , max_wh=[200,1000])
+        self.addTab(data_tab, "Data")
+
+        utils.make_scrollable(
+            contained_layout=augment_tab_l,
+            containing_widget=augment_tab_w,
+            min_wh=[100, 200],
+        )
+        self.addTab(augment_tab_w, "Augmentation")
 
         utils.make_scrollable(
             contained_layout=train_tab_layout,
             containing_widget=train_tab,
-            min_wh=[100, 150],
+            min_wh=[100, 200],
         )
-        self.addTab(train_tab, "Training parameters")
+        self.addTab(train_tab, "Training")
 
     def show_dialog_lab(self):
         """Shows the  dialog to load label files in a path, loads them (see :doc:model_framework) and changes the widget
@@ -552,7 +661,7 @@ class Trainer(ModelFramework):
                 num_samples=self.num_samples,
             )
 
-            self.btn_close.setVisible(False)
+            [btn.setVisible(False) for btn in self.close_buttons]
 
             self.worker.log_signal.connect(self.log.print_and_log)
 
@@ -603,7 +712,7 @@ class Trainer(ModelFramework):
         self.log.print_and_log("*" * 10)
 
         self.btn_start.setText("Start")
-        self.btn_close.setVisible(True)
+        [btn.setVisible(True) for btn in self.close_buttons]
 
         self.worker = None
         self.empty_cuda_cache()

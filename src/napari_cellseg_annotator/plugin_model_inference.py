@@ -1,19 +1,13 @@
 import os
 import warnings
-from pathlib import Path
 
 import napari
-
 # Qt
 from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QDoubleSpinBox
-from qtpy.QtWidgets import QGroupBox
 from qtpy.QtWidgets import QLabel
-from qtpy.QtWidgets import QLayout
-from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QSpinBox
-from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
 # local
@@ -30,7 +24,7 @@ class Inferer(ModelFramework):
         """
         Creates an Inference loader plugin with the following widgets :
 
-        * I/O :
+        * Data :
             * A file extension choice for the images to load from selected folders
 
             * Two buttons to choose the images folder to run segmentation and save results in, respectively
@@ -96,12 +90,9 @@ class Inferer(ModelFramework):
         ###########################
         # interface
 
-        # self.lbl_view = QLabel("View results in napari ?", self)
-
         self.view_checkbox = QCheckBox("View results in napari")
         self.view_checkbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.view_checkbox.stateChanged.connect(self.toggle_display_number)
-        # self.lbl_view = QLabel("View results in napari ?", self)
 
         self.display_number_choice = QSpinBox()
         self.display_number_choice.setRange(1, 10)
@@ -113,22 +104,21 @@ class Inferer(ModelFramework):
         self.aniso_checkbox = QCheckBox("Anisotropic data")
         self.aniso_checkbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.aniso_checkbox.stateChanged.connect(self.toggle_display_aniso)
-        # self.lbl_aniso = QLabel("Anisotropic dataset ?", self)
 
-        def make_anisotropy_choice(ax):
+        def make_anisotropy_choice():
             widget = QDoubleSpinBox()
             widget.setMinimum(1)
             widget.setMaximum(10)
-            widget.setValue(1.5)
+            widget.setValue(1.5)  # change default TODO
             widget.setSingleStep(1.0)
             return widget
 
-        self.aniso_box_widgets = [make_anisotropy_choice(ax) for ax in "xyz"]
+        self.aniso_box_widgets = [make_anisotropy_choice() for ax in "xyz"]
         self.aniso_box_lbl = [
             QLabel("Resolution in " + axis + " (microns) :") for axis in "xyz"
         ]
 
-        self.aniso_box_widgets[-1].setValue(5.0)
+        self.aniso_box_widgets[-1].setValue(5.0)  # TODO change default
 
         for w in self.aniso_box_widgets:
             w.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -153,9 +143,7 @@ class Inferer(ModelFramework):
             QSizePolicy.Fixed, QSizePolicy.Fixed
         )
 
-        self.btn_start = QPushButton("Start inference")
-        self.btn_start.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btn_start.clicked.connect(self.start)
+        self.btn_start = utils.make_button("Start inference", self.start)
 
         # hide unused widgets from parent class
         self.btn_label_files.setVisible(False)
@@ -331,7 +319,7 @@ class Inferer(ModelFramework):
         ###################################
         ###################################
         tab_layout.addWidget(self.btn_start, alignment=utils.LEFT_AL)
-        tab_layout.addWidget(self.btn_close, alignment=utils.LEFT_AL)
+        tab_layout.addWidget(self.make_close_button(), alignment=utils.LEFT_AL)
         ##################
         ############
         ######
@@ -339,7 +327,7 @@ class Inferer(ModelFramework):
         utils.make_scrollable(
             containing_widget=tab,
             contained_layout=tab_layout,
-            min_wh=[100, 150],
+            min_wh=[100, 200],
         )
         self.addTab(tab, "Inference")
 

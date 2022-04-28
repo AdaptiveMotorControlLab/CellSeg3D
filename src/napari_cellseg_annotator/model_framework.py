@@ -4,7 +4,6 @@ import warnings
 
 import napari
 import torch
-
 # Qt
 from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QLabel
@@ -19,9 +18,9 @@ from qtpy.QtWidgets import QWidget
 # local
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.log_utility import Log
+from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
 from napari_cellseg_annotator.models import model_SegResNet as SegResNet
 from napari_cellseg_annotator.models import model_VNet as VNet
-from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
 
 warnings.formatwarning = utils.format_Warning
 
@@ -125,25 +124,6 @@ class ModelFramework(QTabWidget):
         self.model_choice = QComboBox()
         self.model_choice.addItems(sorted(self.models_dict.keys()))
         self.lbl_model_choice = QLabel("Model name", self)
-
-        self.btn_prev = QPushButton()
-        self.btn_prev.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btn_prev.setText("Previous")
-        self.btn_prev.clicked.connect(
-            lambda: self.setCurrentIndex(self.currentIndex() - 1)
-        )
-
-        self.btn_next = QPushButton()
-        self.btn_next.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btn_next.setText("Next")
-        self.btn_next.clicked.connect(
-            lambda: self.setCurrentIndex(self.currentIndex() + 1)
-        )
-
-        self.btn_close = QPushButton("Close", self)
-        self.btn_close.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btn_close.clicked.connect(self.close)
-
         ###################################################
         # status report docked widget
         self.container_report = QWidget()
@@ -166,6 +146,22 @@ class ModelFramework(QTabWidget):
         self.btn_save_log.clicked.connect(self.save_log)
         self.btn_save_log.setVisible(False)
         #####################################################
+
+    def make_close_button(self):
+        btn = utils.make_button("Close", self.close)
+        return btn
+
+    def make_prev_button(self):
+        btn = utils.make_button(
+            "Previous", lambda: self.setCurrentIndex(self.currentIndex() - 1)
+        )
+        return btn
+
+    def make_next_button(self):
+        btn = utils.make_button(
+            "Next", lambda: self.setCurrentIndex(self.currentIndex() + 1)
+        )
+        return btn
 
     def send_log(self, text):
         self.log.print_and_log(text)

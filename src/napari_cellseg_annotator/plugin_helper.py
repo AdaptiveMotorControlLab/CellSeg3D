@@ -29,7 +29,12 @@ class Helper(QWidget):
         # self.btnc.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btnc.clicked.connect(self.close)
 
-        self.test = True
+        ###################
+        ###################
+        ###################
+        ###################
+        # TODO test remove later
+        self.test = utils.ENABLE_TEST_MODE()
 
         if self.test:
             self.dock = None
@@ -39,6 +44,10 @@ class Helper(QWidget):
             self.epoch.setRange(0, 1000)
             self.epoch.setSingleStep(2)
             self.epoch.valueChanged.connect(self.update_loss_plot)
+        ###################
+        ###################
+        ###################
+        ###################
 
         self.build()
 

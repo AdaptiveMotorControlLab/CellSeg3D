@@ -8,14 +8,15 @@ import numpy as np
 from dask_image.imread import imread as dask_imread
 from pandas import DataFrame
 from pandas import Series
-from qtpy.QtCore import Qt
 from qtpy.QtCore import QUrl
+from qtpy.QtCore import Qt
 from qtpy.QtGui import QDesktopServices
 from qtpy.QtWidgets import QFileDialog
 from qtpy.QtWidgets import QGridLayout
 from qtpy.QtWidgets import QGroupBox
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLayout
+from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QScrollArea
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QVBoxLayout
@@ -43,8 +44,19 @@ CENTER_AL = Qt.AlignmentFlag.AlignCenter
 """Alias for Qt.AlignmentFlag.AlignCenter, to use in addWidget"""
 ABS_AL = Qt.AlignmentFlag.AlignAbsolute
 """Alias for Qt.AlignmentFlag.AlignAbsolute, to use in addWidget"""
+BOTT_AL = Qt.AlignmentFlag.AlignBottom
+"""Alias for Qt.AlignmentFlag.AlignBottom, to use in addWidget"""
 ###############
 # functions
+
+##################
+# dev util
+def ENABLE_TEST_MODE():
+    path = Path(os.path.expanduser("~"))
+    print(path)
+    if path == Path("C:/Users/Cyril"):
+        return True
+    return False
 
 
 def make_scrollable(
@@ -103,9 +115,9 @@ def make_group(title, L=7, T=20, R=7, B=11, solo_dict=None):
         solo_dict (dict): shortcut if only one widget is to be added to the group. Should contain "widget" (QWidget) and "layout" (Qlayout), widget will be added to layout. Defaults to None
 
     Returns:
-        If solo_dict is None:
-        QWidget : widget that contains the group. Fixed size.
-        QVBoxLayout :  layout to group widgets in. Fixed size.
+        If solo_dict is None :
+            QWidget : widget that contains the group. Fixed size.
+            QVBoxLayout :  layout to group widgets in. Fixed size.
         Else : Returns None
 
     """
@@ -149,19 +161,41 @@ def make_container_widget(L=0, T=0, R=1, B=11):
     return container_widget, container_layout
 
 
-def combine_blocks(button, label, min_spacing=0, horizontal=True):
+def make_button(title=None, func=None):
+    """Creates a button with a title and connects it to a function when clicked
+
+    Args:
+        title (str-like): title of the button. Defaults to None, if None no title is set
+        func: function to execute when button is clicked. Defaults to None, no binding is made if None
+
+    Returns:
+        QPushButton : created button
+    """
+    if title is not None:
+        btn = QPushButton(title)
+    else:
+        btn = QPushButton()
+    if func is not None:
+        btn.clicked.connect(func)
+    return btn
+
+
+def combine_blocks(
+    second, first, min_spacing=0, horizontal=True, l=11, t=3, r=11, b=11
+):
     """Combines two QWidget objects and puts them side by side (label on the left and button on the right)
 
     Args:
         horizontal (bool): whether to stack widgets laterally or horizontally
-        button (QWidget): Button widget to be displayed right/below of the label
-        label (QWidget): Label widget to be added on the left/above of button
+        second (QWidget): Second widget, to be displayed right/below of the label
+        first (QWidget): First widget, to be added on the left/above of button
         min_spacing (int): Minimum spacing between the two widgets (from the start of label to the start of button)
 
     Returns:
         QWidget: new QWidget containing the merged widget and label
     """
     temp_widget = QWidget()
+    temp_widget.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.MinimumExpanding)
 
     temp_layout = QGridLayout()
     if horizontal:
@@ -171,7 +205,7 @@ def combine_blocks(button, label, min_spacing=0, horizontal=True):
         temp_layout.setColumnMinimumWidth(0, min_spacing)
         c1, c2, r1, r2 = 0, 1, 0, 0
         temp_layout.setContentsMargins(
-            11, 3, 11, 11
+            l, t, r, b
         )  # determines spacing between widgets
     else:
         temp_widget.setSizePolicy(
@@ -180,14 +214,14 @@ def combine_blocks(button, label, min_spacing=0, horizontal=True):
         temp_layout.setRowMinimumHeight(0, min_spacing)
         c1, c2, r1, r2 = 0, 0, 0, 1
         temp_layout.setContentsMargins(
-            5, 5, 5, 5
+            l, t, r, b
         )  # determines spacing between widgets
     # temp_layout.setColumnMinimumWidth(1,100)
     # temp_layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
 
-    temp_layout.addWidget(label, r1, c1, alignment=LEFT_AL)
+    temp_layout.addWidget(first, r1, c1)#, alignment=LEFT_AL)
     # temp_layout.addStretch(100)
-    temp_layout.addWidget(button, r2, c2, alignment=LEFT_AL)
+    temp_layout.addWidget(second, r2, c2)#, alignment=LEFT_AL)
     temp_widget.setLayout(temp_layout)
     return temp_widget
 

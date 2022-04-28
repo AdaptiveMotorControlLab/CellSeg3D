@@ -6,7 +6,6 @@ import numpy as np
 from magicgui import magicgui
 from magicgui.widgets import Container
 from magicgui.widgets import Slider
-from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLayout
@@ -55,7 +54,9 @@ class Cropping(BasePlugin):
         self.lbl_label.setVisible(False)
         self.btn_label.setVisible(False)
 
-        self.docked_widgets = []  # container of docked widgets for removal
+        self.docked_widgets = (
+            []
+        )  # container of docked widgets for removal on close
 
         def make_sizebox_container(ax):
 
@@ -87,15 +88,6 @@ class Cropping(BasePlugin):
 
         self.crop_labels = False
 
-        #####################################################################
-        # TODO remove once done
-        self.test_button = True
-        if self.test_button:
-            self.btntest = QPushButton("test", self)
-            self.btntest.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-            self.btntest.clicked.connect(self.run_test)
-        #####################################################################
-
         self.build()
 
     def toggle_label_path(self):
@@ -113,41 +105,44 @@ class Cropping(BasePlugin):
         vbox.setContentsMargins(0, 0, 1, 11)
         vbox.setSizeConstraint(QLayout.SetFixedSize)
 
-        vbox.addWidget(
+        data_group_w, data_group_l = utils.make_group("Data")
+        data_group_l.addWidget(
             utils.combine_blocks(self.btn_image, self.lbl_image),
             alignment=utils.LEFT_AL,
         )
-        vbox.addWidget(
+        data_group_l.addWidget(
             self.crop_label_choice,
             alignment=utils.LEFT_AL,
         )  # whether to crop labels or no
         self.crop_label_choice.toggle()
         self.toggle_label_path()
 
-        vbox.addWidget(
+        data_group_l.addWidget(
             utils.combine_blocks(self.btn_label, self.lbl_label),
             alignment=utils.LEFT_AL,
         )
 
-        vbox.addWidget(self.file_handling_box, alignment=utils.LEFT_AL)
-        vbox.addWidget(self.filetype_choice, alignment=utils.LEFT_AL)
+        data_group_l.addWidget(self.file_handling_box, alignment=utils.LEFT_AL)
+        data_group_l.addWidget(self.filetype_choice, alignment=utils.LEFT_AL)
         self.filetype_choice.setVisible(False)
+
+        data_group_w.setLayout(data_group_l)
+        vbox.addWidget(data_group_w)
+
         utils.add_blank(self, vbox)
+
+        dim_group_w, dim_group_l = utils.make_group("Dimensions")
         [
-            vbox.addWidget(widget, alignment=utils.LEFT_AL)
+            dim_group_l.addWidget(widget, alignment=utils.LEFT_AL)
             for list in zip(self.box_lbl, self.box_widgets)
             for widget in list
         ]
+        dim_group_w.setLayout(dim_group_l)
+        vbox.addWidget(dim_group_w)
+
         utils.add_blank(self, vbox)
         vbox.addWidget(self.btn_start, alignment=utils.LEFT_AL)
         vbox.addWidget(self.btn_close, alignment=utils.LEFT_AL)
-
-        ##################################################################
-        # remove once done ?
-
-        if self.test_button:
-            vbox.addWidget(self.btntest, alignment=utils.LEFT_AL)
-        ##################################################################
 
         utils.make_scrollable(
             vbox, self, min_wh=[180, 100], base_wh=[180, 600]
@@ -156,27 +151,6 @@ class Cropping(BasePlugin):
         # self.show()
         # self._viewer.window.add_dock_widget(self, name="Crop utility", area="right")
 
-    ###########################################
-    # TODO : remove/disable once done
-    def run_test(self):
-
-        self.filetype = self.filetype_choice.currentText()
-        self.as_folder = self.file_handling_box.isChecked()
-        self.crop_labels = self.crop_label_choice.isChecked()
-
-        if self.as_folder:
-            self.image_path = (
-                "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
-            )
-            if self.crop_labels:
-                self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
-        else:
-            self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
-            if self.crop_labels:
-                self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels/testing_im.tif"
-        self.start()
-
-    ###########################################
     def quicksave(self):
         """Quicksaves the cropped volume in the folder from which they originate, with their original file extension.
 
@@ -247,6 +221,20 @@ class Cropping(BasePlugin):
         self.as_folder = self.file_handling_box.isChecked()
         self.filetype = self.filetype_choice.currentText()
         self.crop_labels = self.crop_label_choice.isChecked()
+
+        ###########################################
+        if utils.ENABLE_TEST_MODE():
+            # TODO : remove/disable once done
+            if self.as_folder:
+                self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
+                if self.crop_labels:
+                    self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
+            else:
+                self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
+                if self.crop_labels:
+                    self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels/testing_im.tif"
+
+        ###########################################
 
         if not self.check_ready():
             return
