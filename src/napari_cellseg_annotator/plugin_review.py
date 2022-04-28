@@ -90,7 +90,7 @@ class Reviewer(BasePlugin):
         data_group_w, data_group_l = ui.make_group("Data")
 
         data_group_l.addWidget(
-            ui.combine_blocks(self.filetype_choice, self.file_handling_box)
+            ui.combine_blocks(self.filetype_choice, self.file_handling_box), alignment = ui.LEFT_AL
         )
         self.filetype_choice.setVisible(False)
 
