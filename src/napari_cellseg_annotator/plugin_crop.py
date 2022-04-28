@@ -9,13 +9,12 @@ from magicgui.widgets import Slider
 from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLayout
-from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QSizePolicy
-from qtpy.QtWidgets import QSpinBox
 from qtpy.QtWidgets import QVBoxLayout
 from tifffile import imwrite
 
 from napari_cellseg_annotator import utils
+from napari_cellseg_annotator import interface as ui
 from napari_cellseg_annotator.plugin_base import BasePlugin
 
 DEFAULT_CROP_SIZE = 64
@@ -42,9 +41,7 @@ class Cropping(BasePlugin):
 
         super().__init__(viewer)
 
-        self.btn_start = QPushButton("Start", self)
-        self.btn_start.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btn_start.clicked.connect(self.start)
+        self.btn_start = ui.make_button("Start", self.start, self)
 
         self.crop_label_choice = QCheckBox("Crop labels as well ?")
         self.crop_label_choice.setSizePolicy(
@@ -58,15 +55,7 @@ class Cropping(BasePlugin):
             []
         )  # container of docked widgets for removal on close
 
-        def make_sizebox_container(ax):
-
-            sizebox = QSpinBox()
-            sizebox.setMinimum(1)
-            sizebox.setMaximum(1000)
-            sizebox.setValue(DEFAULT_CROP_SIZE)
-            return sizebox
-
-        self.box_widgets = [make_sizebox_container(ax) for ax in "xyz"]
+        self.box_widgets = ui.make_n_spinboxes(3, 1, 1000, DEFAULT_CROP_SIZE)
         self.box_lbl = [
             QLabel("Size in " + axis + " of cropped volume :")
             for axis in "xyz"
@@ -105,48 +94,46 @@ class Cropping(BasePlugin):
         vbox.setContentsMargins(0, 0, 1, 11)
         vbox.setSizeConstraint(QLayout.SetFixedSize)
 
-        data_group_w, data_group_l = utils.make_group("Data")
+        data_group_w, data_group_l = ui.make_group("Data")
         data_group_l.addWidget(
-            utils.combine_blocks(self.btn_image, self.lbl_image),
-            alignment=utils.LEFT_AL,
+            ui.combine_blocks(self.btn_image, self.lbl_image),
+            alignment=ui.LEFT_AL,
         )
         data_group_l.addWidget(
             self.crop_label_choice,
-            alignment=utils.LEFT_AL,
+            alignment=ui.LEFT_AL,
         )  # whether to crop labels or no
         self.crop_label_choice.toggle()
         self.toggle_label_path()
 
         data_group_l.addWidget(
-            utils.combine_blocks(self.btn_label, self.lbl_label),
-            alignment=utils.LEFT_AL,
+            ui.combine_blocks(self.btn_label, self.lbl_label),
+            alignment=ui.LEFT_AL,
         )
 
-        data_group_l.addWidget(self.file_handling_box, alignment=utils.LEFT_AL)
-        data_group_l.addWidget(self.filetype_choice, alignment=utils.LEFT_AL)
+        data_group_l.addWidget(self.file_handling_box, alignment=ui.LEFT_AL)
+        data_group_l.addWidget(self.filetype_choice, alignment=ui.LEFT_AL)
         self.filetype_choice.setVisible(False)
 
         data_group_w.setLayout(data_group_l)
         vbox.addWidget(data_group_w)
 
-        utils.add_blank(self, vbox)
+        ui.add_blank(self, vbox)
 
-        dim_group_w, dim_group_l = utils.make_group("Dimensions")
+        dim_group_w, dim_group_l = ui.make_group("Dimensions")
         [
-            dim_group_l.addWidget(widget, alignment=utils.LEFT_AL)
+            dim_group_l.addWidget(widget, alignment=ui.LEFT_AL)
             for list in zip(self.box_lbl, self.box_widgets)
             for widget in list
         ]
         dim_group_w.setLayout(dim_group_l)
         vbox.addWidget(dim_group_w)
 
-        utils.add_blank(self, vbox)
-        vbox.addWidget(self.btn_start, alignment=utils.LEFT_AL)
-        vbox.addWidget(self.btn_close, alignment=utils.LEFT_AL)
+        ui.add_blank(self, vbox)
+        vbox.addWidget(self.btn_start, alignment=ui.LEFT_AL)
+        vbox.addWidget(self.btn_close, alignment=ui.LEFT_AL)
 
-        utils.make_scrollable(
-            vbox, self, min_wh=[180, 100], base_wh=[180, 600]
-        )
+        ui.make_scrollable(vbox, self, min_wh=[180, 100], base_wh=[180, 600])
         # self.setLayout(vbox)
         # self.show()
         # self._viewer.window.add_dock_widget(self, name="Crop utility", area="right")

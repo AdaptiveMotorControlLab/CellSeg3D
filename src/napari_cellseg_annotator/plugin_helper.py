@@ -1,11 +1,14 @@
 import napari
-from qtpy.QtWidgets import QPushButton
+
+# Qt
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QSpinBox
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
+# local
 from napari_cellseg_annotator import utils
+from napari_cellseg_annotator import interface as ui
 
 
 class Helper(QWidget):
@@ -19,15 +22,13 @@ class Helper(QWidget):
 
         self.about_url = "https://wysscenter.ch/advances/3d-computer-vision-for-brain-analysis"
         self._viewer = viewer
-        self.btn1 = QPushButton("Help...", self)
-        # self.btn1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btn1.clicked.connect(lambda: utils.open_url(self.help_url))
-        self.btn2 = QPushButton("About...", self)
-        # self.btn2.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btn2.clicked.connect(lambda: utils.open_url(self.about_url))
-        self.btnc = QPushButton("Close", self)
-        # self.btnc.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btnc.clicked.connect(self.close)
+        self.btn1 = ui.make_button(
+            "Help...", lambda: ui.open_url(self.help_url)
+        )
+        self.btn2 = ui.make_button(
+            "About...", lambda: ui.open_url(self.about_url)
+        )
+        self.btnc = ui.make_button("Close", self.close)
 
         ###################
         ###################
@@ -39,7 +40,7 @@ class Helper(QWidget):
         if self.test:
             self.dock = None
 
-            self.epoch = QSpinBox()
+            self.epoch = ui.make_n_spinboxes(1, 0, 1000, step=2)
             self.epoch.setValue(0)
             self.epoch.setRange(0, 1000)
             self.epoch.setSingleStep(2)
@@ -53,17 +54,17 @@ class Helper(QWidget):
 
     def build(self):
         vbox = QVBoxLayout()
-        vbox.addWidget(self.btn1, alignment=utils.LEFT_AL)
-        vbox.addWidget(self.btn2, alignment=utils.LEFT_AL)
-        vbox.addWidget(self.btnc, alignment=utils.LEFT_AL)
+        vbox.addWidget(self.btn1, alignment=ui.LEFT_AL)
+        vbox.addWidget(self.btn2, alignment=ui.LEFT_AL)
+        vbox.addWidget(self.btnc, alignment=ui.LEFT_AL)
         if self.test:
-            vbox.addWidget(self.epoch, alignment=utils.ABS_AL)
+            vbox.addWidget(self.epoch, alignment=ui.ABS_AL)
         self.setLayout(vbox)
         # self.show()
         # self._viewer.window.add_dock_widget(self, name="Help/About...", area="right")
 
     def close(self):
-        if self.test and self.dock is not None:
+        if self.test and self.dock is not None:  # TODO remove
             self._viewer.window.remove_dock_widget(self.dock)
         self._viewer.window.remove_dock_widget(self)
 

@@ -2,16 +2,17 @@ import os
 import warnings
 
 import napari
+
 # Qt
 from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QDoubleSpinBox
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QSizePolicy
-from qtpy.QtWidgets import QSpinBox
 from qtpy.QtWidgets import QWidget
 
 # local
 from napari_cellseg_annotator import utils
+from napari_cellseg_annotator import interface as ui
 from napari_cellseg_annotator.model_framework import ModelFramework
 from napari_cellseg_annotator.model_workers import InferenceWorker
 
@@ -94,8 +95,7 @@ class Inferer(ModelFramework):
         self.view_checkbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.view_checkbox.stateChanged.connect(self.toggle_display_number)
 
-        self.display_number_choice = QSpinBox()
-        self.display_number_choice.setRange(1, 10)
+        self.display_number_choice = ui.make_n_spinboxes(1,1,10,1)
         self.display_number_choice.setSizePolicy(
             QSizePolicy.Fixed, QSizePolicy.Fixed
         )
@@ -143,7 +143,7 @@ class Inferer(ModelFramework):
             QSizePolicy.Fixed, QSizePolicy.Fixed
         )
 
-        self.btn_start = utils.make_button("Start inference", self.start)
+        self.btn_start = ui.make_button("Start inference", self.start)
 
         # hide unused widgets from parent class
         self.btn_label_files.setVisible(False)
@@ -202,38 +202,38 @@ class Inferer(ModelFramework):
         ######
         ############
         ##################
-        tab, tab_layout = utils.make_container_widget(
+        tab, tab_layout = ui.make_container_widget(
             0, 0, 1, 1
         )  # tab that will contain all widgets
 
         L, T, R, B = 7, 20, 7, 11  # margins for group boxes
         #################################
         #################################
-        io_group, io_layout = utils.make_group("Data", L, T, R, B)
+        io_group, io_layout = ui.make_group("Data", L, T, R, B)
 
         io_layout.addWidget(
-            utils.combine_blocks(self.filetype_choice, self.lbl_filetype),
-            alignment=utils.LEFT_AL,
+            ui.combine_blocks(self.filetype_choice, self.lbl_filetype),
+            alignment=ui.LEFT_AL,
         )  # file extension
         io_layout.addWidget(
-            utils.combine_blocks(self.btn_image_files, self.lbl_image_files),
-            alignment=utils.LEFT_AL,
+            ui.combine_blocks(self.btn_image_files, self.lbl_image_files),
+            alignment=ui.LEFT_AL,
         )  # in folder
         io_layout.addWidget(
-            utils.combine_blocks(self.btn_result_path, self.lbl_result_path),
-            alignment=utils.LEFT_AL,
+            ui.combine_blocks(self.btn_result_path, self.lbl_result_path),
+            alignment=ui.LEFT_AL,
         )  # out folder
 
         io_group.setLayout(io_layout)
-        tab_layout.addWidget(io_group, alignment=utils.LEFT_AL)
+        tab_layout.addWidget(io_group, alignment=ui.LEFT_AL)
         #################################
         #################################
-        utils.add_blank(self, tab_layout)
+        ui.add_blank(self, tab_layout)
         #################################
         #################################
         # model group
 
-        utils.make_group(
+        ui.make_group(
             "Model choice",
             L,
             T,
@@ -245,20 +245,18 @@ class Inferer(ModelFramework):
 
         #################################
         #################################
-        utils.add_blank(self, tab_layout)
+        ui.add_blank(self, tab_layout)
         #################################
         #################################
         # post proc group
-        post_proc_group, post_proc_layout = utils.make_group(
+        post_proc_group, post_proc_layout = ui.make_group(
             "Post-processing", L, T, R, B
         )
 
-        post_proc_layout.addWidget(
-            self.aniso_checkbox, alignment=utils.LEFT_AL
-        )
+        post_proc_layout.addWidget(self.aniso_checkbox, alignment=ui.LEFT_AL)
 
         [
-            post_proc_layout.addWidget(widget, alignment=utils.LEFT_AL)
+            post_proc_layout.addWidget(widget, alignment=ui.LEFT_AL)
             for wdgts in zip(self.aniso_box_lbl, self.aniso_box_widgets)
             for widget in wdgts
         ]
@@ -267,41 +265,41 @@ class Inferer(ModelFramework):
         for w in self.aniso_box_lbl:
             w.setVisible(False)
         # anisotropy
-        utils.add_blank(post_proc_group, post_proc_layout)
+        ui.add_blank(post_proc_group, post_proc_layout)
 
         post_proc_layout.addWidget(
-            self.thresholding_checkbox, alignment=utils.LEFT_AL
+            self.thresholding_checkbox, alignment=ui.LEFT_AL
         )
         post_proc_layout.addWidget(
-            self.thresholding_count, alignment=utils.CENTER_AL
+            self.thresholding_count, alignment=ui.CENTER_AL
         )
         self.thresholding_count.setVisible(False)  # thresholding
 
         post_proc_group.setLayout(post_proc_layout)
-        tab_layout.addWidget(post_proc_group, alignment=utils.LEFT_AL)
+        tab_layout.addWidget(post_proc_group, alignment=ui.LEFT_AL)
         ###################################
         ###################################
-        utils.add_blank(self, tab_layout)
+        ui.add_blank(self, tab_layout)
         ###################################
         ###################################
-        display_opt_group, display_opt_layout = utils.make_group(
+        display_opt_group, display_opt_layout = ui.make_group(
             "Display options", L, T, R, B
         )
 
         display_opt_layout.addWidget(
-            self.view_checkbox,  # utils.combine_blocks(self.view_checkbox, self.lbl_view),
-            alignment=utils.LEFT_AL,
+            self.view_checkbox,  # ui.combine_blocks(self.view_checkbox, self.lbl_view),
+            alignment=ui.LEFT_AL,
         )  # view_after bool
         display_opt_layout.addWidget(
-            self.lbl_display_number, alignment=utils.LEFT_AL
+            self.lbl_display_number, alignment=ui.LEFT_AL
         )
         display_opt_layout.addWidget(
             self.display_number_choice,
-            alignment=utils.LEFT_AL,
+            alignment=ui.LEFT_AL,
         )  # number of results to display
         display_opt_layout.addWidget(
             self.show_original_checkbox,
-            alignment=utils.LEFT_AL,
+            alignment=ui.LEFT_AL,
         )  # show original bool
         self.show_original_checkbox.toggle()
 
@@ -315,16 +313,16 @@ class Inferer(ModelFramework):
         display_opt_group.setLayout(display_opt_layout)
         tab_layout.addWidget(display_opt_group)
         ###################################
-        utils.add_blank(self, tab_layout)
+        ui.add_blank(self, tab_layout)
         ###################################
         ###################################
-        tab_layout.addWidget(self.btn_start, alignment=utils.LEFT_AL)
-        tab_layout.addWidget(self.make_close_button(), alignment=utils.LEFT_AL)
+        tab_layout.addWidget(self.btn_start, alignment=ui.LEFT_AL)
+        tab_layout.addWidget(self.make_close_button(), alignment=ui.LEFT_AL)
         ##################
         ############
         ######
         # end of tab, combine into scrollable
-        utils.make_scrollable(
+        ui.make_scrollable(
             containing_widget=tab,
             contained_layout=tab_layout,
             min_wh=[100, 200],

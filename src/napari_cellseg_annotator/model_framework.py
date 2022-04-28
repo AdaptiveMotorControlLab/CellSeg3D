@@ -4,19 +4,18 @@ import warnings
 
 import napari
 import torch
+
 # Qt
 from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QProgressBar
-from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QTabWidget
-from qtpy.QtWidgets import QVBoxLayout
-from qtpy.QtWidgets import QWidget
 
 # local
 from napari_cellseg_annotator import utils
+from napari_cellseg_annotator import interface as ui
 from napari_cellseg_annotator.log_utility import Log
 from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
 from napari_cellseg_annotator.models import model_SegResNet as SegResNet
@@ -83,21 +82,17 @@ class ModelFramework(QTabWidget):
 
         #######################################################
         # interface
-        self.btn_image_files = QPushButton("Open", self)
-        self.btn_image_files.setSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.Fixed
+        self.btn_image_files = ui.make_button(
+            "Open", self.load_image_dataset, self
         )
         self.lbl_image_files = QLineEdit("Images directory", self)
         self.lbl_image_files.setReadOnly(True)
-        self.btn_image_files.clicked.connect(self.load_image_dataset)
 
-        self.btn_label_files = QPushButton("Open", self)
-        self.btn_label_files.setSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.Fixed
+        self.btn_label_files = ui.make_button(
+            "Open", self.load_label_dataset, self
         )
         self.lbl_label_files = QLineEdit("Labels directory", self)
         self.lbl_label_files.setReadOnly(True)
-        self.btn_label_files.clicked.connect(self.load_label_dataset)
 
         self.filetype_choice = QComboBox()
         self.filetype_choice.addItems([".tif", ".tiff"])
@@ -106,27 +101,28 @@ class ModelFramework(QTabWidget):
         )
         self.lbl_filetype = QLabel("File format", self)
 
-        self.btn_result_path = QPushButton("Open", self)
-        self.btn_result_path.setSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.Fixed
+        self.btn_result_path = ui.make_button(
+            "Open", self.load_results_path, self
         )
         self.lbl_result_path = QLineEdit("Results directory", self)
         self.lbl_result_path.setReadOnly(True)
-        self.btn_result_path.clicked.connect(self.load_results_path)
 
         # TODO : implement custom model
-        self.btn_model_path = QPushButton("Open", self)
-        self.btn_model_path.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.btn_model_path = ui.make_button(
+            "Open", self.load_label_dataset, self
+        )
         self.lbl_model_path = QLineEdit("Model directory", self)
         self.lbl_model_path.setReadOnly(True)
-        self.btn_model_path.clicked.connect(self.load_label_dataset)
 
         self.model_choice = QComboBox()
         self.model_choice.addItems(sorted(self.models_dict.keys()))
         self.lbl_model_choice = QLabel("Model name", self)
         ###################################################
         # status report docked widget
-        self.container_report = QWidget()
+        (
+            self.container_report,
+            self.container_report_layout,
+        ) = ui.make_container_widget(10, 5, 5, 5)
         self.container_report.setSizePolicy(
             QSizePolicy.Fixed, QSizePolicy.Minimum
         )
@@ -140,25 +136,27 @@ class ModelFramework(QTabWidget):
         self.log.setVisible(False)
         """Read-only display for process-related info. Use only for info destined to user."""
 
-        self.btn_save_log = QPushButton(
-            "Save log in results folder", self.container_report
+        self.btn_save_log = ui.make_button(
+            "Save log in results folder",
+            self.save_log,
+            self.container_report,
+            fixed=False,
         )
-        self.btn_save_log.clicked.connect(self.save_log)
         self.btn_save_log.setVisible(False)
         #####################################################
 
     def make_close_button(self):
-        btn = utils.make_button("Close", self.close)
+        btn = ui.make_button("Close", self.close)
         return btn
 
     def make_prev_button(self):
-        btn = utils.make_button(
+        btn = ui.make_button(
             "Previous", lambda: self.setCurrentIndex(self.currentIndex() - 1)
         )
         return btn
 
     def make_next_button(self):
-        btn = utils.make_button(
+        btn = ui.make_button(
             "Next", lambda: self.setCurrentIndex(self.currentIndex() + 1)
         )
         return btn
@@ -195,8 +193,8 @@ class ModelFramework(QTabWidget):
         #     )
         #     self.progress = QProgressBar(self.container_report)
         #     self.log = QTextEdit(self.container_report)
-        #     self.btn_save_log = QPushButton(
-        #         "Save log in results folder", self.container_report
+        #     self.btn_save_log = ui.make_button(
+        #         "Save log in results folder", parent=self.container_report
         #     )
         #     self.btn_save_log.clicked.connect(self.save_log)
         #
@@ -205,17 +203,17 @@ class ModelFramework(QTabWidget):
         if self.container_docked:
             self.log.clear()
         elif not self.container_docked:
-            temp_layout = QVBoxLayout()
-            temp_layout.setContentsMargins(10, 5, 5, 5)
 
-            temp_layout.addWidget(  # DO NOT USE alignment here, it will break auto-resizing
-                self.progress  # , alignment=utils.CENTER_AL
+            self.container_report_layout.addWidget(  # DO NOT USE alignment here, it will break auto-resizing
+                self.progress  # , alignment=ui.CENTER_AL
             )
-            temp_layout.addWidget(self.log)  # , alignment=utils.CENTER_AL
-            temp_layout.addWidget(
-                self.btn_save_log  # , alignment=utils.CENTER_AL
+            self.container_report_layout.addWidget(
+                self.log
+            )  # , alignment=ui.CENTER_AL
+            self.container_report_layout.addWidget(
+                self.btn_save_log  # , alignment=ui.CENTER_AL
             )
-            self.container_report.setLayout(temp_layout)
+            self.container_report.setLayout(self.container_report_layout)
 
             report_dock = self._viewer.window.add_dock_widget(
                 self.container_report,
@@ -251,7 +249,7 @@ class ModelFramework(QTabWidget):
            array(str): all loaded file paths
         """
         filetype = self.filetype_choice.currentText()
-        directory = utils.open_file_dialog(self, self._default_path, True)
+        directory = ui.open_file_dialog(self, self._default_path, True)
         # print(directory)
         file_paths = sorted(glob.glob(os.path.join(directory, "*" + filetype)))
         # print(file_paths)
@@ -316,7 +314,7 @@ class ModelFramework(QTabWidget):
 
     def load_results_path(self):
         """Show file dialog to set :py:attr:`~results_path`"""
-        dir = utils.open_file_dialog(self, self._default_path, True)
+        dir = ui.open_file_dialog(self, self._default_path, True)
         if dir != "" and type(dir) is str and os.path.isdir(dir):
             self.results_path = dir
             self.lbl_result_path.setText(self.results_path)
@@ -324,7 +322,7 @@ class ModelFramework(QTabWidget):
 
     def load_model_path(self):
         """Show file dialog to set :py:attr:`model_path`"""
-        dir = utils.open_file_dialog(self, self._default_path)
+        dir = ui.open_file_dialog(self, self._default_path)
         if dir != "" and type(dir) is str and os.path.isdir(dir):
             self.model_path = dir
             self.lbl_model_path.setText(self.results_path)

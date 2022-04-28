@@ -6,12 +6,10 @@ from pathlib import Path
 
 import pandas as pd
 from qtpy.QtWidgets import QHBoxLayout
-from qtpy.QtWidgets import QPushButton
-from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
-from napari_cellseg_annotator import utils
+from napari_cellseg_annotator import interface as ui
 
 GUI_MAXIMUM_WIDTH = 225
 GUI_MAXIMUM_HEIGHT = 350
@@ -44,18 +42,16 @@ class Datamanager(QWidget):
         """napari.viewer.Viewer: viewer in which the widget is displayed"""
 
         # add some buttons
-        self.button = QPushButton("1", self)
-        self.button.setSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.MinimumExpanding
+        self.button = ui.make_button(
+            "1", self.button_func, parent=self, fixed=False
         )
-        self.button.clicked.connect(self.button_func)
 
         io_panel = QWidget()
         io_layout = QHBoxLayout()
         io_layout.addWidget(self.button)  # , alignment=utils.ABS_AL)
         io_panel.setLayout(io_layout)
         io_panel.setMaximumWidth(GUI_MAXIMUM_WIDTH)
-        layout.addWidget(io_panel, alignment=utils.ABS_AL)
+        layout.addWidget(io_panel, alignment=ui.ABS_AL)
 
         # set the layout
         # layout.setAlignment(Qt.AlignTop)

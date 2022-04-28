@@ -4,11 +4,11 @@ import napari
 from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QLineEdit
-from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QWidget
 
 from napari_cellseg_annotator import utils
+from napari_cellseg_annotator import interface as ui
 
 
 class BasePlugin(QWidget):
@@ -48,19 +48,15 @@ class BasePlugin(QWidget):
 
         self._default_path = [self.image_path, self.label_path]
 
-        self.btn_image = QPushButton("Open", self)
+        self.btn_image = ui.make_button("Open", self.show_dialog_images, self)
         """Button to load image folder"""
-        self.btn_image.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.lbl_image = QLineEdit("Images directory", self)
         self.lbl_image.setReadOnly(True)
-        self.btn_image.clicked.connect(self.show_dialog_images)
 
         self.lbl_label = QLineEdit("Labels directory", self)
         """Button to load label folder"""
         self.lbl_label.setReadOnly(True)
-        self.btn_label = QPushButton("Open", self)
-        self.btn_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btn_label.clicked.connect(self.show_dialog_labels)
+        self.btn_label = ui.make_button("Open", self.show_dialog_labels, self)
 
         self.filetype_choice = QComboBox()
         self.filetype_choice.addItems([".png", ".tif"])
@@ -76,9 +72,7 @@ class BasePlugin(QWidget):
             QSizePolicy.Fixed, QSizePolicy.Fixed
         )
 
-        self.btn_close = QPushButton("Close", self)
-        self.btn_close.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btn_close.clicked.connect(self.close)
+        self.btn_close = ui.make_button("Close", self.close, self)
 
         # self.lbl_ft = QLabel("Filetype :", self)
         # self.lbl_ft2 = QLabel("(Folders of .png or single .tif files)", self)

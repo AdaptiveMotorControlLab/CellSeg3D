@@ -3,10 +3,7 @@ from monai.transforms import AsDiscrete
 
 
 def get_net():
-
-    return SegResNetVAE(
-        input_image_size=[128, 128, 128], out_channels=1, dropout_prob=0.1
-    )
+    return SegResNetVAE
 
 
 def get_weights_file():

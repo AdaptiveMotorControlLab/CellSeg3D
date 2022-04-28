@@ -9,6 +9,7 @@ from monai.data import Dataset
 from monai.data import decollate_batch
 from monai.data import pad_list_data_collate
 from monai.data import PatchDataset
+from monai.data import CacheDataset
 from monai.inferers import sliding_window_inference
 from monai.metrics import DiceMetric
 from monai.transforms import AsDiscrete
@@ -317,7 +318,10 @@ class TrainingWorker(GeneratorWorker):
         val_interval,
         batch_size,
         results_path,
+        sampling,
         num_samples,
+        sample_size,
+        do_augmentation,
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~train` function.
 
@@ -338,7 +342,13 @@ class TrainingWorker(GeneratorWorker):
 
             * results_path : the path to save results in
 
+            * sampling : whether to extract patches from images or not
+
             * num_samples : the number of samples to extract from an image for training
+
+            * sample_size : the size of the patches to extract when sampling
+
+            * do_augmentation : whether to perform data augmentation or not
 
            Note: See :py:func:`~train`
         """
@@ -355,7 +365,12 @@ class TrainingWorker(GeneratorWorker):
         self.val_interval = val_interval
         self.batch_size = batch_size
         self.results_path = results_path
+
         self.num_samples = num_samples
+        self.sampling = True
+        self.sample_size = sample_size
+
+        self.do_augment = do_augmentation
 
     def log(self, text):
         """Sends a signal that ``text`` should be logged
@@ -388,7 +403,13 @@ class TrainingWorker(GeneratorWorker):
 
         * results_path : the path to save results in
 
+        * sampling : whether to extract patches from images or not
+
         * num_samples : the number of samples to extract from an image for training
+
+        * sample_size : the size of the patches to extract when sampling
+
+        * do_augmentation : whether to perform data augmentation or not
         """
 
         #########################
@@ -398,7 +419,15 @@ class TrainingWorker(GeneratorWorker):
 
         model_name = self.model_dict["name"]
         model_class = self.model_dict["class"]
-        model = model_class.get_net()
+
+        if model_name == "SegResNet":
+            model = model_class.get_net()(
+                input_image_size=utils.get_padding_dim(self.sample_size),
+                out_channels=1,
+                dropout_prob=0.3,
+            )
+        else:
+            model = model_class.get_net()
         model = model.to(self.device)
 
         epoch_loss_values = []
@@ -415,46 +444,53 @@ class TrainingWorker(GeneratorWorker):
         print("* " * 20)
         print("Validation files :")
         [print(f"{val_file}\n") for val_file in val_files]
-        # TODO : param stretch factor if anisotropic ? might be fine as is
         # TODO : param patch ROI size
-        sample_loader = Compose(
-            [
-                LoadImaged(keys=["image", "label"]),
-                EnsureChannelFirstd(keys=["image", "label"]),
-                RandSpatialCropSamplesd(
-                    keys=["image", "label"],
-                    roi_size=(
-                        110,
-                        110,
-                        110,
-                    ),  # multiply by axis_stretch_factor if anisotropy
-                    max_roi_size=(120, 120, 120),
-                    num_samples=self.num_samples,
-                ),
-                Orientationd(keys=["image", "label"], axcodes="PLI"),
-                SpatialPadd(
-                    keys=["image", "label"], spatial_size=(128, 128, 128)
-                ),
-                EnsureTyped(keys=["image", "label"]),
-            ]
-        )
 
-        train_transforms = Compose(  # TODO : figure out which ones ?
-            [
-                RandShiftIntensityd(keys=["image"], offsets=0.7),
-                Rand3DElasticd(
-                    keys=["image", "label"],
-                    sigma_range=(0.3, 0.7),
-                    magnitude_range=(0.3, 0.7),
-                ),
-                RandFlipd(keys=["image", "label"]),
-                RandRotate90d(keys=["image", "label"]),
-                RandAffined(
-                    keys=["image", "label"],
-                ),
-                EnsureTyped(keys=["image", "label"]),
-            ]
-        )
+        if self.sampling:
+            sample_loader = Compose(
+                [
+                    LoadImaged(keys=["image", "label"]),
+                    EnsureChannelFirstd(keys=["image", "label"]),
+                    RandSpatialCropSamplesd(
+                        keys=["image", "label"],
+                        roi_size=(
+                            self.sample_size
+                        ),  # multiply by axis_stretch_factor if anisotropy
+                        # max_roi_size=(120, 120, 120),
+                        random_size=False,
+                        num_samples=self.num_samples,
+                    ),
+                    Orientationd(keys=["image", "label"], axcodes="PLI"),
+                    SpatialPadd(
+                        keys=["image", "label"],
+                        spatial_size=(utils.get_padding_dim(self.sample_size)),
+                    ),
+                    EnsureTyped(keys=["image", "label"]),
+                ]
+            )
+
+        if self.do_augment:
+            self.log("Data augmentation is enabled")
+            train_transforms = (
+                Compose(  # TODO : figure out which ones and values ?
+                    [
+                        RandShiftIntensityd(keys=["image"], offsets=0.7),
+                        Rand3DElasticd(
+                            keys=["image", "label"],
+                            sigma_range=(0.3, 0.7),
+                            magnitude_range=(0.3, 0.7),
+                        ),
+                        RandFlipd(keys=["image", "label"]),
+                        RandRotate90d(keys=["image", "label"]),
+                        RandAffined(
+                            keys=["image", "label"],
+                        ),
+                        EnsureTyped(keys=["image", "label"]),
+                    ]
+                )
+            )
+        else:
+            train_transforms = EnsureTyped(keys=["image", "label"])
 
         val_transforms = Compose(
             [
@@ -464,12 +500,17 @@ class TrainingWorker(GeneratorWorker):
             ]
         )
         # self.log("Loading dataset...\n")
-        train_ds = PatchDataset(
-            data=train_files,
-            transform=train_transforms,
-            patch_func=sample_loader,
-            samples_per_image=self.num_samples,
-        )
+        if self.sampling:
+            train_ds = PatchDataset(
+                data=train_files,
+                transform=train_transforms,
+                patch_func=sample_loader,
+                samples_per_image=self.num_samples,
+            )
+        else:
+            train_ds = CacheDataset(
+                dat=train_files, transform=train_transforms
+            )
 
         train_loader = DataLoader(
             train_ds,

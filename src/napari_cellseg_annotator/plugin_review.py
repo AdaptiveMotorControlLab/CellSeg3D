@@ -10,11 +10,11 @@ from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLayout
 from qtpy.QtWidgets import QLineEdit
-from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QVBoxLayout
 
 from napari_cellseg_annotator import utils
+from napari_cellseg_annotator import interface as ui
 from napari_cellseg_annotator.launch_review import launch_review
 from napari_cellseg_annotator.plugin_base import BasePlugin
 
@@ -52,10 +52,9 @@ class Reviewer(BasePlugin):
         self.checkBox = QCheckBox("Create new dataset ?")
         self.checkBox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-        self.btn_start = QPushButton("Start reviewing", self)
-        self.btn_start.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-
-        self.btn_start.clicked.connect(self.run_review)
+        self.btn_start = ui.make_button(
+            "Start reviewing", self.run_review, self
+        )
 
         self.lbl_mod = QLabel("Model name", self)
 
@@ -86,33 +85,33 @@ class Reviewer(BasePlugin):
                 " make sure to save your work beforehand"
             )
 
-        utils.add_blank(self, vbox)
+        ui.add_blank(self, vbox)
         ###########################
-        data_group_w, data_group_l = utils.make_group("Data")
+        data_group_w, data_group_l = ui.make_group("Data")
 
         data_group_l.addWidget(
-            utils.combine_blocks(self.filetype_choice, self.file_handling_box)
+            ui.combine_blocks(self.filetype_choice, self.file_handling_box)
         )
         self.filetype_choice.setVisible(False)
 
         data_group_l.addWidget(
-            utils.combine_blocks(self.btn_image, self.lbl_image)
+            ui.combine_blocks(self.btn_image, self.lbl_image)
         )
 
         data_group_l.addWidget(
-            utils.combine_blocks(self.btn_label, self.lbl_label)
+            ui.combine_blocks(self.btn_label, self.lbl_label)
         )
 
         data_group_w.setLayout(data_group_l)
         vbox.addWidget(data_group_w)
         ###########################
-        utils.add_blank(self, vbox)
+        ui.add_blank(self, vbox)
         ###########################
         # vbox.addWidget(self.lblft2)
-        csv_param_w, csv_param_l = utils.make_group("CSV parameters")
+        csv_param_w, csv_param_l = ui.make_group("CSV parameters")
 
         csv_param_l.addWidget(
-            utils.combine_blocks(
+            ui.combine_blocks(
                 self.textbox,
                 self.lbl_mod,
                 horizontal=False,
@@ -127,13 +126,13 @@ class Reviewer(BasePlugin):
         csv_param_w.setLayout(csv_param_l)
         vbox.addWidget(csv_param_w)
         ###########################
-        utils.add_blank(self, vbox)
+        ui.add_blank(self, vbox)
         ###########################
 
         vbox.addWidget(self.btn_start)
         vbox.addWidget(self.btn_close)
 
-        utils.make_scrollable(
+        ui.make_scrollable(
             contained_layout=vbox,
             containing_widget=self,
             min_wh=[185, 200],
