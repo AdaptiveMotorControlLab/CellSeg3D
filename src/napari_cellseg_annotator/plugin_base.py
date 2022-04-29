@@ -7,7 +7,6 @@ from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QWidget
 
-from napari_cellseg_annotator import utils
 from napari_cellseg_annotator import interface as ui
 
 
@@ -90,7 +89,7 @@ class BasePlugin(QWidget):
 
     def show_file_dialog(self):
         """Open file dialog and process path depending on single file/folder loading behaviour"""
-        f_or_dir_name = utils.open_file_dialog(
+        f_or_dir_name = ui.open_file_dialog(
             self, self._default_path, self.file_handling_box.isChecked()
         )
         if not self.file_handling_box.isChecked():

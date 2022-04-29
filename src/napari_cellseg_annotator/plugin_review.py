@@ -13,8 +13,8 @@ from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QVBoxLayout
 
-from napari_cellseg_annotator import utils
 from napari_cellseg_annotator import interface as ui
+from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.launch_review import launch_review
 from napari_cellseg_annotator.plugin_base import BasePlugin
 
@@ -90,7 +90,8 @@ class Reviewer(BasePlugin):
         data_group_w, data_group_l = ui.make_group("Data")
 
         data_group_l.addWidget(
-            ui.combine_blocks(self.filetype_choice, self.file_handling_box), alignment = ui.LEFT_AL
+            ui.combine_blocks(self.filetype_choice, self.file_handling_box),
+            alignment=ui.LEFT_AL,
         )
         self.filetype_choice.setVisible(False)
 

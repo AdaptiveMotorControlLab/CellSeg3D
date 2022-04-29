@@ -7,8 +7,8 @@ from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
 # local
-from napari_cellseg_annotator import utils
 from napari_cellseg_annotator import interface as ui
+from napari_cellseg_annotator import utils
 
 
 class Helper(QWidget):

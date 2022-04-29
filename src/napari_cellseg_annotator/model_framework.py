@@ -14,12 +14,12 @@ from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QTabWidget
 
 # local
-from napari_cellseg_annotator import utils
 from napari_cellseg_annotator import interface as ui
+from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.log_utility import Log
-from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
 from napari_cellseg_annotator.models import model_SegResNet as SegResNet
 from napari_cellseg_annotator.models import model_VNet as VNet
+from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
 
 warnings.formatwarning = utils.format_Warning
 

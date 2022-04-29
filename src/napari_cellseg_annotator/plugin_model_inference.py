@@ -11,8 +11,8 @@ from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QWidget
 
 # local
-from napari_cellseg_annotator import utils
 from napari_cellseg_annotator import interface as ui
+from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.model_framework import ModelFramework
 from napari_cellseg_annotator.model_workers import InferenceWorker
 

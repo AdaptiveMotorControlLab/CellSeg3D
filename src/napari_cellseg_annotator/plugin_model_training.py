@@ -17,9 +17,9 @@ from monai.losses import DiceLoss
 from monai.losses import FocalLoss
 from monai.losses import GeneralizedDiceLoss
 from monai.losses import TverskyLoss
-from qtpy.QtWidgets import QCheckBox
 
 # Qt
+from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QProgressBar
@@ -27,8 +27,8 @@ from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QSpinBox
 
 # local
-from napari_cellseg_annotator import utils
 from napari_cellseg_annotator import interface as ui
+from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.model_framework import ModelFramework
 from napari_cellseg_annotator.model_workers import TrainingWorker
 

@@ -8,7 +8,6 @@ import numpy as np
 from dask_image.imread import imread as dask_imread
 from pandas import DataFrame
 from pandas import Series
-
 from skimage import io
 from skimage.filters import gaussian
 from tifffile import imread as tfl_imread

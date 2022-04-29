@@ -13,8 +13,8 @@ from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QVBoxLayout
 from tifffile import imwrite
 
-from napari_cellseg_annotator import utils
 from napari_cellseg_annotator import interface as ui
+from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.plugin_base import BasePlugin
 
 DEFAULT_CROP_SIZE = 64

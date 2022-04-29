@@ -4,12 +4,12 @@ from pathlib import Path
 
 import numpy as np
 import torch
+from monai.data import CacheDataset
 from monai.data import DataLoader
 from monai.data import Dataset
 from monai.data import decollate_batch
 from monai.data import pad_list_data_collate
 from monai.data import PatchDataset
-from monai.data import CacheDataset
 from monai.inferers import sliding_window_inference
 from monai.metrics import DiceMetric
 from monai.transforms import AsDiscrete
@@ -100,7 +100,7 @@ class InferenceWorker(GeneratorWorker):
         """
 
         super().__init__(self.inference)
-        self._signals = LogSignal() # add custom signals
+        self._signals = LogSignal()  # add custom signals
         self.log_signal = self._signals.log_signal
         ###########################################
         ###########################################
@@ -554,10 +554,7 @@ class TrainingWorker(GeneratorWorker):
                 transform=Compose(load_single_images, train_transforms),
             )
             print("Cache dataset : val")
-            val_ds = CacheDataset(
-                data=val_files,
-                transform=load_single_images
-            )
+            val_ds = CacheDataset(data=val_files, transform=load_single_images)
         print("Dataloader")
         train_loader = DataLoader(
             train_ds,

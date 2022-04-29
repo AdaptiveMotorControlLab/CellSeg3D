@@ -1,16 +1,20 @@
-from __future__ import print_function, division
+from __future__ import division
+from __future__ import print_function
+
 import os
-from dask_image.imread import imread
-from PIL import Image
 
 import numpy as np
+from dask_image.imread import imread
+from PIL import Image
 from skimage.measure import label
 from skimage.morphology import remove_small_objects
 from skimage.segmentation import watershed
 from skimage.transform import resize
 
 
-def binary_connected(volume, thres=0.5, thres_small=3, scale_factors=(1.0, 1.0, 1.0)):
+def binary_connected(
+    volume, thres=0.5, thres_small=3, scale_factors=(1.0, 1.0, 1.0)
+):
     r"""Convert binary foreground probability maps to instance masks via
     connected-component labeling.
 
@@ -21,20 +25,35 @@ def binary_connected(volume, thres=0.5, thres_small=3, scale_factors=(1.0, 1.0, 
         scale_factors (tuple): scale factors for resizing in :math:`(Z, Y, X)` order. Default: (1.0, 1.0, 1.0)
     """
     semantic = volume[0]
-    foreground = (semantic > int(255 * thres))
+    foreground = semantic > int(255 * thres)
     segm = label(foreground)
     segm = remove_small_objects(segm, thres_small)
 
     if not all(x == 1.0 for x in scale_factors):
-        target_size = (int(semantic.shape[0] * scale_factors[0]),
-                       int(semantic.shape[1] * scale_factors[1]),
-                       int(semantic.shape[2] * scale_factors[2]))
-        segm = resize(segm, target_size, order=0, anti_aliasing=False, preserve_range=True)
+        target_size = (
+            int(semantic.shape[0] * scale_factors[0]),
+            int(semantic.shape[1] * scale_factors[1]),
+            int(semantic.shape[2] * scale_factors[2]),
+        )
+        segm = resize(
+            segm,
+            target_size,
+            order=0,
+            anti_aliasing=False,
+            preserve_range=True,
+        )
 
     return segm
 
 
-def binary_watershed(volume, thres1=0.9, thres2=0.3, thres_small=3, scale_factors=(1.0, 1.0, 1.0), seed_thres=3):
+def binary_watershed(
+    volume,
+    thres1=0.9,
+    thres2=0.3,
+    thres_small=3,
+    scale_factors=(1.0, 1.0, 1.0),
+    seed_thres=3,
+):
     r"""Convert binary foreground probability maps to instance masks via
     watershed segmentation algorithm.
 
@@ -58,10 +77,18 @@ def binary_watershed(volume, thres1=0.9, thres2=0.3, thres_small=3, scale_factor
     segm = remove_small_objects(segm, thres_small)
 
     if not all(x == 1.0 for x in scale_factors):
-        target_size = (int(semantic.shape[0] * scale_factors[0]),
-                       int(semantic.shape[1] * scale_factors[1]),
-                       int(semantic.shape[2] * scale_factors[2]))
-        segm = resize(segm, target_size, order=0, anti_aliasing=False, preserve_range=True)
+        target_size = (
+            int(semantic.shape[0] * scale_factors[0]),
+            int(semantic.shape[1] * scale_factors[1]),
+            int(semantic.shape[2] * scale_factors[2]),
+        )
+        segm = resize(
+            segm,
+            target_size,
+            order=0,
+            anti_aliasing=False,
+            preserve_range=True,
+        )
 
     return segm
 
@@ -89,8 +116,12 @@ y_pred[y_pred <= 0.9] = 0
 y_pred = y_pred.astype("uint8")
 
 # Run post process
-output_watershed_path = base_path + "/data/testing/instance-segmentation-w.tiff"
-output_connected_path = base_path + "/data/testing/instance-segmentation-c.tiff"
+output_watershed_path = (
+    base_path + "/data/testing/instance-segmentation-w.tiff"
+)
+output_connected_path = (
+    base_path + "/data/testing/instance-segmentation-c.tiff"
+)
 
 bw_result = binary_watershed(y_pred)
 bc_result = binary_connected(y_pred)

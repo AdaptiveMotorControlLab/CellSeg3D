@@ -1,15 +1,15 @@
-from qtpy.QtCore import QUrl
 from qtpy.QtCore import Qt
+from qtpy.QtCore import QUrl
 from qtpy.QtGui import QDesktopServices
 from qtpy.QtWidgets import QFileDialog
 from qtpy.QtWidgets import QGridLayout
 from qtpy.QtWidgets import QGroupBox
 from qtpy.QtWidgets import QLabel
-from qtpy.QtWidgets import QSpinBox
 from qtpy.QtWidgets import QLayout
 from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QScrollArea
 from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QSpinBox
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
