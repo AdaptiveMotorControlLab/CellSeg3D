@@ -18,6 +18,7 @@ From here you can access the guides on the several modules available for your ta
 * Inference: :ref:`inference_module_guide`
 * Training : :ref:`training_module_guide`
 * Cropping utility (3D) : :ref:`cropping_module_guide`
+* Advanced : Defining custom models directly in the plugin (WIP) : :ref:`custom_model_guide`
 
 
 Requirements
