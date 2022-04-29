@@ -46,7 +46,7 @@ you **change the position** of the cropped volumes and labels in the x,y and z p
 
 .. note::
     When you are done you can save the cropped volume and labels directly with the
-    **Quicksave** button on the lower left, which will save in the folder Fyou picked the image from, or as
+    **Quicksave** button on the lower left, which will save in the folder you picked the image from, or as
     a separate folder if you loaded a folder as a stack.
     If you want more options (name, format) you can save by selecting the layer and then
     using **File -> Save selected layer**, or simply **CTRL+S** once you have selected the correct layer.
