@@ -178,7 +178,7 @@ def launch_review(
             else:
                 if viewer.layers["labels"] is not None:
                     time = utils.get_date_time()
-                    dir_name = str(out_dir) + "/labels_cropped_" + time
+                    dir_name = str(out_dir) + "/labels_reviewed_" + time
                     dat = viewer.layers["labels"].data
                     utils.save_stack(dat, dir_name, filetype=filetype)
 
