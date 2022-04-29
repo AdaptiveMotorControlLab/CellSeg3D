@@ -24,7 +24,7 @@ Interface and functionalities
 --------------------------------
 
 When launching the module, you will be asked to provide an image folder containing all the volumes you'd like to be labeled.
-All images with the **.tif** extension in this folder will be labeled.
+All images with the chosen (**.tif** or **.tiff** currently supported) extension in this folder will be labeled.
 You can then choose an output folder, where all the results will be saved.
 
 .. note::
@@ -33,14 +33,23 @@ You can then choose an output folder, where all the results will be saved.
     | For example, using a VNet on the third image of a folder, called "volume_1.tif" will yield :
     |   *volume_1_VNet_2022_04_06_15_49_42_pred3.tif*
 
+You can then choose one of the selected models above, which will be used for inference.
+
+If you want to see your results without anisotropy when you have anistropic images, you can specify that you have anisotropic data
+and set the resolution of your image in micron, this wil save & show the results without anisotropy.
+
+You can perform thresholding to binarize your labels, all values beneath the confidence threshold will be set to 0 using this.
+If you wish to use instance segmentation it is recommended to use threshlding.
+
 You can also select whether you'd like to see the results in napari afterwards; by default the first image processed will be displayed,
-but you can choose to display up to three or ten at once.
+but you can choose to display up to ten at once. You can also request to see the originals.
 
 When you are done choosing your parameters, you can press the **Start** button to begin the inference process.
-Once it has finished, results will be saved then displayed in napari; each ouput will be paired with its original.
+Once it has finished, results will be saved then displayed in napari; each output will be paired with its original.
 
 .. hint::
-    | **Results** will be displayed using the **twilight shifted** colormap, whereas the **original** image will show in the **inferno** colormap.
+    | **Results** will be displayed using the **twilight shifted** colormap if raw or **turbo** if thresholded,
+    | whereas the **original** image will be shown in the **inferno** colormap.
     | Feel free to change the **colormap** or **contrast** when viewing results to ensure you can properly see the labels.
     | You'll most likely want to use **3D view** and **grid mode** in napari when checking results more broadly.
 

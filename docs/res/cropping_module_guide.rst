@@ -22,7 +22,8 @@ Folders can be stacks of either .png or .tif files, ideally numbered with the in
 .. note::
     Only single 3D **.tif** files or one folder of several **.png** or **.tif** (stack of 2D images) are supported.
 
-You can the choose the size of the cropped volume, which will be constant throughout the process; make sure it is correct beforehand.
+You can then choose the size of the cropped volume, which will be constant throughout the process; make sure it is correct beforehand.
+Setting a larger size than the size of the image will cause issues.
 Support for dynamically changing the crop size might be added in the future.
 
 Once you are ready, you can press **Start** to start the review process.
@@ -38,15 +39,17 @@ Once you have launched the review process, you will have access to three sliders
 you **change the position** of the cropped volumes and labels in the x,y and z positions.
 
 .. hint::
-    If you **cannot see your cropped volume well**, feel free to change the **colormaps** of the image and the cropped
+    If you **cannot see your cropped volume well**, feel free to change the **colormap** of the image and the cropped
     volume to better see them.
     You may want to change the **opacity** and **contrast thresholds** depending on your image, too.
 
 
 .. note::
-    When you are done you can save the cropped volume and labels directly using napari,
-    by selecting the layer and then using **File -> Save selected layer**,
-    or simply **CTRL+S** once you have selected the correct layer.
+    When you are done you can save the cropped volume and labels directly with the
+    **Quicksave** button on the lower left, which will save in the folder you picked the image from, or as
+    a separate folder if you loaded a folder as a stack.
+    If you want more options (name, format) you can save by selecting the layer and then
+    using **File -> Save selected layer**, or simply **CTRL+S** once you have selected the correct layer.
 
 
 
