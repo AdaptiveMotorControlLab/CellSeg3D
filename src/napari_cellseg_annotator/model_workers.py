@@ -41,7 +41,7 @@ Writing something to log messages from outside the main thread is rather problem
 so instead, following the instructions in the guides below to have a worker with custom signals, I implemented
 a custom worker function."""
 
-
+# FutureReference():
 # https://python-forum.io/thread-31349.html
 # https://www.pythoncentral.io/pysidepyqt-tutorial-creating-your-own-signals-and-slots/
 # https://napari-staging-site.github.io/guides/stable/threading.html
@@ -100,7 +100,7 @@ class InferenceWorker(GeneratorWorker):
         """
 
         super().__init__(self.inference)
-        self._signals = LogSignal()
+        self._signals = LogSignal() # add custom signals
         self.log_signal = self._signals.log_signal
         ###########################################
         ###########################################
@@ -309,6 +309,8 @@ class InferenceWorker(GeneratorWorker):
                     "result": out,
                     "model_name": self.model_dict["name"],
                 }
+
+        model.to("cpu")
 
 
 class TrainingWorker(GeneratorWorker):
@@ -693,6 +695,9 @@ class TrainingWorker(GeneratorWorker):
             f"Train completed, best_metric: {best_metric:.4f} "
             f"at epoch: {best_metric_epoch}"
         )
+        model.to("cpu")
+        optimizer = None
+        del optimizer
         # del device
         # del model_id
         # del model_name

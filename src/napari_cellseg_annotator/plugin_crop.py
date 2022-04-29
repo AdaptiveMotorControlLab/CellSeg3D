@@ -158,9 +158,10 @@ class Cropping(BasePlugin):
                     im_dir + "/" + im_filename + "_cropped_" + time + ".tif"
                 )
 
+            print(self.label)
             if self.label is not None:
                 im_filename = os.path.basename(self.label_path).split(".")[0]
-                im_dir = os.path.split(self.label_path)[0]
+                im_dir = os.path.split(self.label_path)[0] + "/cropped"
                 name = (
                     im_dir
                     + "/"
@@ -170,6 +171,7 @@ class Cropping(BasePlugin):
                     + ".tif"
                 )
                 dat = viewer.layers["cropped_labels"].data
+                os.makedirs(im_dir, exist_ok=True)
                 imwrite(name, data=dat)
 
         else:
@@ -182,12 +184,14 @@ class Cropping(BasePlugin):
                 dir_name = im_dir + "/volume_cropped_" + time
                 utils.save_stack(dat, dir_name, filetype=self.filetype)
 
+            print(self.label)
             if self.label is not None:
 
                 # im_filename = os.path.basename(self.image_path).split(".")[0]
                 im_dir = os.path.split(self.label_path)[0]
 
                 dir_name = im_dir + "/labels_cropped_" + time
+                print(f"dir name {dir_name}")
                 dat = viewer.layers["cropped_labels"].data
                 utils.save_stack(dat, dir_name, filetype=self.filetype)
 
@@ -231,7 +235,7 @@ class Cropping(BasePlugin):
         )
 
         if self.crop_labels:
-            self.labels = utils.load_images(
+            self.label = utils.load_images(
                 self.label_path, self.filetype, self.as_folder
             )
 
@@ -248,7 +252,7 @@ class Cropping(BasePlugin):
         )
 
         if self.crop_labels:
-            self.label_layer = vw.add_labels(self.labels, visible=False)
+            self.label_layer = vw.add_labels(self.label, visible=False)
 
         @magicgui(call_button="Quicksave")
         def save_widget():
@@ -301,9 +305,9 @@ class Cropping(BasePlugin):
         )
 
         if self.crop_labels:
-            label_stack = self.labels
+            label_stack = self.label
             labels_crop_layer = vw.add_labels(
-                self.labels[:cropz, :cropy, :cropx],
+                self.label[:cropz, :cropy, :cropx],
                 name="cropped_labels",
                 scale=self.label_layer.scale,
             )
