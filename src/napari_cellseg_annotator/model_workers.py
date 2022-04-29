@@ -672,7 +672,7 @@ class TrainingWorker(GeneratorWorker):
                     yield train_report
 
                     weights_filename = (
-                        f"{model_name}_best_metric" + f"_epoch_{epoch}.pth"
+                        f"{model_name}_best_metric" + f"_epoch_{epoch+1}.pth"
                     )
 
                     if metric > best_metric:
