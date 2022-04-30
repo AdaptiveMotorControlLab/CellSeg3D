@@ -17,12 +17,9 @@ from monai.losses import FocalLoss
 from monai.losses import GeneralizedDiceLoss
 from monai.losses import TverskyLoss
 # Qt
-from qtpy.QtWidgets import QCheckBox
-from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QProgressBar
 from qtpy.QtWidgets import QSizePolicy
-from qtpy.QtWidgets import QSpinBox
 
 # local
 from napari_cellseg_annotator import interface as ui
@@ -195,41 +192,34 @@ class Trainer(ModelFramework):
 
         ################################
         # interface
-        self.epoch_choice = QSpinBox()
-        self.epoch_choice.setValue(self.max_epochs)
-        self.epoch_choice.setRange(2, 1000)
-        # self.epoch_choice.setSingleStep(2)
-        self.epoch_choice.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.epoch_choice = ui.make_n_spinboxes(
+            min=2, max=1000, default=self.max_epochs
+        )
         self.lbl_epoch_choice = QLabel("Number of epochs : ", self)
 
-        self.loss_choice = QComboBox()
+        self.loss_choice, self.lbl_loss_choice = ui.make_combobox(
+            sorted(self.loss_dict.keys()), label="Loss function"
+        )
         self.loss_choice.setCurrentIndex(loss_index)
-        self.loss_choice.addItems(sorted(self.loss_dict.keys()))
-        self.lbl_loss_choice = QLabel("Loss function", self)
 
-        self.sample_choice = QSpinBox()
-        self.sample_choice.setValue(self.num_samples)
-        self.sample_choice.setRange(2, 50)
-        self.sample_choice.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.sample_choice = ui.make_n_spinboxes(
+            min=2, max=50, default=self.num_samples
+        )
         self.lbl_sample_choice = QLabel("Number of patches per image : ", self)
         self.sample_choice.setVisible(False)
         self.lbl_sample_choice.setVisible(False)
 
-        self.batch_choice = QSpinBox()
-        self.batch_choice.setValue(self.batch_size)
-        self.batch_choice.setRange(1, 10)
-        self.batch_choice.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.batch_choice = ui.make_n_spinboxes(
+            min=1, max=10, default=self.batch_size
+        )
         self.lbl_batch_choice = QLabel("Batch size : ", self)
 
-        self.val_interval_choice = QSpinBox()
-        self.val_interval_choice.setValue(self.val_interval)
-        self.val_interval_choice.setRange(1, 10)
-        self.val_interval_choice.setSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.Fixed
+        self.val_interval_choice = ui.make_n_spinboxes(
+            default=self.val_interval
         )
         self.lbl_val_interv_choice = QLabel("Validation interval : ", self)
 
-        self.augment_choice = QCheckBox("Augment data")
+        self.augment_choice = ui.make_checkbox("Augment data")
 
         # TODO add self.tabs, self.close_buttons etc...
         self.close_buttons = [
@@ -249,10 +239,10 @@ class Trainer(ModelFramework):
             l.setVisible(False)
         self.sampling_container = QLabel()
 
-        self.patch_choice = QCheckBox("Extract patches from images")
+        self.patch_choice = ui.make_checkbox(
+            "Extract patches from images", func=self.toggle_patch_dims
+        )
         self.patch_choice.clicked.connect(self.toggle_patch_dims)
-        # self.patch_choice.toggle()
-        # self.toggle_patch_dims()
 
         self.progress = QProgressBar()
         self.progress.setVisible(False)

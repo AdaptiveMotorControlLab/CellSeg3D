@@ -6,13 +6,12 @@ import numpy as np
 from magicgui import magicgui
 from magicgui.widgets import Container
 from magicgui.widgets import Slider
-from qtpy.QtWidgets import QCheckBox
+# Qt
 from qtpy.QtWidgets import QLabel
-from qtpy.QtWidgets import QLayout
 from qtpy.QtWidgets import QSizePolicy
-from qtpy.QtWidgets import QVBoxLayout
 from tifffile import imwrite
 
+# local
 from napari_cellseg_annotator import interface as ui
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.plugin_base import BasePlugin
@@ -43,11 +42,9 @@ class Cropping(BasePlugin):
 
         self.btn_start = ui.make_button("Start", self.start, self)
 
-        self.crop_label_choice = QCheckBox("Crop labels as well ?")
-        self.crop_label_choice.setSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.Fixed
+        self.crop_label_choice = ui.make_checkbox(
+            "Crop labels as well ?", self.toggle_label_path
         )
-        self.crop_label_choice.clicked.connect(self.toggle_label_path)
         self.lbl_label.setVisible(False)
         self.btn_label.setVisible(False)
 
@@ -90,9 +87,7 @@ class Cropping(BasePlugin):
     def build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
 
-        vbox = QVBoxLayout()
-        vbox.setContentsMargins(0, 0, 1, 11)
-        vbox.setSizeConstraint(QLayout.SetFixedSize)
+        w, layout = ui.make_container_widget(0, 0, 1, 11)
 
         data_group_w, data_group_l = ui.make_group("Data")
         data_group_l.addWidget(
@@ -116,9 +111,9 @@ class Cropping(BasePlugin):
         self.filetype_choice.setVisible(False)
 
         data_group_w.setLayout(data_group_l)
-        vbox.addWidget(data_group_w)
+        layout.addWidget(data_group_w)
 
-        ui.add_blank(self, vbox)
+        ui.add_blank(self, layout)
 
         dim_group_w, dim_group_l = ui.make_group("Dimensions")
         [
@@ -127,16 +122,13 @@ class Cropping(BasePlugin):
             for widget in list
         ]
         dim_group_w.setLayout(dim_group_l)
-        vbox.addWidget(dim_group_w)
+        layout.addWidget(dim_group_w)
 
-        ui.add_blank(self, vbox)
-        vbox.addWidget(self.btn_start, alignment=ui.LEFT_AL)
-        vbox.addWidget(self.btn_close, alignment=ui.LEFT_AL)
+        ui.add_blank(self, layout)
+        layout.addWidget(self.btn_start, alignment=ui.LEFT_AL)
+        layout.addWidget(self.btn_close, alignment=ui.LEFT_AL)
 
-        ui.make_scrollable(vbox, self, min_wh=[180, 100], base_wh=[180, 600])
-        # self.setLayout(vbox)
-        # self.show()
-        # self._viewer.window.add_dock_widget(self, name="Crop utility", area="right")
+        ui.make_scrollable(layout, self, min_wh=[180, 100], base_wh=[180, 600])
 
     def quicksave(self):
         """Quicksaves the cropped volume in the folder from which they originate, with their original file extension.

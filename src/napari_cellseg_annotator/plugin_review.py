@@ -5,14 +5,13 @@ import napari
 import numpy as np
 import pims
 import skimage.io as io
+# Qt
 from qtpy import QtGui
-from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QLabel
-from qtpy.QtWidgets import QLayout
 from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QSizePolicy
-from qtpy.QtWidgets import QVBoxLayout
 
+# local
 from napari_cellseg_annotator import interface as ui
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.launch_review import launch_review
@@ -49,8 +48,7 @@ class Reviewer(BasePlugin):
         self.textbox = QLineEdit(self)
         self.textbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-        self.checkBox = QCheckBox("Create new dataset ?")
-        self.checkBox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.checkBox = ui.make_checkbox("Create new dataset ?")
 
         self.btn_start = ui.make_button(
             "Start reviewing", self.run_review, self
@@ -72,9 +70,7 @@ class Reviewer(BasePlugin):
     def build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
 
-        vbox = QVBoxLayout()
-        vbox.setContentsMargins(0, 0, 1, 11)
-        vbox.setSizeConstraint(QLayout.SetFixedSize)
+        w, vbox = ui.make_container_widget(0, 0, 1, 11)
 
         global global_launched_before
         if global_launched_before:

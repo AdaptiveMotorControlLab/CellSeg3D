@@ -1,11 +1,10 @@
 import os
 import warnings
-
 # import shutil
 from pathlib import Path
 
 import pandas as pd
-from qtpy.QtWidgets import QHBoxLayout
+# Qt
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
@@ -46,8 +45,7 @@ class Datamanager(QWidget):
             "1", self.button_func, parent=self, fixed=False
         )
 
-        io_panel = QWidget()
-        io_layout = QHBoxLayout()
+        io_panel, io_layout = ui.make_container_widget(vertical=False)
         io_layout.addWidget(self.button)  # , alignment=utils.ABS_AL)
         io_panel.setLayout(io_layout)
         io_panel.setMaximumWidth(GUI_MAXIMUM_WIDTH)

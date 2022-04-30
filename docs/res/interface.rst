@@ -28,6 +28,14 @@ make_button
 **************************************
 .. autofunction:: napari_cellseg_annotator.interface::make_button
 
+make_combobox
+**************************************
+.. autofunction:: napari_cellseg_annotator.interface::make_combobox
+
+make_checkbox
+**************************************
+.. autofunction:: napari_cellseg_annotator.interface::make_checkbox
+
 
 combine_blocks
 **************************************

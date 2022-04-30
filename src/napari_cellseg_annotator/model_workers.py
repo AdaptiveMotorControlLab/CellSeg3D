@@ -1,9 +1,10 @@
-# MONAI
 import os
+import platform
 from pathlib import Path
 
 import numpy as np
 import torch
+# MONAI
 from monai.data import CacheDataset
 from monai.data import DataLoader
 from monai.data import Dataset
@@ -33,6 +34,7 @@ from napari.qt.threading import WorkerBaseSignals
 from qtpy.QtCore import Signal
 from tifffile import imwrite
 
+# local
 from napari_cellseg_annotator import utils
 
 """
@@ -77,6 +79,7 @@ class InferenceWorker(GeneratorWorker):
         results_path,
         filetype,
         transforms,
+        instance,
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~inference` function.
 
@@ -95,6 +98,8 @@ class InferenceWorker(GeneratorWorker):
 
             * transforms: a dict containing transforms to perform at various times.
 
+            * instance : a dict containing parameters regarding instance segmentation
+
         Note: See :py:func:`~self.inference`
         """
 
@@ -110,6 +115,7 @@ class InferenceWorker(GeneratorWorker):
         self.results_path = results_path
         self.filetype = filetype
         self.transforms = transforms
+        self.instance_params = instance
 
         """These attributes are all arguments of :py:func:~inference, please see that for reference"""
 
@@ -165,6 +171,11 @@ class InferenceWorker(GeneratorWorker):
                 * "result" : inference result
 
         """
+        sys = platform.system()
+        print(sys)
+        if sys == "Darwin":  # required for macOS ?
+            torch.set_num_threads(1)
+            self.log("Number of threads has been set to 1 for macOS")
 
         images_dict = self.create_inference_dict(self.images_filepaths)
 
@@ -222,7 +233,7 @@ class InferenceWorker(GeneratorWorker):
         self.log("\nLoading dataset...")
         inference_ds = Dataset(data=images_dict, transform=load_transforms)
         inference_loader = DataLoader(
-            inference_ds, batch_size=1, num_workers=1
+            inference_ds, batch_size=1, num_workers=2
         )
         self.log("Done")
         # print(f"wh dir : {WEIGHTS_DIR}")
@@ -294,11 +305,11 @@ class InferenceWorker(GeneratorWorker):
                 file_path = (
                     self.results_path
                     + "/"
+                    + f"Prediction_{image_id}"
                     + original_filename
                     + "_"
                     + self.model_dict["name"]
                     + f"_{time}_"
-                    + f"pred_{image_id}"
                     + self.filetype
                 )
 
@@ -309,12 +320,39 @@ class InferenceWorker(GeneratorWorker):
                 filename = os.path.split(file_path)[1]
                 self.log(filename)
 
+                if self.instance_params["do_instance"]:
+                    self.log(
+                        f"\nRunning instance segmentation for image n°{image_id}"
+                    )
+                    method = self.instance_params["method"]
+                    instance_labels = method(out)
+
+                    instance_filepath = (
+                        self.results_path
+                        + "/"
+                        + f"Instance_seg_labels_{image_id}"
+                        + original_filename
+                        + "_"
+                        + self.model_dict["name"]
+                        + f"_{time}_"
+                        + self.filetype
+                    )
+
+                    imwrite(instance_filepath, instance_labels)
+                    self.log(
+                        f"Instance segmentation results for image n°{image_id} have been saved as:"
+                    )
+                    self.log(os.path.split(instance_filepath)[1])
+                else:
+                    instance_labels = None
+
                 original = np.array(inf_data["image"]).astype(np.float32)
 
                 # logging(f"Inference completed on image {i+1}")
                 yield {
                     "image_id": i + 1,
                     "original": original,
+                    "instance_labels": instance_labels,
                     "result": out,
                     "model_name": self.model_dict["name"],
                 }
@@ -453,6 +491,12 @@ class TrainingWorker(GeneratorWorker):
         # faulthandler.enable(file=error_log, all_threads=True)
         #########################
 
+        sys = platform.system()
+        print(sys)
+        if sys == "Darwin":  # required for macOS ?
+            torch.set_num_threads(1)
+            self.log("Number of threads has been set to 1 for macOS")
+
         model_name = self.model_dict["name"]
         model_class = self.model_dict["class"]
 
@@ -484,17 +528,11 @@ class TrainingWorker(GeneratorWorker):
             self.data_dicts[int(len(self.data_dicts) * 0.9) :],
         )
         print("Training files :")
-        [
-            print(f"{train_file}\n")
-            for train_file in train_files
-        ]
+        [print(f"{train_file}\n") for train_file in train_files]
         print("* " * 20)
         print("* " * 20)
         print("Validation files :")
-        [
-            print(f"{val_file}\n")
-            for val_file in val_files
-        ]
+        [print(f"{val_file}\n") for val_file in val_files]
         # TODO : param patch ROI size
 
         if self.sampling:
@@ -591,12 +629,12 @@ class TrainingWorker(GeneratorWorker):
             train_ds,
             batch_size=self.batch_size,
             shuffle=True,
-            num_workers=4,
+            num_workers=2,
             collate_fn=pad_list_data_collate,
         )
 
         val_loader = DataLoader(
-            val_ds, batch_size=self.batch_size, num_workers=4
+            val_ds, batch_size=self.batch_size, num_workers=2
         )
         print("\nDone")
 

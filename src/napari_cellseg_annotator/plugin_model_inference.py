@@ -3,14 +3,13 @@ import warnings
 
 import napari
 # Qt
-from qtpy.QtWidgets import QCheckBox
-from qtpy.QtWidgets import QDoubleSpinBox
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QWidget
 
 # local
 from napari_cellseg_annotator import interface as ui
+from napari_cellseg_annotator import model_instance_seg as inst_seg
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.model_framework import ModelFramework
 from napari_cellseg_annotator.model_workers import InferenceWorker
@@ -68,6 +67,8 @@ class Inferer(ModelFramework):
         self.show_original = True
         self.zoom = [1, 1, 1]
 
+        self.instance_params = None
+
         ############################
         ############################
         ############################
@@ -83,6 +84,7 @@ class Inferer(ModelFramework):
             glob.glob(os.path.join(directory, "*.tif"))
         )
         self.results_path = "C:/Users/Cyril/Desktop/test"
+
         #######################
         #######################
         #######################
@@ -90,29 +92,20 @@ class Inferer(ModelFramework):
         ###########################
         # interface
 
-        self.view_checkbox = QCheckBox("View results in napari")
-        self.view_checkbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.view_checkbox.stateChanged.connect(self.toggle_display_number)
+        self.view_checkbox = ui.make_checkbox(
+            "View results in napari", self.toggle_display_number
+        )
 
         self.display_number_choice = ui.make_n_spinboxes(1, 1, 10, 1)
-        self.display_number_choice.setSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.Fixed
-        )
         self.lbl_display_number = QLabel("How many ? (max. 10)", self)
 
-        self.aniso_checkbox = QCheckBox("Anisotropic data")
-        self.aniso_checkbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.aniso_checkbox.stateChanged.connect(self.toggle_display_aniso)
+        self.aniso_checkbox = ui.make_checkbox(
+            "Anisotropic data", self.toggle_display_aniso
+        )
 
-        def make_anisotropy_choice():
-            widget = QDoubleSpinBox()
-            widget.setMinimum(1)
-            widget.setMaximum(10)
-            widget.setValue(1.5)  # change default TODO
-            widget.setSingleStep(1.0)
-            return widget
-
-        self.aniso_box_widgets = [make_anisotropy_choice() for ax in "xyz"]
+        self.aniso_box_widgets = ui.make_n_spinboxes(
+            n=3, min=1.0, default=1.5, step=0.5, double=True
+        )
         self.aniso_box_lbl = [
             QLabel("Resolution in " + axis + " (microns) :") for axis in "xyz"
         ]
@@ -123,24 +116,53 @@ class Inferer(ModelFramework):
             w.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.aniso_resolutions = []
 
-        self.thresholding_checkbox = QCheckBox("Perform thresholding")
-        self.thresholding_checkbox.setSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.Fixed
-        )
-        self.thresholding_checkbox.stateChanged.connect(
-            self.toggle_display_thresh
+        self.thresholding_checkbox = ui.make_checkbox(
+            "Perform thresholding", self.toggle_display_thresh
         )
 
-        self.thresholding_count = QDoubleSpinBox()
-        self.thresholding_count.setMinimum(0)
-        self.thresholding_count.setMaximum(1)
-        self.thresholding_count.setSingleStep(0.05)
-        self.thresholding_count.setValue(0.7)
-
-        self.show_original_checkbox = QCheckBox("Show originals")
-        self.show_original_checkbox.setSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.Fixed
+        self.thresholding_count = ui.make_n_spinboxes(
+            n=1, max=1, default=0.7, step=0.05, double=True
         )
+
+        ##################
+        ##################
+        # instance segmentation widgets
+        self.instance_method_dict = {
+            "Connected components": inst_seg.binary_connected,
+            "Watershed": inst_seg.binary_watershed,
+        }
+        self.instance_choice = ui.make_checkbox(
+            "Run instance segmentation", func=self.toggle_display_instance
+        )
+
+        self.instance_method_choice = ui.make_combobox(
+            sorted(self.instance_method_dict.keys())
+        )
+
+        self.instance_prob_thresh = ui.make_n_spinboxes(
+            n=1, max=0.99, default=0.7, step=0.05, double=True
+        )
+        self.instance_prob_thresh_lbl = QLabel("Probability threshold :")
+        self.instance_prob_t_container = ui.combine_blocks(
+            second=self.instance_prob_thresh,
+            first=self.instance_prob_thresh_lbl,
+            horizontal=False,
+        )
+
+        self.instance_small_object_thresh = ui.make_n_spinboxes(
+            n=1, max=100, default=10, step=5
+        )
+        self.instance_small_object_thresh_lbl = QLabel(
+            "Small object removal threshold :"
+        )
+        self.instance_small_object_t_container = ui.combine_blocks(
+            second=self.instance_small_object_thresh,
+            first=self.instance_small_object_thresh_lbl,
+            horizontal=False,
+        )
+        ##################
+        ##################
+        self.show_original_checkbox = ui.make_checkbox("Show originals")
 
         self.btn_start = ui.make_button("Start inference", self.start)
         self.btn_close = self.make_close_button()
@@ -194,6 +216,17 @@ class Inferer(ModelFramework):
             self.thresholding_count.setVisible(True)
         else:
             self.thresholding_count.setVisible(False)
+
+    def toggle_display_instance(self):
+        """Shows or hides the options for instance segmentation based on current user selection"""
+        if self.instance_choice.isChecked():
+            self.instance_method_choice.setVisible(True)
+            self.instance_prob_t_container.setVisible(True)
+            self.instance_small_object_t_container.setVisible(True)
+        else:
+            self.instance_method_choice.setVisible(False)
+            self.instance_prob_t_container.setVisible(False)
+            self.instance_small_object_t_container.setVisible(False)
 
     def build(self):
         """Puts all widgets in a layout and adds them to the napari Viewer"""
@@ -275,6 +308,24 @@ class Inferer(ModelFramework):
         )
         self.thresholding_count.setVisible(False)  # thresholding
 
+        ui.add_blank(post_proc_group, post_proc_layout)
+
+        # instance segmentation
+        post_proc_layout.addWidget(self.instance_choice, alignment=ui.LEFT_AL)
+        post_proc_layout.addWidget(
+            self.instance_method_choice, alignment=ui.LEFT_AL
+        )
+        post_proc_layout.addWidget(
+            self.instance_prob_t_container, alignment=ui.LEFT_AL
+        )
+        post_proc_layout.addWidget(
+            self.instance_small_object_t_container, alignment=ui.LEFT_AL
+        )
+
+        self.instance_method_choice.setVisible(False)
+        self.instance_prob_t_container.setVisible(False)
+        self.instance_small_object_t_container.setVisible(False)
+
         post_proc_group.setLayout(post_proc_layout)
         tab_layout.addWidget(post_proc_group, alignment=ui.LEFT_AL)
         ###################################
@@ -321,11 +372,11 @@ class Inferer(ModelFramework):
         ##################
         ############
         ######
-        # end of tab, combine into scrollable
+        # end of tabs, combine into scrollable
         ui.make_scrollable(
             containing_widget=tab,
             contained_layout=tab_layout,
-            min_wh=[180, 100],
+            min_wh=[200, 100],
         )
         self.addTab(tab, "Inference")
 
@@ -393,6 +444,31 @@ class Inferer(ModelFramework):
                 ],
             }
 
+            method_call = self.instance_method_dict[
+                self.instance_method_choice.currentText()
+            ]
+            prob_thresh = self.instance_prob_thresh.value()
+            t_small = self.instance_small_object_thresh.value()
+            if self.instance_method_choice.currentText() == "Watershed":
+                method = lambda image: method_call(
+                    image, thres_seeding=prob_thresh, thres_small=t_small
+                )
+            elif (
+                self.instance_method_choice.currentText()
+                == "Connected components"
+            ):
+                method = lambda image: method_call(image, prob_thresh, t_small)
+            else:
+                print(
+                    "Error, method for instance segmentation is incorrectly set"
+                )
+
+            self.instance_params = {
+                "do_instance": self.instance_choice.isChecked(),
+                "method": method,
+                "name": self.instance_method_choice.currentText(),
+            }
+
             self.show_res_nbr = self.display_number_choice.value()
 
             self.worker = InferenceWorker(
@@ -403,6 +479,7 @@ class Inferer(ModelFramework):
                 results_path=self.results_path,
                 filetype=self.filetype_choice.currentText(),
                 transforms=self.transforms,
+                instance=self.instance_params,
             )
 
             yield_connect_show_res = lambda data: self.on_yield(
@@ -443,6 +520,18 @@ class Inferer(ModelFramework):
         if self.transforms["zoom"][0]:
             self.log.print_and_log(
                 f"\nAnisotropy parameters are : {self.aniso_resolutions} microns in x,y,z"
+            )
+
+        if self.instance_params["do_instance"]:
+            self.log.print_and_log(f"\nInstance segmentation is enabled")
+            self.log.print_and_log(
+                f"Instance segmentation method is : {self.instance_params['name']}"
+            )
+            self.log.print_and_log(
+                f"Probability threshold is {self.instance_prob_thresh.value()}"
+            )
+            self.log.print_and_log(
+                f"Small object threshold is {self.instance_small_object_thresh.value()}"
             )
 
     def on_error(self):
@@ -513,3 +602,9 @@ class Inferer(ModelFramework):
                 name=f"pred_{image_id}_{model_name}",
                 opacity=0.8,
             )
+
+            if data["instance_labels"] is not None:
+                name = f"instance_labels_{image_id}"
+                instance_layer = viewer.add_labels(
+                    data["instance_labels"], name=name
+                )

@@ -4,10 +4,7 @@ import warnings
 
 import napari
 import torch
-
 # Qt
-from qtpy.QtWidgets import QComboBox
-from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QProgressBar
 from qtpy.QtWidgets import QSizePolicy
@@ -17,9 +14,9 @@ from qtpy.QtWidgets import QTabWidget
 from napari_cellseg_annotator import interface as ui
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.log_utility import Log
+from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
 from napari_cellseg_annotator.models import model_SegResNet as SegResNet
 from napari_cellseg_annotator.models import model_VNet as VNet
-from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
 
 warnings.formatwarning = utils.format_Warning
 
@@ -94,12 +91,9 @@ class ModelFramework(QTabWidget):
         self.lbl_label_files = QLineEdit("Labels directory", self)
         self.lbl_label_files.setReadOnly(True)
 
-        self.filetype_choice = QComboBox()
-        self.filetype_choice.addItems([".tif", ".tiff"])
-        self.filetype_choice.setSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.Fixed
+        self.filetype_choice, self.lbl_filetype = ui.make_combobox(
+            [".tif", ".tiff"], label="File format"
         )
-        self.lbl_filetype = QLabel("File format", self)
 
         self.btn_result_path = ui.make_button(
             "Open", self.load_results_path, self
@@ -114,9 +108,9 @@ class ModelFramework(QTabWidget):
         self.lbl_model_path = QLineEdit("Model directory", self)
         self.lbl_model_path.setReadOnly(True)
 
-        self.model_choice = QComboBox()
-        self.model_choice.addItems(sorted(self.models_dict.keys()))
-        self.lbl_model_choice = QLabel("Model name", self)
+        self.model_choice, self.lbl_model_choice = ui.make_combobox(
+            sorted(self.models_dict.keys()), label="Model name"
+        )
         ###################################################
         # status report docked widget
         (

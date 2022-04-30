@@ -1,8 +1,6 @@
 import napari
-
 # Qt
 from qtpy.QtWidgets import QSizePolicy
-from qtpy.QtWidgets import QSpinBox
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 

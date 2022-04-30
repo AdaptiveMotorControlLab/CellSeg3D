@@ -1,9 +1,13 @@
-from qtpy.QtCore import Qt
 from qtpy.QtCore import QUrl
+from qtpy.QtCore import Qt
 from qtpy.QtGui import QDesktopServices
+from qtpy.QtWidgets import QCheckBox
+from qtpy.QtWidgets import QComboBox
+from qtpy.QtWidgets import QDoubleSpinBox
 from qtpy.QtWidgets import QFileDialog
 from qtpy.QtWidgets import QGridLayout
 from qtpy.QtWidgets import QGroupBox
+from qtpy.QtWidgets import QHBoxLayout
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLayout
 from qtpy.QtWidgets import QPushButton
@@ -121,7 +125,16 @@ def make_scrollable(
     containing_widget.setLayout(layout)
 
 
-def make_n_spinboxes(n=1, min=0, max=10, default=0, step=1, parent=None):
+def make_n_spinboxes(
+    n=1,
+    min=0,
+    max=10,
+    default=0,
+    step=1,
+    parent=None,
+    double=False,
+    fixed=True,
+):
     """
 
     Args:
@@ -131,20 +144,30 @@ def make_n_spinboxes(n=1, min=0, max=10, default=0, step=1, parent=None):
         default: default value, defaults to 0
         step : step value, defaults to 1
         parent: parent widget, defaults to None
+        double (bool): if True, creates a QDoubleSpinBox rather than a QSpinBox
+        fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed
 
     Returns:
-            list: A list of n QSpinBoxes with specified parameters. If only one box is made, returns the box itself instead
+            list: A list of n Q(Double)SpinBoxes with specified parameters. If only one box is made, returns the box itself instead
     """
+    if double:
+        box_type = QDoubleSpinBox
+    else:
+        box_type = QSpinBox
     boxes = []
     for i in range(n):
         if parent is not None:
-            widget = QSpinBox(parent)
+            widget = box_type(parent)
         else:
-            widget = QSpinBox()
+            widget = box_type()
         widget.setMinimum(min)
         widget.setMaximum(max)
         widget.setSingleStep(step)
         widget.setValue(default)
+
+        if fixed:
+            widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
         boxes.append(widget)
     if len(boxes) == 1:
         return boxes[0]
@@ -183,21 +206,26 @@ def make_group(title, L=7, T=20, R=7, B=11, solo_dict=None):
     return group, layout
 
 
-def make_container_widget(L=0, T=0, R=1, B=11):
+def make_container_widget(L=0, T=0, R=1, B=11, vertical=True):
     """Creates a QWidget and a layout for the purpose of containing other modules, with a Fixed layout.
 
     Args:
-        L: left margin of layout
-        T: top margin of layout
-        R: right margin of layout
-        B: bottom margin of layout
+        L (int): left margin of layout
+        T (int): top margin of layout
+        R (int): right margin of layout
+        B (int): bottom margin of layout
+        vertical (bool): if False, uses QHBoxLayout instead of QVboxLayout. Default: True
 
     Returns:
         QWidget : widget that contains the other widgets. Fixed size.
-        QVBoxLayout :  layout to add contained widgets in. Fixed size.
+        QBoxLayout :  H/V Box layout to add contained widgets in. Fixed size.
     """
     container_widget = QWidget()
-    container_layout = QVBoxLayout()
+
+    if vertical:
+        container_layout = QVBoxLayout()
+    else:
+        container_layout = QHBoxLayout()
     container_layout.setContentsMargins(L, T, R, B)
     container_layout.setSizeConstraint(QLayout.SetFixedSize)
 
@@ -239,6 +267,78 @@ def make_button(
         btn.clicked.connect(func)
 
     return btn
+
+
+def make_combobox(
+    entries=None,
+    parent: QWidget = None,
+    label: str = None,
+    fixed: bool = True,
+):
+    """Creates a dropdown menu with a title and adds specified entries to it
+
+    Args:
+        entries array(str): Entries to add to the dropdown menu. Defaults to None, no entries if None
+        parent (QWidget): parent QWidget to add dropdown menu to. Defaults to None, no parent is set if None
+        label (str) : if not None, creates a Qlabel with the contents of 'label', and returns the label as well
+        fixed (bool): if True, will set the size policy of the dropdown menu to Fixed in h and w. Defaults to True.
+
+    Returns:
+        QComboBox : created dropdown menu
+    """
+    if parent is None:
+        menu = QComboBox()
+    else:
+        menu = QComboBox(parent)
+
+    if entries is not None:
+        menu.addItems(entries)
+
+    if fixed:
+        menu.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+    if label is not None:
+        label = QLabel(label)
+        return menu, label
+
+    return menu
+
+
+def make_checkbox(
+    title: str = None,
+    func: callable = None,
+    parent: QWidget = None,
+    fixed: bool = True,
+):
+    """Creates a checkbox with a title and connects it to a function when clicked
+
+    Args:
+        title (str-like): title of the checkbox. Defaults to None, if None no title is set
+        func (callable): function to execute when checkbox is toggled. Defaults to None, no binding is made if None
+        parent (QWidget): parent QWidget to add checkbox to. Defaults to None, no parent is set if None
+        fixed (bool): if True, will set the size policy of the checkbox to Fixed in h and w. Defaults to True.
+
+    Returns:
+        QCheckBox : created button
+    """
+    if parent is not None:
+        if title is not None:
+            box = QCheckBox(title, parent)
+        else:
+            box = QCheckBox(parent)
+    else:
+        if title is not None:
+            box = QCheckBox(title, parent)
+        else:
+            box = QCheckBox(parent)
+
+    if fixed:
+        box.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+    if func is not None:
+        box.toggled.connect(func)
+
+    return box
 
 
 def combine_blocks(

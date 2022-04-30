@@ -1,8 +1,6 @@
 import os
 
 import napari
-from qtpy.QtWidgets import QCheckBox
-from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QWidget
@@ -57,15 +55,12 @@ class BasePlugin(QWidget):
         self.lbl_label.setReadOnly(True)
         self.btn_label = ui.make_button("Open", self.show_dialog_labels, self)
 
-        self.filetype_choice = QComboBox()
-        self.filetype_choice.addItems([".png", ".tif"])
-        self.filetype_choice.setSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.Fixed
-        )
+        self.filetype_choice = ui.make_combobox([".png", ".tif"])
 
-        self.file_handling_box = QCheckBox("Load as folder ?")
+        self.file_handling_box = ui.make_checkbox(
+            "Load as folder ?", self.show_filetype_choice
+        )
         """Checkbox to choose single file or directory loader handling"""
-        self.file_handling_box.clicked.connect(self.show_filetype_choice)
 
         self.file_handling_box.setSizePolicy(
             QSizePolicy.Fixed, QSizePolicy.Fixed
