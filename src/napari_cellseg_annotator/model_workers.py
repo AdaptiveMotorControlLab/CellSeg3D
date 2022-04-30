@@ -7,9 +7,9 @@ import torch
 from monai.data import CacheDataset
 from monai.data import DataLoader
 from monai.data import Dataset
+from monai.data import PatchDataset
 from monai.data import decollate_batch
 from monai.data import pad_list_data_collate
-from monai.data import PatchDataset
 from monai.inferers import sliding_window_inference
 from monai.metrics import DiceMetric
 from monai.transforms import AsDiscrete
@@ -29,7 +29,6 @@ from monai.transforms import SpatialPadd
 from monai.transforms import Zoom
 from napari.qt.threading import GeneratorWorker
 from napari.qt.threading import WorkerBaseSignals
-
 # Qt
 from qtpy.QtCore import Signal
 from tifffile import imwrite
@@ -131,6 +130,14 @@ class InferenceWorker(GeneratorWorker):
         """
         self.log_signal.emit(text)
 
+    def log_parameters(self):
+
+        self.log(f"Model is : {self.model_dict['name']}")
+        if self.transforms["thresh"][0]:
+            self.log(
+                f"Thresholding is enabled at {self.transforms['thresh'][1]}"
+            )
+
     def inference(self):
         """
 
@@ -182,6 +189,8 @@ class InferenceWorker(GeneratorWorker):
                 out_channels=1,
                 # dropout_prob=0.3,
             )
+
+        self.log_parameters()
 
         model.to(self.device)
 
@@ -389,6 +398,24 @@ class TrainingWorker(GeneratorWorker):
         """
         self.log_signal.emit(text)
 
+    def log_parameters(self):
+
+        self.log("\nParameters summary :")
+        self.log(f"Training for {self.max_epochs} epochs")
+        self.log(f"Loss function is : {str(self.loss_function)}")
+        self.log(f"Validation is performed every {self.val_interval} epochs")
+        self.log(f"Batch size is {self.batch_size}")
+
+        if self.sampling:
+            self.log(
+                f"Extracting {self.num_samples} patches of size {self.sample_size}"
+            )
+        else:
+            self.log("Using whole images as dataset")
+
+        if self.do_augment:
+            self.log("Data augmentation is enabled")
+
     def train(self):
         """Trains the Pytorch model for the given number of epochs, with the selected model and data,
         using the chosen batch size, validation interval, loss function, and number of samples.
@@ -430,7 +457,6 @@ class TrainingWorker(GeneratorWorker):
         model_class = self.model_dict["class"]
 
         if not self.sampling:
-            self.log("Sampling is disabled")
             data_check = LoadImaged(keys=["image"])(self.data_dicts[0])
             check = data_check["image"].shape
 
@@ -458,11 +484,17 @@ class TrainingWorker(GeneratorWorker):
             self.data_dicts[int(len(self.data_dicts) * 0.9) :],
         )
         print("Training files :")
-        [print(f"{train_file}\n") for train_file in train_files]
+        [
+            print(f"{train_file}\n")
+            for train_file in train_files
+        ]
         print("* " * 20)
         print("* " * 20)
         print("Validation files :")
-        [print(f"{val_file}\n") for val_file in val_files]
+        [
+            print(f"{val_file}\n")
+            for val_file in val_files
+        ]
         # TODO : param patch ROI size
 
         if self.sampling:
@@ -489,7 +521,6 @@ class TrainingWorker(GeneratorWorker):
             )
 
         if self.do_augment:
-            self.log("Data augmentation is enabled")
             train_transforms = (
                 Compose(  # TODO : figure out which ones and values ?
                     [
@@ -520,14 +551,14 @@ class TrainingWorker(GeneratorWorker):
         )
         # self.log("Loading dataset...\n")
         if self.sampling:
-
+            print("train_ds")
             train_ds = PatchDataset(
                 data=train_files,
                 transform=train_transforms,
                 patch_func=sample_loader,
                 samples_per_image=self.num_samples,
             )
-
+            print("val_ds")
             val_ds = PatchDataset(
                 data=val_files,
                 transform=val_transforms,
@@ -567,7 +598,7 @@ class TrainingWorker(GeneratorWorker):
         val_loader = DataLoader(
             val_ds, batch_size=self.batch_size, num_workers=4
         )
-        # self.log("\nDone")
+        print("\nDone")
 
         optimizer = torch.optim.Adam(model.parameters(), 1e-3)
         dice_metric = DiceMetric(include_background=True, reduction="mean")
@@ -582,6 +613,8 @@ class TrainingWorker(GeneratorWorker):
             self.log(torch.cuda.get_device_name(0))
         else:
             self.log("Using CPU")
+
+        self.log_parameters()
 
         for epoch in range(self.max_epochs):
             self.log("-" * 10)

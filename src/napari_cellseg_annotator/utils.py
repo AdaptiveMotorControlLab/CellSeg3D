@@ -26,7 +26,7 @@ def ENABLE_TEST_MODE():
     path = Path(os.path.expanduser("~"))
     print(path)
     if path == Path("C:/Users/Cyril"):
-        return True
+        return False
     return False
 
 

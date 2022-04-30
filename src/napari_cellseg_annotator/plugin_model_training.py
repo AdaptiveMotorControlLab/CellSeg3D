@@ -9,7 +9,6 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
-
 # MONAI
 from monai.losses import DiceCELoss
 from monai.losses import DiceFocalLoss
@@ -17,7 +16,6 @@ from monai.losses import DiceLoss
 from monai.losses import FocalLoss
 from monai.losses import GeneralizedDiceLoss
 from monai.losses import TverskyLoss
-
 # Qt
 from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QComboBox
@@ -114,6 +112,9 @@ class Trainer(ModelFramework):
         self._viewer = viewer
         """napari.viewer.Viewer: viewer in which the widget is displayed"""
 
+        self.data_path = ""
+        self.label_path = ""
+        self.results_path = ""
         ######################
         ######################
         ######################
@@ -284,7 +285,7 @@ class Trainer(ModelFramework):
 
         Returns:
 
-            * True if paths are set correctly (!=[])
+            * True if paths are set correctly (!=[""])
 
             * False and displays a warning if not
 
@@ -639,7 +640,7 @@ class Trainer(ModelFramework):
             else:
                 self.worker.start()
                 self.btn_start.setText("Running... Click to stop")
-        else:
+        else:  # starting a new job goes here
             self.log.print_and_log("Starting...")
             self.log.print_and_log("*" * 20)
 
@@ -667,7 +668,9 @@ class Trainer(ModelFramework):
                 + f"/{model_dict['name']}_results_{utils.get_date_time()}"
             )
 
-            os.makedirs(self.results_path, exist_ok=False)
+            os.makedirs(
+                self.results_path, exist_ok=False
+            )  # avoid overwrite where possible
 
             self.log.print_and_log(
                 f"Notice : Saving results to : {self.results_path}"
@@ -727,6 +730,7 @@ class Trainer(ModelFramework):
         self.log.print_and_log(f"\nWorker finished at {utils.get_time()}")
 
         self.log.print_and_log(f"Saving last loss plot at {self.results_path}")
+
         if self.canvas is not None:
             self.canvas.figure.savefig(
                 (
@@ -735,6 +739,10 @@ class Trainer(ModelFramework):
                 ),
                 format="png",
             )
+
+        self.log.print_and_log("Auto-saving log")
+        self.save_log()
+
         self.log.print_and_log("Done")
         self.log.print_and_log("*" * 10)
 
@@ -743,7 +751,7 @@ class Trainer(ModelFramework):
 
         self.worker = None
         self.empty_cuda_cache()
-        # self.clean_cache()
+        # self.clean_cache() # trying to fix memory leak
 
     def on_error(self):
         """Catches errored signal from worker"""

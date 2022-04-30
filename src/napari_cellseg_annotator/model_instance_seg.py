@@ -1,16 +1,15 @@
 from __future__ import division
 from __future__ import print_function
 
-import os
-
 import numpy as np
-from dask_image.imread import imread
 from PIL import Image
 from skimage.measure import label
 from skimage.morphology import remove_small_objects
 from skimage.segmentation import watershed
 from skimage.transform import resize
 
+
+# TODO : add
 
 def binary_connected(
     volume, thres=0.5, thres_small=3, scale_factors=(1.0, 1.0, 1.0)
@@ -102,30 +101,31 @@ def write_tiff_stack(vol, fname):
 
     im.save(fname, save_all=True, append_images=ims)
 
-
-# Load segmentation
-base_path = os.path.abspath(__file__ + "/..")
-seg_path = base_path + "/data/testing/seg-edgevisual1"
-segmentations = []
-for file in sorted(os.listdir(seg_path)):
-    segmentations.append(imread(os.path.join(seg_path, file)))
-y_pred = np.squeeze(np.array(segmentations), axis=1)
-
-y_pred[y_pred > 0.9] = 1
-y_pred[y_pred <= 0.9] = 0
-y_pred = y_pred.astype("uint8")
-
-# Run post process
-output_watershed_path = (
-    base_path + "/data/testing/instance-segmentation-w.tiff"
-)
-output_connected_path = (
-    base_path + "/data/testing/instance-segmentation-c.tiff"
-)
-
-bw_result = binary_watershed(y_pred)
-bc_result = binary_connected(y_pred)
-
-# Save instance predictions
-write_tiff_stack(bw_result, output_watershed_path)
-write_tiff_stack(bc_result, output_connected_path)
+# TEMPORARY COMMENT for docs parsing
+#
+# # Load segmentation
+# base_path = os.path.abspath(__file__ + "/..")
+# seg_path = base_path + "/data/testing/seg-edgevisual1"
+# segmentations = []
+# for file in sorted(os.listdir(seg_path)):
+#     segmentations.append(imread(os.path.join(seg_path, file)))
+# y_pred = np.squeeze(np.array(segmentations), axis=1)
+#
+# y_pred[y_pred > 0.9] = 1
+# y_pred[y_pred <= 0.9] = 0
+# y_pred = y_pred.astype("uint8")
+#
+# # Run post process
+# output_watershed_path = (
+#     base_path + "/data/testing/instance-segmentation-w.tiff"
+# )
+# output_connected_path = (
+#     base_path + "/data/testing/instance-segmentation-c.tiff"
+# )
+#
+# bw_result = binary_watershed(y_pred)
+# bc_result = binary_connected(y_pred)
+#
+# # Save instance predictions
+# write_tiff_stack(bw_result, output_watershed_path)
+# write_tiff_stack(bc_result, output_connected_path)

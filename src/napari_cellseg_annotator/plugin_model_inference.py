@@ -2,7 +2,6 @@ import os
 import warnings
 
 import napari
-
 # Qt
 from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QDoubleSpinBox
@@ -326,7 +325,7 @@ class Inferer(ModelFramework):
         ui.make_scrollable(
             containing_widget=tab,
             contained_layout=tab_layout,
-            min_wh=[100, 200],
+            min_wh=[180, 100],
         )
         self.addTab(tab, "Inference")
 
@@ -383,7 +382,7 @@ class Inferer(ModelFramework):
             else:
                 self.zoom = [1, 1, 1]
 
-            self.transforms = {
+            self.transforms = {  # TODO figure out a better way ?
                 "thresh": [
                     self.thresholding_checkbox.isChecked(),
                     self.thresholding_count.value(),
@@ -440,6 +439,11 @@ class Inferer(ModelFramework):
         self.log.print_and_log(f"Worker started at {utils.get_time()}")
         self.log.print_and_log(f"Saving results to : {self.results_path}")
         self.log.print_and_log("Worker is running...")
+
+        if self.transforms["zoom"][0]:
+            self.log.print_and_log(
+                f"\nAnisotropy parameters are : {self.aniso_resolutions} microns in x,y,z"
+            )
 
     def on_error(self):
         """Catches errors and tries to clean up. TODO : upgrade"""
