@@ -1,21 +1,31 @@
+import os
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
-from qtpy.QtWidgets import QSizePolicy
 from magicgui import magicgui
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
-from pathlib import Path
-
+from qtpy.QtWidgets import QSizePolicy
 from scipy import ndimage
+from tifffile import imwrite
 
 from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.dock import Datamanager
+from napari_cellseg_annotator.plugin_dock import Datamanager
 
 
 def launch_review(
-    viewer, original, base, raw, r_path, model_type, checkbox, filetype
+    viewer,
+    original,
+    base,
+    raw,
+    r_path,
+    model_type,
+    checkbox,
+    filetype,
+    as_folder,
 ):
     """Launch the review process, loading the original image, the labels & the raw labels (from prediction)
     in the viewer.
@@ -53,6 +63,8 @@ def launch_review(
 
         filetype (str): The file extension of the volumes and labels.
 
+        as_folder (bool): Whether to load as folder or single file
+
 
     """
     global slicer
@@ -71,9 +83,12 @@ def launch_review(
     # TODO : cleanup, notably viewer argument ?
     view1 = viewer
     view1.add_image(
-        images_original, colormap="inferno", contrast_limits=[200, 1000]
+        images_original,
+        name="volume",
+        colormap="inferno",
+        contrast_limits=[200, 1000],
     )  # anything bigger than 255 will get mapped to 255... they did it like this because it must have rgb images
-    view1.add_labels(base_label, name="base", seed=0.6)
+    view1.add_labels(base_label, name="labels", seed=0.6)
     if raw is not None:  # raw labels is from the prediction
         view1.add_image(
             ndimage.gaussian_filter(raw, sigma=3),
@@ -134,6 +149,8 @@ def launch_review(
 
     layer = view1.layers[0]
     layer1 = view1.layers[1]
+    if not as_folder:
+        r_path = os.path.dirname(r_path)
 
     @magicgui(
         dirname={"mode": "d", "label": "Save labels in... "},
@@ -144,15 +161,32 @@ def launch_review(
     ):  # file name where to save annotations
         # """Take a filename and do something with it."""
         # print("The filename is:", dirname)
+
         dirname = Path(r_path)
         # def saver():
-        out_dir = gui.dirname.value
+        out_dir = file_widget.dirname.value
         # print("The directory is:", out_dir)
-        return dirname, utils.save_masks(layer1.data, out_dir)
 
-    gui = file_widget.show(run=True)  # dirpicker.show(run=True)
+        def quicksave():
+            if not as_folder:
+                if viewer.layers["labels"] is not None:
+                    time = utils.get_date_time()
+                    name = str(out_dir) + "/labels_reviewed_" + time + ".tif"
+                    dat = viewer.layers["labels"].data
+                    imwrite(name, data=dat)
 
-    view1.window.add_dock_widget(gui, name=" ", area="bottom")
+            else:
+                if viewer.layers["labels"] is not None:
+                    time = utils.get_date_time()
+                    dir_name = str(out_dir) + "/labels_reviewed_" + time
+                    dat = viewer.layers["labels"].data
+                    utils.save_stack(dat, dir_name, filetype=filetype)
+
+        return dirname, quicksave()
+
+    # gui = file_widget.show(run=True)  # dirpicker.show(run=True)
+
+    view1.window.add_dock_widget(file_widget, name=" ", area="bottom")
 
     # @magicgui(call_button="Save")
 
@@ -185,7 +219,7 @@ def launch_review(
 
         # canvas.figure.tight_layout()
         canvas.figure.subplots_adjust(
-            left=0, bottom=0.1, right=1, top=0.95, wspace=0, hspace=0.4
+            left=0.1, bottom=0.1, right=1, top=0.95, wspace=0, hspace=0.4
         )
 
     canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
@@ -213,22 +247,16 @@ def launch_review(
 
     # Qt widget defined in docker.py
     dmg = Datamanager(parent=view1)
-    dmg.prepare(r_path, filetype, model_type, checkbox)
+    dmg.prepare(r_path, filetype, model_type, checkbox, as_folder)
     view1.window.add_dock_widget(dmg, name=" ", area="left")
 
     def update_button(axis_event):
-        # TODO : crash fixed, what to do with if axis != 0 ?
 
-        # axis = axis_event.ndim
-        # if axis != 0:
-        #     return
         slice_num = axis_event.value[0]
         print(f"slice num is {slice_num}")
         dmg.update(slice_num)
 
     view1.dims.events.current_step.connect(update_button)
-    # No argument ??
-    # old : events.axis.connect
 
     def crop_img(points, layer):
         min_vals = [x - 50 for x in points]
@@ -241,7 +269,10 @@ def launch_review(
         crop_slice = tuple(
             slice(np.maximum(0, n), x) for n, x in zip(min_vals, max_vals)
         )
-        crop_temp = layer.data[crop_slice].persist().compute()
+        if as_folder:
+            crop_temp = layer.data[crop_slice].persist().compute()
+        else:
+            crop_temp = layer.data[crop_slice]
         cropped_img = np.zeros((100, 100, 100), np.uint8)
         cropped_img[
             -yohaku_minus[0] : 100 - yohaku_plus[0],

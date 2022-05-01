@@ -21,14 +21,51 @@ and review the napari docs for plugin developers:
 https://napari.org/plugins/stable/index.html
 -->
 
+## Requirements
+
+Requires manual installation of pytorch and MONAI.
+For Pytorch, please see [PyTorch]'s website for installation instructions.
+A CUDA-capable GPU is not needed but very strongly recommended, especially for training.
+
+If you get errors from MONAI regarding missing readers, please see [MONAI's optional dependencies] page for instructions on getting the readers required by your images.
+
+
 ## Installation
 
 You can install `napari-cellseg-annotator` via [pip]:
 
     pip install napari-cellseg-annotator
 
+For local installation, please run:
 
+```
+pip install -e .
+```
 
+## Documentation
+
+You can generate docs by running ``make html`` in the docs folder
+
+## Usage
+
+To use the plugin, please run:
+```
+napari
+```
+Then go into Plugins > napari-cellseg-annotator, and choose which tool to use.
+
+- **Review**: This module allows you to review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.
+- **Infer**: This module allows you to use pre-trained segmentation algorithms on volumes to automatically label cells.
+- **Train**:  This module allows you to train segmentation algorithms from labeled volumes.
+- **Crop utility**: This module allows you to crop your volumes and labels dynamically, by selecting a fixed size volume and moving it around the image.
+
+## Testing 
+
+To run tests locally: 
+
+- Locally : run ``pytest`` in the plugin folder
+- Locally with coverage : In the plugin folder, run ``coverage run --source=src -m pytest`` then ``coverage.xml`` to generate a .xml coverage file.
+- With tox : run ``tox`` in the plugin folder (will simulate tests with several python and OS configs, requires substantial storage space)
 
 ## Contributing
 
@@ -59,3 +96,6 @@ If you encounter any problems, please [file an issue] along with a detailed desc
 [tox]: https://tox.readthedocs.io/en/latest/
 [pip]: https://pypi.org/project/pip/
 [PyPI]: https://pypi.org/
+
+[PyTorch]: https://pytorch.org/get-started/locally/
+[MONAI's optional dependencies]: https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies

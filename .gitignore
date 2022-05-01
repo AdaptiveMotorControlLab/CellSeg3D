@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# unwanted results files
+*.csv
+
 # Distribution / packaging
 .Python
 env/
@@ -83,3 +86,10 @@ venv/
 # written by setuptools_scm
 **/_version.py
 
+
+
+########
+#project specific
+#dataset
+/src/napari_cellseg_annotator/models/dataset/
+/src/napari_cellseg_annotator/models/saved_weights/

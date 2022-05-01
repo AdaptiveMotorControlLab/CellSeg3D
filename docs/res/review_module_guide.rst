@@ -11,14 +11,12 @@ and correct them if needed. It then saves the status of each file in a csv, for 
 Launching the review process
 ---------------------------------
 
-First, you will be asked to provide a volume folder and a label folder, as well as the file extension
-of your images (either .png or .tif).
+First, you will be asked to load your images and labels; you can use the checkbox above the Open buttons to
+choose whether you want to load a single 3D **.tif** image or a folder of 2D images as a 3D stack.
+Folders can be stacks of either **.png** or **.tif** files, ideally numbered with the index of the slice at the end.
 
-.. important::
-    Depending on the filetype you selected, the folders should either contain:
-
-    * For .png, one png per slice (provide a folder of several pngs)
-    * For .tif, a folder containing a single 3D tif file with all slices (if there are several, the first one will be used)
+.. note::
+    Only single .tif files or folder of several .png or .tif are supported.
 
 You can then provide a model name, which will be used in the csv file recording the status of each slice.
 
@@ -30,17 +28,17 @@ with a trailing number if several copies of it already exists.
 Once you are ready, you can press **Run** to start the review process.
 
 .. note::
-    You can find the csv file containing the annotation status **in the same folder as the volumes**
+    You can find the csv file containing the annotation status **in the same folder as the labels**
 
 
-Review process : interface & functionalities
+Interface & functionalities
 ---------------------------------------------------------------
 
-.. image:: review_process_example.png
+.. image:: images/review_process_example.png
 
 Once you have launched the review process, you will have access to the following functionalities:
 
-**1.** A dialog to choose the folder in which you want to save the verified and/or corrected annotations, and a button to save the labels. They will be saved as png, with one file per slice.
+**1.** A dialog to choose the folder in which you want to save the verified and/or corrected annotations, and a button to save the labels. They will be saved as **.png**, with one file per slice.
 
 **2.** A button to update the status of the slice in the csv file (in this case : checked/not checked)
 
@@ -52,5 +50,6 @@ Using these, you can check your labels, correct them, save them and keep track o
 Source code
 -------------------------------------------------
 
-* :doc:`plugin_loader`
+* :doc:`plugin_review`
 * :doc:`launch_review`
+* :doc:`plugin_base`

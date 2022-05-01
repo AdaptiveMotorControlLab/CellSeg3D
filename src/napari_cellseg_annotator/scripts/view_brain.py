@@ -1,5 +1,4 @@
 import napari
-
 from dask_image.imread import imread
 
 y = imread("/Users/maximevidal/Documents/3drawdata/wholebrain.tif")

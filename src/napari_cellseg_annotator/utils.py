@@ -1,52 +1,37 @@
-import datetime
 import os
-import cv2
-import dask_image.imread
-import numpy as np
-import pandas as pd
-from tqdm import tqdm
-from qtpy.QtWidgets import QWidget, QHBoxLayout
+import warnings
+from datetime import datetime
 from pathlib import Path
+
+import cv2
+import numpy as np
+from dask_image.imread import imread as dask_imread
+from pandas import DataFrame
+from pandas import Series
 from skimage import io
 from skimage.filters import gaussian
-from qtpy.QtGui import QDesktopServices
-from qtpy.QtCore import QUrl
-from qtpy.QtWidgets import (
-    QFileDialog,
-)
+from tifffile import imread as tfl_imread
+from tqdm import tqdm
 
 """
 utils.py
 ====================================
-Definition of utility functions
+Definitions of utility functions and variables
 """
 
-
-def combine_blocks(button, label):
-    """Combines two QWidget objects and puts them side by side (label on the left and button on the right)
-
-    Args:
-        button (QWidget): Button widget to be displayed right of the label
-        label (QWidget): Labrel widget to be added on the left of button
-
-    Returns:
-        QWidget: new QWidget containing the merged widget and label
-    """
-    temp_widget = QWidget()
-    temp_layout = QHBoxLayout()
-    temp_layout.addWidget(label)
-    temp_layout.addWidget(button)
-    temp_widget.setLayout(temp_layout)
-    return temp_widget
+##################
+##################
+# dev util
+def ENABLE_TEST_MODE():
+    path = Path(os.path.expanduser("~"))
+    print(path)
+    if path == Path("C:/Users/Cyril"):
+        return True
+    return False
 
 
-def open_url(url):
-    """Opens the url given as a string in OS default browser using QDesktopServices.openUrl.
-
-    Args:
-        url (str): Url to be opened
-    """
-    QDesktopServices.openUrl(QUrl(url, QUrl.TolerantMode))
+##################
+##################
 
 
 def normalize_x(image):
@@ -73,6 +58,67 @@ def normalize_y(image):
     """
     image = image / 255
     return image
+
+
+def get_padding_dim(image_shape, anisotropy_factor=None):
+    """
+    Finds the nearest and superior power of two for each image dimension to zero-pad it for CNN processing,
+    accepts either 2D or 3D images shapes. E.g. an image size of 30x40x100 will result in a padding of 32x64x128.
+    Shows a warning if the padding dimensions are very large.
+
+    Args:
+        image_shape (torch.size): an array of the dimensions of the image in D/H/W if 3D or H/W if 2D
+
+    Returns:
+        array(int): padding value for each dim
+    """
+    padding = []
+
+    dims = len(image_shape)
+    print(f"Dimension of data for padding : {dims}D")
+    print(f"Image shape is {image_shape}")
+    if dims != 2 and dims != 3:
+        error = "Please check the dimensions of the input, only 2 or 3-dimensional data is supported currently"
+        print(error)
+        raise ValueError(error)
+
+    for i in range(dims):
+        n = 0
+        pad = -1
+        size = image_shape[i]
+        if anisotropy_factor is not None:
+            # TODO : GOING TO CAUSE ISSUES WITH CERTAIN ANISOTROPY FACTORS
+            size = int(size / anisotropy_factor[i])
+        while pad < size:
+            pad = 2**n
+            n += 1
+            if pad >= 1024:
+                warnings.warn(
+                    "Warning : a very large dimension for automatic padding has been computed.\n"
+                    "Ensure your images are of an appropriate size and/or that you have enough memory."
+                    f"The padding value is currently {pad}."
+                )
+
+        padding.append(pad)
+
+    print(f"Padding sizes are {padding}")
+    return padding
+
+
+def anisotropy_zoom_factor(resolutions):
+    """Computes a zoom factor to correct anisotropy, based on resolutions
+
+    Args:
+        resolutions: array for resolution (float) in microns for each axis
+
+    Returns: an array with the corresponding zoom factors for each axis
+
+    """
+    # TODO docs
+
+    base = min(resolutions)
+    zoom_factors = [base / res for res in resolutions]
+    return zoom_factors
 
 
 def denormalize_y(image):
@@ -124,13 +170,13 @@ def check_csv(project_path, ext):
             "path",
             "notes",
         ]
-        df = pd.DataFrame(index=[], columns=cols)
+        df = DataFrame(index=[], columns=cols)
         filename_pattern_original = os.path.join(
             project_path, f"dataset/Original_size/Original/*{ext}"
         )
-        images_original = dask_image.imread.imread(filename_pattern_original)
+        images_original = dask_imread(filename_pattern_original)
         z, y, x = images_original.shape
-        record = pd.Series(
+        record = Series(
             [
                 os.path.basename(project_path),
                 "dataset",
@@ -176,7 +222,7 @@ def check_zarr(project_path, ext):
         filename_pattern_original = os.path.join(
             project_path, f"dataset/Original_size/Original/*{ext}"
         )
-        images_original = dask_image.imread.imread(filename_pattern_original)
+        images_original = dask_imread(filename_pattern_original)
         images_original.to_zarr(
             os.path.join(project_path, f"dataset/Original_size/Original.zarr")
         )
@@ -190,41 +236,78 @@ def check(project_path, ext):
     check_annotations_dir(project_path)
 
 
-def open_file_dialog(widget, possible_paths=os.path.expanduser("~")):
-    """Opens a window to choose a file directory using QFileDialog.
+def parse_default_path(possible_paths):
+    """Returns a default path based on a vector of paths, some of which might be empty.
 
     Args:
-        possible_paths (str): Paths that may have been chosen before, can
+        possible_paths: array of paths
+
+    Returns: the chosen default path
+
     """
-    default_path = max(possible_paths)
-    f_name = QFileDialog.getExistingDirectory(
-        widget, "Open directory", default_path
-    )
-    return f_name
+
+    # print("paths :")
+    # print(default_paths)
+    # print(default_path)
+
+    default_paths = [
+        p for p in possible_paths if (p != "" and p != [""] and len(p) >= 3)
+    ]
+    if len(default_paths) == 0:
+        default_path = os.path.expanduser("~")
+    else:
+        default_path = max(default_paths)
+    return default_path
 
 
-def load_images(directory, filetype):
-    """Loads the images in ``directory``, with different behaviour depending on ``filetype``
+def get_date_time():
+    """Get date and time in the following format : year_month_day_hour_minute_second"""
+    return "{:%Y_%m_%d_%H_%M_%S}".format(datetime.now())
 
-     For ``filetype == ".tif"`` : loads the first tif file found in the folder
 
-     For  ``filetype == ".png"`` : loads all png files in the folder as a 3D dataset
+def get_time():
+    """Get time in the following format : hour_minute_second"""
+    return "{:%H:%M:%S}".format(datetime.now())
+
+
+def load_images(dir_or_path, filetype="", as_folder: bool = False):
+    """Loads the images in ``directory``, with different behaviour depending on ``filetype`` and ``as_folder``
+
+    * If ``as_folder`` is **False**, will load the path as a single 3D **.tif** image.
+
+    * If **True**, it will try to load a folder as stack of images. In this case ``filetype`` must be specified.
+
+    If **True** :
+
+        * For ``filetype == ".tif"`` : loads all tif files in the folder as a 3D dataset.
+
+        * For  ``filetype == ".png"`` : loads all png files in the folder as a 3D dataset.
+
 
     Args:
-        directory (str): path to the directory containing the images
-        filetype (str): expected file extension of the image(s) in the directory
+        dir_or_path (str): path to the directory containing the images or the images themselves
+        filetype (str): expected file extension of the image(s) in the directory, if as_folder is False
+        as_folder (bool): Whether to load a folder of images as stack or a single 3D image
 
     Returns:
         dask.array.Array: dask array with loaded images
     """
-    filename_pattern_original = os.path.join(directory + "/*" + filetype)
-    if filetype == ".tif":
-        path = list(Path(directory).glob("./*.tif"))
-        filename_pattern_original = os.path.join(
-            directory + "/" + path[0].name
-        )
 
-    images_original = dask_image.imread.imread(filename_pattern_original)
+    if not as_folder:
+        filename_pattern_original = os.path.join(dir_or_path)
+        print(filename_pattern_original)
+    elif as_folder and filetype != "":
+        filename_pattern_original = os.path.join(dir_or_path + "/*" + filetype)
+        print(filename_pattern_original)
+    else:
+        raise ValueError("If loading as a folder, filetype must be specified")
+
+    if as_folder:
+        images_original = dask_imread(filename_pattern_original)
+    else:
+        images_original = tfl_imread(
+            filename_pattern_original
+        )  # tifffile imread
 
     return images_original
 
@@ -232,33 +315,47 @@ def load_images(directory, filetype):
 def load_predicted_masks(mito_mask_dir, er_mask_dir, filetype):
 
     images_mito_label = load_images(mito_mask_dir, filetype)
+    # TODO : check that there is no problem with compute when loading as single file
     images_mito_label = images_mito_label.compute()
     images_er_label = load_images(er_mask_dir, filetype)
+    # TODO : check that there is no problem with compute when loading as single file
     images_er_label = images_er_label.compute()
     base_label = (images_mito_label > 127) * 1 + (images_er_label > 127) * 2
     return base_label
 
 
-def load_saved_masks(mod_mask_dir, filetype):
-    images_label = load_images(mod_mask_dir, filetype)
-    images_label = images_label.compute()
+def load_saved_masks(mod_mask_dir, filetype, as_folder: bool):
+    images_label = load_images(mod_mask_dir, filetype, as_folder)
+    if as_folder:
+        images_label = images_label.compute()
     base_label = images_label
     return base_label
 
 
 def load_raw_masks(raw_mask_dir, filetype):
     images_raw = load_images(raw_mask_dir, filetype)
+    # TODO : check that there is no problem with compute when loading as single file
     images_raw = images_raw.compute()
     base_label = np.where((126 < images_raw) & (images_raw < 171), 255, 0)
     return base_label
 
 
-def save_masks(labels, out_path):
-    num = labels.shape[0]
+def save_stack(images, out_path, filetype=".png", check_warnings=False):
+    """Saves the files in labels at location out_path as a stack of len(labels) .png files
+
+    Args:
+        labels: array of label images
+        out_path: path to the directory for saving
+    """
+    num = images.shape[0]
     os.makedirs(out_path, exist_ok=True)
     for i in range(num):
-        label = labels[i]
-        io.imsave(os.path.join(out_path, str(i).zfill(4) + ".png"), label)
+        label = images[i]
+        io.imsave(
+            os.path.join(out_path, str(i).zfill(4) + filetype),
+            label,
+            check_contrast=check_warnings,
+        )
 
 
 def load_X_gray(folder_path):
@@ -343,6 +440,31 @@ def select_train_data(dataframe, ori_imgs, label_imgs, ori_filenames):
             train_label_imgs.append(label_img)
 
     return np.array(train_ori_imgs), np.array(train_label_imgs)
+
+
+def format_Warning(message, category, filename, lineno, line=""):
+    """Formats a warning message, use in code with ``warnings.formatwarning = utils.format_Warning``
+
+    Args:
+        message: warning message
+        category: which type of warning has been raised
+        filename: file
+        lineno: line number
+        line: unused
+
+    Returns: format
+
+    """
+    return (
+        str(filename)
+        + ":"
+        + str(lineno)
+        + ": "
+        + category.__name__
+        + ": "
+        + str(message)
+        + "\n"
+    )
 
 
 # def dice_coeff(y_true, y_pred):
