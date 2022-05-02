@@ -1,6 +1,6 @@
 name: build_docs
 
-# execute this workflow automatically when a we push to master
+# execute this workflow automatically when we push to master
 on:
   push:
     branches: [ main ]
@@ -15,7 +15,7 @@ jobs:
 
     - name: Prereqs
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.CREATE_DEMO_SECRET }}
       run: |
         apt-get update
         apt-get install -y git
