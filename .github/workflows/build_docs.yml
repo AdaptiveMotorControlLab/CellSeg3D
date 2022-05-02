@@ -13,4 +13,5 @@ jobs:
     # Standard drop-in approach that should work for most people.
     - uses: ammaraskar/sphinx-action@master
       with:
+        pre-build-command: "apt-get update -y && apt-get install -y sphinx_autodoc_typehints"
         docs-folder: "docs/"
