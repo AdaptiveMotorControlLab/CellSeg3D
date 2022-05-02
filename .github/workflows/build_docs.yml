@@ -27,4 +27,3 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: "docs/buildsite.sh"
       shell: bash
-EOF
