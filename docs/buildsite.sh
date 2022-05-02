@@ -36,6 +36,15 @@ git checkout -b gh-pages
 # directories that start with an underscore (_) can remain
 touch .nojekyll
 
+# Add README
+cat > README.md <<EOF
+# README for the GitHub Pages Branch
+This branch is simply a cache for the website and is  not intended to be viewed on github.com.
+For more information on how this site is built using Sphinx, Read the Docs, and GitHub Actions/Pages, see:
+ * https://www.docslikecode.com/articles/github-pages-python-sphinx/
+ * https://tech.michaelaltfield.net/2020/07/18/sphinx-rtd-github-pages-1
+EOF
+
 # Copy the resulting html pages built from Sphinx to the gh-pages branch
 git add .
 
