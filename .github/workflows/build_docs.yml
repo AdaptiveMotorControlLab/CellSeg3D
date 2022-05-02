@@ -12,23 +12,23 @@ jobs:
     container: debian:buster-slim
 
     steps:
-    uses: actions/checkout@v2
+      uses: actions/checkout@v2
 
-    - name: Prereqs
-      env:
-        GITHUB_TOKEN: ${{ secrets.CREATE_DEMO_SECRET }}
-      run: |
-        set -x
-        apt-get update
-        apt-get install -y git
-        git clone "https://token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" .
-      shell: bash
+      - name: Prereqs
+        env:
+          GITHUB_TOKEN: ${{ secrets.CREATE_DEMO_SECRET }}
+        run: |
+          set -x
+          apt-get update
+          apt-get install -y git
+          git clone "https://token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" .
+        shell: bash
 
-    - name: Run build script for Sphinx pages
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: "docs/buildsite.sh"
-      shell: bash
+      - name: Run build script for Sphinx pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: "docs/buildsite.sh"
+        shell: bash
 
 
 
