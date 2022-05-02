@@ -58,7 +58,7 @@ jobs:
       - uses: ammaraskar/sphinx-problem-matcher@master
       - name: Build Sphinx docs
         run: |
-          make dirhtml
+          make html
           # This fixes broken copy button icons, as explained in
           #   https://github.com/coderefinery/sphinx-lesson/issues/50
           #   https://github.com/executablebooks/sphinx-copybutton/issues/110
@@ -66,7 +66,7 @@ jobs:
           # fixes also need to propagate to other themes):
           #   https://github.com/sphinx-doc/sphinx/pull/8524
           #   https://github.com/readthedocs/sphinx_rtd_theme/pull/1025
-          sed -i 's/url_root="#"/url_root=""/' _build/dirhtml/index.html || true
+          # sed -i 's/url_root="#"/url_root=""/' _build/dirhtml/index.html || true
       # The following supports building all branches and combining on
       # gh-pages
 
