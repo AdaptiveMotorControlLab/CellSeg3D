@@ -12,7 +12,7 @@ jobs:
     container: debian:buster-slim
 
     steps:
-    - uses: actions/checkout@v2
+    uses: actions/checkout@v2
 #      with:
 #          token: ${{ secrets.PAT }}
 
@@ -20,6 +20,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.CREATE_DEMO_SECRET }}
       run: |
+        set -x
         apt-get update
         apt-get install -y git
         git clone "https://token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" .
