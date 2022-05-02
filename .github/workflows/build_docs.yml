@@ -19,7 +19,7 @@ jobs:
     # ===============================
     - name: Commit documentation changes
       run: |
-        cd docs/_build/html
+        sudo cd docs/_build/html
         git init
         touch .nojekyll
         git add -A
