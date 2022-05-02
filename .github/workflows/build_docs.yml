@@ -1,5 +1,5 @@
 mkdir -p ../.github/workflows/
-cat > ../.github/workflows/docs_pages_workflow.yml <<'EOF'
+cat > ../.github/workflows/build_docs.yml <<'EOF'
 name: build_docs
 
 # execute this workflow automatically when a we push to master
