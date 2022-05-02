@@ -4,6 +4,7 @@ isort
 pytest
 pytest-qt
 sphinx
+sphinx-autodoc-typehints
 sphinx-rtd-theme
 tox
 twine
