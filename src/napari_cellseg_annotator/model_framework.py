@@ -107,22 +107,6 @@ class ModelFramework(BasePluginFolder):
         self.btn_save_log.setVisible(False)
         #####################################################
 
-    def make_close_button(self):
-        btn = ui.make_button("Close", self.close)
-        return btn
-
-    def make_prev_button(self):
-        btn = ui.make_button(
-            "Previous", lambda: self.setCurrentIndex(self.currentIndex() - 1)
-        )
-        return btn
-
-    def make_next_button(self):
-        btn = ui.make_button(
-            "Next", lambda: self.setCurrentIndex(self.currentIndex() + 1)
-        )
-        return btn
-
     def send_log(self, text):
         self.log.print_and_log(text)
 

@@ -6,7 +6,6 @@ from qtpy.QtWidgets import QWidget
 
 # local
 from napari_cellseg_annotator import interface as ui
-from napari_cellseg_annotator import utils
 
 
 class Helper(QWidget):
@@ -14,9 +13,7 @@ class Helper(QWidget):
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
         # self.master = parent
-        self.help_url = (
-            "https://github.com/C-Achard/cellseg-annotator-test/tree/main"
-        )
+        self.help_url = "https://c-achard.github.io/cellseg-annotator-test/"  # "https://github.com/C-Achard/cellseg-annotator-test/tree/main"
 
         self.about_url = "https://wysscenter.ch/advances/3d-computer-vision-for-brain-analysis"
         self._viewer = viewer
@@ -26,14 +23,14 @@ class Helper(QWidget):
         self.btn2 = ui.make_button(
             "About...", lambda: ui.open_url(self.about_url)
         )
-        self.btnc = ui.make_button("Close", self.close)
+        self.btnc = ui.make_button("Close", self.remove_from_viewer)
 
         ###################
         ###################
         ###################
         ###################
         # TODO test remove later
-        self.test = utils.ENABLE_TEST_MODE()
+        self.test = False  # utils.ENABLE_TEST_MODE()
 
         if self.test:
             self.dock = None

@@ -4,14 +4,17 @@ from tifffile import imwrite
 
 import napari_cellseg_annotator.interface as ui
 from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.model_instance_seg import to_semantic, to_instance
+from napari_cellseg_annotator.model_instance_seg import (
+    to_semantic,
+    to_instance,
+)
 from napari_cellseg_annotator.plugin_base import BasePluginFolder
 
 
 class ConvertUtils(BasePluginFolder):
     """Utility widget that allows to convert labels from instance to semantic and the reverse."""
 
-    def __init__(self, viewer: "napari.viewer.Viewer"):
+    def __init__(self, viewer: "napari.viewer.Viewer", parent):
         """Builds a ConvertUtils widget with the following buttons:
 
         * A button to convert a folder of labels to semantic labels
@@ -23,7 +26,7 @@ class ConvertUtils(BasePluginFolder):
         * A button to convert a currently selected layer to instance labels
         """
 
-        super().__init__(viewer)
+        super().__init__(viewer, parent)
 
         self._viewer = viewer
 
@@ -119,11 +122,13 @@ class ConvertUtils(BasePluginFolder):
         layer_group_w.setLayout(layer_group_l)
         layout.addWidget(layer_group_w)
 
-        ui.make_scrollable(layout, self, min_wh=[110, 100], base_wh=[110, 150])
+        ui.add_blank(layout=layout, widget=self)
+        layout.addWidget(self.make_close_button())
 
+        ui.make_scrollable(layout, self, min_wh=[120, 100], base_wh=[120, 150])
 
     def folder_to_semantic(self):
-
+        """Converts folder of labels to semantic labels"""
         for file in self.labels_filepaths:
 
             image = to_semantic(file)

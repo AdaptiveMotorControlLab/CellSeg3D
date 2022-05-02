@@ -102,6 +102,7 @@ def to_instance(image, is_file_path=True):
 
     return result
 
+
 def to_semantic(image, is_file_path=True):
     if is_file_path:
         image = imread(image)

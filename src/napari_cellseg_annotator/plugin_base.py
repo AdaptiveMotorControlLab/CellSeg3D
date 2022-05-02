@@ -12,7 +12,7 @@ from napari_cellseg_annotator import interface as ui
 class BasePluginSingleImage(QTabWidget):
     """A basic plugin template for working with **single images**"""
 
-    def __init__(self, viewer: "napari.viewer.Viewer"):
+    def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
         """Creates a Base plugin with several buttons pre-defined but not added to a layout :
 
         * Open file prompt to select images directory
@@ -29,9 +29,12 @@ class BasePluginSingleImage(QTabWidget):
 
         super().__init__()
 
-        # self.master = parent
+        self.parent = parent
+        """Parent widget"""
         self._viewer = viewer
         """napari.viewer.Viewer: viewer in which the widget is displayed"""
+
+        self.docked_widgets = []
 
         self.image_path = ""
         """str: path to image folder"""
@@ -67,7 +70,7 @@ class BasePluginSingleImage(QTabWidget):
             QSizePolicy.Fixed, QSizePolicy.Fixed
         )
 
-        self.btn_close = ui.make_button("Close", self.close, self)
+        self.btn_close = ui.make_button("Close", self.remove_from_viewer, self)
 
         # self.lbl_ft = QLabel("Filetype :", self)
         # self.lbl_ft2 = QLabel("(Folders of .png or single .tif files)", self)
@@ -126,13 +129,23 @@ class BasePluginSingleImage(QTabWidget):
     def remove_from_viewer(self):
         """Removes the widget from the napari window.
         Can be re-implemented in children classes if needed"""
+        if len(self.docked_widgets) != 0:
+            [
+                self._viewer.window.remove_dock_widget(w)
+                for w in self.docked_widgets
+                if w is not None
+            ]
+
+        if self.parent is not None:
+            self.parent.remove_from_viewer()
+            return
         self._viewer.window.remove_dock_widget(self)
 
 
 class BasePluginFolder(QTabWidget):
     """A basic plugin template for working with **folders of images**"""
 
-    def __init__(self, viewer: "napari.viewer.Viewer"):
+    def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
         """Creates a plugin template with the following widgets defined but not added in a layout :
 
         * A button to load a folder of images
@@ -143,7 +156,7 @@ class BasePluginFolder(QTabWidget):
 
         * A dropdown menu to select the file extension to be loaded from the folders"""
         super().__init__()
-
+        self.parent = parent
         self._viewer = viewer
 
         self.images_filepaths = [""]
@@ -187,6 +200,22 @@ class BasePluginFolder(QTabWidget):
         self.lbl_result_path = QLineEdit("Results directory", self)
         self.lbl_result_path.setReadOnly(True)
         #######################################################
+
+    def make_close_button(self):
+        btn = ui.make_button("Close", self.remove_from_viewer)
+        return btn
+
+    def make_prev_button(self):
+        btn = ui.make_button(
+            "Previous", lambda: self.setCurrentIndex(self.currentIndex() - 1)
+        )
+        return btn
+
+    def make_next_button(self):
+        btn = ui.make_button(
+            "Next", lambda: self.setCurrentIndex(self.currentIndex() + 1)
+        )
+        return btn
 
     def load_dataset_paths(self):
         """Loads all image paths (as str) in a given folder for which the extension matches the set filetype
@@ -251,6 +280,7 @@ class BasePluginFolder(QTabWidget):
             [
                 self._viewer.window.remove_dock_widget(w)
                 for w in self.docked_widgets
+                if w is not None
             ]
             self.docked_widgets = []
             self.container_docked = False
@@ -258,4 +288,7 @@ class BasePluginFolder(QTabWidget):
     def remove_from_viewer(self):
         """Close the widget and the docked widgets, if any"""
         self.remove_docked_widgets()
+        if self.parent is not None:
+            self.parent.remove_from_viewer()
+            return
         self._viewer.window.remove_dock_widget(self)

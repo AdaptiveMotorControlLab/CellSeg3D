@@ -12,9 +12,9 @@ contributions:
     title: Create Help
     python_name: napari_cellseg_annotator.plugins:Helper
 
-  - id: napari-cellseg-annotator.crop
-    title: Crop utility
-    python_name: napari_cellseg_annotator.plugins:Cropping
+  - id: napari-cellseg-annotator.utils
+    title:  Create utilities
+    python_name: napari_cellseg_annotator.plugins:Utilities
 
   - id: napari-cellseg-annotator.infer
     title: Create Inferer
@@ -35,8 +35,8 @@ contributions:
   - command: napari-cellseg-annotator.train
     display_name: Training
 
-  - command: napari-cellseg-annotator.crop
-    display_name: Crop utility
+  - command: napari-cellseg-annotator.utils
+    display_name: Utilities
 
   - command: napari-cellseg-annotator.help
     display_name: Help/About...

@@ -11,18 +11,24 @@ from napari_cellseg_annotator.plugin_metrics import MetricsUtils
 class Utilities(QTabWidget):
     def __init__(self, viewer: "napari.viewer.Viewer"):
 
-        super().__init__(viewer)
+        super().__init__()
 
         self._viewer = viewer
 
-        self.cropping_tab = Cropping(viewer)
-        self.metrics_tab = MetricsUtils(viewer)
-        self.convert_tab = ConvertUtils(viewer)
+        self.cropping_tab = Cropping(viewer, parent=self)
+        self.metrics_tab = MetricsUtils(viewer, parent=self)
+        self.convert_tab = ConvertUtils(viewer, parent=self)
 
         self.build()
 
     def build(self):
 
-        self.addTab(self.cropping_tab, "Crop")
-        self.addTab(self.metrics_tab, "Metrics")
         self.addTab(self.convert_tab, "Convert")
+        # self.addTab(self.metrics_tab, "Metrics")
+        self.addTab(self.cropping_tab, "Crop")
+
+        self.setBaseSize(220, 150)
+        self.setMinimumSize(220, 100)
+
+    def remove_from_viewer(self):
+        self._viewer.window.remove_dock_widget(self)
