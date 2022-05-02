@@ -15,9 +15,9 @@ jobs:
       with:
         pre-build-command: "pip install -r dev.requirements.txt"
         docs-folder: "docs/"
-        # Publish built docs to gh-pages branch.
+
     - name: GitHub Pages action
-        uses: peaceiris/actions-gh-pages@v3.7.3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./_build/html
+      uses: peaceiris/actions-gh-pages@v3.7.3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./_build/html
