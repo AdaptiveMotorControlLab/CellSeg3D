@@ -9,7 +9,7 @@ on:
 
 jobs:
 
-  build_docs_job:
+  build_docs:
     runs-on: ubuntu-latest
     container: debian:buster-slim
 
