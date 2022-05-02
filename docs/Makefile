@@ -76,6 +76,10 @@ json:
 	@echo
 	@echo "Build finished; now you can process the JSON files."
 
+github:
+	@make html
+	@cp -a build/html/. ./docs
+
 htmlhelp:
 	$(SPHINXBUILD) -b htmlhelp $(ALLSPHINXOPTS) $(BUILDDIR)/htmlhelp
 	@echo
