@@ -3,7 +3,7 @@ name: build_docs
 # execute this workflow automatically when a we push to master
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
 
