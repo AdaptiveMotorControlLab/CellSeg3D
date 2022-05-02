@@ -13,8 +13,6 @@ jobs:
 
     steps:
     uses: actions/checkout@v2
-#      with:
-#          token: ${{ secrets.PAT }}
 
     - name: Prereqs
       env:
@@ -26,7 +24,7 @@ jobs:
         git clone "https://token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" .
       shell: bash
 
-    - name: Execute script to build our documentation and update pages
+    - name: Run build script for Sphinx pages
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: "docs/buildsite.sh"
