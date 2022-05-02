@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Training module guide &mdash; napari-cellseg-annotator  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Cropping module guide" href="cropping_module_guide.html" />
+    <link rel="prev" title="Inference module guide" href="inference_module_guide.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html"><img src="../_static/logo_alpha.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">User guide:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="welcome.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Reviewer module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference_module_guide.html">Inference module guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Training module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cropping_module_guide.html">Cropping module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Declaring a custom model</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Source files:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="interface.html">interface.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_base.html">plugin_base.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_review.html">plugin_review.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_dock.html">plugin_dock.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_crop.html">plugin_crop.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="launch_review.html">launch_review.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_framework.html">model_framework.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_workers.html">model_workers.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_instance_seg.html">model_instance_seg.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_model_inference.html">plugin_model_inference.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_model_training.html">plugin_model_training.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils.py</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">napari-cellseg-annotator</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Training module guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/res/training_module_guide.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="training-module-guide">
+<span id="id1"></span><h1>Training module guide<a class="headerlink" href="#training-module-guide" title="Permalink to this headline">¶</a></h1>
+<p>This module allows you to train pre-defined Pytorch models for cell segmentation.
+Pre-defined models are stored in napari-cellseg-annotator/models.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The machine learning models used by this program require all images of a dataset to all be of the same size.
+Please ensure that all the images you are loading are of the <strong>same size</strong>, or to use the <strong>“extract patches” (in augmentation tab)</strong> with an appropriately small size
+to ensure all images being used are of a proper size.</p>
+</div>
+<p>The training module is comprised of several tabs.</p>
+<ol class="arabic simple">
+<li><p>The first one, <strong>Data</strong>, will let you choose :</p></li>
+</ol>
+<ul class="simple">
+<li><p>The images folder</p></li>
+<li><p>The labels folder</p></li>
+</ul>
+<ol class="arabic simple" start="2">
+<li><p>The second tab, <strong>Augmentation</strong>, lets you define dataset and augmentation parameters such as :</p></li>
+</ol>
+<ul class="simple">
+<li><p>Whether to use images “as is” (<strong>requires all images to be of the same size and cubic</strong>) or extract patches.</p></li>
+<li><dl class="simple">
+<dt>If you’re extracting patches :</dt><dd><ul>
+<li><p>The size of patches to be extracted (ideally, please use a value <strong>close to a pwoer of two</strong>, such as 120 or 60.</p></li>
+<li><p>The number of samples to extract from each of your image to ensure correct size and perform data augmentation. A larger number will likely mean better performances, but longer training and larger memory usage.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Whether to perform data augmentation or not (elastic deforms, intensity shifts. random flipping,etc). A rule of thumb for augmentation is :</dt><dd><ul>
+<li><p>If you’re using the patch extraction method, enable it if you have more than 10 samples per image with at least 5 images</p></li>
+<li><p>If you have a large dataset and are not using patches extraction, enable it.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>3) The third contains training related parameters :
+* The model to use for training
+* The loss function used for training (see table below)
+* The batch size (larger means quicker training and possibly better performance but increased memory usage)
+* The number of epochs (a possibility is to start with 60 epochs, and decrease or increase depending on performance.)
+* The epoch interval for validation (for example, if set to two, the module will use the validation dataset to evaluate the model with the dice metric every two epochs.)
+If the dice metric is better on that validation interval, the model weights will be saved in the results folder.</p>
+<p>The available loss functions are :</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 24%" />
+<col style="width: 76%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Function</p></th>
+<th class="head"><p>Reference</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Dice loss</p></td>
+<td><p><a class="reference external" href="https://docs.monai.io/en/stable/losses.html#diceloss">Dice Loss from MONAI</a> with <code class="docutils literal notranslate"><span class="pre">sigmoid=true</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Focal loss</p></td>
+<td><p><a class="reference external" href="https://docs.monai.io/en/stable/losses.html#focalloss">Focal Loss from MONAI</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Dice-Focal loss</p></td>
+<td><p><a class="reference external" href="https://docs.monai.io/en/stable/losses.html#dicefocalloss">Dice-focal Loss from MONAI</a> with <code class="docutils literal notranslate"><span class="pre">sigmoid=true</span></code> and <code class="docutils literal notranslate"><span class="pre">lambda_dice</span> <span class="pre">=</span> <span class="pre">0.5</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Generalized Dice loss</p></td>
+<td><p><a class="reference external" href="https://docs.monai.io/en/stable/losses.html#generalizeddiceloss">Generalized dice Loss from MONAI</a> with <code class="docutils literal notranslate"><span class="pre">sigmoid=true</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Dice-CE loss</p></td>
+<td><p><a class="reference external" href="https://docs.monai.io/en/stable/losses.html#diceceloss">Dice-CE Loss from MONAI</a> with <code class="docutils literal notranslate"><span class="pre">sigmoid=true</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Tversky loss</p></td>
+<td><p><a class="reference external" href="https://docs.monai.io/en/stable/losses.html#tverskyloss">Tversky Loss from MONAI</a> with <code class="docutils literal notranslate"><span class="pre">sigmoid=true</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>Once you are ready, press the Start button to begin training. The module will automatically load your dataset,
+perform data augmentation if you chose to, select a CUDA device if one is present, and train the model.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can stop the training at any time by clicking on the start button again.</p>
+<p><strong>The training will stop after the next validation interval is performed, to save the latest model should it be better.</strong></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can save the log to record the losses and validation metrics numerical value at each step. This log is autosaved as well when training completes.</p>
+</div>
+<p>After two validations steps have been performed, the training loss values and validation metrics will be automatically plotted
+and shown on napari every time a validation step completes.
+This plot automatically saved each time validation is performed for now. The final version is stored separately in the results folder.</p>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="inference_module_guide.html" class="btn btn-neutral float-left" title="Inference module guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cropping_module_guide.html" class="btn btn-neutral float-right" title="Cropping module guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Cyril Achard, Maxime Vidal.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
