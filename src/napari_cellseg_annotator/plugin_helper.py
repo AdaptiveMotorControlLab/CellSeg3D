@@ -61,7 +61,7 @@ class Helper(QWidget):
         # self.show()
         # self._viewer.window.add_dock_widget(self, name="Help/About...", area="right")
 
-    def close(self):
+    def remove_from_viewer(self):
         if self.test and self.dock is not None:  # TODO remove
             self._viewer.window.remove_dock_widget(self.dock)
         self._viewer.window.remove_dock_widget(self)

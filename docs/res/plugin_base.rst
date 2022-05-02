@@ -9,7 +9,7 @@ Class : BasePlugin
 Methods
 **********************
 .. autoclass:: napari_cellseg_annotator.plugin_base::BasePlugin
-   :members:  __init__, close, show_dialog_images, show_dialog_labels, update_default
+   :members:  __init__, remove_from_viewer, show_dialog_images, show_dialog_labels, update_default
    :noindex:
 
 

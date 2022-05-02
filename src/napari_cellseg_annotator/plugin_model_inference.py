@@ -127,10 +127,12 @@ class Inferer(ModelFramework):
         ##################
         ##################
         # instance segmentation widgets
-        self.instance_method_dict = {
-            "Connected components": inst_seg.binary_connected,
-            "Watershed": inst_seg.binary_watershed,
-        }
+        self.instance_method_dict = (
+            {  # TODO move conversion to callable in workers
+                "Connected components": inst_seg.binary_connected,
+                "Watershed": inst_seg.binary_watershed,
+            }
+        )
         self.instance_choice = ui.make_checkbox(
             "Run instance segmentation", func=self.toggle_display_instance
         )

@@ -1,15 +1,16 @@
+import glob
 import os
 
 import napari
 from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QSizePolicy
-from qtpy.QtWidgets import QWidget
+from qtpy.QtWidgets import QTabWidget
 
 from napari_cellseg_annotator import interface as ui
 
 
-class BasePlugin(QWidget):
-    """A plugin base that pre-defines a lot of common IO utility, for inheritance in other widgets"""
+class BasePluginSingleImage(QTabWidget):
+    """A basic plugin template for working with **single images**"""
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
         """Creates a Base plugin with several buttons pre-defined but not added to a layout :
@@ -111,10 +112,150 @@ class BasePlugin(QWidget):
             self.lbl_label.setText(self.label_path)
             self.update_default()
 
+    def load_results_path(self):
+        """Show file dialog to set :py:attr:`~results_path`"""
+        dir = ui.open_file_dialog(self, self._default_path, True)
+        if dir != "" and type(dir) is str and os.path.isdir(dir):
+            self.results_path = dir
+            self.lbl_result_path.setText(self.results_path)
+            self.update_default()
+
     def update_default(self):
         self._default_path = [self.image_path, self.label_path]
 
-    def close(self):
+    def remove_from_viewer(self):
         """Removes the widget from the napari window.
         Can be re-implemented in children classes if needed"""
+        self._viewer.window.remove_dock_widget(self)
+
+
+class BasePluginFolder(QTabWidget):
+    """A basic plugin template for working with **folders of images**"""
+
+    def __init__(self, viewer: "napari.viewer.Viewer"):
+        """Creates a plugin template with the following widgets defined but not added in a layout :
+
+        * A button to load a folder of images
+
+        * A button to load a folder of labels
+
+        * A button to set a results folder
+
+        * A dropdown menu to select the file extension to be loaded from the folders"""
+        super().__init__()
+
+        self._viewer = viewer
+
+        self.images_filepaths = [""]
+        """array(str): paths to images for training or inference"""
+        self.labels_filepaths = [""]
+        """array(str): paths to labels for training"""
+        self.results_path = ""
+        """str: path to output folder,to save results in"""
+
+        self._default_path = [
+            self.images_filepaths,
+            self.labels_filepaths,
+            self.results_path,
+        ]
+
+        self.docked_widgets = []
+        """List of docked widgets (returned by :py:func:`viewer.window.add_dock_widget()),
+        can be used to remove docked widgets`"""
+
+        #######################################################
+        # interface
+        self.btn_image_files = ui.make_button(
+            "Open", self.load_image_dataset, self
+        )
+        self.lbl_image_files = QLineEdit("Images directory", self)
+        self.lbl_image_files.setReadOnly(True)
+
+        self.btn_label_files = ui.make_button(
+            "Open", self.load_label_dataset, self
+        )
+        self.lbl_label_files = QLineEdit("Labels directory", self)
+        self.lbl_label_files.setReadOnly(True)
+
+        self.filetype_choice, self.lbl_filetype = ui.make_combobox(
+            [".tif", ".tiff"], label="File format"
+        )
+
+        self.btn_result_path = ui.make_button(
+            "Open", self.load_results_path, self
+        )
+        self.lbl_result_path = QLineEdit("Results directory", self)
+        self.lbl_result_path.setReadOnly(True)
+        #######################################################
+
+    def load_dataset_paths(self):
+        """Loads all image paths (as str) in a given folder for which the extension matches the set filetype
+
+        Returns:
+           array(str): all loaded file paths
+        """
+        filetype = self.filetype_choice.currentText()
+        directory = ui.open_file_dialog(self, self._default_path, True)
+        # print(directory)
+        file_paths = sorted(glob.glob(os.path.join(directory, "*" + filetype)))
+        # print(file_paths)
+        return file_paths
+
+    def load_image_dataset(self):
+        """Show file dialog to set :py:attr:`~images_filepaths`"""
+        filenames = self.load_dataset_paths()
+        # print(filenames)
+        if filenames != "" and filenames != [""] and filenames != []:
+            self.images_filepaths = filenames
+            # print(filenames)
+            path = os.path.dirname(filenames[0])
+            self.lbl_image_files.setText(path)
+            # print(path)
+            self._default_path[0] = path
+
+    def load_label_dataset(self):
+        """Show file dialog to set :py:attr:`~labels_filepaths`"""
+        filenames = self.load_dataset_paths()
+        if filenames != "" and filenames != [""]:
+            self.labels_filepaths = filenames
+            path = os.path.dirname(filenames[0])
+            self.lbl_label_files.setText(path)
+            self.update_default()
+
+    def load_results_path(self):
+        """Show file dialog to set :py:attr:`~results_path`"""
+        dir = ui.open_file_dialog(self, self._default_path, True)
+        if dir != "" and type(dir) is str and os.path.isdir(dir):
+            self.results_path = dir
+            self.lbl_result_path.setText(self.results_path)
+            self.update_default()
+
+    def build(self):
+        raise NotImplementedError("Should be defined in children classes")
+
+    def update_default(self):
+        """Update default path for smoother file dialogs"""
+        self._default_path = [
+            path
+            for path in [
+                os.path.dirname(self.images_filepaths[0]),
+                os.path.dirname(self.labels_filepaths[0]),
+                self.results_path,
+            ]
+            if (path != [""] and path != "")
+        ]
+
+    def remove_docked_widgets(self):
+        """Removes docked widgets and resets checks for status report"""
+        if len(self.docked_widgets) != 0:
+            [
+                self._viewer.window.remove_dock_widget(w)
+                for w in self.docked_widgets
+            ]
+            self.docked_widgets = []
+            self.container_docked = False
+
+    def remove_from_viewer(self):
+        """Close the widget and the docked widgets, if any"""
+        self.remove_docked_widgets()
         self._viewer.window.remove_dock_widget(self)

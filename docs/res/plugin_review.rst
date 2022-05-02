@@ -11,7 +11,7 @@ Class : Loader
 Methods
 **********************
 .. autoclass:: napari_cellseg_annotator.plugin_review::Reviewer
-   :members:  __init__, run_review, build, close
+   :members:  __init__, run_review, build, remove_from_viewer
    :noindex:
 
 

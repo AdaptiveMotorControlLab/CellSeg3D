@@ -6,6 +6,7 @@ from skimage.measure import label
 from skimage.morphology import remove_small_objects
 from skimage.segmentation import watershed
 from skimage.transform import resize
+from tifffile import imread
 
 
 def binary_connected(
@@ -88,3 +89,24 @@ def binary_watershed(
         )
 
     return np.array(segm)
+
+
+def to_instance(image, is_file_path=True):
+    if is_file_path:
+        image = imread(image)
+        image = image.compute()
+
+    result = binary_watershed(
+        image, thres_small=1, thres_seeding=0.3, rem_seed_thres=1
+    )  # TODO add params ?
+
+    return result
+
+def to_semantic(image, is_file_path=True):
+    if is_file_path:
+        image = imread(image)
+        image = image.compute()
+
+    image[image >= 1] = 1
+    result = image.astype(np.uint16)
+    return result

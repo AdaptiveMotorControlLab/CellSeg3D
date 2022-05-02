@@ -1,4 +1,3 @@
-import glob
 import os
 import warnings
 
@@ -8,7 +7,6 @@ import torch
 from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QProgressBar
 from qtpy.QtWidgets import QSizePolicy
-from qtpy.QtWidgets import QTabWidget
 
 # local
 from napari_cellseg_annotator import interface as ui
@@ -17,11 +15,12 @@ from napari_cellseg_annotator.log_utility import Log
 from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
 from napari_cellseg_annotator.models import model_SegResNet as SegResNet
 from napari_cellseg_annotator.models import model_VNet as VNet
+from napari_cellseg_annotator.plugin_base import BasePluginFolder
 
 warnings.formatwarning = utils.format_Warning
 
 
-class ModelFramework(QTabWidget):
+class ModelFramework(BasePluginFolder):
     """A framework with buttons to use for loading images, labels, models, etc. for both inference and training"""
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
@@ -40,19 +39,20 @@ class ModelFramework(QTabWidget):
         Args:
             viewer (napari.viewer.Viewer): viewer to load the widget in
         """
-        super().__init__()
+        super().__init__(viewer)
 
         self._viewer = viewer
-        """napari.viewer.Viewer: Viewer to display the widget in in"""
 
-        self.images_filepaths = [""]
-        """array(str): paths to images for training or inference"""
-        self.labels_filepaths = [""]
-        """array(str): paths to labels for training"""
-        self.results_path = ""
-        """str: path to output folder,to save results in"""
         self.model_path = ""
         """str: path to custom model defined by user"""
+
+        self._default_path = [
+            self.images_filepaths,
+            self.labels_filepaths,
+            self.model_path,
+            self.results_path,
+        ]
+        """Update defaults from PluginBaseFolder with model_path"""
 
         self.models_dict = {
             "VNet": VNet,
@@ -63,43 +63,11 @@ class ModelFramework(QTabWidget):
 
         Currently implemented : SegResNet, VNet, TRAILMAP_test"""
 
-        self._default_path = [
-            self.images_filepaths,
-            self.labels_filepaths,
-            self.model_path,
-            self.results_path,
-        ]
-
-        self.docked_widgets = []
-        """List of docked widgets (returned by :py:func:`viewer.window.add_dock_widget()),
-        can be used to remove docked widgets`"""
-
         self.worker = None
         """Worker from model_workers.py, either inference or training"""
 
         #######################################################
         # interface
-        self.btn_image_files = ui.make_button(
-            "Open", self.load_image_dataset, self
-        )
-        self.lbl_image_files = QLineEdit("Images directory", self)
-        self.lbl_image_files.setReadOnly(True)
-
-        self.btn_label_files = ui.make_button(
-            "Open", self.load_label_dataset, self
-        )
-        self.lbl_label_files = QLineEdit("Labels directory", self)
-        self.lbl_label_files.setReadOnly(True)
-
-        self.filetype_choice, self.lbl_filetype = ui.make_combobox(
-            [".tif", ".tiff"], label="File format"
-        )
-
-        self.btn_result_path = ui.make_button(
-            "Open", self.load_results_path, self
-        )
-        self.lbl_result_path = QLineEdit("Results directory", self)
-        self.lbl_result_path.setReadOnly(True)
 
         # TODO : implement custom model
         self.btn_model_path = ui.make_button(
@@ -175,7 +143,8 @@ class ModelFramework(QTabWidget):
             )
 
     def display_status_report(self):
-        """Adds a text log, a progress bar and a "save log" button on the left side of the viewer (usually when starting a worker)"""
+        """Adds a text log, a progress bar and a "save log" button on the left side of the viewer
+        (usually when starting a worker)"""
 
         # if self.container_report is None or self.log is None:
         #     warnings.warn(
@@ -223,32 +192,6 @@ class ModelFramework(QTabWidget):
         self.btn_save_log.setVisible(True)
         self.progress.setValue(0)
 
-    def update_default(self):
-        """Update default path for smoother file dialogs"""
-        self._default_path = [
-            path
-            for path in [
-                os.path.dirname(self.images_filepaths[0]),
-                os.path.dirname(self.labels_filepaths[0]),
-                self.model_path,
-                self.results_path,
-            ]
-            if (path != [""] and path != "")
-        ]
-
-    def load_dataset_paths(self):
-        """Loads all image paths (as str) in a given folder for which the extension matches the set filetype
-
-        Returns:
-           array(str): all loaded file paths
-        """
-        filetype = self.filetype_choice.currentText()
-        directory = ui.open_file_dialog(self, self._default_path, True)
-        # print(directory)
-        file_paths = sorted(glob.glob(os.path.join(directory, "*" + filetype)))
-        # print(file_paths)
-        return file_paths
-
     def create_train_dataset_dict(self):
         """Creates data dictionary for MONAI transforms and training.
 
@@ -285,35 +228,6 @@ class ModelFramework(QTabWidget):
         """Getter for loss function selected by user"""
         return self.loss_dict[key]
 
-    def load_image_dataset(self):
-        """Show file dialog to set :py:attr:`~images_filepaths`"""
-        filenames = self.load_dataset_paths()
-        # print(filenames)
-        if filenames != "" and filenames != [""] and filenames != []:
-            self.images_filepaths = filenames
-            # print(filenames)
-            path = os.path.dirname(filenames[0])
-            self.lbl_image_files.setText(path)
-            # print(path)
-            self._default_path[0] = path
-
-    def load_label_dataset(self):
-        """Show file dialog to set :py:attr:`~labels_filepaths`"""
-        filenames = self.load_dataset_paths()
-        if filenames != "" and filenames != [""]:
-            self.labels_filepaths = filenames
-            path = os.path.dirname(filenames[0])
-            self.lbl_label_files.setText(path)
-            self.update_default()
-
-    def load_results_path(self):
-        """Show file dialog to set :py:attr:`~results_path`"""
-        dir = ui.open_file_dialog(self, self._default_path, True)
-        if dir != "" and type(dir) is str and os.path.isdir(dir):
-            self.results_path = dir
-            self.lbl_result_path.setText(self.results_path)
-            self.update_default()
-
     def load_model_path(self):
         """Show file dialog to set :py:attr:`model_path`"""
         dir = ui.open_file_dialog(self, self._default_path)
@@ -340,20 +254,18 @@ class ModelFramework(QTabWidget):
             torch.cuda.empty_cache()
             print("Cache emptied")
 
+    def update_default(self):
+        """Update default path for smoother file dialogs, here with :py:attr:`~model_path` included"""
+        self._default_path = [
+            path
+            for path in [
+                os.path.dirname(self.images_filepaths[0]),
+                os.path.dirname(self.labels_filepaths[0]),
+                self.model_path,
+                self.results_path,
+            ]
+            if (path != [""] and path != "")
+        ]
+
     def build(self):
         raise NotImplementedError("Should be defined in children classes")
-
-    def remove_docked_widgets(self):
-        """Removes docked widgets and resets checks for status report"""
-        if len(self.docked_widgets) != 0:
-            [
-                self._viewer.window.remove_dock_widget(w)
-                for w in self.docked_widgets
-            ]
-            self.docked_widgets = []
-            self.container_docked = False
-
-    def close(self):
-        """Close the widget and the docked widgets, if any"""
-        self.remove_docked_widgets()
-        self._viewer.window.remove_dock_widget(self)

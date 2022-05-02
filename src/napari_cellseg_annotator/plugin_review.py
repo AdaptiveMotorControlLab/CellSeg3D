@@ -15,7 +15,7 @@ from qtpy.QtWidgets import QSizePolicy
 from napari_cellseg_annotator import interface as ui
 from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.launch_review import launch_review
-from napari_cellseg_annotator.plugin_base import BasePlugin
+from napari_cellseg_annotator.plugin_base import BasePluginSingleImage
 
 warnings.formatwarning = utils.format_Warning
 
@@ -23,7 +23,7 @@ warnings.formatwarning = utils.format_Warning
 global_launched_before = False
 
 
-class Reviewer(BasePlugin):
+class Reviewer(BasePluginSingleImage):
     """A plugin for selecting volumes and labels file and launching the review process.
     Inherits from : :doc:`plugin_base`"""
 
@@ -226,7 +226,7 @@ class Reviewer(BasePlugin):
             warnings.warn(
                 "Opening several loader sessions in one window is not supported; opening in new window"
             )
-            self._viewer.close()
+            self._viewer.remove_from_viewer()
         else:
             viewer = self._viewer
             print("new sess")
@@ -241,13 +241,13 @@ class Reviewer(BasePlugin):
                 self.filetype,
                 self.as_folder,
             )
-            self.close()
+            self.remove_from_viewer()
 
             global_launched_before = True
 
         return view1
 
-    def close(self):
+    def remove_from_viewer(self):
         """Close widget and remove it from window.
         Sets the check for an active session to false, so that if the user closes manually and doesn't launch the review,
         the active session warning does not display and a new viewer is not opened when launching for the first time.

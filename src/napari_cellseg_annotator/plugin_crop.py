@@ -14,12 +14,12 @@ from tifffile import imwrite
 # local
 from napari_cellseg_annotator import interface as ui
 from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.plugin_base import BasePlugin
+from napari_cellseg_annotator.plugin_base import BasePluginSingleImage
 
 DEFAULT_CROP_SIZE = 64
 
 
-class Cropping(BasePlugin):
+class Cropping(BasePluginSingleImage):
     """A utility plugin for cropping 3D volumes."""
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
@@ -87,7 +87,7 @@ class Cropping(BasePlugin):
     def build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
 
-        w, layout = ui.make_container_widget(0, 0, 1, 11)
+        tab, layout = ui.make_container_widget(0, 0, 1, 11)
 
         data_group_w, data_group_l = ui.make_group("Data")
         data_group_l.addWidget(
@@ -128,7 +128,15 @@ class Cropping(BasePlugin):
         layout.addWidget(self.btn_start, alignment=ui.LEFT_AL)
         layout.addWidget(self.btn_close, alignment=ui.LEFT_AL)
 
-        ui.make_scrollable(layout, self, min_wh=[180, 100], base_wh=[180, 600])
+        ui.make_scrollable(layout, tab, min_wh=[180, 100])
+
+        self.addTab(tab, "Crop")
+
+        from napari_cellseg_annotator.plugin_convert import ConvertUtils
+
+        convert = ConvertUtils(self._viewer)
+        self.addTab(convert, "Convert")
+        self.setMaximumSize(230, 800)
 
     def quicksave(self):
         """Quicksaves the cropped volume in the folder from which they originate, with their original file extension.
@@ -257,7 +265,7 @@ class Cropping(BasePlugin):
 
         self.add_crop_sliders()
 
-    def close(self):
+    def remove_from_viewer(self):
         """Can be re-implemented in children classes"""
         if len(self.docked_widgets) != 0:
             [
@@ -267,7 +275,9 @@ class Cropping(BasePlugin):
 
         self._viewer.window.remove_dock_widget(self)
 
-    def add_crop_sliders(self):
+    def add_crop_sliders(
+        self,
+    ):  # TODO fix OOB behaviour (check if <0 or >max_size ?)
 
         vw = self._viewer
 
