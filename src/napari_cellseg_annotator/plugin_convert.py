@@ -129,14 +129,20 @@ class ConvertUtils(BasePluginFolder):
 
     def folder_to_semantic(self):
         """Converts folder of labels to semantic labels"""
+
+        results_folder = (
+            self.results_path
+            + f"/converted_to_semantic_labels_{utils.get_date_time()}"
+        )
+
+        os.makedirs(results_folder, exist_ok=False)
+
         for file in self.labels_filepaths:
 
             image = to_semantic(file)
 
             imwrite(
-                self.results_path
-                + f"/converted_to_semantic_labels_{utils.get_date_time()}/"
-                + os.path.basename(file),
+                results_folder + "/" + os.path.basename(file),
                 image,
             )
 
@@ -144,23 +150,35 @@ class ConvertUtils(BasePluginFolder):
         """Converts selected layer to semantic labels"""
 
         im = self._viewer.layers.selection.active.data
+        name = self._viewer.layers.selection.active.name
         semantic_labels = to_semantic(im, is_file_path=False)
 
-        self._viewer.add_labels(
-            semantic_labels, name=f"Converted to semantic_{utils.get_time()}"
-        )
+        if self.results_path != "":
+            imwrite(
+                self.results_path
+                + f"/{name}_semantic_{utils.get_time_filepath()}"
+                + self.filetype_choice.currentText(),
+                semantic_labels,
+            )
+
+        self._viewer.add_labels(semantic_labels, name=f"converted_semantic")
 
     def folder_to_instance(self):
         """Converts the chosen folder to instance labels"""
+
+        results_folder = (
+            self.results_path
+            + f"/converted_to_instance_labels_{utils.get_date_time()}"
+        )
+
+        os.makedirs(results_folder, exist_ok=False)
 
         for file in self.labels_filepaths:
 
             image = to_instance(file)
 
             imwrite(
-                self.results_path
-                + f"/converted_to_instance_labels_{utils.get_date_time()}/"
-                + os.path.basename(file),
+                results_folder + "/" + os.path.basename(file),
                 image,
             )
 
@@ -168,8 +186,15 @@ class ConvertUtils(BasePluginFolder):
         """Converts the selected layer to instance labels"""
 
         im = [self._viewer.layers.selection.active.data]
+        name = self._viewer.layers.selection.active.name
         instance_labels = to_instance(im, is_file_path=False)
 
-        self._viewer.add_labels(
-            instance_labels, name=f"Converted to instance_{utils.get_time()}"
-        )
+        if self.results_path != "":
+            imwrite(
+                self.results_path
+                + f"/{name}_instance_{utils.get_time_filepath()}"
+                + self.filetype_choice.currentText(),
+                instance_labels,
+            )
+
+        self._viewer.add_labels(instance_labels, name=f"converted_instance")

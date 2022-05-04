@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+
 # MONAI
 from monai.data import CacheDataset
 from monai.data import DataLoader
@@ -30,6 +31,7 @@ from monai.transforms import SpatialPadd
 from monai.transforms import Zoom
 from napari.qt.threading import GeneratorWorker
 from napari.qt.threading import WorkerBaseSignals
+
 # Qt
 from qtpy.QtCore import Signal
 from tifffile import imwrite
@@ -305,7 +307,7 @@ class InferenceWorker(GeneratorWorker):
                 file_path = (
                     self.results_path
                     + "/"
-                    + f"Prediction_{image_id}"
+                    + f"Prediction_{image_id}_"
                     + original_filename
                     + "_"
                     + self.model_dict["name"]

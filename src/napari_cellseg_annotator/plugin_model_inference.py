@@ -2,6 +2,7 @@ import os
 import warnings
 
 import napari
+
 # Qt
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QSizePolicy

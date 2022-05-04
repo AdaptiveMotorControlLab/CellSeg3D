@@ -92,21 +92,39 @@ def binary_watershed(
 
 
 def to_instance(image, is_file_path=True):
+    """Converts a **ground-truth** label to instance (unique id per object) labels. Does not remove small objects.
+
+    Args:
+        image: image or path to image
+        is_file_path: if True, will consider ``image`` to be a string containing a path to a file, if not treats it as an image data array.
+
+    Returns: resulting converted labels
+
+    """
     if is_file_path:
-        image = imread(image)
-        image = image.compute()
+        image = [imread(image)]
+        # image = image.compute()
 
     result = binary_watershed(
-        image, thres_small=1, thres_seeding=0.3, rem_seed_thres=1
+        image, thres_small=0, thres_seeding=0.3, rem_seed_thres=0
     )  # TODO add params ?
 
     return result
 
 
 def to_semantic(image, is_file_path=True):
+    """Converts a **ground-truth** label to semantic (binary 0/1) labels.
+
+    Args:
+        image: image or path to image
+        is_file_path: if True, will consider ``image`` to be a string containing a path to a file, if not treats it as an image data array.
+
+    Returns: resulting converted labels
+
+    """
     if is_file_path:
         image = imread(image)
-        image = image.compute()
+        # image = image.compute()
 
     image[image >= 1] = 1
     result = image.astype(np.uint16)

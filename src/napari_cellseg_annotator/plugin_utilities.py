@@ -1,8 +1,10 @@
 import napari
+
 # Qt
 from qtpy.QtWidgets import QTabWidget
 
 from napari_cellseg_annotator.plugin_convert import ConvertUtils
+
 # local
 from napari_cellseg_annotator.plugin_crop import Cropping
 from napari_cellseg_annotator.plugin_metrics import MetricsUtils
@@ -24,7 +26,7 @@ class Utilities(QTabWidget):
     def build(self):
 
         self.addTab(self.convert_tab, "Convert")
-        # self.addTab(self.metrics_tab, "Metrics")
+        self.addTab(self.metrics_tab, "Metrics")
         self.addTab(self.cropping_tab, "Crop")
 
         self.setBaseSize(220, 150)

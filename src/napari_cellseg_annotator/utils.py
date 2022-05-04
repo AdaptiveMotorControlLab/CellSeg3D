@@ -59,6 +59,23 @@ def normalize_y(image):
     image = image / 255
     return image
 
+def dice_coeff(y_true, y_pred):
+    """Compute Dice-Sorensen coefficient between two numpy arrays
+
+    Args:
+        y_true: Ground truth label
+        y_pred: Prediction label
+
+    Returns: dice coefficient
+
+    """
+    smooth = 1.
+    y_true_f = y_true.flatten()
+    y_pred_f = y_pred.flatten()
+    intersection = np.sum(y_true_f * y_pred_f)
+    score = (2. * intersection + smooth) / (np.sum(y_true_f) + np.sum(y_pred_f) + smooth)
+    return score
+
 
 def get_padding_dim(image_shape, anisotropy_factor=None):
     """
@@ -266,8 +283,13 @@ def get_date_time():
 
 
 def get_time():
-    """Get time in the following format : hour_minute_second"""
+    """Get time in the following format : hour:minute:second. NOT COMPATIBLE with file paths (saving with ":" is invalid)"""
     return "{:%H:%M:%S}".format(datetime.now())
+
+
+def get_time_filepath():
+    """Get time in the following format : hour_minute_second. Compatible with saving"""
+    return "{:%H_%M_%S}".format(datetime.now())
 
 
 def load_images(dir_or_path, filetype="", as_folder: bool = False):

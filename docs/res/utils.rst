@@ -13,6 +13,10 @@ get_time
 **************************************
 .. autofunction:: napari_cellseg_annotator.utils::get_time
 
+get_time_filepath
+**************************************
+.. autofunction:: napari_cellseg_annotator.utils::get_time_filepath
+
 save_stack
 **************************************
 .. autofunction:: napari_cellseg_annotator.utils::save_stack
@@ -20,6 +24,10 @@ save_stack
 get_padding_dim
 **************************************
 .. autofunction:: napari_cellseg_annotator.utils::get_padding_dim
+
+dice_coeff
+**************************************
+.. autofunction:: napari_cellseg_annotator.utils::dice_coeff
 
 normalize_x
 **************************************

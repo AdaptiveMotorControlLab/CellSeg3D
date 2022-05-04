@@ -42,6 +42,9 @@ class BasePluginSingleImage(QTabWidget):
         self.label_path = ""
         """str: path to label folder"""
 
+        self.results_path = ""
+        """str: path to results folder"""
+
         self.filetype = ""
         """str: filetype, .tif or .png"""
         self.as_folder = False
@@ -124,6 +127,7 @@ class BasePluginSingleImage(QTabWidget):
             self.update_default()
 
     def update_default(self):
+        """Updates default path for smoother navigation when opening file dialogs"""
         self._default_path = [self.image_path, self.label_path]
 
     def remove_from_viewer(self):
@@ -245,7 +249,7 @@ class BasePluginFolder(QTabWidget):
     def load_label_dataset(self):
         """Show file dialog to set :py:attr:`~labels_filepaths`"""
         filenames = self.load_dataset_paths()
-        if filenames != "" and filenames != [""]:
+        if filenames != "" and filenames != [""] and filenames != []:
             self.labels_filepaths = filenames
             path = os.path.dirname(filenames[0])
             self.lbl_label_files.setText(path)
