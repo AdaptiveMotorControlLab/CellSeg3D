@@ -59,6 +59,7 @@ def normalize_y(image):
     image = image / 255
     return image
 
+
 def dice_coeff(y_true, y_pred):
     """Compute Dice-Sorensen coefficient between two numpy arrays
 
@@ -69,12 +70,53 @@ def dice_coeff(y_true, y_pred):
     Returns: dice coefficient
 
     """
-    smooth = 1.
+    smooth = 1.0
     y_true_f = y_true.flatten()
     y_pred_f = y_pred.flatten()
     intersection = np.sum(y_true_f * y_pred_f)
-    score = (2. * intersection + smooth) / (np.sum(y_true_f) + np.sum(y_pred_f) + smooth)
+    score = (2.0 * intersection + smooth) / (
+        np.sum(y_true_f) + np.sum(y_pred_f) + smooth
+    )
     return score
+
+
+def align_array_sizes(array_shape, target_shape):
+
+    index_differences = []
+    for i in range(len(target_shape)):
+        if target_shape[i] != array_shape[i]:
+            for j in range(len(array_shape)):
+                if array_shape[i] == target_shape[j]:
+                    if j != i:
+                        index_differences.append({"origin": i, "target": j})
+
+    print(index_differences)
+    if len(index_differences) == 0:
+        return [0, 1, 2], [-3, -2, -1]
+
+    origins = []
+    targets = []
+
+    for diffs in index_differences:
+        origins.append(diffs["origin"])
+        targets.append(diffs["target"])
+
+    reverse_mapping = {0: (-3), 1: (-2), 2: (-1)}
+    for i in range(len(targets)):
+        targets[i] = reverse_mapping[targets[i]]
+    infos = np.unique(origins, return_index=True, return_counts=True)
+    info_dict = {"origins": infos[0], "index": infos[1], "counts": infos[2]}
+    print(info_dict)
+
+    final_orig = []
+    final_targ = []
+    for i in range(len(infos[0])):
+        if infos[2][i] == 1:
+            final_orig.append(infos[0][i])
+            final_targ.append(targets[infos[1][i]])
+    print(final_orig, final_targ)
+
+    return final_orig, final_targ
 
 
 def get_padding_dim(image_shape, anisotropy_factor=None):
@@ -491,7 +533,7 @@ def format_Warning(message, category, filename, lineno, line=""):
 
 # def dice_coeff(y_true, y_pred):
 #     smooth = 1.
-#     y_true_f = K.flatten(y_true)
+#     y_true_f = y_true.flatten()
 #     y_pred_f = K.flatten(y_pred)
 #     intersection = K.sum(y_true_f * y_pred_f)
 #     score = (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)

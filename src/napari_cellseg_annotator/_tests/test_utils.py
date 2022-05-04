@@ -8,7 +8,42 @@ import torch
 from napari_cellseg_annotator import utils
 
 
-def test_get_padding_dim(make_napari_viewer):
+def test_align_array_sizes():
+
+    im = np.zeros((128, 512, 256))
+    print(im.shape)
+
+    dim_1 = (64, 64, 512)
+    ground = np.array((512, 64, 64))
+    pred = np.array(dim_1)
+
+    ori, targ = utils.align_array_sizes(ground, pred)
+
+    im_1 = np.moveaxis(im, ori, targ)
+    print(im_1.shape)
+    assert im_1.shape == (512, 256, 128)
+
+    dim_2 = (512, 256, 128)
+    ground = np.array((128, 512, 256))
+    pred = np.array(dim_2)
+
+    ori, targ = utils.align_array_sizes(ground, pred)
+
+    im_2 = np.moveaxis(im, ori, targ)
+    print(im_2.shape)
+    assert im_2.shape == dim_2
+
+    dim_3 = (128, 128, 128)
+    ground = np.array(dim_3)
+    pred = np.array(dim_3)
+
+    ori, targ = utils.align_array_sizes(ground, pred)
+    im_3 = np.moveaxis(im, ori, targ)
+    print(im_3.shape)
+    assert im_3.shape == im.shape
+
+
+def test_get_padding_dim():
 
     tensor = torch.randn(100, 30, 40)
     size = tensor.size()

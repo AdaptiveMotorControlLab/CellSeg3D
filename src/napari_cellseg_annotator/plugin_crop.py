@@ -6,7 +6,6 @@ import numpy as np
 from magicgui import magicgui
 from magicgui.widgets import Container
 from magicgui.widgets import Slider
-
 # Qt
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QSizePolicy
@@ -72,6 +71,20 @@ class Cropping(BasePluginSingleImage):
         self.crop_labels = False
 
         self.build()
+
+        ###########################################
+        if utils.ENABLE_TEST_MODE():
+            # TODO : remove/disable once done
+            if self.as_folder:
+                self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
+                if self.crop_label_choice.isChecked():
+                    self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
+            else:
+                self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
+                if self.crop_label_choice.isChecked():
+                    self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels/testing_im.tif"
+
+        ###########################################
 
     def toggle_label_path(self):
         if self.crop_label_choice.isChecked():
@@ -141,16 +154,20 @@ class Cropping(BasePluginSingleImage):
         if not self.as_folder:
             if self.image is not None:
                 im_filename = os.path.basename(self.image_path).split(".")[0]
+                print(im_filename)
                 im_dir = os.path.split(self.image_path)[0] + "/cropped"
+                print(im_dir)
                 os.makedirs(im_dir, exist_ok=True)
                 viewer.layers["cropped"].save(
                     im_dir + "/" + im_filename + "_cropped_" + time + ".tif"
                 )
 
-            print(self.label)
+            # print(self.label)
             if self.label is not None:
                 im_filename = os.path.basename(self.label_path).split(".")[0]
+                print(im_filename)
                 im_dir = os.path.split(self.label_path)[0] + "/cropped"
+                print(im_dir)
                 name = (
                     im_dir
                     + "/"
@@ -201,20 +218,6 @@ class Cropping(BasePluginSingleImage):
         self.as_folder = self.file_handling_box.isChecked()
         self.filetype = self.filetype_choice.currentText()
         self.crop_labels = self.crop_label_choice.isChecked()
-
-        ###########################################
-        if utils.ENABLE_TEST_MODE():
-            # TODO : remove/disable once done
-            if self.as_folder:
-                self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
-                if self.crop_labels:
-                    self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
-            else:
-                self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
-                if self.crop_labels:
-                    self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels/testing_im.tif"
-
-        ###########################################
 
         if not self.check_ready():
             return

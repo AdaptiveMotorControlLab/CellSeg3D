@@ -239,7 +239,7 @@ class BasePluginFolder(QTabWidget):
         filenames = self.load_dataset_paths()
         # print(filenames)
         if filenames != "" and filenames != [""] and filenames != []:
-            self.images_filepaths = filenames
+            self.images_filepaths = sorted(filenames)
             # print(filenames)
             path = os.path.dirname(filenames[0])
             self.lbl_image_files.setText(path)
@@ -250,7 +250,7 @@ class BasePluginFolder(QTabWidget):
         """Show file dialog to set :py:attr:`~labels_filepaths`"""
         filenames = self.load_dataset_paths()
         if filenames != "" and filenames != [""] and filenames != []:
-            self.labels_filepaths = filenames
+            self.labels_filepaths = sorted(filenames)
             path = os.path.dirname(filenames[0])
             self.lbl_label_files.setText(path)
             self.update_default()

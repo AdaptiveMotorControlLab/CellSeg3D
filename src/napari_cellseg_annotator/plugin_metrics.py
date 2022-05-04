@@ -1,81 +1,216 @@
-from napari_cellseg_annotator.plugin_base import BasePluginFolder
-from napari_cellseg_annotator import interface as ui
-from napari_cellseg_annotator import utils
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvasQTAgg as FigureCanvas,
+)
+from matplotlib.figure import Figure
+from monai.transforms import SpatialPad, ToTensor
 from tifffile import imread
 
-from monai.transforms import ToTensor, AsDiscrete, EnsureChannelFirst, SpatialPad, Compose, AddChannel, Orientation
-from monai.metrics import DiceMetric
+from napari_cellseg_annotator import interface as ui
+from napari_cellseg_annotator import utils
+from napari_cellseg_annotator.model_instance_seg import to_semantic
+from napari_cellseg_annotator.plugin_base import BasePluginFolder
 
 
 class MetricsUtils(BasePluginFolder):
-
     def __init__(self, viewer: "napari.viewer.Viewer", parent):
 
         super().__init__(viewer, parent)
 
         self._viewer = viewer
 
-        self.btn_compute_dice = ui.make_button("Compute Dice",self.compute_dice)
+        self.layout = None
+        """Used for plotting"""
+        self.canvas = None
+        self.plots = []
+
+        self.btn_compute_dice = ui.make_button(
+            "Compute Dice", self.compute_dice
+        )
+        self.btn_reset_plot = ui.make_button("Clear plots", self.remove_plots)
 
         self.btn_result_path.setVisible(False)
         self.lbl_result_path.setVisible(False)
 
         self.build()
 
-    def build(self):
+        ######################################
+        # TODO test remove
+        import glob
+        import os
 
+        if utils.ENABLE_TEST_MODE():
+            ground_directory = "C:/Users/Cyril/Desktop/Proj_bachelor/data/cropped_visual/train/lab"
+            # ground_directory = "C:/Users/Cyril/Desktop/test/labels"
+            pred_directory = "C:/Users/Cyril/Desktop/test/pred"
+            # pred_directory = "C:/Users/Cyril/Desktop/test"
+            self.images_filepaths = sorted(glob.glob(
+                os.path.join(ground_directory, "*.tif")
+            ))
+            self.labels_filepaths = sorted(glob.glob(
+                os.path.join(pred_directory, "*.tif")
+            ))
+        ###############################################################################
+
+    def build(self):
 
         self.lbl_filetype.setVisible(False)
 
-        w, layout = ui.make_container_widget()
+        w, self.layout = ui.make_container_widget()
 
-        metrics_group_w,metrics_group_l = ui.make_group("Metrics")
+        metrics_group_w, metrics_group_l = ui.make_group("Metrics")
 
         self.lbl_image_files.setText("Ground truth")
 
-        metrics_group_l.addWidget(ui.combine_blocks(
+        metrics_group_l.addWidget(
+            ui.combine_blocks(
                 second=self.btn_image_files,
                 first=self.lbl_image_files,
                 min_spacing=70,
             ),
-            alignment=ui.LEFT_AL,)
+            alignment=ui.LEFT_AL,
+        )
 
         self.lbl_label_files.setText("Prediction")
 
-        metrics_group_l.addWidget(ui.combine_blocks(
-            second=self.btn_label_files,
-            first=self.lbl_label_files,
-            min_spacing=70,
-        ),
-            alignment=ui.LEFT_AL, )
+        metrics_group_l.addWidget(
+            ui.combine_blocks(
+                second=self.btn_label_files,
+                first=self.lbl_label_files,
+                min_spacing=70,
+            ),
+            alignment=ui.LEFT_AL,
+        )
 
-        metrics_group_l.addWidget(self.btn_compute_dice, alignment = ui.LEFT_AL)
+        metrics_group_l.addWidget(self.btn_compute_dice, alignment=ui.LEFT_AL)
 
         metrics_group_w.setLayout(metrics_group_l)
-        layout.addWidget(metrics_group_w)
 
-        ui.make_scrollable(layout, self)
+        self.layout.addWidget(metrics_group_w)
 
+        self.layout.addWidget(self.make_close_button(), alignment=ui.LEFT_AL)
+
+        self.layout.addWidget(self.btn_reset_plot, alignment=ui.LEFT_AL)
+        self.btn_reset_plot.setVisible(False)
+
+        ui.make_scrollable(self.layout, self)
+
+    def plot_dice(self, dice_coeffs):
+        self.btn_reset_plot.setVisible(True)
+        colors = []
+
+        bckgrd_color = (0, 0, 0, 0)
+
+
+
+        for coeff in dice_coeffs:
+            if coeff < 0.5:
+                colors.append("r")
+            else:
+                colors.append("cyan")
+        with plt.style.context("dark_background"):
+            if self.canvas is None:
+                self.canvas = FigureCanvas(Figure(figsize=(1.75, 4)))
+                self.layout.addWidget(self.canvas)
+            else:
+                self.dice_plot.cla()
+            self.canvas.figure.set_facecolor(bckgrd_color)
+            dice_plot = self.canvas.figure.add_subplot(1, 1, 1)
+            labels = np.array(range(len(dice_coeffs))) + 1
+            dice_plot.barh(labels, dice_coeffs)#, color=colors)
+            dice_plot.set_facecolor(bckgrd_color)
+            self.canvas.draw_idle()
+            self.plots.append(self.canvas)
+
+    def remove_plots(self):
+        if len(self.plots) != 0:
+            for p in self.plots:
+                p.setVisible(False)
 
     def compute_dice(self):
-        transforms = Compose(ToTensor(), Orientation(axcodes = "PLI",image_only=True), EnsureChannelFirst(), AsDiscrete(threshold=0.5))
-
-        for ground_path, pred_path in zip(self.images_filepaths, self.labels_filepaths):
-
+        # u = 0
+        # t = 0
+        total_metrics = []
+        self.canvas = (
+            None  # kind of unsafe way to stack plots... but it works.
+        )
+        id = 0
+        for ground_path, pred_path in zip(
+            self.images_filepaths, self.labels_filepaths
+        ):
+            id += 1
             ground = imread(ground_path)
             pred = imread(pred_path)
 
-            pad = utils.get_padding_dim(pred.shape[-3:-1])
+            ground = to_semantic(ground).astype(np.int8)
+            pred = to_semantic(pred).astype(np.int8)
 
-            ground = transforms(ground)
-            pred = transforms(pred)
+            pred_dims = pred.shape[-3:]
+            # ground_dims = ground.shape[-3:]
+            # print(pred_dims)
+            # print(ground_dims)
+            pad_pred = utils.get_padding_dim(pred_dims)
+            # pad_ground = utils.get_padding_dim(ground_dims)
 
-            ground = AddChannel()(ground)
-            ground = SpatialPad(pad)(ground)
-            ground = AddChannel()(ground)
+            # origin, target = utils.align_array_sizes(array_shape=pad_ground, target_shape=pad_pred)
 
+            # ground = np.moveaxis(ground, origin, target)
             print(ground.shape)
             print(pred.shape)
 
-            score = DiceMetric()(ground, pred)
-            print(score)
+            while len(pred.shape) < 5:
+                pred = np.expand_dims(pred, axis=0)
+                # print("-")
+            while len(ground.shape) < 4:
+                ground = np.expand_dims(ground, axis=0)
+            ground = (SpatialPad(pad_pred)(ToTensor()(ground))).numpy()
+            while len(ground.shape) < len(pred.shape):
+                ground = np.expand_dims(ground, axis=0)
+                # print("&")
+
+            # print(ground.shape)
+            # print(pred.shape)
+
+            if ground.shape != pred.shape:
+                raise ValueError(
+                    f"Padded sizes of images do not match ! Padded ground label : {ground.shape} Padded pred label : {pred.shape}"
+                )
+            # if u < 1:
+            # self._viewer.add_image(ground, name="ground", colormap="blue",opacity=0.7)
+            # self._viewer.add_image(pred, name="pred", colormap="red")
+            # self._viewer.add_image(np.rot90(pred[0][0], axes=(0,1)), name="pred flip 0", colormap="red",opacity=0.7)
+            # self._viewer.add_image(np.rot90(pred[0][0], axes=(1,2)), name="pred flip 1", colormap="red",opacity=0.7)
+            # self._viewer.add_image(np.rot90(pred[0][0], axes=(0,2)), name="pred flip 2", colormap="red",opacity=0.7)
+            # u+=1
+
+            pred_flip_x = np.rot90(pred[0][0], axes=(0, 1))
+            pred_flip_y = np.rot90(pred[0][0], axes=(1, 2))
+            pred_flip_z = np.rot90(pred[0][0], axes=(0, 2))
+            scores = []
+
+            for p in [pred[0][0], pred_flip_x, pred_flip_y, pred_flip_z]:
+                scores.append(utils.dice_coeff(p, ground))
+                scores.append(utils.dice_coeff(np.flip(p), ground))
+                for i in range(3):
+                    scores.append(utils.dice_coeff(np.flip(p, axis=i), ground))
+
+            # if t <1 :
+            #     for i in range(3):
+            #         self._viewer.add_image(np.flip(pred_flip_x,axis=i), name=f"flip", colormap="green",opacity=0.7)
+            #     t+=1
+
+            print(scores)
+            score = max(scores)
+            if score < 0.5:
+                # TODO add filename
+                self._viewer.dims.ndisplay = 3
+                self._viewer.add_image(
+                    ground, name=f"ground_{i}", colormap="blue", opacity=0.7
+                )
+                self._viewer.add_image(
+                    pred, name=f"pred_{i}", colormap="red", opacity=0.7
+                )
+            total_metrics.append(score)
+        print(f"DICE METRIC :{total_metrics}")
+        self.plot_dice(total_metrics)

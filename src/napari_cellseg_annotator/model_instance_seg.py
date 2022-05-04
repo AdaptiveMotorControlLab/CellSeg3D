@@ -91,7 +91,7 @@ def binary_watershed(
     return np.array(segm)
 
 
-def to_instance(image, is_file_path=True):
+def to_instance(image, is_file_path=False):
     """Converts a **ground-truth** label to instance (unique id per object) labels. Does not remove small objects.
 
     Args:
@@ -112,7 +112,7 @@ def to_instance(image, is_file_path=True):
     return result
 
 
-def to_semantic(image, is_file_path=True):
+def to_semantic(image, is_file_path=False):
     """Converts a **ground-truth** label to semantic (binary 0/1) labels.
 
     Args:

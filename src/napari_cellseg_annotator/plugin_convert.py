@@ -139,7 +139,7 @@ class ConvertUtils(BasePluginFolder):
 
         for file in self.labels_filepaths:
 
-            image = to_semantic(file)
+            image = to_semantic(file, is_file_path=True)
 
             imwrite(
                 results_folder + "/" + os.path.basename(file),
@@ -151,7 +151,7 @@ class ConvertUtils(BasePluginFolder):
 
         im = self._viewer.layers.selection.active.data
         name = self._viewer.layers.selection.active.name
-        semantic_labels = to_semantic(im, is_file_path=False)
+        semantic_labels = to_semantic(im)
 
         if self.results_path != "":
             imwrite(
@@ -175,7 +175,7 @@ class ConvertUtils(BasePluginFolder):
 
         for file in self.labels_filepaths:
 
-            image = to_instance(file)
+            image = to_instance(file, is_file_path=True)
 
             imwrite(
                 results_folder + "/" + os.path.basename(file),
@@ -187,7 +187,7 @@ class ConvertUtils(BasePluginFolder):
 
         im = [self._viewer.layers.selection.active.data]
         name = self._viewer.layers.selection.active.name
-        instance_labels = to_instance(im, is_file_path=False)
+        instance_labels = to_instance(im)
 
         if self.results_path != "":
             imwrite(
