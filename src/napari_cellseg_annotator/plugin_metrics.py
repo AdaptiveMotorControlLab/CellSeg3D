@@ -106,9 +106,9 @@ class MetricsUtils(BasePluginFolder):
 
         for coeff in dice_coeffs:
             if coeff < 0.5:
-                colors.append("r")
+                colors.append("#72071d") # 72071d # crimson red
             else:
-                colors.append("cyan")
+                colors.append("#8dd3c7") # 8dd3c7 # turquoise cyan
         with plt.style.context("dark_background"):
             if self.canvas is None:
                 self.canvas = FigureCanvas(Figure(figsize=(1.75, 4)))
@@ -118,15 +118,23 @@ class MetricsUtils(BasePluginFolder):
             self.canvas.figure.set_facecolor(bckgrd_color)
             dice_plot = self.canvas.figure.add_subplot(1, 1, 1)
             labels = np.array(range(len(dice_coeffs))) + 1
-            dice_plot.barh(labels, dice_coeffs)#, color=colors)
+            dice_plot.barh(labels, dice_coeffs, color=colors)
             dice_plot.set_facecolor(bckgrd_color)
-            self.canvas.draw_idle()
+
             self.plots.append(self.canvas)
+            dice_plot.axvline(0.5, color="#72071d")
+            dice_plot.set_title(f"Session {len(self.plots)}")
+            dice_plot.set_xlabel("Dice coefficient")
+            dice_plot.set_ylabel("Labels pair id")
+
+            self.canvas.draw_idle()
 
     def remove_plots(self):
         if len(self.plots) != 0:
             for p in self.plots:
                 p.setVisible(False)
+        self.plots = []
+        self.btn_reset_plot.setVisible(False)
 
     def compute_dice(self):
         # u = 0
