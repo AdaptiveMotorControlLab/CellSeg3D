@@ -23,7 +23,7 @@ TRAILMAP      An emulation in Pytorch of the `TRAILMAP project on GitHub`_
 Interface and functionalities
 --------------------------------
 
-.. image:: images/inference_plugin_layout.png
+.. image:: ../images/inference_plugin_layout.png
     :align: right
 
 * Loading data : When launching the module, you will be asked to provide an image folder containing all the volumes you'd like to be labeled.
@@ -70,12 +70,12 @@ On the left side, a progress bar and a log will keep you informed on the process
     | Feel free to change the **colormap** or **contrast** when viewing results to ensure you can properly see the labels.
     | You'll most likely want to use **3D view** and **grid mode** in napari when checking results more broadly.
 
-.. image:: images/inference_results_example.png
+.. image:: ../images/inference_results_example.png
 
 .. note::
     You can save the log after the worker is finished to easily remember which parameters you ran inference with.
 
 Source code
 --------------------------------
-* :doc:`plugin_model_inference`
-* :doc:`model_framework`
+* :doc:`../code/plugin_model_inference`
+* :doc:`../code/model_framework`

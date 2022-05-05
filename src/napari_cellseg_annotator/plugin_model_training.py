@@ -810,7 +810,7 @@ class Trainer(ModelFramework):
                 zorder=5,
             )
             self.dice_metric_plot.legend(
-                facecolor="#262930", loc="lower right"
+                facecolor=ui.napari_grey, loc="lower right"
             )
             self.canvas.draw_idle()
 

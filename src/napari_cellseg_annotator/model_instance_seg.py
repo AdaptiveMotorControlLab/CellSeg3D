@@ -91,6 +91,39 @@ def binary_watershed(
     return np.array(segm)
 
 
+def clear_small_objects(image, threshold, is_file_path=False):
+    """Calls skimage.remove_small_objects to remove small fragments that might be artifacts.
+
+    Args:
+        image: array containing the image
+        threshold:  size threshold for removal of objects in pixels. E.g. if 10, all objects smaller than 10 pixels as a whole will be removed.
+        is_file_path: if True, will load the image from a file path directly. Default : False
+
+    Returns:
+        array: The image with small objects removed
+    """
+
+    if is_file_path:
+        image = imread(image)
+
+    print(threshold)
+
+    labeled = label(image)
+
+    result = remove_small_objects(labeled, threshold)
+
+    print(np.sum(labeled))
+    print(np.sum(result))
+
+    if np.sum(labeled) == np.sum(result):
+        print("Warning : no objects were removed")
+
+    if np.amax(image) == 1:
+        result = to_semantic(result)
+
+    return result
+
+
 def to_instance(image, is_file_path=False):
     """Converts a **ground-truth** label to instance (unique id per object) labels. Does not remove small objects.
 

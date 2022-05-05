@@ -1,3 +1,6 @@
+.. _model_framework.py_models_dict:
+
+
 model_framework.py
 ====================================================
 
@@ -13,9 +16,8 @@ Methods
    :noindex:
 
 
-
 Attributes
 *********************
 
 .. autoclass:: napari_cellseg_annotator.model_framework::ModelFramework
-   :members:  _viewer, worker, docked_widgets, images_filepaths, labels_filepaths, results_path, model_path
+   :members:  _viewer,models_dict, worker, docked_widgets, images_filepaths, labels_filepaths, results_path, model_path

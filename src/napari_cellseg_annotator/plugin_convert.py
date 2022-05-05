@@ -7,6 +7,7 @@ from napari_cellseg_annotator import utils
 from napari_cellseg_annotator.model_instance_seg import (
     to_semantic,
     to_instance,
+    clear_small_objects,
 )
 from napari_cellseg_annotator.plugin_base import BasePluginFolder
 
@@ -45,6 +46,18 @@ class ConvertUtils(BasePluginFolder):
         self.btn_convert_folder_instance = ui.make_button(
             "Convert to instance labels", func=self.folder_to_instance
         )
+        self.btn_remove_small_folder = ui.make_button(
+            "Remove in folder", func=self.folder_remove_small
+        )
+        self.btn_remove_small_layer = ui.make_button(
+            "Remove in layer", func=self.layer_remove_small
+        )
+        self.small_object_thresh_choice = ui.make_n_spinboxes(
+            min=1, max=1000, default=15
+        )
+
+        self.lbl_error = ui.make_label("", self)
+        self.lbl_error.setVisible(False)
 
         self.btn_image_files.setVisible(False)
         self.lbl_image_files.setVisible(False)
@@ -85,7 +98,9 @@ class ConvertUtils(BasePluginFolder):
             R=3,
             B=3,
         )
-
+        ###############################
+        ui.add_blank(layout=layout, widget=self)
+        #############################################################
         folder_group_w, folder_group_l = ui.make_group(
             "Convert folder", l, t, r, b
         )
@@ -107,7 +122,9 @@ class ConvertUtils(BasePluginFolder):
 
         folder_group_w.setLayout(folder_group_l)
         layout.addWidget(folder_group_w)
-
+        ###############################
+        ui.add_blank(layout=layout, widget=self)
+        #############################################################
         layer_group_w, layer_group_l = ui.make_group(
             "Convert selected layer", l, t, r, b
         )
@@ -121,14 +138,38 @@ class ConvertUtils(BasePluginFolder):
 
         layer_group_w.setLayout(layer_group_l)
         layout.addWidget(layer_group_w)
+        ###############################
+        ui.add_blank(layout=layout, widget=self)
+        #############################################################
+        small_group_w, small_group_l = ui.make_group(
+            "Remove small objects", l, t, r, b
+        )
 
+        small_group_l.addWidget(
+            self.small_object_thresh_choice, alignment=ui.HCENTER_AL
+        )
+        small_group_l.addWidget(
+            self.btn_remove_small_layer, alignment=ui.HCENTER_AL
+        )
+        small_group_l.addWidget(
+            self.btn_remove_small_folder, alignment=ui.HCENTER_AL
+        )
+
+        small_group_w.setLayout(small_group_l)
+        layout.addWidget(small_group_w)
+        #############################################################
         ui.add_blank(layout=layout, widget=self)
         layout.addWidget(self.make_close_button())
 
-        ui.make_scrollable(layout, self, min_wh=[120, 100], base_wh=[120, 150])
+        ui.add_blank(layout=layout, widget=self)
+        layout.addWidget(self.lbl_error)
+
+        ui.make_scrollable(layout, self, min_wh=[230, 300], base_wh=[230, 350])
 
     def folder_to_semantic(self):
         """Converts folder of labels to semantic labels"""
+        if not self.check_ready_folder():
+            return
 
         results_folder = (
             self.results_path
@@ -148,6 +189,8 @@ class ConvertUtils(BasePluginFolder):
 
     def layer_to_semantic(self):
         """Converts selected layer to semantic labels"""
+        if not self.check_ready_layer():
+            return
 
         im = self._viewer.layers.selection.active.data
         name = self._viewer.layers.selection.active.name
@@ -165,6 +208,8 @@ class ConvertUtils(BasePluginFolder):
 
     def folder_to_instance(self):
         """Converts the chosen folder to instance labels"""
+        if not self.check_ready_folder():
+            return
 
         results_folder = (
             self.results_path
@@ -184,6 +229,8 @@ class ConvertUtils(BasePluginFolder):
 
     def layer_to_instance(self):
         """Converts the selected layer to instance labels"""
+        if not self.check_ready_layer():
+            return
 
         im = [self._viewer.layers.selection.active.data]
         name = self._viewer.layers.selection.active.name
@@ -198,3 +245,82 @@ class ConvertUtils(BasePluginFolder):
             )
 
         self._viewer.add_labels(instance_labels, name=f"converted_instance")
+
+    def layer_remove_small(self):
+        """Removes small objects in selected layer"""
+        if not self.check_ready_layer():
+            return
+
+        im = self._viewer.layers.selection.active.data
+        name = self._viewer.layers.selection.active.name
+
+        cleared_labels = clear_small_objects(
+            im, self.small_object_thresh_choice.value()
+        )
+
+        if self.results_path != "":
+            imwrite(
+                self.results_path
+                + f"/{name}_cleared_{utils.get_time_filepath()}"
+                + self.filetype_choice.currentText(),
+                cleared_labels,
+            )
+
+        self._viewer.add_labels(cleared_labels, name=f"small_cleared")
+
+    def folder_remove_small(self):
+        """Removes small objects in folder of labels"""
+        if not self.check_ready_folder():
+            return
+        results_folder = (
+            self.results_path + f"/small_cleared_{utils.get_date_time()}"
+        )
+
+        os.makedirs(results_folder, exist_ok=False)
+
+        for file in self.labels_filepaths:
+            res = clear_small_objects(
+                file,
+                self.small_object_thresh_choice.value(),
+                is_file_path=True,
+            )
+
+            imwrite(
+                results_folder + "/" + os.path.basename(file),
+                res,
+            )
+
+    def check_ready_folder(self):
+        """Check if results and source folders are set"""
+        if self.results_path == "":
+            err = "ERROR : please set results folder"
+            print(err)
+            self.lbl_error.setText(err)
+            self.lbl_error.setVisible(True)
+            return False
+        if self.labels_filepaths != [""]:
+            self.lbl_error.setVisible(False)
+            return True
+
+        err = "ERROR : please set valid source labels folder"
+        print(err)
+        self.lbl_error.setText(err)
+        self.lbl_error.setVisible(True)
+        return False
+
+    def check_ready_layer(self):
+        """Check if results and layer are selected"""
+        if self.results_path == "":
+            err = "ERROR : please set results folder"
+            print(err)
+            self.lbl_error.setText(err)
+            self.lbl_error.setVisible(True)
+            return False
+        if self._viewer.layers.selection.active is None:
+            err = "ERROR : Please select a single layer"
+            print(err)
+            self.lbl_error.setText(err)
+            self.lbl_error.setVisible(True)
+            return False
+        self.lbl_error.setVisible(False)
+        return True

@@ -13,6 +13,10 @@ binary_watershed
 **************************************
 .. autofunction:: napari_cellseg_annotator.model_instance_seg::binary_watershed
 
+clear_small_objects
+**************************************
+.. autofunction:: napari_cellseg_annotator.model_instance_seg::clear_small_objects
+
 to_instance
 **************************************
 .. autofunction:: napari_cellseg_annotator.model_instance_seg::to_instance

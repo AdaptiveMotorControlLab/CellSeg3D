@@ -39,6 +39,10 @@ BOTT_AL = Qt.AlignmentFlag.AlignBottom
 """Alias for Qt.AlignmentFlag.AlignBottom, to use in addWidget"""
 ###############
 
+dark_red = "#72071d"  # crimson red
+default_cyan = "#8dd3c7"  # turquoise cyan (default matplotlib line color under dark background context)
+napari_grey = "#262930"  # napari background color (grey)
+
 
 def add_blank(widget, layout):
     """
@@ -80,6 +84,19 @@ def open_file_dialog(
             widget, "Open directory", default_path
         )
         return filenames
+
+
+def make_label(name, parent):
+    """Creates a QLabel
+
+    Args:
+        name: string with name
+        parent: parent widget
+
+    Returns: created label
+
+    """
+    return QLabel(name, parent)
 
 
 def make_scrollable(

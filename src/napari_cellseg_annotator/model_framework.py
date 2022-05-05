@@ -43,6 +43,7 @@ class ModelFramework(BasePluginFolder):
         super().__init__(viewer)
 
         self._viewer = viewer
+        """Viewer to display the widget in"""
 
         self.model_path = ""
         """str: path to custom model defined by user"""

@@ -24,7 +24,6 @@ Folders can be stacks of either .png or .tif files, ideally numbered with the in
 
 You can then choose the size of the cropped volume, which will be constant throughout the process; make sure it is correct beforehand.
 Setting a larger size than the size of the image will cause issues.
-Support for dynamically changing the crop size might be added in the future.
 
 Once you are ready, you can press **Start** to start the review process.
 
@@ -33,7 +32,7 @@ Once you are ready, you can press **Start** to start the review process.
 Interface & functionalities
 ---------------------------------------------------------------
 
-.. image:: images/cropping_process_example.png
+.. image:: ../images/cropping_process_example.png
 
 Once you have launched the review process, you will have access to three sliders that will let
 you **change the position** of the cropped volumes and labels in the x,y and z positions.
@@ -57,5 +56,5 @@ you **change the position** of the cropped volumes and labels in the x,y and z p
 Source code
 -------------------------------------------------
 
-* :doc:`plugin_crop`
-* :doc:`plugin_base`
+* :doc:`../code/plugin_crop`
+* :doc:`../code/plugin_base`
