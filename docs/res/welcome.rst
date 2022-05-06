@@ -71,7 +71,9 @@ Then go into Plugins > napari-cellseg3d, and choose which tool to use.
 
 Acknowledgments & References
 ---------------------------------------------
-This plugin has been developed by Cyril Achard and Maxime Vidal for the `Mathis Laboratory of Adaptive Motor Control`_. We also greatly Timokleia Kousi for her contributions to this project and the `Wyss Center` for project funding.
+This plugin has been developed by Cyril Achard and Maxime Vidal for the `Mathis Laboratory of Adaptive Motor Control`_. 
+
+We also greatly thank Timokleia Kousi for her contributions to this project and the `Wyss Center`_ for project funding.
 
 The TRAILMAP models and original weights used here all originate from the `TRAILMAP project on GitHub`_ [1]_.
 
