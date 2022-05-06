@@ -34,7 +34,7 @@ Once you are ready, you can press **Run** to start the review process.
 Interface & functionalities
 ---------------------------------------------------------------
 
-.. image:: images/review_process_example.png
+.. image:: ../images/review_process_example.png
 
 Once you have launched the review process, you will have access to the following functionalities:
 
@@ -50,6 +50,6 @@ Using these, you can check your labels, correct them, save them and keep track o
 Source code
 -------------------------------------------------
 
-* :doc:`plugin_review`
-* :doc:`launch_review`
-* :doc:`plugin_base`
+* :doc:`../code/plugin_review`
+* :doc:`../code/launch_review`
+* :doc:`../code/plugin_base`

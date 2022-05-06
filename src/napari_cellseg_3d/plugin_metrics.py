@@ -102,29 +102,44 @@ class MetricsUtils(BasePluginFolder):
 
         bckgrd_color = (0, 0, 0, 0)
 
-        for coeff in dice_coeffs:
+        for coeff in dice_coeffs:  # TODO add threshold manual setting
             if coeff < 0.5:
-                colors.append("r")
+                colors.append(ui.dark_red)  # 72071d # crimson red
             else:
-                colors.append("cyan")
+                colors.append(ui.default_cyan)  # 8dd3c7 # turquoise cyan
         with plt.style.context("dark_background"):
             if self.canvas is None:
-                self.canvas = FigureCanvas(Figure(figsize=(1.75, 4)))
+                self.canvas = FigureCanvas(Figure(figsize=(2, 5)))
                 self.layout.addWidget(self.canvas)
+                self.canvas.figure.tight_layout()
             else:
                 self.dice_plot.cla()
             self.canvas.figure.set_facecolor(bckgrd_color)
             dice_plot = self.canvas.figure.add_subplot(1, 1, 1)
             labels = np.array(range(len(dice_coeffs))) + 1
-            dice_plot.barh(labels, dice_coeffs)  # , color=colors)
+
+            dice_plot.barh(labels, dice_coeffs, color=colors)
             dice_plot.set_facecolor(bckgrd_color)
-            self.canvas.draw_idle()
+
+            dice_plot.invert_yaxis()
+
             self.plots.append(self.canvas)
+            dice_plot.axvline(0.5, color=ui.dark_red)
+            dice_plot.set_title(
+                f"Session {len(self.plots)}\nMean dice : {np.mean(dice_coeffs):.4f}"
+            )
+            # dice_plot.set_xticks(rotation=45)
+            dice_plot.set_xlabel(f"Dice coefficient")
+            # dice_plot.set_ylabel("Labels pair id", rotation=90)
+
+            self.canvas.draw_idle()
 
     def remove_plots(self):
         if len(self.plots) != 0:
             for p in self.plots:
                 p.setVisible(False)
+        self.plots = []
+        self.btn_reset_plot.setVisible(False)
 
     def compute_dice(self):
         # u = 0
@@ -182,6 +197,7 @@ class MetricsUtils(BasePluginFolder):
             # self._viewer.add_image(np.rot90(pred[0][0], axes=(0,2)), name="pred flip 2", colormap="red",opacity=0.7)
             # u+=1
 
+            # TODO add rotation toggle
             pred_flip_x = np.rot90(pred[0][0], axes=(0, 1))
             pred_flip_y = np.rot90(pred[0][0], axes=(1, 2))
             pred_flip_z = np.rot90(pred[0][0], axes=(0, 2))
@@ -198,16 +214,16 @@ class MetricsUtils(BasePluginFolder):
             #         self._viewer.add_image(np.flip(pred_flip_x,axis=i), name=f"flip", colormap="green",opacity=0.7)
             #     t+=1
 
-            print(scores)
+            # print(scores)
             score = max(scores)
             if score < 0.5:
-                # TODO add filename
+                # TODO add filename ?
                 self._viewer.dims.ndisplay = 3
                 self._viewer.add_image(
-                    ground, name=f"ground_{i}", colormap="blue", opacity=0.7
+                    ground, name=f"ground_{i+1}", colormap="blue", opacity=0.7
                 )
                 self._viewer.add_image(
-                    pred, name=f"pred_{i}", colormap="red", opacity=0.7
+                    pred, name=f"pred_{i+1}", colormap="red", opacity=0.7
                 )
             total_metrics.append(score)
         print(f"DICE METRIC :{total_metrics}")

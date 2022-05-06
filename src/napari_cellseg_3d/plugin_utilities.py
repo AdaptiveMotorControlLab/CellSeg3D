@@ -27,8 +27,8 @@ class Utilities(QTabWidget):
         self.addTab(self.metrics_tab, "Metrics")
         self.addTab(self.cropping_tab, "Crop")
 
-        self.setBaseSize(220, 150)
-        self.setMinimumSize(220, 100)
+        self.setBaseSize(230, 150)
+        self.setMinimumSize(230, 100)
 
     def remove_from_viewer(self):
         self._viewer.window.remove_dock_widget(self)

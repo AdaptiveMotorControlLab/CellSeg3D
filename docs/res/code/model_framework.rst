@@ -1,3 +1,6 @@
+.. _model_framework.py_models_dict:
+
+
 model_framework.py
 ====================================================
 
@@ -11,7 +14,6 @@ Methods
 .. autoclass:: napari_cellseg_3d.model_framework::ModelFramework
    :members:  __init__,load_dataset_paths,save_log,get_model, get_loss,display_status_report,load_dataset_paths,create_train_dataset_dict, load_image_dataset, load_label_dataset,load_results_path,load_model_path,get_device, update_default, remove_from_viewer
    :noindex:
-
 
 
 Attributes

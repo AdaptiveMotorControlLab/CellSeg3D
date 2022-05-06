@@ -162,6 +162,7 @@ class BasePluginFolder(QTabWidget):
         super().__init__()
         self.parent = parent
         self._viewer = viewer
+        """Viewer to display the widget in"""
 
         self.images_filepaths = [""]
         """array(str): paths to images for training or inference"""
@@ -177,8 +178,8 @@ class BasePluginFolder(QTabWidget):
         ]
 
         self.docked_widgets = []
-        """List of docked widgets (returned by :py:func:`viewer.window.add_dock_widget()),
-        can be used to remove docked widgets`"""
+        """List of docked widgets (returned by :py:func:`viewer.window.add_dock_widget())`,
+        can be used to remove docked widgets"""
 
         #######################################################
         # interface
@@ -197,6 +198,7 @@ class BasePluginFolder(QTabWidget):
         self.filetype_choice, self.lbl_filetype = ui.make_combobox(
             [".tif", ".tiff"], label="File format"
         )
+        """Allows to choose which file will be loaded from folder"""
 
         self.btn_result_path = ui.make_button(
             "Open", self.load_results_path, self

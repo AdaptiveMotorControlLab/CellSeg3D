@@ -56,6 +56,7 @@ class Inferer(ModelFramework):
         super().__init__(viewer)
 
         self._viewer = viewer
+        """Viewer to display the widget in"""
 
         self.worker = None
         """Worker for inference, should be an InferenceWorker instance from :doc:model_workers.py"""

@@ -6,6 +6,7 @@ import numpy as np
 from magicgui import magicgui
 from magicgui.widgets import Container
 from magicgui.widgets import Slider
+
 # Qt
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QSizePolicy
