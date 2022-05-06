@@ -10,6 +10,7 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
+
 # MONAI
 from monai.losses import DiceCELoss
 from monai.losses import DiceFocalLoss
@@ -17,6 +18,7 @@ from monai.losses import DiceLoss
 from monai.losses import FocalLoss
 from monai.losses import GeneralizedDiceLoss
 from monai.losses import TverskyLoss
+
 # Qt
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QProgressBar
@@ -163,6 +165,7 @@ class Trainer(ModelFramework):
         """At which epochs to perform validation. E.g. if 2, will run validation on epochs 2,4,6..."""
         self.patch_size = []
         """The size of samples to be extracted from images"""
+        self.learning_rate = 1e-3
 
         self.model = None  # TODO : custom model loading ?
         self.worker = None
@@ -221,6 +224,20 @@ class Trainer(ModelFramework):
             default=self.val_interval
         )
         self.lbl_val_interv_choice = QLabel("Validation interval : ", self)
+
+        self.learning_rate_dict = {
+            "1e-3": 1e-3,
+            "1e-4": 1e-4,
+            "1e-5": 1e-5,
+            "1e-6": 1e-6,
+        }
+
+        (
+            self.learning_rate_choice,
+            self.lbl_learning_rate_choice,
+        ) = ui.make_combobox(
+            self.learning_rate_dict.keys(), label="Learning rate"
+        )
 
         self.augment_choice = ui.make_checkbox("Augment data")
 
@@ -528,8 +545,20 @@ class Trainer(ModelFramework):
                 r=5,
                 b=5,
             ),
-            alignment=ui.LEFT_AL,
+            # alignment=ui.LEFT_AL,
         )  # batch size
+        train_param_group_l.addWidget(
+            ui.combine_blocks(
+                self.learning_rate_choice,
+                self.lbl_learning_rate_choice,
+                min_spacing=spacing,
+                horizontal=False,
+                l=5,
+                t=5,
+                r=5,
+                b=5,
+            )
+        )  # learning rate
         train_param_group_l.addWidget(
             ui.combine_blocks(
                 self.epoch_choice,
@@ -676,6 +705,8 @@ class Trainer(ModelFramework):
             self.data = self.create_train_dataset_dict()
             self.max_epochs = self.epoch_choice.value()
 
+            self.learning_rate = self.learning_rate_dict[self.learning_rate_choice.currentText()]
+
             self.patch_size = []
             [
                 self.patch_size.append(w.value())
@@ -715,6 +746,7 @@ class Trainer(ModelFramework):
                 data_dicts=self.data,
                 max_epochs=self.max_epochs,
                 loss_function=self.get_loss(self.loss_choice.currentText()),
+                learning_rate=self.learning_rate,
                 val_interval=self.val_interval,
                 batch_size=self.batch_size,
                 results_path=self.results_path,
@@ -804,7 +836,13 @@ class Trainer(ModelFramework):
         widget.update_loss_plot(data["losses"], data["val_metrics"])
 
         if widget.stop_requested:
-            torch.save(data["weights"], os.path.join(widget.results_path, f"latest_weights_aborted_training_{utils.get_date_time()}.pth"))
+            torch.save(
+                data["weights"],
+                os.path.join(
+                    widget.results_path,
+                    f"latest_weights_aborted_training_{utils.get_date_time()}.pth",
+                ),
+            )
             widget.stop_requested = False
 
     # def clean_cache(self):

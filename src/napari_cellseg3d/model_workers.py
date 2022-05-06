@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+
 # MONAI
 from monai.data import CacheDataset
 from monai.data import DataLoader
@@ -30,6 +31,7 @@ from monai.transforms import SpatialPadd
 from monai.transforms import Zoom
 from napari.qt.threading import GeneratorWorker
 from napari.qt.threading import WorkerBaseSignals
+
 # Qt
 from qtpy.QtCore import Signal
 from tifffile import imwrite
@@ -378,6 +380,7 @@ class TrainingWorker(GeneratorWorker):
         data_dicts,
         max_epochs,
         loss_function,
+        learning_rate,
         val_interval,
         batch_size,
         results_path,
@@ -400,6 +403,8 @@ class TrainingWorker(GeneratorWorker):
             * max_epochs : the amout of epochs to train for
 
             * loss_function : the loss function to use for training
+
+            * learning_rate : the learning rate of the optimizer
 
             * val_interval : the interval at which to perform validation (e.g. if 2 will validate once every 2 epochs.) Also determines frequency of saving, depending on whether the metric is better or not
 
@@ -428,6 +433,7 @@ class TrainingWorker(GeneratorWorker):
         self.data_dicts = data_dicts
         self.max_epochs = max_epochs
         self.loss_function = loss_function
+        self.learning_rate = learning_rate
         self.val_interval = val_interval
         self.batch_size = batch_size
         self.results_path = results_path
@@ -485,6 +491,8 @@ class TrainingWorker(GeneratorWorker):
         * max_epochs : the amout of epochs to train for
 
         * loss_function : the loss function to use for training
+
+        * learning rate : the learning rate of the optimizer
 
         * val_interval : the interval at which to perform validation (e.g. if 2 will validate once every 2 epochs.) Also determines frequency of saving, depending on whether the metric is better or not
 
@@ -653,7 +661,7 @@ class TrainingWorker(GeneratorWorker):
         )
         print("\nDone")
 
-        optimizer = torch.optim.Adam(model.parameters(), 1e-3)
+        optimizer = torch.optim.Adam(model.parameters(), self.learning_rate)
         dice_metric = DiceMetric(include_background=True, reduction="mean")
 
         best_metric = -1

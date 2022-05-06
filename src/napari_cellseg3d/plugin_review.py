@@ -5,6 +5,7 @@ import napari
 import numpy as np
 import pims
 import skimage.io as io
+
 # Qt
 from qtpy import QtGui
 from qtpy.QtWidgets import QLabel

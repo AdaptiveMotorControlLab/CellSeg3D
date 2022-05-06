@@ -3,6 +3,7 @@ import warnings
 
 import napari
 import torch
+
 # Qt
 from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QProgressBar
