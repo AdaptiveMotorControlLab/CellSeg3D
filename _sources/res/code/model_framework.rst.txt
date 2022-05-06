@@ -1,4 +1,4 @@
-.. _model_framework.py_models_dict:
+.. _model_framework.py:
 
 
 model_framework.py

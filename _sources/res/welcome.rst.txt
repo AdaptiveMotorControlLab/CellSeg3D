@@ -14,13 +14,16 @@ any custom model written in Pytorch.
 
 From here you can access the guides on the several modules available for your tasks, such as :
 
-* Review : :ref:`loader_module_guide`
-* Inference: :ref:`inference_module_guide`
-* Training : :ref:`training_module_guide`
-* Cropping utility (3D) : :ref:`cropping_module_guide`
-* Convert labels : :ref:`convert_module_guide`
-* Compute scores : :ref:`metrics_module_guide`
-* Advanced : Defining custom models directly in the plugin (WIP) : :ref:`custom_model_guide`
+* Main modules :
+    * Review : :ref:`loader_module_guide`
+    * Inference: :ref:`inference_module_guide`
+    * Training : :ref:`training_module_guide`
+* Utilities :
+    * Cropping (3D) : :ref:`cropping_module_guide`
+    * Convert labels : :ref:`convert_module_guide`
+    * Compute scores : :ref:`metrics_module_guide`
+* Advanced :
+    * Defining custom models directly in the plugin (WIP) : :ref:`custom_model_guide`
 
 
 Requirements
@@ -63,10 +66,34 @@ Then go into Plugins > napari-cellseg-3d, and choose which tool to use.
 - **Review**: This module allows you to review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.
 - **Infer**: This module allows you to use pre-trained segmentation algorithms on volumes to automatically label cells.
 - **Train**:  This module allows you to train segmentation algorithms from labeled volumes.
-- **Crop utility**: This module allows you to crop your volumes and labels dynamically, by selecting a fixed size volume and moving it around the image.
+- **Utilities**: This module allows you to use several utilities, e.g. to crop your volumes and labels, compute prediction scores or convert labels
 
 
+Credits & acknowledgments
+---------------------------------------------
+This plugin has been developed by Cyril Achard and Maxime Vidal for the `Mathis Laboratory of Adaptive Motor Control`_.
 
+The TRAILMAP models and original weights used here all originate from the `TRAILMAP project on GitHub`_
+
+    **Mapping Mesoscale Axonal Projections in the Mouse Brain Using A 3D Convolutional Network**
+    *Drew Friedmann, Albert Pun, Eliza L Adams, Jan H Lui, Justus M Kebschull, Sophie M Grutzner, Caitlin Castagnola, Marc Tessier-Lavigne, Liqun Luo*
+    bioRxiv 812644; doi: https://doi.org/10.1101/812644
+
+This plugin mainly uses the following libraries and software:
+
+* `Napari website`_
+
+* `Pytorch website`_
+
+* `MONAI project website`_ (various models used here are credited `on their website`_)
+
+
+.. _Mathis Laboratory of adaptive motor control: http://www.mackenziemathislab.org/
+.. _TRAILMAP project on GitHub: https://github.com/AlbertPun/TRAILMAP
+.. _Napari website: https://napari.org/
+.. _Pytorch website: https://pytorch.org/
+.. _MONAI project website: https://monai.io/
+.. _on their website: https://docs.monai.io/en/stable/networks.html#nets
 
 
 .. rubric:: References
