@@ -1,0 +1,43 @@
+name: napari-cellseg-3d
+display_name: Cell Segmentation Annotator
+schema_version: 0.0.1
+
+contributions:
+  commands:
+  - id: napari-cellseg-3d.load
+    title: Create reviewer
+    python_name: napari_cellseg_3d.plugins:Reviewer
+
+  - id: napari-cellseg-3d.help
+    title: Create Help
+    python_name: napari_cellseg_3d.plugins:Helper
+
+  - id: napari-cellseg-3d.utils
+    title:  Create utilities
+    python_name: napari_cellseg_3d.plugins:Utilities
+
+  - id: napari-cellseg-3d.infer
+    title: Create Inferer
+    python_name: napari_cellseg_3d.plugins:Inferer
+
+  - id: napari-cellseg-3d.train
+    title: Create Trainer
+    python_name: napari_cellseg_3d.plugins:Trainer
+
+
+  widgets:
+  - command: napari-cellseg-3d.load
+    display_name: Review
+
+  - command: napari-cellseg-3d.infer
+    display_name: Inference
+
+  - command: napari-cellseg-3d.train
+    display_name: Training
+
+  - command: napari-cellseg-3d.utils
+    display_name: Utilities
+
+  - command: napari-cellseg-3d.help
+    display_name: Help/About...
+
