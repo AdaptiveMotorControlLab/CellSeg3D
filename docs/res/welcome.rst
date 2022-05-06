@@ -73,11 +73,7 @@ Credits & acknowledgments
 ---------------------------------------------
 This plugin has been developed by Cyril Achard and Maxime Vidal for the `Mathis Laboratory of Adaptive Motor Control`_.
 
-The TRAILMAP models and original weights used here all originate from the `TRAILMAP project on GitHub`_
-
-    **Mapping Mesoscale Axonal Projections in the Mouse Brain Using A 3D Convolutional Network**
-    *Drew Friedmann, Albert Pun, Eliza L Adams, Jan H Lui, Justus M Kebschull, Sophie M Grutzner, Caitlin Castagnola, Marc Tessier-Lavigne, Liqun Luo*
-    bioRxiv 812644; doi: https://doi.org/10.1101/812644
+The TRAILMAP models and original weights used here all originate from the `TRAILMAP project on GitHub`_ [1]_
 
 This plugin mainly uses the following libraries and software:
 
