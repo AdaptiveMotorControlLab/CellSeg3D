@@ -91,5 +91,5 @@ venv/
 ########
 #project specific
 #dataset
-/src/napari_cellseg_3d/models/dataset/
-/src/napari_cellseg_3d/models/saved_weights/
+/src/napari_cellseg3d/models/dataset/
+/src/napari_cellseg3d/models/saved_weights/

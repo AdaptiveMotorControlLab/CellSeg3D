@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# napari-cellseg-3d documentation build configuration file, created by
+# napari-cellseg3d documentation build configuration file, created by
 # sphinx-quickstart on Thu Oct  1 00:43:18 2015.
 #
 # This file is execfile()d with the current directory set to its
@@ -51,7 +51,7 @@ source_suffix = ".rst"
 main_doc = "index"
 
 # General information about the project.
-project = "napari-cellseg-3d"
+project = "napari-cellseg3d"
 copyright = "2022, Cyril Achard, Maxime Vidal"
 author = "Cyril Achard, Maxime Vidal"
 
@@ -266,7 +266,7 @@ man_pages = [
     (
         main_doc,
         "napari-cookiecutterplugin_name",
-        "napari-cellseg-3d Documentation",
+        "napari-cellseg3d Documentation",
         [author],
         1,
     )
@@ -285,7 +285,7 @@ texinfo_documents = [
     (
         main_doc,
         "napari-cookiecutterplugin_name",
-        "napari-cellseg-3d Documentation",
+        "napari-cellseg3d Documentation",
         author,
         "napari-cookiecutterplugin_name",
         "One line description of project.",

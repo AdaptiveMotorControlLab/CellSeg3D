@@ -10,7 +10,7 @@ Class : LogSignal
 
 Attributes
 ************************
-.. autoclass:: napari_cellseg_3d.model_workers::LogSignal
+.. autoclass:: napari_cellseg3d.model_workers::LogSignal
    :members: log_signal
    :noindex:
 
@@ -24,7 +24,7 @@ Class : InferenceWorker
 
 Methods
 ************************
-.. autoclass:: napari_cellseg_3d.model_workers::InferenceWorker
+.. autoclass:: napari_cellseg3d.model_workers::InferenceWorker
    :members: __init__, log, create_inference_dict, inference
    :noindex:
 
@@ -39,7 +39,7 @@ Class : TrainingWorker
 
 Methods
 ************************
-.. autoclass:: napari_cellseg_3d.model_workers::TrainingWorker
+.. autoclass:: napari_cellseg3d.model_workers::TrainingWorker
    :members: __init__, log, train
    :noindex:
 
