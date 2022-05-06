@@ -1,11 +1,11 @@
 Introduction
 ===================
 
-Welcome to napari-cellseg-3d !
+Welcome to napari-cellseg3d !
 --------------------------------------------
 
 Here you will find instructions on how to use the program.
-If the installation was successful, you'll see the napari-cellseg-3d plugin
+If the installation was successful, you'll see the napari-cellseg3d plugin
 in the Plugins section of napari.
 
 This plugin is intended for the review of labeled cell volumes [#]_ from mice whole-brain samples
@@ -44,9 +44,9 @@ Requires manual installation of pytorch and some optional dependencies of MONAI.
 Installation
 --------------------------------------------
 
-You can install `napari-cellseg-3d` via [pip]:
+You can install `napari-cellseg3d` via [pip]:
 
-    ``pip install napari-cellseg-3d``
+    ``pip install napari-cellseg3d``
 
 For local installation, please run:
 
@@ -61,7 +61,7 @@ To use the plugin, please run:
 
     ``napari``
 
-Then go into Plugins > napari-cellseg-3d, and choose which tool to use.
+Then go into Plugins > napari-cellseg3d, and choose which tool to use.
 
 - **Review**: This module allows you to review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.
 - **Infer**: This module allows you to use pre-trained segmentation algorithms on volumes to automatically label cells.

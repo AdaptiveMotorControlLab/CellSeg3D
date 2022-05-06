@@ -1,11 +1,11 @@
-# napari-cellseg-3d
+# napari-cellseg3d
 
-[![License](https://img.shields.io/pypi/l/napari-cellseg-3d.svg?color=green)](https://github.com/C_Achard/napari-cellseg-3d/raw/main/LICENSE)
-[![PyPI](https://img.shields.io/pypi/v/napari-cellseg-3d.svg?color=green)](https://pypi.org/project/napari-cellseg-3d)
-[![Python Version](https://img.shields.io/pypi/pyversions/napari-cellseg-3d.svg?color=green)](https://python.org)
-[![tests](https://github.com/C_Achard/napari-cellseg-3d/workflows/tests/badge.svg)](https://github.com/C_Achard/napari-cellseg-3d/actions)
-[![codecov](https://codecov.io/gh/C_Achard/napari-cellseg-3d/branch/main/graph/badge.svg)](https://codecov.io/gh/C_Achard/napari-cellseg-3d)
-[![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-cellseg-3d)](https://napari-hub.org/plugins/napari-cellseg-3d)
+[![License](https://img.shields.io/pypi/l/napari-cellseg3d.svg?color=green)](https://github.com/C_Achard/napari-cellseg3d/raw/main/LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/napari-cellseg3d.svg?color=green)](https://pypi.org/project/napari-cellseg3d)
+[![Python Version](https://img.shields.io/pypi/pyversions/napari-cellseg3d.svg?color=green)](https://python.org)
+[![tests](https://github.com/C_Achard/napari-cellseg3d/workflows/tests/badge.svg)](https://github.com/C_Achard/napari-cellseg3d/actions)
+[![codecov](https://codecov.io/gh/C_Achard/napari-cellseg3d/branch/main/graph/badge.svg)](https://codecov.io/gh/C_Achard/napari-cellseg3d)
+[![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-cellseg3d)](https://napari-hub.org/plugins/napari-cellseg3d)
 
 plugin for cell segmentation
 
@@ -32,9 +32,9 @@ If you get errors from MONAI regarding missing readers, please see [MONAI's opti
 
 ## Installation
 
-You can install `napari-cellseg-3d` via [pip]:
+You can install `napari-cellseg3d` via [pip]:
 
-    pip install napari-cellseg-3d
+    pip install napari-cellseg3d
 
 For local installation, please run:
 
@@ -52,7 +52,7 @@ To use the plugin, please run:
 ```
 napari
 ```
-Then go into Plugins > napari-cellseg-3d, and choose which tool to use.
+Then go into Plugins > napari-cellseg3d, and choose which tool to use.
 
 - **Review**: This module allows you to review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.
 - **Infer**: This module allows you to use pre-trained segmentation algorithms on volumes to automatically label cells.
@@ -75,7 +75,7 @@ the coverage at least stays the same before you submit a pull request.
 ## License
 
 Distributed under the terms of the [MIT] license,
-"napari-cellseg-3d" is free and open source software
+"napari-cellseg3d" is free and open source software
 
 ## Issues
 
