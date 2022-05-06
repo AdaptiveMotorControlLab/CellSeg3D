@@ -6,7 +6,7 @@ Datamanager
 
 Methods
 **********************
-.. autoclass:: napari_cellseg_annotator.plugin_dock::Datamanager
+.. autoclass:: napari_cellseg_3d.plugin_dock::Datamanager
    :members:  __init__, prepare, update, load_csv, create
    :noindex:
 
@@ -17,7 +17,7 @@ Methods
 Attributes
 *********************
 
-.. autoclass:: napari_cellseg_annotator.plugin_dock::Datamanager
+.. autoclass:: napari_cellseg_3d.plugin_dock::Datamanager
    :members:  viewer
 
 

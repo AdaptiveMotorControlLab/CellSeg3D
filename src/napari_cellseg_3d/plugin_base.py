@@ -6,7 +6,7 @@ from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QTabWidget
 
-from napari_cellseg_annotator import interface as ui
+from napari_cellseg_3d import interface as ui
 
 
 class BasePluginSingleImage(QTabWidget):

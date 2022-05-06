@@ -1,5 +1,4 @@
 from monai.networks.nets import SegResNetVAE
-from monai.transforms import AsDiscrete
 
 
 def get_net():

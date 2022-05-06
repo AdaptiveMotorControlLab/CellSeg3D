@@ -2,13 +2,13 @@ import os
 
 from tifffile import imwrite
 
-import napari_cellseg_annotator.interface as ui
-from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.model_instance_seg import (
+import napari_cellseg_3d.interface as ui
+from napari_cellseg_3d import utils
+from napari_cellseg_3d.model_instance_seg import (
     to_semantic,
     to_instance,
 )
-from napari_cellseg_annotator.plugin_base import BasePluginFolder
+from napari_cellseg_3d.plugin_base import BasePluginFolder
 
 
 class ConvertUtils(BasePluginFolder):

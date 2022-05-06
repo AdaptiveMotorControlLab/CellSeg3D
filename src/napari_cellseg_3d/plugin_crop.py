@@ -12,9 +12,9 @@ from qtpy.QtWidgets import QSizePolicy
 from tifffile import imwrite
 
 # local
-from napari_cellseg_annotator import interface as ui
-from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.plugin_base import BasePluginSingleImage
+from napari_cellseg_3d import interface as ui
+from napari_cellseg_3d import utils
+from napari_cellseg_3d.plugin_base import BasePluginSingleImage
 
 DEFAULT_CROP_SIZE = 64
 

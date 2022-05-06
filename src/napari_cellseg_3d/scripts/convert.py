@@ -8,8 +8,8 @@ from tifffile import imwrite
 # input_seg_path = "C:/Users/Cyril/Desktop/Proj_bachelor/code/pytorch-test-3dunet/cropped_visual/train/lab"
 # output_seg_path = "C:/Users/Cyril/Desktop/Proj_bachelor/code/pytorch-test-3dunet/cropped_visual/train/lab_sem"
 
-input_seg_path = "C:/Users/Cyril/Desktop/Proj_bachelor/code/cellseg-annotator-test/src/napari_cellseg_annotator/models/dataset/labels"
-output_seg_path = "C:/Users/Cyril/Desktop/Proj_bachelor/code/cellseg-annotator-test/src/napari_cellseg_annotator/models/dataset/lab_sem"
+input_seg_path = "C:/Users/Cyril/Desktop/Proj_bachelor/code/cellseg-annotator-test/src/napari_cellseg_3d/models/dataset/labels"
+output_seg_path = "C:/Users/Cyril/Desktop/Proj_bachelor/code/cellseg-annotator-test/src/napari_cellseg_3d/models/dataset/lab_sem"
 
 filenames = []
 paths = []

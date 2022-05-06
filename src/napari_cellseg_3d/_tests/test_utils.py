@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 import torch
 
-from napari_cellseg_annotator import utils
+from napari_cellseg_3d import utils
 
 
 def test_align_array_sizes():

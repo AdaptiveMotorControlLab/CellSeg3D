@@ -1,16 +1,14 @@
 import os
 import warnings
-
 # import shutil
 from pathlib import Path
 
 import pandas as pd
-
 # Qt
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
-from napari_cellseg_annotator import interface as ui
+from napari_cellseg_3d import interface as ui
 
 GUI_MAXIMUM_WIDTH = 225
 GUI_MAXIMUM_HEIGHT = 350

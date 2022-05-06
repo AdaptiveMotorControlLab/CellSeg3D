@@ -3,20 +3,20 @@ import warnings
 
 import napari
 import torch
-
 # Qt
 from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QProgressBar
 from qtpy.QtWidgets import QSizePolicy
 
 # local
-from napari_cellseg_annotator import interface as ui
-from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.log_utility import Log
-from napari_cellseg_annotator.models import TRAILMAP_test as TMAP
-from napari_cellseg_annotator.models import model_SegResNet as SegResNet
-from napari_cellseg_annotator.models import model_VNet as VNet
-from napari_cellseg_annotator.plugin_base import BasePluginFolder
+from napari_cellseg_3d import interface as ui
+from napari_cellseg_3d import utils
+from napari_cellseg_3d.log_utility import Log
+from napari_cellseg_3d.models import TRAILMAP_test as TMAP
+from napari_cellseg_3d.models import model_SegResNet as SegResNet
+from napari_cellseg_3d.models import model_TRAILMAP as TRAILMAP
+from napari_cellseg_3d.models import model_VNet as VNet
+from napari_cellseg_3d.plugin_base import BasePluginFolder
 
 warnings.formatwarning = utils.format_Warning
 
@@ -46,11 +46,14 @@ class ModelFramework(BasePluginFolder):
 
         self.model_path = ""
         """str: path to custom model defined by user"""
+        self.weights_path = ""
+        """str : path to custom weights defined by user"""
 
         self._default_path = [
             self.images_filepaths,
             self.labels_filepaths,
             self.model_path,
+            self.weights_path,
             self.results_path,
         ]
         """Update defaults from PluginBaseFolder with model_path"""
@@ -58,6 +61,7 @@ class ModelFramework(BasePluginFolder):
         self.models_dict = {
             "VNet": VNet,
             "SegResNet": SegResNet,
+            "TRAILMAP pre-trained": TRAILMAP,
             "TRAILMAP test": TMAP,
         }
         """dict: dictionary of available models, with string for widget display as key
@@ -72,7 +76,7 @@ class ModelFramework(BasePluginFolder):
 
         # TODO : implement custom model
         self.btn_model_path = ui.make_button(
-            "Open", self.load_label_dataset, self
+            "Open", self.load_model_path, self
         )
         self.lbl_model_path = QLineEdit("Model directory", self)
         self.lbl_model_path.setReadOnly(True)
@@ -80,6 +84,22 @@ class ModelFramework(BasePluginFolder):
         self.model_choice, self.lbl_model_choice = ui.make_combobox(
             sorted(self.models_dict.keys()), label="Model name"
         )
+
+        self.btn_weights_path = ui.make_button(
+            "Open", self.load_weights_path, self
+        )
+        self.lbl_weights_path = QLineEdit("Weights directory", self)
+        self.lbl_weights_path.setReadOnly(True)
+
+        self.weights_path_container = ui.combine_blocks(
+            self.btn_weights_path, self.lbl_weights_path
+        )
+        self.weights_path_container.setVisible(False)
+
+        self.custom_weights_choice = ui.make_checkbox(
+            "Load custom weights", self.toggle_weights_path, self
+        )
+
         ###################################################
         # status report docked widget
         (
@@ -177,6 +197,12 @@ class ModelFramework(BasePluginFolder):
         self.btn_save_log.setVisible(True)
         self.progress.setValue(0)
 
+    def toggle_weights_path(self):
+        if self.custom_weights_choice.isChecked():
+            self.weights_path_container.setVisible(True)
+        else:
+            self.weights_path_container.setVisible(False)
+
     def create_train_dataset_dict(self):
         """Creates data dictionary for MONAI transforms and training.
 
@@ -219,6 +245,16 @@ class ModelFramework(BasePluginFolder):
         if dir != "" and type(dir) is str and os.path.isdir(dir):
             self.model_path = dir
             self.lbl_model_path.setText(self.results_path)
+            # self.update_default()
+
+    def load_weights_path(self):
+        """Show file dialog to set :py:attr:`model_path`"""
+        file = ui.open_file_dialog(
+            self, self._default_path, filetype="Weights file (*.pth)"
+        )
+        if file != "":
+            self.weights_path = file[0]
+            self.lbl_weights_path.setText(self.weights_path)
             self.update_default()
 
     @staticmethod

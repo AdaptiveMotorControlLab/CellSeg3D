@@ -11,7 +11,7 @@ Class : Cropping
 
 Methods
 **********************
-.. autoclass:: napari_cellseg_annotator.plugin_crop::Cropping
+.. autoclass:: napari_cellseg_3d.plugin_crop::Cropping
    :members:  __init__, start, quicksave, build, remove_from_viewer
    :noindex:
 
@@ -21,7 +21,7 @@ Methods
 Attributes
 *********************
 
-.. autoclass:: napari_cellseg_annotator.plugin_crop::Cropping
+.. autoclass:: napari_cellseg_3d.plugin_crop::Cropping
    :members:  _viewer, image_path, label_path, filetype
 
 

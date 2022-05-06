@@ -1,7 +1,5 @@
 from monai.inferers import sliding_window_inference
 from monai.networks.nets import VNet
-from monai.transforms import AsDiscrete
-from monai.transforms import LabelToMask
 
 
 def get_net():

@@ -12,8 +12,8 @@ from qtpy.QtWidgets import QSizePolicy
 from scipy import ndimage
 from tifffile import imwrite
 
-from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.plugin_dock import Datamanager
+from napari_cellseg_3d import utils
+from napari_cellseg_3d.plugin_dock import Datamanager
 
 
 def launch_review(

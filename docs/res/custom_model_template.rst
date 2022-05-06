@@ -3,7 +3,7 @@
 Advanced : Declaring a custom model
 =============================================
 
-To add a custom model, you will need a **.py** file with the following structure to be placed in the *src/napari_cellseg_annotator/models* folder:
+To add a custom model, you will need a **.py** file with the following structure to be placed in the *src/napari_cellseg_3d/models* folder:
 
 
 ::
@@ -15,7 +15,7 @@ To add a custom model, you will need a **.py** file with the following structure
 
     def get_weights_file():
         return "weights_file.pth" # name of the weights file for the model,
-        # which should be in *src/napari_cellseg_annotator/models/saved_weights*
+        # which should be in *src/napari_cellseg_3d/models/saved_weights*
 
 
     def get_output(model, input):

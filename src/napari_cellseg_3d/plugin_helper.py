@@ -1,19 +1,19 @@
 import napari
-
 # Qt
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
 # local
-from napari_cellseg_annotator import interface as ui
+from napari_cellseg_3d import interface as ui
 
 
 class Helper(QWidget):
     # widget testing
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
-        # self.master = parent
+
+        # TODO change url after renaming, moving and redeploying docs
         self.help_url = "https://c-achard.github.io/cellseg-annotator-test/"  # "https://github.com/C-Achard/cellseg-annotator-test/tree/main"
 
         self.about_url = "https://wysscenter.ch/advances/3d-computer-vision-for-brain-analysis"

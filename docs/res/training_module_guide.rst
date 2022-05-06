@@ -4,7 +4,7 @@ Training module guide
 =================================
 
 This module allows you to train pre-defined Pytorch models for cell segmentation.
-Pre-defined models are stored in napari-cellseg-annotator/models.
+Pre-defined models are stored in napari-cellseg-3d/models.
 
 .. important::
     The machine learning models used by this program require all images of a dataset to all be of the same size.

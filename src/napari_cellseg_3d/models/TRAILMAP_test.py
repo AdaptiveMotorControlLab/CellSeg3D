@@ -1,5 +1,4 @@
 import torch
-from monai.transforms import AsDiscrete
 from torch import nn
 
 

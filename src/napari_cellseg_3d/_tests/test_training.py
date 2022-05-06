@@ -1,4 +1,4 @@
-from napari_cellseg_annotator import plugin_model_training as train
+from napari_cellseg_3d import plugin_model_training as train
 
 
 def test_check_ready(make_napari_viewer):

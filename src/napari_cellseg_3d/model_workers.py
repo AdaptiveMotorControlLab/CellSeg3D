@@ -4,7 +4,6 @@ from pathlib import Path
 
 import numpy as np
 import torch
-
 # MONAI
 from monai.data import CacheDataset
 from monai.data import DataLoader
@@ -31,13 +30,12 @@ from monai.transforms import SpatialPadd
 from monai.transforms import Zoom
 from napari.qt.threading import GeneratorWorker
 from napari.qt.threading import WorkerBaseSignals
-
 # Qt
 from qtpy.QtCore import Signal
 from tifffile import imwrite
 
 # local
-from napari_cellseg_annotator import utils
+from napari_cellseg_3d import utils
 
 """
 Writing something to log messages from outside the main thread is rather problematic (plenty of silent crashes...)
@@ -76,7 +74,7 @@ class InferenceWorker(GeneratorWorker):
         self,
         device,
         model_dict,
-        weights,
+        weights_dict,
         images_filepaths,
         results_path,
         filetype,
@@ -90,7 +88,7 @@ class InferenceWorker(GeneratorWorker):
 
             * model_dict: the :py:attr:`~self.models_dict` dictionary to obtain the model name, class and instance
 
-            * weights: the loaded weights from the model
+            * weights_dict: dict with "custom" : bool to use custom weights or not; "path" : the path to weights if custom or name of the file if not custom
 
             * images_filepaths: the paths to the images of the dataset
 
@@ -112,7 +110,7 @@ class InferenceWorker(GeneratorWorker):
         ###########################################
         self.device = device
         self.model_dict = model_dict
-        self.weights = weights
+        self.weights_dict = weights_dict
         self.images_filepaths = images_filepaths
         self.results_path = results_path
         self.filetype = filetype
@@ -241,9 +239,15 @@ class InferenceWorker(GeneratorWorker):
         # print(f"wh dir : {WEIGHTS_DIR}")
         # print(weights)
         self.log("\nLoading weights...")
+
+        if self.weights_dict["custom"]:
+            weights = self.weights_dict["path"]
+        else:
+            weights = os.path.join(WEIGHTS_DIR, self.weights_dict["path"])
+
         model.load_state_dict(
             torch.load(
-                os.path.join(WEIGHTS_DIR, self.weights),
+                weights,
                 map_location=self.device,
             )
         )
@@ -370,6 +374,7 @@ class TrainingWorker(GeneratorWorker):
         self,
         device,
         model_dict,
+        weights_path,
         data_dicts,
         max_epochs,
         loss_function,
@@ -387,6 +392,8 @@ class TrainingWorker(GeneratorWorker):
             * device : device to train on, cuda or cpu
 
             * model_dict : dict containing the model's "name" and "class"
+
+            * weights_path : path to weights files if transfer learning is to be used
 
             * data_dicts : dict from :py:func:`Trainer.create_train_dataset_dict`
 
@@ -417,6 +424,7 @@ class TrainingWorker(GeneratorWorker):
 
         self.device = device
         self.model_dict = model_dict
+        self.weights_path = weights_path
         self.data_dicts = data_dicts
         self.max_epochs = max_epochs
         self.loss_function = loss_function
@@ -456,6 +464,9 @@ class TrainingWorker(GeneratorWorker):
         if self.do_augment:
             self.log("Data augmentation is enabled")
 
+        if self.weights_path is not None:
+            self.log(f"Using weights from : {self.weights_path}")
+
     def train(self):
         """Trains the Pytorch model for the given number of epochs, with the selected model and data,
         using the chosen batch size, validation interval, loss function, and number of samples.
@@ -466,6 +477,8 @@ class TrainingWorker(GeneratorWorker):
         * device : device to train on, cuda or cpu
 
         * model_dict : dict containing the model's "name" and "class"
+
+        * weights_path : path to weights files if transfer learning is to be used
 
         * data_dicts : dict from :py:func:`Trainer.create_train_dataset_dict`
 
@@ -647,6 +660,21 @@ class TrainingWorker(GeneratorWorker):
         best_metric_epoch = -1
 
         # time = utils.get_date_time()
+
+        if self.weights_path is not None:
+            if self.weights_path == "use_pretrained":
+                weights_file = model_class.get_weights_file()
+                weights = os.path.join(WEIGHTS_DIR, weights_file)
+                self.weights_path = weights
+            else:
+                weights = os.path.join(self.weights_path)
+
+            model.load_state_dict(
+                torch.load(
+                    weights,
+                    map_location=self.device,
+                )
+            )
 
         if self.device.type == "cuda":
             self.log("\nUsing GPU :")

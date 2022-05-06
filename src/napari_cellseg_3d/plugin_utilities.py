@@ -1,13 +1,11 @@
 import napari
-
 # Qt
 from qtpy.QtWidgets import QTabWidget
 
-from napari_cellseg_annotator.plugin_convert import ConvertUtils
-
+from napari_cellseg_3d.plugin_convert import ConvertUtils
 # local
-from napari_cellseg_annotator.plugin_crop import Cropping
-from napari_cellseg_annotator.plugin_metrics import MetricsUtils
+from napari_cellseg_3d.plugin_crop import Cropping
+from napari_cellseg_3d.plugin_metrics import MetricsUtils
 
 
 class Utilities(QTabWidget):

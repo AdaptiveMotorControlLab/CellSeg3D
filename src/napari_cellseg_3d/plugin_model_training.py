@@ -9,7 +9,6 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
-
 # MONAI
 from monai.losses import DiceCELoss
 from monai.losses import DiceFocalLoss
@@ -17,17 +16,16 @@ from monai.losses import DiceLoss
 from monai.losses import FocalLoss
 from monai.losses import GeneralizedDiceLoss
 from monai.losses import TverskyLoss
-
 # Qt
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QProgressBar
 from qtpy.QtWidgets import QSizePolicy
 
 # local
-from napari_cellseg_annotator import interface as ui
-from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.model_framework import ModelFramework
-from napari_cellseg_annotator.model_workers import TrainingWorker
+from napari_cellseg_3d import interface as ui
+from napari_cellseg_3d import utils
+from napari_cellseg_3d.model_framework import ModelFramework
+from napari_cellseg_3d.model_workers import TrainingWorker
 
 NUMBER_TABS = 3
 
@@ -246,6 +244,10 @@ class Trainer(ModelFramework):
         )
         self.patch_choice.clicked.connect(self.toggle_patch_dims)
 
+        self.use_transfer_choice = ui.make_checkbox(
+            "Transfer weights", self.toggle_transfer_param
+        )
+
         self.progress = QProgressBar()
         self.progress.setVisible(False)
         """Dock widget containing the progress bar"""
@@ -270,6 +272,12 @@ class Trainer(ModelFramework):
             self.sample_choice.setVisible(False)
             self.lbl_sample_choice.setVisible(False)
             self.sampling_container.setVisible(False)
+
+    def toggle_transfer_param(self):
+        if self.use_transfer_choice.isChecked():
+            self.custom_weights_choice.setVisible(True)
+        else:
+            self.custom_weights_choice.setVisible(False)
 
     def check_ready(self):
         """
@@ -367,7 +375,24 @@ class Trainer(ModelFramework):
         data_group.setLayout(data_layout)
         data_tab_layout.addWidget(data_group, alignment=ui.LEFT_AL)
         # end of first group : Data
+        ################
         ui.add_blank(widget=data_tab, layout=data_tab_layout)
+        ################
+        transfer_group_w, transfer_group_l = ui.make_group("Transfer learning")
+
+        transfer_group_l.addWidget(
+            self.use_transfer_choice, alignment=ui.LEFT_AL
+        )
+        transfer_group_l.addWidget(
+            self.custom_weights_choice, alignment=ui.LEFT_AL
+        )
+        self.custom_weights_choice.setVisible(False)
+        transfer_group_l.addWidget(
+            self.weights_path_container, alignment=ui.LEFT_AL
+        )
+
+        transfer_group_w.setLayout(transfer_group_l)
+        data_tab_layout.addWidget(transfer_group_w, alignment=ui.LEFT_AL)
         ################
         ui.add_blank(self, data_tab_layout)
         ################
@@ -660,6 +685,14 @@ class Trainer(ModelFramework):
                 + f"/{model_dict['name']}_results_{utils.get_date_time()}"
             )
 
+            if self.use_transfer_choice.isChecked():
+                if self.custom_weights_choice.isChecked():
+                    weights_path = self.weights_path
+                else:
+                    weights_path = "use_pretrained"
+            else:
+                weights_path = None
+
             os.makedirs(
                 self.results_path, exist_ok=False
             )  # avoid overwrite where possible
@@ -671,6 +704,7 @@ class Trainer(ModelFramework):
             self.worker = TrainingWorker(
                 device=self.get_device(),
                 model_dict=model_dict,
+                weights_path=weights_path,
                 data_dicts=self.data,
                 max_epochs=self.max_epochs,
                 loss_function=self.get_loss(self.loss_choice.currentText()),

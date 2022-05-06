@@ -2,18 +2,17 @@ import os
 import warnings
 
 import napari
-
 # Qt
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QWidget
 
 # local
-from napari_cellseg_annotator import interface as ui
-from napari_cellseg_annotator import model_instance_seg as inst_seg
-from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.model_framework import ModelFramework
-from napari_cellseg_annotator.model_workers import InferenceWorker
+from napari_cellseg_3d import interface as ui
+from napari_cellseg_3d import model_instance_seg as inst_seg
+from napari_cellseg_3d import utils
+from napari_cellseg_3d.model_framework import ModelFramework
+from napari_cellseg_3d.model_workers import InferenceWorker
 
 
 class Inferer(ModelFramework):
@@ -269,15 +268,26 @@ class Inferer(ModelFramework):
         #################################
         # model group
 
-        ui.make_group(
+        model_group_w, model_group_l = ui.make_group(
             "Model choice",
             L,
             T,
             R,
             B,
-            solo_dict={"widget": self.model_choice, "layout": tab_layout},
         )  # model choice
-        self.lbl_model_choice.setVisible(False)
+
+        model_group_l.addWidget(self.model_choice, alignment=ui.LEFT_AL)
+        model_group_l.addWidget(
+            self.custom_weights_choice, alignment=ui.LEFT_AL
+        )
+        model_group_l.addWidget(
+            self.weights_path_container, alignment=ui.LEFT_AL
+        )
+        self.weights_path_container.setVisible(False)
+        self.lbl_model_choice.setVisible(False)  # TODO remove
+
+        model_group_w.setLayout(model_group_l)
+        tab_layout.addWidget(model_group_w, alignment=ui.LEFT_AL)
 
         #################################
         #################################
@@ -424,7 +434,13 @@ class Inferer(ModelFramework):
                 "class": self.get_model(model_key),
             }
 
-            weights = self.get_model(model_key).get_weights_file()
+            if self.custom_weights_choice.isChecked():
+                weights_dict = {"custom": True, "path": self.weights_path}
+            else:
+                weights_dict = {
+                    "custom": False,
+                    "path": self.get_model(model_key).get_weights_file(),
+                }
 
             if self.aniso_checkbox.isChecked():
                 self.aniso_resolutions = [
@@ -477,7 +493,7 @@ class Inferer(ModelFramework):
             self.worker = InferenceWorker(
                 device=device,
                 model_dict=model_dict,
-                weights=weights,
+                weights_dict=weights_dict,
                 images_filepaths=self.images_filepaths,
                 results_path=self.results_path,
                 filetype=self.filetype_choice.currentText(),

@@ -17,7 +17,7 @@ from qtpy.QtWidgets import QSpinBox
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
-from napari_cellseg_annotator import utils
+from napari_cellseg_3d import utils
 
 """
 User interface functions and aliases"""
@@ -57,7 +57,10 @@ def add_blank(widget, layout):
 
 
 def open_file_dialog(
-    widget, possible_paths=[""], load_as_folder: bool = False
+    widget,
+    possible_paths=[""],
+    load_as_folder: bool = False,
+    filetype: str = "Image file (*.tif *.tiff)",
 ):
     """Opens a window to choose a file directory using QFileDialog.
 
@@ -66,12 +69,13 @@ def open_file_dialog(
         possible_paths (str): Paths that may have been chosen before, can be a string
         or an array of strings containing the paths
         load_as_folder (bool): Whether to open a folder or a single file. If True, will allow to open folder as a single file (2D stack interpreted as 3D)
+        filetype (str): The description and file extension to load (format : "{Description (*.example1 *.example2)}. Default "Image file (*.tif *.tiff)"
     """
 
     default_path = utils.parse_default_path(possible_paths)
     if not load_as_folder:
         f_name = QFileDialog.getOpenFileName(
-            widget, "Choose file", default_path, "Image file (*.tif *.tiff)"
+            widget, "Choose file", default_path, filetype
         )
         return f_name
     else:

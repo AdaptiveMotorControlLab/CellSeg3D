@@ -5,7 +5,6 @@ import napari
 import numpy as np
 import pims
 import skimage.io as io
-
 # Qt
 from qtpy import QtGui
 from qtpy.QtWidgets import QLabel
@@ -13,10 +12,10 @@ from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QSizePolicy
 
 # local
-from napari_cellseg_annotator import interface as ui
-from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.launch_review import launch_review
-from napari_cellseg_annotator.plugin_base import BasePluginSingleImage
+from napari_cellseg_3d import interface as ui
+from napari_cellseg_3d import utils
+from napari_cellseg_3d.launch_review import launch_review
+from napari_cellseg_3d.plugin_base import BasePluginSingleImage
 
 warnings.formatwarning = utils.format_Warning
 

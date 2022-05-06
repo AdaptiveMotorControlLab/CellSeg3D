@@ -7,10 +7,10 @@ from matplotlib.figure import Figure
 from monai.transforms import SpatialPad, ToTensor
 from tifffile import imread
 
-from napari_cellseg_annotator import interface as ui
-from napari_cellseg_annotator import utils
-from napari_cellseg_annotator.model_instance_seg import to_semantic
-from napari_cellseg_annotator.plugin_base import BasePluginFolder
+from napari_cellseg_3d import interface as ui
+from napari_cellseg_3d import utils
+from napari_cellseg_3d.model_instance_seg import to_semantic
+from napari_cellseg_3d.plugin_base import BasePluginFolder
 
 
 class MetricsUtils(BasePluginFolder):
@@ -45,12 +45,12 @@ class MetricsUtils(BasePluginFolder):
             # ground_directory = "C:/Users/Cyril/Desktop/test/labels"
             pred_directory = "C:/Users/Cyril/Desktop/test/pred"
             # pred_directory = "C:/Users/Cyril/Desktop/test"
-            self.images_filepaths = sorted(glob.glob(
-                os.path.join(ground_directory, "*.tif")
-            ))
-            self.labels_filepaths = sorted(glob.glob(
-                os.path.join(pred_directory, "*.tif")
-            ))
+            self.images_filepaths = sorted(
+                glob.glob(os.path.join(ground_directory, "*.tif"))
+            )
+            self.labels_filepaths = sorted(
+                glob.glob(os.path.join(pred_directory, "*.tif"))
+            )
         ###############################################################################
 
     def build(self):
@@ -102,8 +102,6 @@ class MetricsUtils(BasePluginFolder):
 
         bckgrd_color = (0, 0, 0, 0)
 
-
-
         for coeff in dice_coeffs:
             if coeff < 0.5:
                 colors.append("r")
@@ -118,7 +116,7 @@ class MetricsUtils(BasePluginFolder):
             self.canvas.figure.set_facecolor(bckgrd_color)
             dice_plot = self.canvas.figure.add_subplot(1, 1, 1)
             labels = np.array(range(len(dice_coeffs))) + 1
-            dice_plot.barh(labels, dice_coeffs)#, color=colors)
+            dice_plot.barh(labels, dice_coeffs)  # , color=colors)
             dice_plot.set_facecolor(bckgrd_color)
             self.canvas.draw_idle()
             self.plots.append(self.canvas)

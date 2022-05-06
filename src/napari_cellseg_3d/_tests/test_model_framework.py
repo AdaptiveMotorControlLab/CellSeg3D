@@ -1,4 +1,4 @@
-from napari_cellseg_annotator import model_framework
+from napari_cellseg_3d import model_framework
 
 
 def test_update_default(make_napari_viewer):

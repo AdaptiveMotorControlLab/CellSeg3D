@@ -3,7 +3,7 @@ from pathlib import Path
 
 from tifffile import imread
 
-from napari_cellseg_annotator.plugin_dock import Datamanager
+from napari_cellseg_3d.plugin_dock import Datamanager
 
 
 def test_prepare(make_napari_viewer):
