@@ -73,7 +73,8 @@ def open_file_dialog(
         possible_paths (str): Paths that may have been chosen before, can be a string
         or an array of strings containing the paths
         load_as_folder (bool): Whether to open a folder or a single file. If True, will allow to open folder as a single file (2D stack interpreted as 3D)
-        filetype (str): The description and file extension to load (format : "{Description (*.example1 *.example2)}. Default "Image file (*.tif *.tiff)"
+        filetype (str): The description and file extension to load (format : "Description (*.example1 *.example2)"). Default "Image file (*.tif *.tiff)"
+
     """
 
     default_path = utils.parse_default_path(possible_paths)

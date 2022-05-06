@@ -8,7 +8,7 @@ Class : BasePluginSingleImage
 
 Methods
 **********************
-.. autoclass:: napari_cellseg_annotator.plugin_base::BasePluginSingleImage
+.. autoclass:: napari_cellseg_3d.plugin_base::BasePluginSingleImage
    :members:  __init__, remove_from_viewer, show_dialog_images, show_dialog_labels, update_default
    :noindex:
 
@@ -17,8 +17,10 @@ Methods
 Attributes
 *********************
 
-.. autoclass:: napari_cellseg_annotator.plugin_base::BasePluginSingleImage
+.. autoclass:: napari_cellseg_3d.plugin_base::BasePluginSingleImage
    :members:  _viewer, image_path, label_path, filetype, file_handling_box
+
+
 
 
 Class : BasePluginFolder
@@ -27,7 +29,7 @@ Class : BasePluginFolder
 
 Methods
 ***********************
-.. autoclass:: napari_cellseg_annotator.plugin_base::BasePluginFolder
+.. autoclass:: napari_cellseg_3d.plugin_base::BasePluginFolder
    :members:  __init__, remove_from_viewer,make_close_button,make_prev_button,make_next_button, load_dataset_paths,load_image_dataset,load_label_dataset,load_results_path, update_default,remove_docked_widgets
    :noindex:
 
@@ -35,5 +37,5 @@ Methods
 Attributes
 *********************
 
-.. autoclass:: napari_cellseg_annotator.plugin_base::BasePluginFolder
+.. autoclass:: napari_cellseg_3d.plugin_base::BasePluginFolder
    :members:  _viewer, images_filepaths, labels_filepaths,results_path, filetype_choice

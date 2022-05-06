@@ -1,6 +1,6 @@
 .. _cropping_module_guide:
 
-Cropping module guide
+Cropping utility guide
 =================================
 
 This module allows you to crop your volumes and labels dynamically,

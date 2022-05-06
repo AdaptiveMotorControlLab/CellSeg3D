@@ -1,7 +1,7 @@
 .. _convert_module_guide:
 
-Label conversion utility
-===========================
+Label conversion utility guide
+==================================
 
 This utility will let you convert labels to various different formats.
 You will have to specify the results directory for saving; afterwards you can run each action on a folder or on the currently selected layer.

@@ -44,7 +44,9 @@ Interface and functionalities
 * Thresholding : You can perform thresholding to binarize your labels, all values beneath the confidence threshold will be set to 0 using this.
   If you wish to use instance segmentation it is recommended to use threshlding.
 
-
+* Instance segmentatin : You can convert the semantic segmentation into instance labels by using either the watershed or connected components method.
+  You can set the probability threshhold from which a pixel is considered as a valid instance, as well as the minimum size in pixels for objects. All smaller objects will be removed.
+  Instance labels will be saved (and shown if applicable) separately from other results.
 
 * Viewing results : You can also select whether you'd like to see the results in napari afterwards; by default the first image processed will be displayed,
   but you can choose to display up to ten at once. You can also request to see the originals.
