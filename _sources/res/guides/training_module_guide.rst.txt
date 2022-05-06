@@ -6,37 +6,56 @@ Training module guide
 This module allows you to train pre-defined Pytorch models for cell segmentation.
 Pre-defined models are stored in napari-cellseg-3d/models.
 
+Currently, the following pre-defined models are available :
+
+==============   ================================================================================================
+Model            Link to original paper
+==============   ================================================================================================
+VNet             `Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation`_
+SegResNet        `3D MRI brain tumor segmentation using autoencoder regularization`_
+TRAILMAP_test     An emulation of the `TRAILMAP project on GitHub`_ using a custom copy in Pytorch
+TRAILMAP          An emulation of the `TRAILMAP project on GitHub`_ using `3DUnet for Pytorch`_
+==============   ================================================================================================
+
+.. _Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation: https://arxiv.org/pdf/1606.04797.pdf
+.. _3D MRI brain tumor segmentation using autoencoder regularization: https://arxiv.org/pdf/1810.11654.pdf
+.. _TRAILMAP project on GitHub: https://github.com/AlbertPun/TRAILMAP
+.. _3DUnet for Pytorch: https://github.com/wolny/pytorch-3dunet
+
 .. important::
-    The machine learning models used by this program require all images of a dataset to all be of the same size.
+    The machine learning models used by this program require all images of a dataset to be of the same size.
     Please ensure that all the images you are loading are of the **same size**, or to use the **"extract patches" (in augmentation tab)** with an appropriately small size
-    to ensure all images being used are of a proper size.
+    to ensure all images being used by the model are of a workable size.
 
 The training module is comprised of several tabs.
 
 
-1) The first one, **Data**, will let you choose :
+1) The first one, **Data**, will let you set :
 
-* The images folder
-* The labels folder
+* The path to the images folder
+* The path to the labels folder
+* The path to the results folder
 
 2) The second tab, **Augmentation**, lets you define dataset and augmentation parameters such as :
 
 * Whether to use images "as is" (**requires all images to be of the same size and cubic**) or extract patches.
 
 * If you're extracting patches :
-    * The size of patches to be extracted (ideally, please use a value **close to a pwoer of two**, such as 120 or 60.
+    * The size of patches to be extracted (ideally, please use a value **close to a power of two**, such as 120 or 60.
     * The number of samples to extract from each of your image to ensure correct size and perform data augmentation. A larger number will likely mean better performances, but longer training and larger memory usage.
 * Whether to perform data augmentation or not (elastic deforms, intensity shifts. random flipping,etc). A rule of thumb for augmentation is :
-    * If you're using the patch extraction method, enable it if you have more than 10 samples per image with at least 5 images
+    * If you're using the patch extraction method, enable it if you are using more than 10 samples per image with at least 5 images
     * If you have a large dataset and are not using patches extraction, enable it.
 
 
 3) The third contains training related parameters :
-* The model to use for training
+
+* The model to use for training (see table above)
 * The loss function used for training (see table below)
 * The batch size (larger means quicker training and possibly better performance but increased memory usage)
 * The number of epochs (a possibility is to start with 60 epochs, and decrease or increase depending on performance.)
 * The epoch interval for validation (for example, if set to two, the module will use the validation dataset to evaluate the model with the dice metric every two epochs.)
+
 If the dice metric is better on that validation interval, the model weights will be saved in the results folder.
 
 The available loss functions are :
@@ -68,9 +87,9 @@ perform data augmentation if you chose to, select a CUDA device if one is presen
     **The training will stop after the next validation interval is performed, to save the latest model should it be better.**
 
 .. note::
-    You can save the log to record the losses and validation metrics numerical value at each step. This log is autosaved as well when training completes.
+    You can save the log to record the losses and validation metrics numerical values at each step. This log is autosaved as well when training completes.
 
-After two validations steps have been performed, the training loss values and validation metrics will be automatically plotted
+After two validations steps have been performed (depending on the interval you set), the training loss values and validation metrics will be automatically plotted
 and shown on napari every time a validation step completes.
 This plot automatically saved each time validation is performed for now. The final version is stored separately in the results folder.
 

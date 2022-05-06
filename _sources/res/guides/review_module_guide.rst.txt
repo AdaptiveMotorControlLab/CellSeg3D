@@ -11,21 +11,23 @@ and correct them if needed. It then saves the status of each file in a csv, for 
 Launching the review process
 ---------------------------------
 
-First, you will be asked to load your images and labels; you can use the checkbox above the Open buttons to
-choose whether you want to load a single 3D **.tif** image or a folder of 2D images as a 3D stack.
-Folders can be stacks of either **.png** or **.tif** files, ideally numbered with the index of the slice at the end.
+* Data paths :
+    First, you will be asked to load your images and labels; you can use the checkbox above the Open buttons to
+    choose whether you want to load a single 3D **.tif** image or a folder of 2D images as a 3D stack.
+    Folders can be stacks of either **.png** or **.tif** files, ideally numbered with the index of the slice at the end.
 
 .. note::
     Only single .tif files or folder of several .png or .tif are supported.
 
-You can then provide a model name, which will be used in the csv file recording the status of each slice.
+* Model name :
+    You can then provide a model name, which will be used to name the csv file recording the status of each slice.
 
-If a corresponding csv file exists already, it will be used. If not, a new one will be created.
+    If a corresponding csv file exists already, it will be used. If not, a new one will be created.
+    If you choose to create a new dataset, a new csv will be created no matter what,
+    with a trailing number if several copies of it already exists.
 
-If you choose to create a new dataset, a new csv will be created no matter what,
-with a trailing number if several copies of it already exists.
-
-Once you are ready, you can press **Run** to start the review process.
+* Start :
+    Once you are ready, you can press **Start reviewing** to start the review process.
 
 .. note::
     You can find the csv file containing the annotation status **in the same folder as the labels**

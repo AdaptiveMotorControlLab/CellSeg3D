@@ -28,9 +28,11 @@ Welcome to napari-cellseg-3d's documentation!
     res/code/interface
     res/code/plugin_base
     res/code/plugin_review
+    res/code/launch_review
     res/code/plugin_dock
     res/code/plugin_crop
-    res/code/launch_review
+    res/code/plugin_convert
+    res/code/plugin_metrics
     res/code/model_framework
     res/code/model_workers
     res/code/model_instance_seg

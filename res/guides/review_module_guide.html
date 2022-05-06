@@ -60,9 +60,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../code/interface.html">interface.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_base.html">plugin_base.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_review.html">plugin_review.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/launch_review.html">launch_review.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_dock.html">plugin_dock.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_crop.html">plugin_crop.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../code/launch_review.html">launch_review.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_convert.html">plugin_convert.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_metrics.html">plugin_metrics.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/model_framework.html">model_framework.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/model_workers.html">model_workers.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/model_instance_seg.html">model_instance_seg.py</a></li>
@@ -101,18 +103,34 @@
 and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.</p>
 <div class="section" id="launching-the-review-process">
 <h2>Launching the review process<a class="headerlink" href="#launching-the-review-process" title="Permalink to this headline">¶</a></h2>
-<p>First, you will be asked to load your images and labels; you can use the checkbox above the Open buttons to
+<ul class="simple">
+<li><dl class="simple">
+<dt>Data paths :</dt><dd><p>First, you will be asked to load your images and labels; you can use the checkbox above the Open buttons to
 choose whether you want to load a single 3D <strong>.tif</strong> image or a folder of 2D images as a 3D stack.
 Folders can be stacks of either <strong>.png</strong> or <strong>.tif</strong> files, ideally numbered with the index of the slice at the end.</p>
+</dd>
+</dl>
+</li>
+</ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Only single .tif files or folder of several .png or .tif are supported.</p>
 </div>
-<p>You can then provide a model name, which will be used in the csv file recording the status of each slice.</p>
-<p>If a corresponding csv file exists already, it will be used. If not, a new one will be created.</p>
-<p>If you choose to create a new dataset, a new csv will be created no matter what,
+<ul>
+<li><dl>
+<dt>Model name :</dt><dd><p>You can then provide a model name, which will be used to name the csv file recording the status of each slice.</p>
+<p>If a corresponding csv file exists already, it will be used. If not, a new one will be created.
+If you choose to create a new dataset, a new csv will be created no matter what,
 with a trailing number if several copies of it already exists.</p>
-<p>Once you are ready, you can press <strong>Run</strong> to start the review process.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Start :</dt><dd><p>Once you are ready, you can press <strong>Start reviewing</strong> to start the review process.</p>
+</dd>
+</dl>
+</li>
+</ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>You can find the csv file containing the annotation status <strong>in the same folder as the labels</strong></p>

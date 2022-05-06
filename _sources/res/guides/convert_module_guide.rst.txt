@@ -16,3 +16,16 @@ You can :
 
 * Remove small objects :
     You can specify a size threshold in pixels; all objects smaller than this size will be removed in the image.
+
+
+Source code
+-------------------------------------------------
+
+* :doc:`../code/plugin_base`
+* :doc:`../code/plugin_convert`
+
+
+
+
+
+

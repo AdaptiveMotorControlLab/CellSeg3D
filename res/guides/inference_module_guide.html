@@ -59,9 +59,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../code/interface.html">interface.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_base.html">plugin_base.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_review.html">plugin_review.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/launch_review.html">launch_review.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_dock.html">plugin_dock.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_crop.html">plugin_crop.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../code/launch_review.html">launch_review.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_convert.html">plugin_convert.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_metrics.html">plugin_metrics.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/model_framework.html">model_framework.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/model_workers.html">model_workers.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/model_instance_seg.html">model_instance_seg.py</a></li>
@@ -101,8 +103,8 @@ to automatically label cells.</p>
 <p>Currently, the following pre-trained models are available :</p>
 <table class="docutils align-default">
 <colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
+<col style="width: 13%" />
+<col style="width: 87%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Model</p></th>
@@ -116,28 +118,56 @@ to automatically label cells.</p>
 <tr class="row-odd"><td><p>SegResNet</p></td>
 <td><p><a class="reference external" href="https://arxiv.org/pdf/1810.11654.pdf">3D MRI brain tumor segmentation using autoencoder regularization</a></p></td>
 </tr>
-<tr class="row-even"><td><p>TRAILMAP</p></td>
-<td><p>An emulation in Pytorch of the <a class="reference external" href="https://github.com/AlbertPun/TRAILMAP">TRAILMAP project on GitHub</a></p></td>
+<tr class="row-even"><td><p>TRAILMAP_test</p></td>
+<td><p>An emulation of the <a class="reference external" href="https://github.com/AlbertPun/TRAILMAP">TRAILMAP project on GitHub</a> using a custom copy in Pytorch</p></td>
+</tr>
+<tr class="row-odd"><td><p>TRAILMAP</p></td>
+<td><p>An emulation of the <a class="reference external" href="https://github.com/AlbertPun/TRAILMAP">TRAILMAP project on GitHub</a> using <a class="reference external" href="https://github.com/wolny/pytorch-3dunet">3DUnet for Pytorch</a></p></td>
 </tr>
 </tbody>
 </table>
 <div class="section" id="interface-and-functionalities">
 <h2>Interface and functionalities<a class="headerlink" href="#interface-and-functionalities" title="Permalink to this headline">¶</a></h2>
-<img alt="../../_images/inference_plugin_layout.png" class="align-right" src="../../_images/inference_plugin_layout.png" />
-<ul class="simple">
-<li><p>Loading data : When launching the module, you will be asked to provide an image folder containing all the volumes you’d like to be labeled.
-All images with the chosen (<strong>.tif</strong> or <strong>.tiff</strong> currently supported) extension in this folder will be labeled.
-You can then choose an output folder, where all the results will be saved.</p></li>
-<li><p>Model choice : You can then choose one of the selected models above, which will be used for inference.</p></li>
-<li><p>Anisotropy :If you want to see your results without anisotropy when you have anisotropic images, you can specify that you have anisotropic data
-and set the resolution of your image in micron, this wil save &amp; show the results without anisotropy.</p></li>
-<li><p>Thresholding : You can perform thresholding to binarize your labels, all values beneath the confidence threshold will be set to 0 using this.
-If you wish to use instance segmentation it is recommended to use threshlding.</p></li>
-<li><p>Instance segmentatin : You can convert the semantic segmentation into instance labels by using either the watershed or connected components method.
-You can set the probability threshhold from which a pixel is considered as a valid instance, as well as the minimum size in pixels for objects. All smaller objects will be removed.
-Instance labels will be saved (and shown if applicable) separately from other results.</p></li>
-<li><p>Viewing results : You can also select whether you’d like to see the results in napari afterwards; by default the first image processed will be displayed,
-but you can choose to display up to ten at once. You can also request to see the originals.</p></li>
+<a class="reference internal image-reference" href="../../_images/inference_plugin_layout.png"><img alt="../../_images/inference_plugin_layout.png" class="align-right" src="../../_images/inference_plugin_layout.png" style="width: 232.0px; height: 702.0px;" /></a>
+<ul>
+<li><p><strong>Loading data</strong> :</p>
+<div class="line-block">
+<div class="line">When launching the module, you will be asked to provide an image folder containing all the volumes you’d like to be labeled.</div>
+<div class="line">All images with the chosen (<strong>.tif</strong> or <strong>.tiff</strong> currently supported) extension in this folder will be labeled.</div>
+<div class="line">You can then choose an output folder, where all the results will be saved.</div>
+</div>
+</li>
+<li><p><strong>Model choice</strong> :</p>
+<div class="line-block">
+<div class="line">You can then choose one of the provided models above, which will be used for inference.</div>
+<div class="line">You may also choose to load custom weights rather than the pre-trained ones, simply ensure they are compatible (e.g. produced from the training module for the same model)</div>
+</div>
+</li>
+<li><p><strong>Anisotropy</strong> :</p>
+<div class="line-block">
+<div class="line">If you want to see your results without anisotropy when you have anisotropic images, you can specify that you have anisotropic data</div>
+<div class="line">and set the resolution of your image in micron, this wil save and show the results without anisotropy.</div>
+</div>
+</li>
+<li><p><strong>Thresholding</strong> :</p>
+<div class="line-block">
+<div class="line">You can perform thresholding to binarize your labels, all values beneath the confidence threshold will be set to 0 using this.</div>
+<div class="line">If you wish to use instance segmentation it is recommended to use thresholding.</div>
+</div>
+</li>
+<li><p><strong>Instance segmentation</strong> :</p>
+<div class="line-block">
+<div class="line">You can convert the semantic segmentation into instance labels by using either the watershed or connected components method.</div>
+<div class="line">You can set the probability threshold from which a pixel is considered as a valid instance, as well as the minimum size in pixels for objects. All smaller objects will be removed.</div>
+<div class="line">Instance labels will be saved (and shown if applicable) separately from other results.</div>
+</div>
+</li>
+<li><p><strong>Viewing results</strong> :</p>
+<div class="line-block">
+<div class="line">You can also select whether you’d like to see the results in napari afterwards.</div>
+<div class="line">By default the first image processed will be displayed, but you can choose to display up to ten at once. You can also request to see the originals.</div>
+</div>
+</li>
 </ul>
 <p>When you are done choosing your parameters, you can press the <strong>Start</strong> button to begin the inference process.
 Once it has finished, results will be saved then displayed in napari; each output will be paired with its original.
@@ -153,6 +183,7 @@ On the left side, a progress bar and a log will keep you informed on the process
 <div class="line-block">
 <div class="line"><em>somatomotor_VNet_2022_04_06_15_49_42_pred3.tif</em></div>
 </div>
+<div class="line">Instance labels will have the “Instance_seg” prefix appened to the name.</div>
 </div>
 </div>
 <div class="admonition hint">
