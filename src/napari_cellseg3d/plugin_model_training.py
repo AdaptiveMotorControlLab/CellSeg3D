@@ -1,5 +1,6 @@
 import os
 import warnings
+import torch
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -168,6 +169,8 @@ class Trainer(ModelFramework):
         """Training worker for multithreading, should be a TrainingWorker instance from :doc:model_workers.py"""
         self.data = None
         """Data dictionary containing file paths"""
+        self.stop_requested = False
+        """Whether the worker should stop or not"""
 
         self.loss_dict = {
             "Dice loss": DiceLoss(sigmoid=True),
@@ -645,6 +648,10 @@ class Trainer(ModelFramework):
 
         """
 
+        if self.stop_requested:
+            self.log.print_and_log("Worker is already stopping !")
+            return
+
         if not self.check_ready():  # issues a warning if not ready
             err = "Aborting, please set all required paths"
             self.log.print_and_log(err)
@@ -734,6 +741,7 @@ class Trainer(ModelFramework):
             self.log.print_and_log(
                 f"Stop requested at {utils.get_time()}. \nWaiting for next validation step..."
             )
+            self.stop_requested = True
             self.btn_start.setText("Stopping... Please wait for next saving")
             self.worker.quit()
         else:
@@ -794,6 +802,10 @@ class Trainer(ModelFramework):
             100 * (data["epoch"] + 1) // widget.max_epochs
         )
         widget.update_loss_plot(data["losses"], data["val_metrics"])
+
+        if widget.stop_requested:
+            torch.save(data["weights"], os.path.join(widget.results_path, f"latest_weights_aborted_training_{utils.get_date_time()}.pth"))
+            widget.stop_requested = False
 
     # def clean_cache(self):
     #     """Attempts to clear memory after training"""

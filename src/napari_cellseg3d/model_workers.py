@@ -768,6 +768,7 @@ class TrainingWorker(GeneratorWorker):
                         "epoch": epoch,
                         "losses": epoch_loss_values,
                         "val_metrics": val_metric_values,
+                        "weights": model.state_dict(),
                     }
                     yield train_report
 
@@ -794,8 +795,8 @@ class TrainingWorker(GeneratorWorker):
             f"at epoch: {best_metric_epoch}"
         )
         model.to("cpu")
-        optimizer = None
-        del optimizer
+        # optimizer = None
+        # del optimizer
         # del device
         # del model_id
         # del model_name

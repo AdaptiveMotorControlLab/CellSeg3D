@@ -1,5 +1,6 @@
 import os
 import warnings
+import numpy as np
 
 import napari
 # Qt
@@ -624,6 +625,9 @@ class Inferer(ModelFramework):
             )
 
             if data["instance_labels"] is not None:
+
+                widget.log.print_and_log(f"\nNUMBER OF CELLS : {np.amax(data['instance_labels'])}\n")
+
                 name = f"instance_labels_{image_id}"
                 instance_layer = viewer.add_labels(
                     data["instance_labels"], name=name
