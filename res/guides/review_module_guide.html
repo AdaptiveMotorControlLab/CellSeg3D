@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reviewer module guide &mdash; napari-cellseg-3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Inference module guide" href="inference_module_guide.html" />
+    <link rel="prev" title="Introduction" href="../welcome.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html"><img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Main modules guides:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Reviewer module guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#launching-the-review-process">Launching the review process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#interface-functionalities">Interface &amp; functionalities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#source-code">Source code</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="inference_module_guide.html">Inference module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training_module_guide.html">Training module guide</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Utilities &amp; advanced guides:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="metrics_module_guide.html">Metrics utility guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="convert_module_guide.html">Label conversion utility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cropping_module_guide.html">Cropping module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Declaring a custom model</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Source files:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../code/interface.html">interface.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_base.html">plugin_base.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_review.html">plugin_review.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_dock.html">plugin_dock.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_crop.html">plugin_crop.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/launch_review.html">launch_review.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/model_framework.html">model_framework.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/model_workers.html">model_workers.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/model_instance_seg.html">model_instance_seg.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_model_inference.html">plugin_model_inference.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_model_training.html">plugin_model_training.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/utils.html">utils.py</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">napari-cellseg-3d</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Reviewer module guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/res/guides/review_module_guide.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="reviewer-module-guide">
+<span id="loader-module-guide"></span><h1>Reviewer module guide<a class="headerlink" href="#reviewer-module-guide" title="Permalink to this headline">¶</a></h1>
+<p>This module allows you to review your labels, from predictions or manual labeling,
+and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.</p>
+<div class="section" id="launching-the-review-process">
+<h2>Launching the review process<a class="headerlink" href="#launching-the-review-process" title="Permalink to this headline">¶</a></h2>
+<p>First, you will be asked to load your images and labels; you can use the checkbox above the Open buttons to
+choose whether you want to load a single 3D <strong>.tif</strong> image or a folder of 2D images as a 3D stack.
+Folders can be stacks of either <strong>.png</strong> or <strong>.tif</strong> files, ideally numbered with the index of the slice at the end.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only single .tif files or folder of several .png or .tif are supported.</p>
+</div>
+<p>You can then provide a model name, which will be used in the csv file recording the status of each slice.</p>
+<p>If a corresponding csv file exists already, it will be used. If not, a new one will be created.</p>
+<p>If you choose to create a new dataset, a new csv will be created no matter what,
+with a trailing number if several copies of it already exists.</p>
+<p>Once you are ready, you can press <strong>Run</strong> to start the review process.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can find the csv file containing the annotation status <strong>in the same folder as the labels</strong></p>
+</div>
+</div>
+<div class="section" id="interface-functionalities">
+<h2>Interface &amp; functionalities<a class="headerlink" href="#interface-functionalities" title="Permalink to this headline">¶</a></h2>
+<img alt="../../_images/review_process_example.png" src="../../_images/review_process_example.png" />
+<p>Once you have launched the review process, you will have access to the following functionalities:</p>
+<p><strong>1.</strong> A dialog to choose the folder in which you want to save the verified and/or corrected annotations, and a button to save the labels. They will be saved as <strong>.png</strong>, with one file per slice.</p>
+<p><strong>2.</strong> A button to update the status of the slice in the csv file (in this case : checked/not checked)</p>
+<p><strong>3.</strong> A plot with three projections in the x-y, y-z and x-z planes, to allow the reviewer to better see the surroundings of the label and properly establish whether the image should be labeled or not. You can <strong>shift-click</strong> anywhere on the image or label layer to update the plot to the location being reviewed.</p>
+<p>Using these, you can check your labels, correct them, save them and keep track of which slices have been checked or not.</p>
+</div>
+<div class="section" id="source-code">
+<h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../code/plugin_review.html"><span class="doc">plugin_review.py</span></a></p></li>
+<li><p><a class="reference internal" href="../code/launch_review.html"><span class="doc">launch_review.py</span></a></p></li>
+<li><p><a class="reference internal" href="../code/plugin_base.html"><span class="doc">plugin_base.py</span></a></p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../welcome.html" class="btn btn-neutral float-left" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="inference_module_guide.html" class="btn btn-neutral float-right" title="Inference module guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Cyril Achard, Maxime Vidal.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

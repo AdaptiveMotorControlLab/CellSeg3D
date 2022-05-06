@@ -1,11 +1,11 @@
 Introduction
 ===================
 
-Welcome to napari-cellseg-annotator !
+Welcome to napari-cellseg-3d !
 --------------------------------------------
 
 Here you will find instructions on how to use the program.
-If the installation was successful, you'll see the napari-cellseg-annotator plugin
+If the installation was successful, you'll see the napari-cellseg-3d plugin
 in the Plugins section of napari.
 
 This plugin is intended for the review of labeled cell volumes [#]_ from mice whole-brain samples
@@ -18,6 +18,8 @@ From here you can access the guides on the several modules available for your ta
 * Inference: :ref:`inference_module_guide`
 * Training : :ref:`training_module_guide`
 * Cropping utility (3D) : :ref:`cropping_module_guide`
+* Convert labels : :ref:`convert_module_guide`
+* Compute scores : :ref:`metrics_module_guide`
 * Advanced : Defining custom models directly in the plugin (WIP) : :ref:`custom_model_guide`
 
 
@@ -39,9 +41,9 @@ Requires manual installation of pytorch and some optional dependencies of MONAI.
 Installation
 --------------------------------------------
 
-You can install `napari-cellseg-annotator` via [pip]:
+You can install `napari-cellseg-3d` via [pip]:
 
-    ``pip install napari-cellseg-annotator``
+    ``pip install napari-cellseg-3d``
 
 For local installation, please run:
 
@@ -56,7 +58,7 @@ To use the plugin, please run:
 
     ``napari``
 
-Then go into Plugins > napari-cellseg-annotator, and choose which tool to use.
+Then go into Plugins > napari-cellseg-3d, and choose which tool to use.
 
 - **Review**: This module allows you to review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.
 - **Infer**: This module allows you to use pre-trained segmentation algorithms on volumes to automatically label cells.

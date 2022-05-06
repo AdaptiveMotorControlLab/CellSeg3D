@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>plugin_dock.py &mdash; napari-cellseg-3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="plugin_crop.py" href="plugin_crop.html" />
+    <link rel="prev" title="plugin_review.py" href="plugin_review.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html"><img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Main modules guides:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/review_module_guide.html">Reviewer module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/inference_module_guide.html">Inference module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/training_module_guide.html">Training module guide</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Utilities &amp; advanced guides:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/metrics_module_guide.html">Metrics utility guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/convert_module_guide.html">Label conversion utility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/cropping_module_guide.html">Cropping module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/custom_model_template.html">Advanced : Declaring a custom model</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Source files:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="interface.html">interface.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_base.html">plugin_base.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_review.html">plugin_review.py</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">plugin_dock.py</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#datamanager">Datamanager</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#methods">Methods</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#attributes">Attributes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_crop.html">plugin_crop.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="launch_review.html">launch_review.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_framework.html">model_framework.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_workers.html">model_workers.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_instance_seg.html">model_instance_seg.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_model_inference.html">plugin_model_inference.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_model_training.html">plugin_model_training.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils.py</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">napari-cellseg-3d</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>plugin_dock.py</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/res/code/plugin_dock.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="plugin-dock-py">
+<h1>plugin_dock.py<a class="headerlink" href="#plugin-dock-py" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="datamanager">
+<h2>Datamanager<a class="headerlink" href="#datamanager" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="plugin_review.html" class="btn btn-neutral float-left" title="plugin_review.py" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="plugin_crop.html" class="btn btn-neutral float-right" title="plugin_crop.py" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Cyril Achard, Maxime Vidal.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

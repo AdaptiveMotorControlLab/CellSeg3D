@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Introduction &mdash; napari-cellseg-annotator  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <title>Introduction &mdash; napari-cellseg-3d  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
@@ -13,11 +13,12 @@
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Reviewer module guide" href="review_module_guide.html" />
-    <link rel="prev" title="Welcome to napari-cellseg-annotator’s documentation!" href="../index.html" /> 
+    <link rel="next" title="Reviewer module guide" href="guides/review_module_guide.html" />
+    <link rel="prev" title="Welcome to napari-cellseg-3d’s documentation!" href="../index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -35,35 +36,40 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">User guide:</span></p>
+              <p class="caption"><span class="caption-text">Main modules guides:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#welcome-to-napari-cellseg-annotator">Welcome to napari-cellseg-annotator !</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#welcome-to-napari-cellseg-3d">Welcome to napari-cellseg-3d !</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Reviewer module guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="inference_module_guide.html">Inference module guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="training_module_guide.html">Training module guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cropping_module_guide.html">Cropping module guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Declaring a custom model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/review_module_guide.html">Reviewer module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/inference_module_guide.html">Inference module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/training_module_guide.html">Training module guide</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Utilities &amp; advanced guides:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guides/metrics_module_guide.html">Metrics utility guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/convert_module_guide.html">Label conversion utility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/cropping_module_guide.html">Cropping module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Source files:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="interface.html">interface.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plugin_base.html">plugin_base.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plugin_review.html">plugin_review.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plugin_dock.html">plugin_dock.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plugin_crop.html">plugin_crop.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="launch_review.html">launch_review.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="model_framework.html">model_framework.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="model_workers.html">model_workers.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="model_instance_seg.html">model_instance_seg.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plugin_model_inference.html">plugin_model_inference.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plugin_model_training.html">plugin_model_training.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="utils.html">utils.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/interface.html">interface.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/plugin_base.html">plugin_base.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/plugin_review.html">plugin_review.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/plugin_dock.html">plugin_dock.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/plugin_crop.html">plugin_crop.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/launch_review.html">launch_review.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/model_framework.html">model_framework.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/model_workers.html">model_workers.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/model_instance_seg.html">model_instance_seg.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/plugin_model_inference.html">plugin_model_inference.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/plugin_model_training.html">plugin_model_training.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/utils.html">utils.py</a></li>
 </ul>
 
         </div>
@@ -72,7 +78,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">napari-cellseg-annotator</a>
+          <a href="../index.html">napari-cellseg-3d</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -92,21 +98,23 @@
              
   <div class="section" id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="welcome-to-napari-cellseg-annotator">
-<h2>Welcome to napari-cellseg-annotator !<a class="headerlink" href="#welcome-to-napari-cellseg-annotator" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="welcome-to-napari-cellseg-3d">
+<h2>Welcome to napari-cellseg-3d !<a class="headerlink" href="#welcome-to-napari-cellseg-3d" title="Permalink to this headline">¶</a></h2>
 <p>Here you will find instructions on how to use the program.
-If the installation was successful, you’ll see the napari-cellseg-annotator plugin
+If the installation was successful, you’ll see the napari-cellseg-3d plugin
 in the Plugins section of napari.</p>
 <p>This plugin is intended for the review of labeled cell volumes <a class="footnote-reference brackets" href="#id4" id="id1">1</a> from mice whole-brain samples
 imaged by mesoSPIM microscopy <a class="footnote-reference brackets" href="#id5" id="id2">2</a> , and for training and using segmentation models from the MONAI project <a class="footnote-reference brackets" href="#id6" id="id3">3</a>, or
 any custom model written in Pytorch.</p>
 <p>From here you can access the guides on the several modules available for your tasks, such as :</p>
 <ul class="simple">
-<li><p>Review : <a class="reference internal" href="review_module_guide.html#loader-module-guide"><span class="std std-ref">Reviewer module guide</span></a></p></li>
-<li><p>Inference: <a class="reference internal" href="inference_module_guide.html#inference-module-guide"><span class="std std-ref">Inference module guide</span></a></p></li>
-<li><p>Training : <a class="reference internal" href="training_module_guide.html#training-module-guide"><span class="std std-ref">Training module guide</span></a></p></li>
-<li><p>Cropping utility (3D) : <a class="reference internal" href="cropping_module_guide.html#cropping-module-guide"><span class="std std-ref">Cropping module guide</span></a></p></li>
-<li><p>Advanced : Defining custom models directly in the plugin (WIP) : <a class="reference internal" href="custom_model_template.html#custom-model-guide"><span class="std std-ref">Advanced : Declaring a custom model</span></a></p></li>
+<li><p>Review : <a class="reference internal" href="guides/review_module_guide.html#loader-module-guide"><span class="std std-ref">Reviewer module guide</span></a></p></li>
+<li><p>Inference: <a class="reference internal" href="guides/inference_module_guide.html#inference-module-guide"><span class="std std-ref">Inference module guide</span></a></p></li>
+<li><p>Training : <a class="reference internal" href="guides/training_module_guide.html#training-module-guide"><span class="std std-ref">Training module guide</span></a></p></li>
+<li><p>Cropping utility (3D) : <a class="reference internal" href="guides/cropping_module_guide.html#cropping-module-guide"><span class="std std-ref">Cropping module guide</span></a></p></li>
+<li><p>Convert labels : <a class="reference internal" href="guides/convert_module_guide.html#convert-module-guide"><span class="std std-ref">Label conversion utility</span></a></p></li>
+<li><p>Compute scores : <a class="reference internal" href="guides/metrics_module_guide.html#metrics-module-guide"><span class="std std-ref">Metrics utility guide</span></a></p></li>
+<li><p>Advanced : Defining custom models directly in the plugin (WIP) : <a class="reference internal" href="guides/custom_model_template.html#custom-model-guide"><span class="std std-ref">Advanced : Declaring a custom model</span></a></p></li>
 </ul>
 </div>
 <div class="section" id="requirements">
@@ -123,9 +131,9 @@ any custom model written in Pytorch.</p>
 </div>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<p>You can install <cite>napari-cellseg-annotator</cite> via [pip]:</p>
+<p>You can install <cite>napari-cellseg-3d</cite> via [pip]:</p>
 <blockquote>
-<div><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">napari-cellseg-annotator</span></code></p>
+<div><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">napari-cellseg-3d</span></code></p>
 </div></blockquote>
 <p>For local installation, please run:</p>
 <blockquote>
@@ -138,7 +146,7 @@ any custom model written in Pytorch.</p>
 <blockquote>
 <div><p><code class="docutils literal notranslate"><span class="pre">napari</span></code></p>
 </div></blockquote>
-<p>Then go into Plugins &gt; napari-cellseg-annotator, and choose which tool to use.</p>
+<p>Then go into Plugins &gt; napari-cellseg-3d, and choose which tool to use.</p>
 <ul class="simple">
 <li><p><strong>Review</strong>: This module allows you to review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.</p></li>
 <li><p><strong>Infer</strong>: This module allows you to use pre-trained segmentation algorithms on volumes to automatically label cells.</p></li>
@@ -164,8 +172,8 @@ any custom model written in Pytorch.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../index.html" class="btn btn-neutral float-left" title="Welcome to napari-cellseg-annotator’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="review_module_guide.html" class="btn btn-neutral float-right" title="Reviewer module guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../index.html" class="btn btn-neutral float-left" title="Welcome to napari-cellseg-3d’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="guides/review_module_guide.html" class="btn btn-neutral float-right" title="Reviewer module guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

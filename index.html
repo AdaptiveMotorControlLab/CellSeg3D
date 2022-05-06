@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to napari-cellseg-annotator’s documentation! &mdash; napari-cellseg-annotator  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>Welcome to napari-cellseg-3d’s documentation! &mdash; napari-cellseg-3d  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
@@ -13,6 +13,7 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -34,29 +35,34 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">User guide:</span></p>
+              <p class="caption"><span class="caption-text">Main modules guides:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="res/welcome.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/review_module_guide.html">Reviewer module guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/inference_module_guide.html">Inference module guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/training_module_guide.html">Training module guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/cropping_module_guide.html">Cropping module guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/custom_model_template.html">Advanced : Declaring a custom model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/guides/review_module_guide.html">Reviewer module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/guides/inference_module_guide.html">Inference module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/guides/training_module_guide.html">Training module guide</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Utilities &amp; advanced guides:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="res/guides/metrics_module_guide.html">Metrics utility guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/guides/convert_module_guide.html">Label conversion utility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/guides/cropping_module_guide.html">Cropping module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/guides/custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Source files:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="res/interface.html">interface.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/plugin_base.html">plugin_base.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/plugin_review.html">plugin_review.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/plugin_dock.html">plugin_dock.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/plugin_crop.html">plugin_crop.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/launch_review.html">launch_review.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/model_framework.html">model_framework.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/model_workers.html">model_workers.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/model_instance_seg.html">model_instance_seg.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/plugin_model_inference.html">plugin_model_inference.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/plugin_model_training.html">plugin_model_training.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/utils.html">utils.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/interface.html">interface.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/plugin_base.html">plugin_base.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/plugin_review.html">plugin_review.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/plugin_dock.html">plugin_dock.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/plugin_crop.html">plugin_crop.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/launch_review.html">launch_review.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/model_framework.html">model_framework.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/model_workers.html">model_workers.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/model_instance_seg.html">model_instance_seg.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/plugin_model_inference.html">plugin_model_inference.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/plugin_model_training.html">plugin_model_training.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/utils.html">utils.py</a></li>
 </ul>
 
         </div>
@@ -65,7 +71,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">napari-cellseg-annotator</a>
+          <a href="#">napari-cellseg-3d</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -73,7 +79,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="#" class="icon icon-home"></a> &raquo;</li>
-      <li>Welcome to napari-cellseg-annotator’s documentation!</li>
+      <li>Welcome to napari-cellseg-3d’s documentation!</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -83,34 +89,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="welcome-to-napari-cellseg-annotator-s-documentation">
-<h1>Welcome to napari-cellseg-annotator’s documentation!<a class="headerlink" href="#welcome-to-napari-cellseg-annotator-s-documentation" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="welcome-to-napari-cellseg-3d-s-documentation">
+<h1>Welcome to napari-cellseg-3d’s documentation!<a class="headerlink" href="#welcome-to-napari-cellseg-3d-s-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">User guide:</span></p>
+<p class="caption"><span class="caption-text">Main modules guides:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="res/welcome.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/review_module_guide.html">Reviewer module guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/inference_module_guide.html">Inference module guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/training_module_guide.html">Training module guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/cropping_module_guide.html">Cropping module guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/custom_model_template.html">Advanced : Declaring a custom model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/guides/review_module_guide.html">Reviewer module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/guides/inference_module_guide.html">Inference module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/guides/training_module_guide.html">Training module guide</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Utilities &amp; advanced guides:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="res/guides/metrics_module_guide.html">Metrics utility guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/guides/convert_module_guide.html">Label conversion utility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/guides/cropping_module_guide.html">Cropping module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/guides/custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
 </div>
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Source files:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="res/interface.html">interface.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/plugin_base.html">plugin_base.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/plugin_review.html">plugin_review.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/plugin_dock.html">plugin_dock.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/plugin_crop.html">plugin_crop.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/launch_review.html">launch_review.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/model_framework.html">model_framework.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/model_workers.html">model_workers.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/model_instance_seg.html">model_instance_seg.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/plugin_model_inference.html">plugin_model_inference.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/plugin_model_training.html">plugin_model_training.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="res/utils.html">utils.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/interface.html">interface.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/plugin_base.html">plugin_base.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/plugin_review.html">plugin_review.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/plugin_dock.html">plugin_dock.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/plugin_crop.html">plugin_crop.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/launch_review.html">launch_review.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/model_framework.html">model_framework.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/model_workers.html">model_workers.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/model_instance_seg.html">model_instance_seg.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/plugin_model_inference.html">plugin_model_inference.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/plugin_model_training.html">plugin_model_training.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="res/code/utils.html">utils.py</a></li>
 </ul>
 </div>
 </div>
