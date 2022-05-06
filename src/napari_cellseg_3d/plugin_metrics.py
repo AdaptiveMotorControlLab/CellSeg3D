@@ -14,17 +14,28 @@ from napari_cellseg_3d.plugin_base import BasePluginFolder
 
 
 class MetricsUtils(BasePluginFolder):
-    def __init__(self, viewer: "napari.viewer.Viewer", parent):
+    """Plugin to evaluate metrics between two sets of labels, ground truh and prediction"""
 
+    def __init__(self, viewer: "napari.viewer.Viewer", parent):
+        """Creates a MetricsUtils widget for computing and plotting dice metrics between labels.
+        Args:
+            viewer: viewer to display the widget in
+            parent : parent widget
+        """
         super().__init__(viewer, parent)
 
         self._viewer = viewer
+        """Viewer to display widget in"""
 
         self.layout = None
-        """Used for plotting"""
+        """Called for plotting"""
         self.canvas = None
+        """Canvas to render plots on"""
         self.plots = []
+        """Array that references all plots currently on the window"""
 
+        ######################################
+        # interface
         self.btn_compute_dice = ui.make_button(
             "Compute Dice", self.compute_dice
         )
@@ -54,6 +65,7 @@ class MetricsUtils(BasePluginFolder):
         ###############################################################################
 
     def build(self):
+        """Builds the layout of the widget."""
 
         self.lbl_filetype.setVisible(False)
 
@@ -97,6 +109,7 @@ class MetricsUtils(BasePluginFolder):
         ui.make_scrollable(self.layout, self)
 
     def plot_dice(self, dice_coeffs):
+        """Plots the dice loss for each pair of labels on viewer"""
         self.btn_reset_plot.setVisible(True)
         colors = []
 
@@ -135,6 +148,7 @@ class MetricsUtils(BasePluginFolder):
             self.canvas.draw_idle()
 
     def remove_plots(self):
+        """Clears plots from window view"""
         if len(self.plots) != 0:
             for p in self.plots:
                 p.setVisible(False)
@@ -142,6 +156,7 @@ class MetricsUtils(BasePluginFolder):
         self.btn_reset_plot.setVisible(False)
 
     def compute_dice(self):
+        """Computes the dice metric between pairs of labels. Rotates the prediction label to find matching orientation as well."""
         # u = 0
         # t = 0
         total_metrics = []

@@ -26,3 +26,14 @@ Pairs with a low score will be displayed on the viewer for checking, ground trut
     Due to changes in orientation of images after running inference, the utility will rotate and flip images to find the best Dice coefficient
     to compensate. If you have small images with a very large number of labels, this can lead to an inexact metric being computed.
     Images with a low score might be in the wrong orientation as well when displayed for comparison.
+
+
+Source code
+-------------------------------------------------
+
+* :doc:`../code/plugin_base`
+* :doc:`../code/plugin_metrics`
+
+
+
+
