@@ -459,6 +459,7 @@ class TrainingWorker(GeneratorWorker):
         self.log(f"Loss function is : {str(self.loss_function)}")
         self.log(f"Validation is performed every {self.val_interval} epochs")
         self.log(f"Batch size is {self.batch_size}")
+        self.log(f"Learning rate is {self.learning_rate}")
 
         if self.sampling:
             self.log(
@@ -661,6 +662,7 @@ class TrainingWorker(GeneratorWorker):
         )
         print("\nDone")
 
+        print("Optimizer")
         optimizer = torch.optim.Adam(model.parameters(), self.learning_rate)
         dice_metric = DiceMetric(include_background=True, reduction="mean")
 
@@ -668,7 +670,7 @@ class TrainingWorker(GeneratorWorker):
         best_metric_epoch = -1
 
         # time = utils.get_date_time()
-
+        print("Weights")
         if self.weights_path is not None:
             if self.weights_path == "use_pretrained":
                 weights_file = model_class.get_weights_file()

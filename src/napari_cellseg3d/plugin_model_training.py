@@ -1,6 +1,7 @@
 import os
 import warnings
 import torch
+from torch import nn
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -174,10 +175,12 @@ class Trainer(ModelFramework):
         """Data dictionary containing file paths"""
         self.stop_requested = False
         """Whether the worker should stop or not"""
+        self.start_time = ""
 
         self.loss_dict = {
             "Dice loss": DiceLoss(sigmoid=True),
             "Focal loss": FocalLoss(),
+            # "BCELoss":nn.BCELoss(),
             "Dice-Focal loss": DiceFocalLoss(sigmoid=True, lambda_dice=0.5),
             "Generalized Dice loss": GeneralizedDiceLoss(sigmoid=True),
             "DiceCELoss": DiceCELoss(sigmoid=True, lambda_ce=0.5),
@@ -226,6 +229,7 @@ class Trainer(ModelFramework):
         self.lbl_val_interv_choice = QLabel("Validation interval : ", self)
 
         self.learning_rate_dict = {
+            "1e-2": 1e-2,
             "1e-3": 1e-3,
             "1e-4": 1e-4,
             "1e-5": 1e-5,
@@ -238,6 +242,7 @@ class Trainer(ModelFramework):
         ) = ui.make_combobox(
             self.learning_rate_dict.keys(), label="Learning rate"
         )
+        self.learning_rate_choice.setCurrentIndex(1)
 
         self.augment_choice = ui.make_checkbox("Augment data")
 
@@ -676,7 +681,7 @@ class Trainer(ModelFramework):
         Returns: Returns empty immediately if the file paths are not set correctly.
 
         """
-
+        self.start_time = utils.get_time_filepath()
         if self.stop_requested:
             self.log.print_and_log("Worker is already stopping !")
             return
@@ -720,8 +725,11 @@ class Trainer(ModelFramework):
 
             self.results_path = (
                 self.results_path
-                + f"/{model_dict['name']}_results_{utils.get_date_time()}"
+                + f"/{model_dict['name']}_results_{self.start_time}"
             )
+            os.makedirs(
+                self.results_path, exist_ok=False
+            )  # avoid overwrite where possible
 
             if self.use_transfer_choice.isChecked():
                 if self.custom_weights_choice.isChecked():
@@ -730,10 +738,6 @@ class Trainer(ModelFramework):
                     weights_path = "use_pretrained"
             else:
                 weights_path = None
-
-            os.makedirs(
-                self.results_path, exist_ok=False
-            )  # avoid overwrite where possible
 
             self.log.print_and_log(
                 f"Notice : Saving results to : {self.results_path}"
@@ -782,13 +786,11 @@ class Trainer(ModelFramework):
 
     def on_start(self):
         """Catches started signal from worker"""
-        if self.plot_dock is not None:
-            self._viewer.window.remove_dock_widget(self.plot_dock)
-            self.plot_dock = None
 
+        self.remove_docked_widgets()
         self.display_status_report()
 
-        self.log.print_and_log(f"Worker started at {utils.get_time()}")
+        self.log.print_and_log(f"Worker started at {self.start_time}")
         self.log.print_and_log("\nWorker is running...")
 
     def on_finish(self):
@@ -801,7 +803,7 @@ class Trainer(ModelFramework):
             self.canvas.figure.savefig(
                 (
                     self.results_path
-                    + f"/final_metric_plots_{utils.get_date_time()}.png"
+                    + f"/final_metric_plots_{utils.get_time_filepath()}.png"
                 ),
                 format="png",
             )
@@ -817,11 +819,14 @@ class Trainer(ModelFramework):
 
         self.worker = None
         self.empty_cuda_cache()
+
+        self.results_path = ""
         # self.clean_cache() # trying to fix memory leak
 
     def on_error(self):
         """Catches errored signal from worker"""
         self.log.print_and_log(f"WORKER ERRORED at {utils.get_time()}")
+        self.worker=None
         self.empty_cuda_cache()
         # self.clean_cache()
 
@@ -840,7 +845,7 @@ class Trainer(ModelFramework):
                 data["weights"],
                 os.path.join(
                     widget.results_path,
-                    f"latest_weights_aborted_training_{utils.get_date_time()}.pth",
+                    f"latest_weights_aborted_training_{utils.get_time()}.pth",
                 ),
             )
             widget.stop_requested = False
