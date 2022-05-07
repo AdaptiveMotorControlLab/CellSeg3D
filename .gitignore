@@ -90,6 +90,7 @@ venv/
 
 ########
 #project specific
-#dataset
+#dataset, weights, old logos
 /src/napari_cellseg3d/models/dataset/
 /src/napari_cellseg3d/models/saved_weights/
+/docs/res/logo/old_logo/
