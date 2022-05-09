@@ -197,11 +197,13 @@ class InferenceWorker(GeneratorWorker):
         self.log("\nChecking dimensions...")
         pad = utils.get_padding_dim(check)
         # print(pad)
+        dims =128
+        dims=64
 
         model = self.model_dict["class"].get_net()
         if self.model_dict["name"] == "SegResNet":
             model = self.model_dict["class"].get_net()(
-                input_image_size=[128, 128, 128],  # TODO FIX !
+                input_image_size=[dims,dims,dims],  # TODO FIX !
                 out_channels=1,
                 # dropout_prob=0.3,
             )
@@ -294,6 +296,7 @@ class InferenceWorker(GeneratorWorker):
 
                 out = post_process_transforms(out)
                 out = np.array(out).astype(np.float32)
+                out = np.squeeze(out)
 
                 # batch_len = out.shape[1]
                 # print("trying to check len")
@@ -486,7 +489,7 @@ class TrainingWorker(GeneratorWorker):
         if self.weights_path is not None:
             self.log(f"Using weights from : {self.weights_path}")
 
-        self.log("\n")
+        # self.log("\n")
 
     def train(self):
         """Trains the Pytorch model for the given number of epochs, with the selected model and data,
@@ -716,6 +719,7 @@ class TrainingWorker(GeneratorWorker):
         self.log_parameters()
 
         for epoch in range(self.max_epochs):
+            # self.log("\n")
             self.log("-" * 10)
             self.log(f"Epoch {epoch + 1}/{self.max_epochs}")
             if self.device.type == "cuda":

@@ -227,10 +227,16 @@ class Cropping(BasePluginSingleImage):
             self.image_path, self.filetype, self.as_folder
         )
 
+        if len(self.image.shape) > 3:
+            self.image = np.squeeze(self.image)
+
         if self.crop_labels:
             self.label = utils.load_images(
                 self.label_path, self.filetype, self.as_folder
             )
+
+            if len(self.label.shape) > 3:
+                self.label = np.squeeze(self.label)
 
         vw = self._viewer
 
@@ -274,6 +280,11 @@ class Cropping(BasePluginSingleImage):
         self._y = 0
         self._z = 0
 
+        print(f"Crop variables")
+        print(image_stack.shape)
+
+
+
         # define crop sizes and boundaries for the image
         crop_sizes = [self._crop_size_x, self._crop_size_y, self._crop_size_z]
         for i in range(len(crop_sizes)):
@@ -284,13 +295,10 @@ class Cropping(BasePluginSingleImage):
         # shapez, shapey, shapex = image_stack.shape
         ends = np.asarray(image_stack.shape) - np.asarray(crop_sizes) + 1
 
-
-
         stepsizes = ends // 100
 
-        print(f"Crop variables")
         print(crop_sizes)
-        print(image_stack.shape)
+
         print(ends)
         print(stepsizes)
 

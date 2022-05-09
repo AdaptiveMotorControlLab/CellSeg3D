@@ -883,7 +883,7 @@ class Trainer(ModelFramework):
                 data["weights"],
                 os.path.join(
                     widget.results_path,
-                    f"latest_weights_aborted_training_{utils.get_time()}.pth",
+                    f"latest_weights_aborted_training_{utils.get_time_filepath()}.pth",
                 ),
             )
             widget.stop_requested = False
