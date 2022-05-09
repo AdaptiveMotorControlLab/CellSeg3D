@@ -275,14 +275,27 @@ class Cropping(BasePluginSingleImage):
         self._z = 0
 
         # define crop sizes and boundaries for the image
-        crop_sizes = (self._crop_size_x, self._crop_size_y, self._crop_size_z)
+        crop_sizes = [self._crop_size_x, self._crop_size_y, self._crop_size_z]
+        for i in range(len(crop_sizes)):
+            if crop_sizes[i] > image_stack.shape[i]:
+                crop_sizes[i] = image_stack.shape[i]
+                warnings.warn(f"WARNING : Crop dimension in axis {i} was too large at {crop_sizes[i]}, it was set to {image_stack.shape[i]}")
         cropx, cropy, cropz = crop_sizes
         # shapez, shapey, shapex = image_stack.shape
         ends = np.asarray(image_stack.shape) - np.asarray(crop_sizes) + 1
+
+
+
         stepsizes = ends // 100
 
+        print(f"Crop variables")
+        print(crop_sizes)
+        print(image_stack.shape)
+        print(ends)
+        print(stepsizes)
+
         highres_crop_layer = vw.add_image(
-            image_stack[:cropz, :cropy, :cropx],
+            image_stack[:cropx, :cropy, :cropz],
             name="cropped",
             blending="additive",
             colormap="twilight_shifted",
@@ -292,7 +305,7 @@ class Cropping(BasePluginSingleImage):
         if self.crop_labels:
             label_stack = self.label
             labels_crop_layer = vw.add_labels(
-                self.label[:cropz, :cropy, :cropx],
+                self.label[:cropx, :cropy, :cropz],
                 name="cropped_labels",
                 scale=self.label_layer.scale,
             )
@@ -312,14 +325,14 @@ class Cropping(BasePluginSingleImage):
             cropz = self._crop_size_z
 
             highres_crop_layer.data = image_stack[
-                i : i + cropz, j : j + cropy, k : k + cropx
+                i : i + cropx, j : j + cropy, k : k + cropz
             ]
             highres_crop_layer.translate = scale * izyx
             highres_crop_layer.refresh()
 
             if crp_lbl:
                 labels_crop_layer.data = label_stack[
-                    i : i + cropz, j : j + cropy, k : k + cropx
+                    i : i + cropx, j : j + cropy, k : k + cropz
                 ]
                 labels_crop_layer.translate = scale * izyx
                 labels_crop_layer.refresh()
