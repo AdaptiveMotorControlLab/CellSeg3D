@@ -29,6 +29,9 @@ from monai.transforms import RandShiftIntensityd
 from monai.transforms import RandSpatialCropSamplesd
 from monai.transforms import SpatialPadd
 from monai.transforms import Zoom
+from monai.utils import set_determinism
+
+# threads
 from napari.qt.threading import GeneratorWorker
 from napari.qt.threading import WorkerBaseSignals
 
@@ -388,6 +391,7 @@ class TrainingWorker(GeneratorWorker):
         num_samples,
         sample_size,
         do_augmentation,
+        deterministic,
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~train` function.
 
@@ -420,6 +424,8 @@ class TrainingWorker(GeneratorWorker):
 
             * do_augmentation : whether to perform data augmentation or not
 
+            * deterministic : dict with "use deterministic" : bool, whether to use deterministic training, "seed": seed for RNG
+
            Note: See :py:func:`~train`
         """
 
@@ -443,6 +449,7 @@ class TrainingWorker(GeneratorWorker):
         self.sample_size = sample_size
 
         self.do_augment = do_augmentation
+        self.seed_dict = deterministic
 
     def log(self, text):
         """Sends a signal that ``text`` should be logged
@@ -454,7 +461,12 @@ class TrainingWorker(GeneratorWorker):
 
     def log_parameters(self):
 
-        self.log("\nParameters summary :")
+        self.log("\nParameters summary :\n")
+
+        if self.seed_dict["use deterministic"]:
+            self.log(f"Deterministic training is enabled")
+            self.log(f"Seed is {self.seed_dict['seed']}")
+
         self.log(f"Training for {self.max_epochs} epochs")
         self.log(f"Loss function is : {str(self.loss_function)}")
         self.log(f"Validation is performed every {self.val_interval} epochs")
@@ -473,6 +485,8 @@ class TrainingWorker(GeneratorWorker):
 
         if self.weights_path is not None:
             self.log(f"Using weights from : {self.weights_path}")
+
+        self.log("\n")
 
     def train(self):
         """Trains the Pytorch model for the given number of epochs, with the selected model and data,
@@ -508,12 +522,19 @@ class TrainingWorker(GeneratorWorker):
         * sample_size : the size of the patches to extract when sampling
 
         * do_augmentation : whether to perform data augmentation or not
+
+        * deterministic : dict with "use deterministic" : bool, whether to use deterministic training, "seed": seed for RNG
         """
 
         #########################
         # error_log = open(results_path +"/error_log.log" % multiprocessing.current_process().name, 'x')
         # faulthandler.enable(file=error_log, all_threads=True)
         #########################
+
+        if self.seed_dict["use deterministic"]:
+            set_determinism(
+                seed=self.seed_dict["seed"]
+            )  # use_deterministic_algorithms = True causes cuda error
 
         sys = platform.system()
         print(sys)

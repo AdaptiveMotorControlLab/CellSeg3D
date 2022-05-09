@@ -273,6 +273,15 @@ class Trainer(ModelFramework):
             "Transfer weights", self.toggle_transfer_param
         )
 
+        self.use_deterministic_choice = ui.make_checkbox(
+            "Deterministic training", func=self.toggle_deterministic_param
+        )
+        self.box_seed = ui.make_n_spinboxes(max=10000000, default=23498)
+        self.lbl_seed = ui.make_label("Seed", self)
+        self.container_seed = ui.combine_blocks(
+            self.box_seed, self.lbl_seed, horizontal=False
+        )
+
         self.progress = QProgressBar()
         self.progress.setVisible(False)
         """Dock widget containing the progress bar"""
@@ -303,6 +312,12 @@ class Trainer(ModelFramework):
             self.custom_weights_choice.setVisible(True)
         else:
             self.custom_weights_choice.setVisible(False)
+
+    def toggle_deterministic_param(self):
+        if self.use_deterministic_choice.isChecked():
+            self.container_seed.setVisible(True)
+        else:
+            self.container_seed.setVisible(False)
 
     def check_ready(self):
         """
@@ -595,6 +610,22 @@ class Trainer(ModelFramework):
         train_tab_layout.addWidget(train_param_group_w)
         # end of training params group
         ##################
+        ui.add_blank(self, train_tab_layout)
+        ##################
+        # deterministic choice group
+        seed_w, seed_l = ui.make_group(
+            "Deterministic training", R=1, B=5, T=11
+        )
+
+        seed_l.addWidget(self.use_deterministic_choice, alignment=ui.LEFT_AL)
+        seed_l.addWidget(self.container_seed, alignment=ui.LEFT_AL)
+        self.container_seed.setVisible(False)
+
+        seed_w.setLayout(seed_l)
+        train_tab_layout.addWidget(seed_w)
+
+        # end of deterministic choice group
+        ##################
         # buttons
 
         ui.add_blank(self, train_tab_layout)
@@ -710,7 +741,15 @@ class Trainer(ModelFramework):
             self.data = self.create_train_dataset_dict()
             self.max_epochs = self.epoch_choice.value()
 
-            self.learning_rate = self.learning_rate_dict[self.learning_rate_choice.currentText()]
+            self.learning_rate = self.learning_rate_dict[
+                self.learning_rate_choice.currentText()
+            ]
+
+            seed_dict = {
+                "use deterministic": self.use_deterministic_choice.isChecked(),
+                "seed": self.box_seed.value(),
+            }
+
 
             self.patch_size = []
             [
@@ -722,10 +761,9 @@ class Trainer(ModelFramework):
                 "class": self.get_model(self.model_choice.currentText()),
                 "name": self.model_choice.currentText(),
             }
-
             self.results_path = (
-                self.results_path
-                + f"/{model_dict['name']}_results_{self.start_time}"
+                    self.results_path
+                    + f"/{model_dict['name']}_results_{utils.get_date_time()}"
             )
             os.makedirs(
                 self.results_path, exist_ok=False
@@ -758,6 +796,7 @@ class Trainer(ModelFramework):
                 num_samples=self.num_samples,
                 sample_size=self.patch_size,
                 do_augmentation=self.augment_choice.isChecked(),
+                deterministic=seed_dict,
             )
 
             [btn.setVisible(False) for btn in self.close_buttons]
@@ -826,7 +865,7 @@ class Trainer(ModelFramework):
     def on_error(self):
         """Catches errored signal from worker"""
         self.log.print_and_log(f"WORKER ERRORED at {utils.get_time()}")
-        self.worker=None
+        self.worker = None
         self.empty_cuda_cache()
         # self.clean_cache()
 
