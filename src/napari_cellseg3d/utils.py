@@ -170,10 +170,9 @@ def anisotropy_zoom_factor(resolutions):
     Args:
         resolutions: array for resolution (float) in microns for each axis
 
-    Returns: an array with the corresponding zoom factors for each axis
+ith    Returns: an array with the corresponding zoom factors for each axis (all values divided by min)
 
     """
-    # TODO docs
 
     base = min(resolutions)
     zoom_factors = [base / res for res in resolutions]
@@ -376,16 +375,16 @@ def load_images(dir_or_path, filetype="", as_folder: bool = False):
     return images_original
 
 
-def load_predicted_masks(mito_mask_dir, er_mask_dir, filetype):
-
-    images_mito_label = load_images(mito_mask_dir, filetype)
-    # TODO : check that there is no problem with compute when loading as single file
-    images_mito_label = images_mito_label.compute()
-    images_er_label = load_images(er_mask_dir, filetype)
-    # TODO : check that there is no problem with compute when loading as single file
-    images_er_label = images_er_label.compute()
-    base_label = (images_mito_label > 127) * 1 + (images_er_label > 127) * 2
-    return base_label
+# def load_predicted_masks(mito_mask_dir, er_mask_dir, filetype):
+#
+#     images_mito_label = load_images(mito_mask_dir, filetype)
+#     # TODO : check that there is no problem with compute when loading as single file
+#     images_mito_label = images_mito_label.compute()
+#     images_er_label = load_images(er_mask_dir, filetype)
+#     # TODO : check that there is no problem with compute when loading as single file
+#     images_er_label = images_er_label.compute()
+#     base_label = (images_mito_label > 127) * 1 + (images_er_label > 127) * 2
+#     return base_label
 
 
 def load_saved_masks(mod_mask_dir, filetype, as_folder: bool):

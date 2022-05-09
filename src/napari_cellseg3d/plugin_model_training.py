@@ -750,7 +750,6 @@ class Trainer(ModelFramework):
                 "seed": self.box_seed.value(),
             }
 
-
             self.patch_size = []
             [
                 self.patch_size.append(w.value())
@@ -762,8 +761,8 @@ class Trainer(ModelFramework):
                 "name": self.model_choice.currentText(),
             }
             self.results_path = (
-                    self.results_path
-                    + f"/{model_dict['name']}_results_{utils.get_date_time()}"
+                self.results_path
+                + f"/{model_dict['name']}_results_{utils.get_date_time()}"
             )
             os.makedirs(
                 self.results_path, exist_ok=False

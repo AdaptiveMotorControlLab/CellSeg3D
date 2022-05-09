@@ -149,12 +149,13 @@ def launch_review(
 
     layer = view1.layers[0]
     layer1 = view1.layers[1]
-    if not as_folder:
-        r_path = os.path.dirname(r_path)
+    # if not as_folder:
+    #     r_path = os.path.dirname(r_path)
 
     @magicgui(
         dirname={"mode": "d", "label": "Save labels in... "},
         call_button="Save",
+        # call_button_2="Save & quit",
     )
     def file_widget(
         dirname=Path(r_path),
@@ -182,7 +183,11 @@ def launch_review(
                     dat = viewer.layers["labels"].data
                     utils.save_stack(dat, dir_name, filetype=filetype)
 
-        return dirname, quicksave()
+        # def quicksave_quit():
+        #     quicksave()
+        #     viewer.window.close()
+
+        return dirname, quicksave() #, quicksave_quit()
 
     # gui = file_widget.show(run=True)  # dirpicker.show(run=True)
 

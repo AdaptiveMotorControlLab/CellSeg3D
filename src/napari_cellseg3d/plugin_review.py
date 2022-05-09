@@ -55,7 +55,7 @@ class Reviewer(BasePluginSingleImage):
             "Start reviewing", self.run_review, self
         )
 
-        self.lbl_mod = QLabel("Model name", self)
+        self.lbl_mod = QLabel("Name", self)
 
         self.warn_label = QLabel(
             "WARNING : You already have a review session running.\n"
@@ -71,23 +71,27 @@ class Reviewer(BasePluginSingleImage):
     def build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
 
-        w, vbox = ui.make_container_widget(0, 0, 1, 11)
+        self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.MinimumExpanding)
+
+        tab, layout = ui.make_container_widget(0, 0, 1, 1)
 
         global global_launched_before
         if global_launched_before:
-            vbox.addWidget(self.warn_label)
+            layout.addWidget(self.warn_label)
             warnings.warn(
                 "You already have a review session running.\n"
                 "Launching another will close the current one,\n"
                 " make sure to save your work beforehand"
             )
 
-        ui.add_blank(self, vbox)
+        # ui.add_blank(self, layout)
         ###########################
         data_group_w, data_group_l = ui.make_group("Data")
 
         data_group_l.addWidget(
-            ui.combine_blocks(self.filetype_choice, self.file_handling_box),
+            ui.combine_blocks(
+                self.filetype_choice, self.file_handling_box, horizontal=False
+            ),
             alignment=ui.LEFT_AL,
         )
         self.filetype_choice.setVisible(False)
@@ -101,11 +105,10 @@ class Reviewer(BasePluginSingleImage):
         )
 
         data_group_w.setLayout(data_group_l)
-        vbox.addWidget(data_group_w)
+        layout.addWidget(data_group_w)
         ###########################
-        ui.add_blank(self, vbox)
+        ui.add_blank(self, layout)
         ###########################
-        # vbox.addWidget(self.lblft2)
         csv_param_w, csv_param_l = ui.make_group("CSV parameters")
 
         csv_param_l.addWidget(
@@ -114,7 +117,7 @@ class Reviewer(BasePluginSingleImage):
                 self.lbl_mod,
                 horizontal=False,
                 l=5,
-                t=5,
+                t=0,
                 r=5,
                 b=5,
             )
@@ -122,20 +125,21 @@ class Reviewer(BasePluginSingleImage):
         csv_param_l.addWidget(self.checkBox)
 
         csv_param_w.setLayout(csv_param_l)
-        vbox.addWidget(csv_param_w)
+        layout.addWidget(csv_param_w)
         ###########################
-        ui.add_blank(self, vbox)
+        ui.add_blank(self, layout)
         ###########################
 
-        vbox.addWidget(self.btn_start)
-        vbox.addWidget(self.btn_close)
+        layout.addWidget(self.btn_start)
+        layout.addWidget(self.btn_close)
 
         ui.make_scrollable(
-            contained_layout=vbox,
-            containing_widget=self,
-            min_wh=[185, 200],
-            base_wh=[190, 600],
+            contained_layout=layout,
+            containing_widget=tab,
+            min_wh=[190,300]
         )
+
+        self.addTab(tab, "Review")
         # self.show()
         # self._viewer.window.add_dock_widget(self, name="Reviewer", area="right")
 
@@ -178,7 +182,7 @@ class Reviewer(BasePluginSingleImage):
             self.image_path, self.filetype, self.as_folder
         )
         if (
-            self.label_path == ""
+            self.label_path == ""  # TODO check if it works
         ):  # saves empty images of the same size as original images
             if self.as_folder:
                 labels = np.zeros_like(images.compute())  # dask to numpy

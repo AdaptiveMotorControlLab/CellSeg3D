@@ -65,6 +65,7 @@ class Datamanager(QWidget):
         self.csv_path = ""
         self.slice_num = 0
         self.filetype = ""
+        self.filename = None
         self.image_dims = self.viewer.layers[0].data.shape
         self.as_folder = False
         """Whether to load as folder or single file"""
@@ -86,6 +87,14 @@ class Datamanager(QWidget):
         print(label_dir)
         self.filetype = filetype
         self.as_folder = as_folder
+
+        if not self.as_folder:
+            self.filename = os.path.split(label_dir)[1]
+            label_dir = os.path.split(label_dir)[0]
+            print("Loading single image")
+            print(self.filename)
+            print(label_dir)
+
         self.df, self.csv_path = self.load_csv(label_dir, model_type, checkbox)
 
         print(self.csv_path, checkbox)
@@ -98,7 +107,7 @@ class Datamanager(QWidget):
 
         Args:
             label_dir (str): label path
-            model_type (str):model type
+            model_type (str): model type
             checkbox ( bool ): create new dataset or not
 
         Returns:
@@ -131,7 +140,7 @@ class Datamanager(QWidget):
                 pass
         return df, csv_path
 
-    def create(self, label_dir, model_type):
+    def create(self, label_dir, model_type, filename=None):
         """
         Create a new dataframe and save the csv
         Args:
@@ -148,20 +157,16 @@ class Datamanager(QWidget):
                     for path in Path(label_dir).glob("./*" + self.filetype)
                 )
             )
-        elif not self.as_folder:
-            path = list(Path(label_dir).glob("./*" + self.filetype))
+        else:
             # print(self.image_dims[0])
-            print(path)
-            filename = path
+            if self.filename is not None:
+                filename = self.filename
+            else:
+                filename="image"
             labels = [str(filename) for i in range(self.image_dims[0])]
 
-        else:
-            raise ValueError(
-                "Error: Loading behaviour should be determined on launch"
-            )
-
         df = pd.DataFrame(
-            {"filename": labels, "train": ["Not Checked"] * len(labels)}
+            {"filename": labels, "train": ["Not checked"] * len(labels)}
         )
         csv_path = os.path.join(label_dir, f"{model_type}_train0.csv")
         print("csv path for create")
@@ -188,13 +193,14 @@ class Datamanager(QWidget):
         if self.viewer.dims.ndisplay != 2:
             # TODO test if undefined behaviour or if okay
             warnings.warn("Please switch back to 2D mode !")
-        if self.button.text() == "Not Checked":
+            return
+        if self.button.text() == "Not checked":
             self.button.setText("Checked")
             self.df.at[self.df.index[self.slice_num], "train"] = "Checked"
             self.df.to_csv(self.csv_path)
         else:
-            self.button.setText("Not Checked")
-            self.df.at[self.df.index[self.slice_num], "train"] = "Not Checked"
+            self.button.setText("Not checked")
+            self.df.at[self.df.index[self.slice_num], "train"] = "Not checked"
             self.df.to_csv(self.csv_path)
 
     # def move_data(self):

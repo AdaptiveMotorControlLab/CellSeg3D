@@ -374,7 +374,7 @@ class Inferer(ModelFramework):
         self.show_original_checkbox.setVisible(False)
         self.lbl_display_number.setVisible(False)
 
-        # TODO : add custom model handling ? using exec() to read user provided model class
+        # TODO : add custom model handling ?
         # self.lbl_label.setText("model.pth directory :")
 
         display_opt_group.setLayout(display_opt_layout)
@@ -392,7 +392,7 @@ class Inferer(ModelFramework):
         ui.make_scrollable(
             containing_widget=tab,
             contained_layout=tab_layout,
-            min_wh=[200, 100],
+            min_wh=[200, 300],
         )
         self.addTab(tab, "Inference")
 
