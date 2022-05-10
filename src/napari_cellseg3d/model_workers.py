@@ -184,6 +184,9 @@ class InferenceWorker(GeneratorWorker):
 
         images_dict = self.create_inference_dict(self.images_filepaths)
 
+        if self.device =="cuda": # TODO : fix mem alloc
+            torch.backends.cudnn.benchmark = False
+
         # TODO : better solution than loading first image always ?
         data_check = LoadImaged(keys=["image"])(images_dict[0])
         # print(data)
@@ -284,6 +287,8 @@ class InferenceWorker(GeneratorWorker):
                 )
 
                 out = outputs.detach().cpu()
+                # del outputs # TODO fix memory ?
+                # outputs = None
 
                 if self.transforms["zoom"][0]:
                     zoom = self.transforms["zoom"][1]

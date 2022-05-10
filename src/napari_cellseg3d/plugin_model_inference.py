@@ -107,7 +107,7 @@ class Inferer(ModelFramework):
         )
 
         self.aniso_box_widgets = ui.make_n_spinboxes(
-            n=3, min=1.0, default=1.5, step=0.5, double=True
+            n=3, min=1.0, max=1000, default=1.5, step=0.5, double=True
         )
         self.aniso_box_lbl = [
             QLabel("Resolution in " + axis + " (microns) :") for axis in "xyz"

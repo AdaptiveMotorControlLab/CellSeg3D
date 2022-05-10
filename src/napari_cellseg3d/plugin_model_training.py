@@ -706,7 +706,7 @@ class Trainer(ModelFramework):
 
         TODO:
 
-        * Fix memory leak
+        * Fix memory allocation from torch
 
 
         Returns: Returns empty immediately if the file paths are not set correctly.

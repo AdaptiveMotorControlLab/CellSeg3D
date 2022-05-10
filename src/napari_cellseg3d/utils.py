@@ -146,7 +146,7 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
         pad = -1
         size = image_shape[i]
         if anisotropy_factor is not None:
-            # TODO : GOING TO CAUSE ISSUES WITH CERTAIN ANISOTROPY FACTORS
+            # problems with zero divs avoided via params for spinboxes
             size = int(size / anisotropy_factor[i])
         while pad < size:
             pad = 2**n

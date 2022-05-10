@@ -68,6 +68,7 @@ Then go into Plugins > napari-cellseg3d, and choose which tool to use.
 - **Train**:  This module allows you to train segmentation algorithms from labeled volumes.
 - **Utilities**: This module allows you to use several utilities, e.g. to crop your volumes and labels, compute prediction scores or convert labels
 
+See above for links to detailed guides regarding the usage of the modules.
 
 Credits & acknowledgments
 ---------------------------------------------
