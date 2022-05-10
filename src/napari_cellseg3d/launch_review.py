@@ -67,7 +67,7 @@ def launch_review(
 
 
     """
-    global slicer
+    global slicer # Todo : is this okay ? ask Max
     global z_pos
     global view1
     global layer
@@ -80,7 +80,7 @@ def launch_review(
         del layer
     except NameError:
         pass
-    # TODO : cleanup, notably viewer argument ?
+
     view1 = viewer
     view1.add_image(
         images_original,

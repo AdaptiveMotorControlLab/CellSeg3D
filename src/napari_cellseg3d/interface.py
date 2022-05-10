@@ -122,7 +122,7 @@ def make_scrollable(
     container_widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Maximum)
     container_widget.setLayout(contained_layout)
     container_widget.adjustSize()
-    # TODO : could we optimize the number of created objects ?
+    # TODO : optimize the number of created objects ?
     scroll = QScrollArea()
     scroll.setWidget(container_widget)
     scroll.setWidgetResizable(True)

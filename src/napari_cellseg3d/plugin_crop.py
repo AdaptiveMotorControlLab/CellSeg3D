@@ -266,7 +266,7 @@ class Cropping(BasePluginSingleImage):
 
     def add_crop_sliders(
         self,
-    ):  # TODO fix OOB behaviour (check if <0 or >max_size ?)
+    ):
 
         vw = self._viewer
 

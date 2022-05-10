@@ -140,7 +140,7 @@ def to_instance(image, is_file_path=False):
 
     result = binary_watershed(
         image, thres_small=0, thres_seeding=0.3, rem_seed_thres=0
-    )  # TODO add params ?
+    )  # TODO add params
 
     return result
 

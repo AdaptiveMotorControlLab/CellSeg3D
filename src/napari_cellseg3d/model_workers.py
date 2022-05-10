@@ -586,7 +586,6 @@ class TrainingWorker(GeneratorWorker):
         print("* " * 20)
         print("Validation files :")
         [print(f"{val_file}\n") for val_file in val_files]
-        # TODO : param patch ROI size
 
         if self.sampling:
             sample_loader = Compose(

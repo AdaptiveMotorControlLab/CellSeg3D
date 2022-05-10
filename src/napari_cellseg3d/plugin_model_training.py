@@ -79,7 +79,7 @@ class Trainer(ModelFramework):
 
         TODO:
 
-        * Choice of validation proportion, sampling behaviour (toggle), maybe in a data pre-processing tab
+        * Choice of validation proportion
 
         * Custom model loading
 
