@@ -184,8 +184,8 @@ class InferenceWorker(GeneratorWorker):
 
         images_dict = self.create_inference_dict(self.images_filepaths)
 
-        if self.device =="cuda": # TODO : fix mem alloc
-            torch.backends.cudnn.benchmark = False
+        # if self.device =="cuda": # TODO : fix mem alloc, this does not work it seems
+        # torch.backends.cudnn.benchmark = False
 
         # TODO : better solution than loading first image always ?
         data_check = LoadImaged(keys=["image"])(images_dict[0])
