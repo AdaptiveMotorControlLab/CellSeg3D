@@ -1,7 +1,9 @@
 import os
 import warnings
+import numpy as np
 
 import napari
+
 # Qt
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QSizePolicy
@@ -105,7 +107,7 @@ class Inferer(ModelFramework):
         )
 
         self.aniso_box_widgets = ui.make_n_spinboxes(
-            n=3, min=1.0, default=1.5, step=0.5, double=True
+            n=3, min=1.0, max=1000, default=1.5, step=0.5, double=True
         )
         self.aniso_box_lbl = [
             QLabel("Resolution in " + axis + " (microns) :") for axis in "xyz"
@@ -372,7 +374,7 @@ class Inferer(ModelFramework):
         self.show_original_checkbox.setVisible(False)
         self.lbl_display_number.setVisible(False)
 
-        # TODO : add custom model handling ? using exec() to read user provided model class
+        # TODO : add custom model handling ?
         # self.lbl_label.setText("model.pth directory :")
 
         display_opt_group.setLayout(display_opt_layout)
@@ -390,7 +392,7 @@ class Inferer(ModelFramework):
         ui.make_scrollable(
             containing_widget=tab,
             contained_layout=tab_layout,
-            min_wh=[200, 100],
+            min_wh=[200, 300],
         )
         self.addTab(tab, "Inference")
 
@@ -624,6 +626,11 @@ class Inferer(ModelFramework):
             )
 
             if data["instance_labels"] is not None:
+
+                widget.log.print_and_log(
+                    f"\nNUMBER OF CELLS : {np.amax(data['instance_labels'])}\n"
+                )
+
                 name = f"instance_labels_{image_id}"
                 instance_layer = viewer.add_labels(
                     data["instance_labels"], name=name

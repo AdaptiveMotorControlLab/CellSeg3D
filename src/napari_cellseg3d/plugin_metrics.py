@@ -157,8 +157,8 @@ class MetricsUtils(BasePluginFolder):
 
     def compute_dice(self):
         """Computes the dice metric between pairs of labels. Rotates the prediction label to find matching orientation as well."""
-        u = 0
-        t = 0
+        # u = 0
+        # t = 0
         total_metrics = []
         self.canvas = (
             None  # kind of unsafe way to stack plots... but it works.
@@ -205,12 +205,29 @@ class MetricsUtils(BasePluginFolder):
                     f"Padded sizes of images do not match ! Padded ground label : {ground.shape} Padded pred label : {pred.shape}"
                 )
             # if u < 1:
-            self._viewer.add_image(ground, name="ground", colormap="blue",opacity=0.7)
-            self._viewer.add_image(pred, name="pred", colormap="red")
-            self._viewer.add_image(np.rot90(pred[0][0], axes=(0,1)), name="pred flip 0", colormap="red",opacity=0.7)
-            self._viewer.add_image(np.rot90(pred[0][0], axes=(1,2)), name="pred flip 1", colormap="red",opacity=0.7)
-            self._viewer.add_image(np.rot90(pred[0][0], axes=(0,2)), name="pred flip 2", colormap="red",opacity=0.7)
-            u+=1
+            # self._viewer.add_image(
+            #     ground, name="ground", colormap="blue", opacity=0.7
+            # )
+            # self._viewer.add_image(pred, name="pred", colormap="red")
+            # self._viewer.add_image(
+            #     np.rot90(pred[0][0], axes=(0, 1)),
+            #     name="pred flip 0",
+            #     colormap="red",
+            #     opacity=0.7,
+            # )
+            # self._viewer.add_image(
+            #     np.rot90(pred[0][0], axes=(1, 2)),
+            #     name="pred flip 1",
+            #     colormap="red",
+            #     opacity=0.7,
+            # )
+            # self._viewer.add_image(
+            #     np.rot90(pred[0][0], axes=(0, 2)),
+            #     name="pred flip 2",
+            #     colormap="red",
+            #     opacity=0.7,
+            # )
+            # u += 1
 
             # TODO add rotation toggle
             pred_flip_x = np.rot90(pred[0][0], axes=(0, 1))
@@ -224,10 +241,15 @@ class MetricsUtils(BasePluginFolder):
                 for i in range(3):
                     scores.append(utils.dice_coeff(np.flip(p, axis=i), ground))
 
-            if t <1 :
-                for i in range(3):
-                    self._viewer.add_image(np.flip(pred_flip_x,axis=i), name=f"flip", colormap="green",opacity=0.7)
-                t+=1
+            # if t < 1:
+            #     for i in range(3):
+            #         self._viewer.add_image(
+            #             np.flip(pred_flip_x, axis=i),
+            #             name=f"flip",
+            #             colormap="green",
+            #             opacity=0.7,
+            #         )
+            #     t += 1
 
             # print(scores)
             score = max(scores)

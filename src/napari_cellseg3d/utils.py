@@ -146,12 +146,19 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
         pad = -1
         size = image_shape[i]
         if anisotropy_factor is not None:
-            # TODO : GOING TO CAUSE ISSUES WITH CERTAIN ANISOTROPY FACTORS
+            # problems with zero divs avoided via params for spinboxes
             size = int(size / anisotropy_factor[i])
         while pad < size:
+
+            # if size - pad < 30:
+            #     warnings.warn(
+            #         f"Your value is close to a lower power of two; you might want to choose slightly smaller"
+            #         f" sizes and/or crop your images down to {pad}"
+            #     )
+
             pad = 2**n
             n += 1
-            if pad >= 1024:
+            if pad >= 256:
                 warnings.warn(
                     "Warning : a very large dimension for automatic padding has been computed.\n"
                     "Ensure your images are of an appropriate size and/or that you have enough memory."
@@ -167,13 +174,12 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
 def anisotropy_zoom_factor(resolutions):
     """Computes a zoom factor to correct anisotropy, based on resolutions
 
-    Args:
-        resolutions: array for resolution (float) in microns for each axis
+        Args:
+            resolutions: array for resolution (float) in microns for each axis
 
-    Returns: an array with the corresponding zoom factors for each axis
+    ith    Returns: an array with the corresponding zoom factors for each axis (all values divided by min)
 
     """
-    # TODO docs
 
     base = min(resolutions)
     zoom_factors = [base / res for res in resolutions]
@@ -376,16 +382,16 @@ def load_images(dir_or_path, filetype="", as_folder: bool = False):
     return images_original
 
 
-def load_predicted_masks(mito_mask_dir, er_mask_dir, filetype):
-
-    images_mito_label = load_images(mito_mask_dir, filetype)
-    # TODO : check that there is no problem with compute when loading as single file
-    images_mito_label = images_mito_label.compute()
-    images_er_label = load_images(er_mask_dir, filetype)
-    # TODO : check that there is no problem with compute when loading as single file
-    images_er_label = images_er_label.compute()
-    base_label = (images_mito_label > 127) * 1 + (images_er_label > 127) * 2
-    return base_label
+# def load_predicted_masks(mito_mask_dir, er_mask_dir, filetype):
+#
+#     images_mito_label = load_images(mito_mask_dir, filetype)
+#     # TODO : check that there is no problem with compute when loading as single file
+#     images_mito_label = images_mito_label.compute()
+#     images_er_label = load_images(er_mask_dir, filetype)
+#     # TODO : check that there is no problem with compute when loading as single file
+#     images_er_label = images_er_label.compute()
+#     base_label = (images_mito_label > 127) * 1 + (images_er_label > 127) * 2
+#     return base_label
 
 
 def load_saved_masks(mod_mask_dir, filetype, as_folder: bool):

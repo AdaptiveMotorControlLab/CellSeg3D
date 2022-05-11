@@ -1,5 +1,7 @@
 import os
 import warnings
+import torch
+from torch import nn
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -9,6 +11,7 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
+
 # MONAI
 from monai.losses import DiceCELoss
 from monai.losses import DiceFocalLoss
@@ -16,6 +19,7 @@ from monai.losses import DiceLoss
 from monai.losses import FocalLoss
 from monai.losses import GeneralizedDiceLoss
 from monai.losses import TverskyLoss
+
 # Qt
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QProgressBar
@@ -28,6 +32,7 @@ from napari_cellseg3d.model_framework import ModelFramework
 from napari_cellseg3d.model_workers import TrainingWorker
 
 NUMBER_TABS = 3
+DEFAULT_PATCH_SIZE = 60
 
 
 class Trainer(ModelFramework):
@@ -75,7 +80,7 @@ class Trainer(ModelFramework):
 
         TODO:
 
-        * Choice of validation proportion, sampling behaviour (toggle), maybe in a data pre-processing tab
+        * Choice of validation proportion
 
         * Custom model loading
 
@@ -112,6 +117,7 @@ class Trainer(ModelFramework):
         self.data_path = ""
         self.label_path = ""
         self.results_path = ""
+        self.results_path_folder = ""
         ######################
         ######################
         ######################
@@ -162,16 +168,21 @@ class Trainer(ModelFramework):
         """At which epochs to perform validation. E.g. if 2, will run validation on epochs 2,4,6..."""
         self.patch_size = []
         """The size of samples to be extracted from images"""
+        self.learning_rate = 1e-3
 
         self.model = None  # TODO : custom model loading ?
         self.worker = None
         """Training worker for multithreading, should be a TrainingWorker instance from :doc:model_workers.py"""
         self.data = None
         """Data dictionary containing file paths"""
+        self.stop_requested = False
+        """Whether the worker should stop or not"""
+        self.start_time = ""
 
         self.loss_dict = {
             "Dice loss": DiceLoss(sigmoid=True),
             "Focal loss": FocalLoss(),
+            # "BCELoss":nn.BCELoss(),
             "Dice-Focal loss": DiceFocalLoss(sigmoid=True, lambda_dice=0.5),
             "Generalized Dice loss": GeneralizedDiceLoss(sigmoid=True),
             "DiceCELoss": DiceCELoss(sigmoid=True, lambda_ce=0.5),
@@ -219,6 +230,22 @@ class Trainer(ModelFramework):
         )
         self.lbl_val_interv_choice = QLabel("Validation interval : ", self)
 
+        self.learning_rate_dict = {
+            "1e-2": 1e-2,
+            "1e-3": 1e-3,
+            "1e-4": 1e-4,
+            "1e-5": 1e-5,
+            "1e-6": 1e-6,
+        }
+
+        (
+            self.learning_rate_choice,
+            self.lbl_learning_rate_choice,
+        ) = ui.make_combobox(
+            self.learning_rate_dict.keys(), label="Learning rate"
+        )
+        self.learning_rate_choice.setCurrentIndex(1)
+
         self.augment_choice = ui.make_checkbox("Augment data")
 
         # TODO add self.tabs, self.close_buttons etc...
@@ -227,7 +254,9 @@ class Trainer(ModelFramework):
         ]
         """Close buttons list for each tab"""
 
-        self.patch_size_widgets = ui.make_n_spinboxes(3, 10, 1023, 120)
+        self.patch_size_widgets = ui.make_n_spinboxes(
+            3, 10, 1024, DEFAULT_PATCH_SIZE
+        )
 
         self.patch_size_lbl = [
             QLabel(f"Size of patch in {axis} :") for axis in "xyz"
@@ -246,6 +275,15 @@ class Trainer(ModelFramework):
 
         self.use_transfer_choice = ui.make_checkbox(
             "Transfer weights", self.toggle_transfer_param
+        )
+
+        self.use_deterministic_choice = ui.make_checkbox(
+            "Deterministic training", func=self.toggle_deterministic_param
+        )
+        self.box_seed = ui.make_n_spinboxes(max=10000000, default=23498)
+        self.lbl_seed = ui.make_label("Seed", self)
+        self.container_seed = ui.combine_blocks(
+            self.box_seed, self.lbl_seed, horizontal=False
         )
 
         self.progress = QProgressBar()
@@ -278,6 +316,12 @@ class Trainer(ModelFramework):
             self.custom_weights_choice.setVisible(True)
         else:
             self.custom_weights_choice.setVisible(False)
+
+    def toggle_deterministic_param(self):
+        if self.use_deterministic_choice.isChecked():
+            self.container_seed.setVisible(True)
+        else:
+            self.container_seed.setVisible(False)
 
     def check_ready(self):
         """
@@ -525,8 +569,20 @@ class Trainer(ModelFramework):
                 r=5,
                 b=5,
             ),
-            alignment=ui.LEFT_AL,
+            # alignment=ui.LEFT_AL,
         )  # batch size
+        train_param_group_l.addWidget(
+            ui.combine_blocks(
+                self.learning_rate_choice,
+                self.lbl_learning_rate_choice,
+                min_spacing=spacing,
+                horizontal=False,
+                l=5,
+                t=5,
+                r=5,
+                b=5,
+            )
+        )  # learning rate
         train_param_group_l.addWidget(
             ui.combine_blocks(
                 self.epoch_choice,
@@ -558,6 +614,22 @@ class Trainer(ModelFramework):
         train_tab_layout.addWidget(train_param_group_w)
         # end of training params group
         ##################
+        ui.add_blank(self, train_tab_layout)
+        ##################
+        # deterministic choice group
+        seed_w, seed_l = ui.make_group(
+            "Deterministic training", R=1, B=5, T=11
+        )
+
+        seed_l.addWidget(self.use_deterministic_choice, alignment=ui.LEFT_AL)
+        seed_l.addWidget(self.container_seed, alignment=ui.LEFT_AL)
+        self.container_seed.setVisible(False)
+
+        seed_w.setLayout(seed_l)
+        train_tab_layout.addWidget(seed_w)
+
+        # end of deterministic choice group
+        ##################
         # buttons
 
         ui.add_blank(self, train_tab_layout)
@@ -583,23 +655,24 @@ class Trainer(ModelFramework):
         ui.make_scrollable(
             contained_layout=data_tab_layout,
             containing_widget=data_tab,
-            min_wh=[100, 150],
+            min_wh=[200, 300],
         )  # , max_wh=[200,1000])
         self.addTab(data_tab, "Data")
 
         ui.make_scrollable(
             contained_layout=augment_tab_l,
             containing_widget=augment_tab_w,
-            min_wh=[100, 200],
+            min_wh=[200, 300],
         )
         self.addTab(augment_tab_w, "Augmentation")
 
         ui.make_scrollable(
             contained_layout=train_tab_layout,
             containing_widget=train_tab,
-            min_wh=[100, 200],
+            min_wh=[200, 300],
         )
         self.addTab(train_tab, "Training")
+        self.setMinimumSize(220, 200)
 
     def show_dialog_lab(self):
         """Shows the  dialog to load label files in a path, loads them (see :doc:model_framework) and changes the widget
@@ -638,12 +711,16 @@ class Trainer(ModelFramework):
 
         TODO:
 
-        * Fix memory leak
+        * Fix memory allocation from torch
 
 
         Returns: Returns empty immediately if the file paths are not set correctly.
 
         """
+        self.start_time = utils.get_time_filepath()
+        if self.stop_requested:
+            self.log.print_and_log("Worker is already stopping !")
+            return
 
         if not self.check_ready():  # issues a warning if not ready
             err = "Aborting, please set all required paths"
@@ -669,6 +746,15 @@ class Trainer(ModelFramework):
             self.data = self.create_train_dataset_dict()
             self.max_epochs = self.epoch_choice.value()
 
+            self.learning_rate = self.learning_rate_dict[
+                self.learning_rate_choice.currentText()
+            ]
+
+            seed_dict = {
+                "use deterministic": self.use_deterministic_choice.isChecked(),
+                "seed": self.box_seed.value(),
+            }
+
             self.patch_size = []
             [
                 self.patch_size.append(w.value())
@@ -679,11 +765,13 @@ class Trainer(ModelFramework):
                 "class": self.get_model(self.model_choice.currentText()),
                 "name": self.model_choice.currentText(),
             }
-
-            self.results_path = (
+            self.results_path_folder = (
                 self.results_path
                 + f"/{model_dict['name']}_results_{utils.get_date_time()}"
             )
+            os.makedirs(
+                self.results_path_folder, exist_ok=False
+            )  # avoid overwrite where possible
 
             if self.use_transfer_choice.isChecked():
                 if self.custom_weights_choice.isChecked():
@@ -693,12 +781,8 @@ class Trainer(ModelFramework):
             else:
                 weights_path = None
 
-            os.makedirs(
-                self.results_path, exist_ok=False
-            )  # avoid overwrite where possible
-
             self.log.print_and_log(
-                f"Notice : Saving results to : {self.results_path}"
+                f"Notice : Saving results to : {self.results_path_folder}"
             )
 
             self.worker = TrainingWorker(
@@ -708,13 +792,15 @@ class Trainer(ModelFramework):
                 data_dicts=self.data,
                 max_epochs=self.max_epochs,
                 loss_function=self.get_loss(self.loss_choice.currentText()),
+                learning_rate=self.learning_rate,
                 val_interval=self.val_interval,
                 batch_size=self.batch_size,
-                results_path=self.results_path,
+                results_path=self.results_path_folder,
                 sampling=self.patch_choice.isChecked(),
                 num_samples=self.num_samples,
                 sample_size=self.patch_size,
                 do_augmentation=self.augment_choice.isChecked(),
+                deterministic=seed_dict,
             )
 
             [btn.setVisible(False) for btn in self.close_buttons]
@@ -731,10 +817,13 @@ class Trainer(ModelFramework):
             self.worker.errored.connect(self.on_error)
 
         if self.worker.is_running:
+            self.log.print_and_log("*" * 20)
             self.log.print_and_log(
-                f"Stop requested at {utils.get_time()}. \nWaiting for next validation step..."
+                f"Stop requested at {utils.get_time()}. \nWaiting for next yielding step..."
             )
-            self.btn_start.setText("Stopping... Please wait for next saving")
+            self.stop_requested = True
+            self.btn_start.setText("Stopping... Please wait")
+            self.log.print_and_log("*" * 20)
             self.worker.quit()
         else:
             self.worker.start()
@@ -742,32 +831,32 @@ class Trainer(ModelFramework):
 
     def on_start(self):
         """Catches started signal from worker"""
-        if self.plot_dock is not None:
-            self._viewer.window.remove_dock_widget(self.plot_dock)
-            self.plot_dock = None
 
+        self.remove_docked_widgets()
         self.display_status_report()
 
-        self.log.print_and_log(f"Worker started at {utils.get_time()}")
+        self.log.print_and_log(f"Worker started at {self.start_time}")
         self.log.print_and_log("\nWorker is running...")
 
     def on_finish(self):
         """Catches finished signal from worker"""
+        self.log.print_and_log("*" * 20)
         self.log.print_and_log(f"\nWorker finished at {utils.get_time()}")
 
-        self.log.print_and_log(f"Saving last loss plot at {self.results_path}")
+        self.log.print_and_log(f"Saving in {self.results_path_folder}")
+        self.log.print_and_log(f"Saving last loss plot")
 
         if self.canvas is not None:
             self.canvas.figure.savefig(
                 (
-                    self.results_path
-                    + f"/final_metric_plots_{utils.get_date_time()}.png"
+                    self.results_path_folder
+                    + f"/final_metric_plots_{utils.get_time_filepath()}.png"
                 ),
                 format="png",
             )
 
-        self.log.print_and_log("Auto-saving log")
-        self.save_log()
+        self.log.print_and_log("Saving log")
+        self.save_log(spec_path=self.results_path_folder)
 
         self.log.print_and_log("Done")
         self.log.print_and_log("*" * 10)
@@ -775,13 +864,17 @@ class Trainer(ModelFramework):
         self.btn_start.setText("Start")
         [btn.setVisible(True) for btn in self.close_buttons]
 
+        del self.worker
         self.worker = None
+        self.results_path_folder = ""
         self.empty_cuda_cache()
+
         # self.clean_cache() # trying to fix memory leak
 
     def on_error(self):
         """Catches errored signal from worker"""
         self.log.print_and_log(f"WORKER ERRORED at {utils.get_time()}")
+        self.worker = None
         self.empty_cuda_cache()
         # self.clean_cache()
 
@@ -790,10 +883,25 @@ class Trainer(ModelFramework):
         # print(
         #     f"\nCatching results : for epoch {data['epoch']}, loss is {data['losses']} and validation is {data['val_metrics']}"
         # )
-        widget.progress.setValue(
-            100 * (data["epoch"] + 1) // widget.max_epochs
-        )
-        widget.update_loss_plot(data["losses"], data["val_metrics"])
+        if data["plot"]:
+            widget.progress.setValue(
+                100 * (data["epoch"] + 1) // widget.max_epochs
+            )
+            widget.update_loss_plot(data["losses"], data["val_metrics"])
+
+        if widget.stop_requested:
+            widget.log.print_and_log(
+                "Saving weights from aborted training in results folder"
+            )
+            torch.save(
+                data["weights"],
+                os.path.join(
+                    widget.results_path_folder,
+                    f"latest_weights_aborted_training_{utils.get_time_filepath()}.pth",
+                ),
+            )
+            widget.log.print_and_log("Saving complete")
+            widget.stop_requested = False
 
     # def clean_cache(self):
     #     """Attempts to clear memory after training"""
@@ -848,7 +956,7 @@ class Trainer(ModelFramework):
             )
             self.canvas.draw_idle()
 
-            plot_path = self.results_path + "/Loss_plots"
+            plot_path = self.results_path_folder + "/Loss_plots"
             os.makedirs(plot_path, exist_ok=True)
             if self.canvas is not None:
                 self.canvas.figure.savefig(
