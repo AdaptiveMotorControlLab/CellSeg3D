@@ -3,7 +3,6 @@
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/04991e21-9cee-4b21-bdfc-d465fd73247d/CELLSEGGIT.png?format=2500w" width="250" title="cellseg3d" alt="cellseg3d" align="right" vspace = "80">
 
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://www.gnu.org/licenses/mit)
 [![PyPI](https://img.shields.io/pypi/v/napari-cellseg-3d.svg?color=green)](https://pypi.org/project/napari-cellseg-3d)
 [![Python Version](https://img.shields.io/pypi/pyversions/napari-cellseg-3d.svg?color=green)](https://python.org)
@@ -26,7 +25,7 @@ You can install `napari-cellseg-3d` via [pip]:
 
 ## Documentation
 
-Can we found at https://c-achard.github.io/cellseg-annotator-test/index.html
+Can be found at https://c-achard.github.io/cellseg-annotator-test/index.html
 
 You can also generate docs by running ``make html`` in the docs folder.
 
@@ -41,7 +40,7 @@ Then go into Plugins > napari-cellseg-3d, and choose which tool to use.
 - **Review**: This module allows you to review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.
 - **Infer**: This module allows you to use pre-trained segmentation algorithms on volumes to automatically label cells.
 - **Train**:  This module allows you to train segmentation algorithms from labeled volumes.
-- **Crop utility**: This module allows you to crop your volumes and labels dynamically, by selecting a fixed size volume and moving it around the image.
+- **Utilities**: This module allows you to perform several actions like cropping your volumes and labels dynamically, by selecting a fixed size volume and moving it around the image; computing prediction scores from ground truth and predicition labels; or converting labels from instance to segmentation and the opposite. 
 
 ## Testing 
 
@@ -53,8 +52,8 @@ To run tests locally:
 
 ## Contributing
 
-Contributions are very welcome. Tests can be run with [tox], please ensure
-the coverage at least stays the same before you submit a pull request.
+Contributions are very welcome. 
+Please ensure the coverage at least stays the same before you submit a pull request.
 
 For local installation, please run:
 
@@ -80,6 +79,7 @@ A CUDA-capable GPU is not needed but very strongly recommended, especially for t
 
 If you get errors from MONAI regarding missing readers, please see [MONAI's optional dependencies] page for instructions on getting the readers required by your images.
 
+[[file an issue]: https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues
 [napari]: https://github.com/napari/napari
 [Cookiecutter]: https://github.com/audreyr/cookiecutter
 [@napari]: https://github.com/napari
