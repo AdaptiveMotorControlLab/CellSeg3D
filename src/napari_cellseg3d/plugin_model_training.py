@@ -873,10 +873,11 @@ class Trainer(ModelFramework):
         # print(
         #     f"\nCatching results : for epoch {data['epoch']}, loss is {data['losses']} and validation is {data['val_metrics']}"
         # )
-        widget.progress.setValue(
-            100 * (data["epoch"] + 1) // widget.max_epochs
-        )
-        widget.update_loss_plot(data["losses"], data["val_metrics"])
+        if data["plot"]:
+            widget.progress.setValue(
+                100 * (data["epoch"] + 1) // widget.max_epochs
+            )
+            widget.update_loss_plot(data["losses"], data["val_metrics"])
 
         if widget.stop_requested:
             torch.save(

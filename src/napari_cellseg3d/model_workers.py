@@ -757,6 +757,7 @@ class TrainingWorker(GeneratorWorker):
                     f"* {step}/{len(train_ds) // train_loader.batch_size}, "
                     f"Train loss: {loss.detach().item():.4f}"
                 )
+                yield {"plot":False, "weights": model.state_dict()}
 
             epoch_loss /= step
             epoch_loss_values.append(epoch_loss)
@@ -804,6 +805,7 @@ class TrainingWorker(GeneratorWorker):
                     val_metric_values.append(metric)
 
                     train_report = {
+                        "plot": True,
                         "epoch": epoch,
                         "losses": epoch_loss_values,
                         "val_metrics": val_metric_values,

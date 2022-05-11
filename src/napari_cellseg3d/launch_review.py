@@ -67,19 +67,19 @@ def launch_review(
 
 
     """
-    global slicer # Todo : is this okay ? ask Max
-    global z_pos
-    global view1
-    global layer
-    global images_original
-    global base_label
+    # global slicer # Todo : is this okay ? ask Max. seems to work without, keep an eye on it
+    # global z_pos
+    # global view1
+    # global layer
+    # global images_original
+    # global base_label
     images_original = original
     base_label = base
-    try:
-        del view1
-        del layer
-    except NameError:
-        pass
+    # try:
+    #     del view1
+    #     del layer
+    # except NameError:
+    #     pass
 
     view1 = viewer
     view1.add_image(

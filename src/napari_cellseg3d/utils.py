@@ -149,9 +149,14 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
             # problems with zero divs avoided via params for spinboxes
             size = int(size / anisotropy_factor[i])
         while pad < size:
+
+            if size-pad < 30 :
+                warnings.warn(f"Your value is close to a lower power of two; you might want to choose slightly smaller"
+                              f" sizes and/or crop your images down to {pad}")
+
             pad = 2**n
             n += 1
-            if pad >= 1024:
+            if pad >= 256:
                 warnings.warn(
                     "Warning : a very large dimension for automatic padding has been computed.\n"
                     "Ensure your images are of an appropriate size and/or that you have enough memory."

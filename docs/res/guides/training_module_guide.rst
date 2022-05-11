@@ -23,9 +23,12 @@ TRAILMAP          An emulation of the `TRAILMAP project on GitHub`_ using `3DUne
 .. _3DUnet for Pytorch: https://github.com/wolny/pytorch-3dunet
 
 .. important::
-    The machine learning models used by this program require all images of a dataset to be of the same size.
-    Please ensure that all the images you are loading are of the **same size**, or to use the **"extract patches" (in augmentation tab)** with an appropriately small size
-    to ensure all images being used by the model are of a workable size.
+    | The machine learning models used by this program require all images of a dataset to be of the same size.
+    | Please ensure that all the images you are loading are of the **same size**, or to use the **"extract patches" (in augmentation tab)** with an appropriately small size to ensure all images being used by the model are of a workable size.
+
+.. important::
+    | **All image sizes used should be as close to a power of two as possible, if not a power of two.**
+    | Images are automatically padded; a 64 pixels cube will be used as is, but a 65 pixel cube will be padded up to 128 pixels, resulting in much higher memory use.
 
 The training module is comprised of several tabs.
 
@@ -41,36 +44,39 @@ The training module is comprised of several tabs.
 * Whether to use images "as is" (**requires all images to be of the same size and cubic**) or extract patches.
 
 * If you're extracting patches :
-    * The size of patches to be extracted (ideally, please use a value **close to a power of two**, such as 120 or 60.
-    * The number of samples to extract from each of your image to ensure correct size and perform data augmentation. A larger number will likely mean better performances, but longer training and larger memory usage.
+
+    * The size of patches to be extracted (ideally, please use a value **close to a power of two**, such as 120 or 60 to ensure correct size.)
+    * The number of samples to extract from each of your images. A larger number will likely mean better performances, but longer training and larger memory usage.
+
 * Whether to perform data augmentation or not (elastic deforms, intensity shifts. random flipping,etc). A rule of thumb for augmentation is :
+
     * If you're using the patch extraction method, enable it if you are using more than 10 samples per image with at least 5 images
     * If you have a large dataset and are not using patches extraction, enable it.
 
 
 3) The third contains training related parameters :
 
-* The model to use for training (see table above)
-* The loss function used for training (see table below)
-* The batch size (larger means quicker training and possibly better performance but increased memory usage)
-* The number of epochs (a possibility is to start with 60 epochs, and decrease or increase depending on performance.)
-* The epoch interval for validation (for example, if set to two, the module will use the validation dataset to evaluate the model with the dice metric every two epochs.)
+* The **model** to use for training (see table above)
+* The **loss function** used for training (see table below)
+* The **batch size** (larger means quicker training and possibly better performance but increased memory usage)
+* The **number of epochs** (a possibility is to start with 60 epochs, and decrease or increase depending on performance.)
+* The **epoch interval** for validation (for example, if set to two, the module will use the validation dataset to evaluate the model with the dice metric every two epochs.)
 
-If the dice metric is better on that validation interval, the model weights will be saved in the results folder.
+.. note::
+    If the dice metric is better on a given validation interval, the model weights will be saved in the results folder.
 
 The available loss functions are :
 
-========================  ====================================================
+========================  ================================================================================================
 Function                  Reference
-========================  ====================================================
+========================  ================================================================================================
 Dice loss                 `Dice Loss from MONAI`_ with ``sigmoid=true``
 Focal loss                `Focal Loss from MONAI`_
 Dice-Focal loss           `Dice-focal Loss from MONAI`_ with ``sigmoid=true`` and ``lambda_dice = 0.5``
 Generalized Dice loss     `Generalized dice Loss from MONAI`_ with ``sigmoid=true``
 Dice-CE loss              `Dice-CE Loss from MONAI`_ with ``sigmoid=true``
 Tversky loss              `Tversky Loss from MONAI`_ with ``sigmoid=true``
-========================  ====================================================
-
+========================  ================================================================================================
 .. _Dice Loss from MONAI: https://docs.monai.io/en/stable/losses.html#diceloss
 .. _Focal Loss from MONAI: https://docs.monai.io/en/stable/losses.html#focalloss
 .. _Dice-focal Loss from MONAI: https://docs.monai.io/en/stable/losses.html#dicefocalloss

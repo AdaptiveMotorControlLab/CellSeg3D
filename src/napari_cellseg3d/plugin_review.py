@@ -231,7 +231,7 @@ class Reviewer(BasePluginSingleImage):
             warnings.warn(
                 "Opening several loader sessions in one window is not supported; opening in new window"
             )
-            self._viewer.remove_from_viewer()
+            self._viewer.close()
         else:
             viewer = self._viewer
             print("new sess")
