@@ -1,4 +1,4 @@
-# CellSeg3D: a napari plug-in
+# CellSeg3d: a napari plug-in for 3d deep learning models for cell segmentation
 
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/04991e21-9cee-4b21-bdfc-d465fd73247d/CELLSEGGIT.png?format=2500w" width="250" title="cellseg3d" alt="cellseg3d" align="right" vspace = "80">
@@ -7,13 +7,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://www.gnu.org/licenses/mit)
 [![PyPI](https://img.shields.io/pypi/v/napari-cellseg-3d.svg?color=green)](https://pypi.org/project/napari-cellseg-3d)
 [![Python Version](https://img.shields.io/pypi/pyversions/napari-cellseg-3d.svg?color=green)](https://python.org)
-[![tests](https://github.com/AdaptiveMotorControlLab/CellSeg3D/workflows/tests/badge.svg)](https://github.com/AdaptiveMotorControlLab/CellSeg3D/actions)
-[![codecov](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3D/branch/main/graph/badge.svg)](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3D)
+![Tests](https://github.com/AdaptiveMotorControlLab/CellSeg3d/workflows/Python%20package/badge.svg)
+[![codecov](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3d/branch/main/graph/badge.svg)](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3d)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-cellseg-3d)](https://napari-hub.org/plugins/napari-cellseg-3d)
 
 
 
-A napari plugin for 3D cell segmentation: training, inference, and data review.
+A napari plugin for 3D cell segmentation: training, inference, and data review. In particular, this project was developed for analysis of mesoSPIM-acquired (cleared tissue + lightsheet) datasets.
 
 
 ----------------------------------
