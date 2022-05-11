@@ -101,7 +101,8 @@ If you get errors from MONAI regarding missing readers, please see [MONAI's opti
 
 ## Acknowledgements 
 
-This [napari] plugin was generated with [Cookiecutter] using [@napari]'s [cookiecutter-napari-plugin] template. This work was funded in part from project funding the Wyss Center to the Adaptive Motor Control Lab.
+This plugin was developed by Cyril Achard & Maxime Vidal.
+This [napari] plugin was generated with [Cookiecutter] using [@napari]'s [cookiecutter-napari-plugin] template. This work was funded, in part, from the Wyss Center to the Adaptive Motor Control Lab.
 
 <!--
 Don't miss the full getting started guide to set up your new package:
