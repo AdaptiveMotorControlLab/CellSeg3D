@@ -67,20 +67,20 @@ def launch_review(
 
 
     """
-    global slicer
-    global z_pos
-    global view1
-    global layer
-    global images_original
-    global base_label
+    # global slicer # Todo : is this okay ? ask Max. seems to work without, keep an eye on it
+    # global z_pos
+    # global view1
+    # global layer
+    # global images_original
+    # global base_label
     images_original = original
     base_label = base
-    try:
-        del view1
-        del layer
-    except NameError:
-        pass
-    # TODO : cleanup, notably viewer argument ?
+    # try:
+    #     del view1
+    #     del layer
+    # except NameError:
+    #     pass
+
     view1 = viewer
     view1.add_image(
         images_original,
@@ -149,12 +149,13 @@ def launch_review(
 
     layer = view1.layers[0]
     layer1 = view1.layers[1]
-    if not as_folder:
-        r_path = os.path.dirname(r_path)
+    # if not as_folder:
+    #     r_path = os.path.dirname(r_path)
 
     @magicgui(
         dirname={"mode": "d", "label": "Save labels in... "},
         call_button="Save",
+        # call_button_2="Save & quit",
     )
     def file_widget(
         dirname=Path(r_path),
@@ -182,7 +183,11 @@ def launch_review(
                     dat = viewer.layers["labels"].data
                     utils.save_stack(dat, dir_name, filetype=filetype)
 
-        return dirname, quicksave()
+        # def quicksave_quit():
+        #     quicksave()
+        #     viewer.window.close()
+
+        return dirname, quicksave()  # , quicksave_quit()
 
     # gui = file_widget.show(run=True)  # dirpicker.show(run=True)
 

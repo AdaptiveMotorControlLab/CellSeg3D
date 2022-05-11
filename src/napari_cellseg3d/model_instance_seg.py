@@ -21,7 +21,7 @@ def binary_connected(
         thres_small (int): size threshold of small objects to remove. Default: 128
         scale_factors (tuple): scale factors for resizing in :math:`(Z, Y, X)` order. Default: (1.0, 1.0, 1.0)
     """
-    semantic = volume[0]
+    semantic = np.squeeze(volume)
     foreground = semantic > thres  # int(255 * thres)
     segm = label(foreground)
     segm = remove_small_objects(segm, thres_small)
@@ -64,9 +64,9 @@ def binary_watershed(
         thres_objects (float): threshold for foreground objects. Default: 0.3
         thres_small (int): size threshold of small objects removal. Default: 10
         scale_factors (tuple): scale factors for resizing in :math:`(Z, Y, X)` order. Default: (1.0, 1.0, 1.0)
-        rem_seed_thres: threshold for small seeds removal. Default : 3
+        rem_seed_thres (int): threshold for small seeds removal. Default : 3
     """
-    semantic = volume[0]
+    semantic = np.squeeze(volume)
     seed_map = semantic > thres_seeding
     foreground = semantic > thres_objects
     seed = label(seed_map)
@@ -140,7 +140,7 @@ def to_instance(image, is_file_path=False):
 
     result = binary_watershed(
         image, thres_small=0, thres_seeding=0.3, rem_seed_thres=0
-    )  # TODO add params ?
+    )  # TODO add params
 
     return result
 

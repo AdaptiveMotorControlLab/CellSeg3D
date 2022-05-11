@@ -164,7 +164,7 @@ class ConvertUtils(BasePluginFolder):
         ui.add_blank(layout=layout, widget=self)
         layout.addWidget(self.lbl_error)
 
-        ui.make_scrollable(layout, self, min_wh=[230, 300], base_wh=[230, 350])
+        ui.make_scrollable(layout, self, min_wh=[230, 400], base_wh=[230, 450])
 
     def folder_to_semantic(self):
         """Converts folder of labels to semantic labels"""

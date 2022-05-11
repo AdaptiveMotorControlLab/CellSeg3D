@@ -68,6 +68,7 @@ Then go into Plugins > napari-cellseg3d, and choose which tool to use.
 - **Review**: This module allows you to review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.
 - **Utilities**: This module allows you to use several utilities, e.g. to crop your volumes and labels, compute prediction scores or convert labels
 
+See above for links to detailed guides regarding the usage of the modules.
 
 Acknowledgments & References
 ---------------------------------------------

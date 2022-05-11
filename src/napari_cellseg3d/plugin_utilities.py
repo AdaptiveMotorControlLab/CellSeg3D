@@ -1,8 +1,11 @@
 import napari
+
 # Qt
 from qtpy.QtWidgets import QTabWidget
+from qtpy.QtWidgets import QSizePolicy
 
 from napari_cellseg3d.plugin_convert import ConvertUtils
+
 # local
 from napari_cellseg3d.plugin_crop import Cropping
 from napari_cellseg3d.plugin_metrics import MetricsUtils
@@ -27,8 +30,12 @@ class Utilities(QTabWidget):
         self.addTab(self.metrics_tab, "Metrics")
         self.addTab(self.cropping_tab, "Crop")
 
-        self.setBaseSize(230, 150)
-        self.setMinimumSize(230, 100)
+        self.cropping_tab.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.metrics_tab.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.convert_tab.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        self.setBaseSize(230, 550)
+        self.setMinimumSize(230, 500)
 
     def remove_from_viewer(self):
         self._viewer.window.remove_dock_widget(self)

@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+
 # MONAI
 from monai.data import CacheDataset
 from monai.data import DataLoader
@@ -28,8 +29,12 @@ from monai.transforms import RandShiftIntensityd
 from monai.transforms import RandSpatialCropSamplesd
 from monai.transforms import SpatialPadd
 from monai.transforms import Zoom
+from monai.utils import set_determinism
+
+# threads
 from napari.qt.threading import GeneratorWorker
 from napari.qt.threading import WorkerBaseSignals
+
 # Qt
 from qtpy.QtCore import Signal
 from tifffile import imwrite
@@ -179,6 +184,9 @@ class InferenceWorker(GeneratorWorker):
 
         images_dict = self.create_inference_dict(self.images_filepaths)
 
+        # if self.device =="cuda": # TODO : fix mem alloc, this does not work it seems
+        # torch.backends.cudnn.benchmark = False
+
         # TODO : better solution than loading first image always ?
         data_check = LoadImaged(keys=["image"])(images_dict[0])
         # print(data)
@@ -192,11 +200,13 @@ class InferenceWorker(GeneratorWorker):
         self.log("\nChecking dimensions...")
         pad = utils.get_padding_dim(check)
         # print(pad)
+        dims = 128
+        dims = 64
 
         model = self.model_dict["class"].get_net()
         if self.model_dict["name"] == "SegResNet":
             model = self.model_dict["class"].get_net()(
-                input_image_size=[128, 128, 128],  # TODO FIX !
+                input_image_size=[dims, dims, dims],  # TODO FIX !
                 out_channels=1,
                 # dropout_prob=0.3,
             )
@@ -277,6 +287,8 @@ class InferenceWorker(GeneratorWorker):
                 )
 
                 out = outputs.detach().cpu()
+                # del outputs # TODO fix memory ?
+                # outputs = None
 
                 if self.transforms["zoom"][0]:
                     zoom = self.transforms["zoom"][1]
@@ -289,6 +301,7 @@ class InferenceWorker(GeneratorWorker):
 
                 out = post_process_transforms(out)
                 out = np.array(out).astype(np.float32)
+                out = np.squeeze(out)
 
                 # batch_len = out.shape[1]
                 # print("trying to check len")
@@ -378,6 +391,7 @@ class TrainingWorker(GeneratorWorker):
         data_dicts,
         max_epochs,
         loss_function,
+        learning_rate,
         val_interval,
         batch_size,
         results_path,
@@ -385,6 +399,7 @@ class TrainingWorker(GeneratorWorker):
         num_samples,
         sample_size,
         do_augmentation,
+        deterministic,
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~train` function.
 
@@ -401,6 +416,8 @@ class TrainingWorker(GeneratorWorker):
 
             * loss_function : the loss function to use for training
 
+            * learning_rate : the learning rate of the optimizer
+
             * val_interval : the interval at which to perform validation (e.g. if 2 will validate once every 2 epochs.) Also determines frequency of saving, depending on whether the metric is better or not
 
             * batch_size : the batch size to use for training
@@ -415,6 +432,8 @@ class TrainingWorker(GeneratorWorker):
 
             * do_augmentation : whether to perform data augmentation or not
 
+            * deterministic : dict with "use deterministic" : bool, whether to use deterministic training, "seed": seed for RNG
+
            Note: See :py:func:`~train`
         """
 
@@ -428,6 +447,7 @@ class TrainingWorker(GeneratorWorker):
         self.data_dicts = data_dicts
         self.max_epochs = max_epochs
         self.loss_function = loss_function
+        self.learning_rate = learning_rate
         self.val_interval = val_interval
         self.batch_size = batch_size
         self.results_path = results_path
@@ -437,6 +457,7 @@ class TrainingWorker(GeneratorWorker):
         self.sample_size = sample_size
 
         self.do_augment = do_augmentation
+        self.seed_dict = deterministic
 
     def log(self, text):
         """Sends a signal that ``text`` should be logged
@@ -448,11 +469,17 @@ class TrainingWorker(GeneratorWorker):
 
     def log_parameters(self):
 
-        self.log("\nParameters summary :")
+        self.log("\nParameters summary :\n")
+
+        if self.seed_dict["use deterministic"]:
+            self.log(f"Deterministic training is enabled")
+            self.log(f"Seed is {self.seed_dict['seed']}")
+
         self.log(f"Training for {self.max_epochs} epochs")
         self.log(f"Loss function is : {str(self.loss_function)}")
         self.log(f"Validation is performed every {self.val_interval} epochs")
         self.log(f"Batch size is {self.batch_size}")
+        self.log(f"Learning rate is {self.learning_rate}")
 
         if self.sampling:
             self.log(
@@ -466,6 +493,8 @@ class TrainingWorker(GeneratorWorker):
 
         if self.weights_path is not None:
             self.log(f"Using weights from : {self.weights_path}")
+
+        # self.log("\n")
 
     def train(self):
         """Trains the Pytorch model for the given number of epochs, with the selected model and data,
@@ -482,9 +511,11 @@ class TrainingWorker(GeneratorWorker):
 
         * data_dicts : dict from :py:func:`Trainer.create_train_dataset_dict`
 
-        * max_epochs : the amout of epochs to train for
+        * max_epochs : the amount of epochs to train for
 
         * loss_function : the loss function to use for training
+
+        * learning rate : the learning rate of the optimizer
 
         * val_interval : the interval at which to perform validation (e.g. if 2 will validate once every 2 epochs.) Also determines frequency of saving, depending on whether the metric is better or not
 
@@ -499,12 +530,19 @@ class TrainingWorker(GeneratorWorker):
         * sample_size : the size of the patches to extract when sampling
 
         * do_augmentation : whether to perform data augmentation or not
+
+        * deterministic : dict with "use deterministic" : bool, whether to use deterministic training, "seed": seed for RNG
         """
 
         #########################
         # error_log = open(results_path +"/error_log.log" % multiprocessing.current_process().name, 'x')
         # faulthandler.enable(file=error_log, all_threads=True)
         #########################
+
+        if self.seed_dict["use deterministic"]:
+            set_determinism(
+                seed=self.seed_dict["seed"]
+            )  # use_deterministic_algorithms = True causes cuda error
 
         sys = platform.system()
         print(sys)
@@ -548,7 +586,6 @@ class TrainingWorker(GeneratorWorker):
         print("* " * 20)
         print("Validation files :")
         [print(f"{val_file}\n") for val_file in val_files]
-        # TODO : param patch ROI size
 
         if self.sampling:
             sample_loader = Compose(
@@ -653,14 +690,15 @@ class TrainingWorker(GeneratorWorker):
         )
         print("\nDone")
 
-        optimizer = torch.optim.Adam(model.parameters(), 1e-3)
+        print("Optimizer")
+        optimizer = torch.optim.Adam(model.parameters(), self.learning_rate)
         dice_metric = DiceMetric(include_background=True, reduction="mean")
 
         best_metric = -1
         best_metric_epoch = -1
 
         # time = utils.get_date_time()
-
+        print("Weights")
         if self.weights_path is not None:
             if self.weights_path == "use_pretrained":
                 weights_file = model_class.get_weights_file()
@@ -685,6 +723,7 @@ class TrainingWorker(GeneratorWorker):
         self.log_parameters()
 
         for epoch in range(self.max_epochs):
+            # self.log("\n")
             self.log("-" * 10)
             self.log(f"Epoch {epoch + 1}/{self.max_epochs}")
             if self.device.type == "cuda":
@@ -718,6 +757,7 @@ class TrainingWorker(GeneratorWorker):
                     f"* {step}/{len(train_ds) // train_loader.batch_size}, "
                     f"Train loss: {loss.detach().item():.4f}"
                 )
+                yield {"plot": False, "weights": model.state_dict()}
 
             epoch_loss /= step
             epoch_loss_values.append(epoch_loss)
@@ -765,9 +805,11 @@ class TrainingWorker(GeneratorWorker):
                     val_metric_values.append(metric)
 
                     train_report = {
+                        "plot": True,
                         "epoch": epoch,
                         "losses": epoch_loss_values,
                         "val_metrics": val_metric_values,
+                        "weights": model.state_dict(),
                     }
                     yield train_report
 
@@ -778,11 +820,12 @@ class TrainingWorker(GeneratorWorker):
                     if metric > best_metric:
                         best_metric = metric
                         best_metric_epoch = epoch + 1
+                        self.log("Saving best metric model")
                         torch.save(
                             model.state_dict(),
                             os.path.join(self.results_path, weights_filename),
                         )
-                        self.log("Saved best metric model")
+                        self.log("Saving complete")
                     self.log(
                         f"Current epoch: {epoch + 1}, Current mean dice: {metric:.4f}"
                         f"\nBest mean dice: {best_metric:.4f} "
@@ -794,8 +837,8 @@ class TrainingWorker(GeneratorWorker):
             f"at epoch: {best_metric_epoch}"
         )
         model.to("cpu")
-        optimizer = None
-        del optimizer
+        # optimizer = None
+        # del optimizer
         # del device
         # del model_id
         # del model_name
