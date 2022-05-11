@@ -1,10 +1,10 @@
 # napari-cellseg-3d
 
-[![License](https://img.shields.io/pypi/l/napari-cellseg-3d.svg?color=green)](https://github.com/C_Achard/napari-cellseg-3d/raw/main/LICENSE)
+[![License](https://img.shields.io/pypi/l/napari-cellseg-3d.svg?color=green)](https://github.com/AdaptiveMotorControlLab/CellSeg3D/raw/main/LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/napari-cellseg-3d.svg?color=green)](https://pypi.org/project/napari-cellseg-3d)
 [![Python Version](https://img.shields.io/pypi/pyversions/napari-cellseg-3d.svg?color=green)](https://python.org)
-[![tests](https://github.com/C_Achard/napari-cellseg-3d/workflows/tests/badge.svg)](https://github.com/C_Achard/napari-cellseg-3d/actions)
-[![codecov](https://codecov.io/gh/C_Achard/napari-cellseg-3d/branch/main/graph/badge.svg)](https://codecov.io/gh/C_Achard/napari-cellseg-3d)
+[![tests](https://github.com/AdaptiveMotorControlLab/CellSeg3D/workflows/tests/badge.svg)](https://github.com/AdaptiveMotorControlLab/CellSeg3D/actions)
+[![codecov](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3D/branch/main/graph/badge.svg)](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3D)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-cellseg-3d)](https://napari-hub.org/plugins/napari-cellseg-3d)
 
 plugin for cell segmentation
@@ -44,7 +44,9 @@ pip install -e .
 
 ## Documentation
 
-You can generate docs by running ``make html`` in the docs folder
+Can we found at https://c-achard.github.io/cellseg-annotator-test/index.html
+
+You can also generate docs by running ``make html`` in the docs folder.
 
 ## Usage
 
