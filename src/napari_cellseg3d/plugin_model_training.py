@@ -32,6 +32,7 @@ from napari_cellseg3d.model_framework import ModelFramework
 from napari_cellseg3d.model_workers import TrainingWorker
 
 NUMBER_TABS = 3
+DEFAULT_PATCH_SIZE = 60
 
 
 class Trainer(ModelFramework):
@@ -116,6 +117,7 @@ class Trainer(ModelFramework):
         self.data_path = ""
         self.label_path = ""
         self.results_path = ""
+        self.results_path_folder = ""
         ######################
         ######################
         ######################
@@ -252,7 +254,9 @@ class Trainer(ModelFramework):
         ]
         """Close buttons list for each tab"""
 
-        self.patch_size_widgets = ui.make_n_spinboxes(3, 10, 1023, 120)
+        self.patch_size_widgets = ui.make_n_spinboxes(
+            3, 10, 1024, DEFAULT_PATCH_SIZE
+        )
 
         self.patch_size_lbl = [
             QLabel(f"Size of patch in {axis} :") for axis in "xyz"
@@ -651,23 +655,24 @@ class Trainer(ModelFramework):
         ui.make_scrollable(
             contained_layout=data_tab_layout,
             containing_widget=data_tab,
-            min_wh=[100, 150],
+            min_wh=[200, 300],
         )  # , max_wh=[200,1000])
         self.addTab(data_tab, "Data")
 
         ui.make_scrollable(
             contained_layout=augment_tab_l,
             containing_widget=augment_tab_w,
-            min_wh=[100, 200],
+            min_wh=[200, 300],
         )
         self.addTab(augment_tab_w, "Augmentation")
 
         ui.make_scrollable(
             contained_layout=train_tab_layout,
             containing_widget=train_tab,
-            min_wh=[100, 200],
+            min_wh=[200, 300],
         )
         self.addTab(train_tab, "Training")
+        self.setMinimumSize(220, 200)
 
     def show_dialog_lab(self):
         """Shows the  dialog to load label files in a path, loads them (see :doc:model_framework) and changes the widget
@@ -760,12 +765,12 @@ class Trainer(ModelFramework):
                 "class": self.get_model(self.model_choice.currentText()),
                 "name": self.model_choice.currentText(),
             }
-            self.results_path = (
+            self.results_path_folder = (
                 self.results_path
                 + f"/{model_dict['name']}_results_{utils.get_date_time()}"
             )
             os.makedirs(
-                self.results_path, exist_ok=False
+                self.results_path_folder, exist_ok=False
             )  # avoid overwrite where possible
 
             if self.use_transfer_choice.isChecked():
@@ -777,7 +782,7 @@ class Trainer(ModelFramework):
                 weights_path = None
 
             self.log.print_and_log(
-                f"Notice : Saving results to : {self.results_path}"
+                f"Notice : Saving results to : {self.results_path_folder}"
             )
 
             self.worker = TrainingWorker(
@@ -790,7 +795,7 @@ class Trainer(ModelFramework):
                 learning_rate=self.learning_rate,
                 val_interval=self.val_interval,
                 batch_size=self.batch_size,
-                results_path=self.results_path,
+                results_path=self.results_path_folder,
                 sampling=self.patch_choice.isChecked(),
                 num_samples=self.num_samples,
                 sample_size=self.patch_size,
@@ -812,11 +817,13 @@ class Trainer(ModelFramework):
             self.worker.errored.connect(self.on_error)
 
         if self.worker.is_running:
+            self.log.print_and_log("*" * 20)
             self.log.print_and_log(
-                f"Stop requested at {utils.get_time()}. \nWaiting for next validation step..."
+                f"Stop requested at {utils.get_time()}. \nWaiting for next yielding step..."
             )
             self.stop_requested = True
-            self.btn_start.setText("Stopping... Please wait for next saving")
+            self.btn_start.setText("Stopping... Please wait")
+            self.log.print_and_log("*" * 20)
             self.worker.quit()
         else:
             self.worker.start()
@@ -833,21 +840,23 @@ class Trainer(ModelFramework):
 
     def on_finish(self):
         """Catches finished signal from worker"""
+        self.log.print_and_log("*" * 20)
         self.log.print_and_log(f"\nWorker finished at {utils.get_time()}")
 
-        self.log.print_and_log(f"Saving last loss plot at {self.results_path}")
+        self.log.print_and_log(f"Saving in {self.results_path_folder}")
+        self.log.print_and_log(f"Saving last loss plot")
 
         if self.canvas is not None:
             self.canvas.figure.savefig(
                 (
-                    self.results_path
+                    self.results_path_folder
                     + f"/final_metric_plots_{utils.get_time_filepath()}.png"
                 ),
                 format="png",
             )
 
-        self.log.print_and_log("Auto-saving log")
-        self.save_log()
+        self.log.print_and_log("Saving log")
+        self.save_log(spec_path=self.results_path_folder)
 
         self.log.print_and_log("Done")
         self.log.print_and_log("*" * 10)
@@ -855,10 +864,11 @@ class Trainer(ModelFramework):
         self.btn_start.setText("Start")
         [btn.setVisible(True) for btn in self.close_buttons]
 
+        del self.worker
         self.worker = None
+        self.results_path_folder = ""
         self.empty_cuda_cache()
 
-        self.results_path = ""
         # self.clean_cache() # trying to fix memory leak
 
     def on_error(self):
@@ -880,13 +890,17 @@ class Trainer(ModelFramework):
             widget.update_loss_plot(data["losses"], data["val_metrics"])
 
         if widget.stop_requested:
+            widget.log.print_and_log(
+                "Saving weights from aborted training in results folder"
+            )
             torch.save(
                 data["weights"],
                 os.path.join(
-                    widget.results_path,
+                    widget.results_path_folder,
                     f"latest_weights_aborted_training_{utils.get_time_filepath()}.pth",
                 ),
             )
+            widget.log.print_and_log("Saving complete")
             widget.stop_requested = False
 
     # def clean_cache(self):
@@ -942,7 +956,7 @@ class Trainer(ModelFramework):
             )
             self.canvas.draw_idle()
 
-            plot_path = self.results_path + "/Loss_plots"
+            plot_path = self.results_path_folder + "/Loss_plots"
             os.makedirs(plot_path, exist_ok=True)
             if self.canvas is not None:
                 self.canvas.figure.savefig(

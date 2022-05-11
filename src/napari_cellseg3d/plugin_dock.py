@@ -162,7 +162,7 @@ class Datamanager(QWidget):
             if self.filename is not None:
                 filename = self.filename
             else:
-                filename="image"
+                filename = "image"
             labels = [str(filename) for i in range(self.image_dims[0])]
 
         df = pd.DataFrame(

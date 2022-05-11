@@ -283,14 +283,14 @@ class Cropping(BasePluginSingleImage):
         print(f"Crop variables")
         print(image_stack.shape)
 
-
-
         # define crop sizes and boundaries for the image
         crop_sizes = [self._crop_size_x, self._crop_size_y, self._crop_size_z]
         for i in range(len(crop_sizes)):
             if crop_sizes[i] > image_stack.shape[i]:
                 crop_sizes[i] = image_stack.shape[i]
-                warnings.warn(f"WARNING : Crop dimension in axis {i} was too large at {crop_sizes[i]}, it was set to {image_stack.shape[i]}")
+                warnings.warn(
+                    f"WARNING : Crop dimension in axis {i} was too large at {crop_sizes[i]}, it was set to {image_stack.shape[i]}"
+                )
         cropx, cropy, cropz = crop_sizes
         # shapez, shapey, shapex = image_stack.shape
         ends = np.asarray(image_stack.shape) - np.asarray(crop_sizes) + 1

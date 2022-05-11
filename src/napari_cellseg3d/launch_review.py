@@ -187,7 +187,7 @@ def launch_review(
         #     quicksave()
         #     viewer.window.close()
 
-        return dirname, quicksave() #, quicksave_quit()
+        return dirname, quicksave()  # , quicksave_quit()
 
     # gui = file_widget.show(run=True)  # dirpicker.show(run=True)
 

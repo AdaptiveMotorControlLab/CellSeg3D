@@ -200,13 +200,13 @@ class InferenceWorker(GeneratorWorker):
         self.log("\nChecking dimensions...")
         pad = utils.get_padding_dim(check)
         # print(pad)
-        dims =128
-        dims=64
+        dims = 128
+        dims = 64
 
         model = self.model_dict["class"].get_net()
         if self.model_dict["name"] == "SegResNet":
             model = self.model_dict["class"].get_net()(
-                input_image_size=[dims,dims,dims],  # TODO FIX !
+                input_image_size=[dims, dims, dims],  # TODO FIX !
                 out_channels=1,
                 # dropout_prob=0.3,
             )
@@ -511,7 +511,7 @@ class TrainingWorker(GeneratorWorker):
 
         * data_dicts : dict from :py:func:`Trainer.create_train_dataset_dict`
 
-        * max_epochs : the amout of epochs to train for
+        * max_epochs : the amount of epochs to train for
 
         * loss_function : the loss function to use for training
 
@@ -757,7 +757,7 @@ class TrainingWorker(GeneratorWorker):
                     f"* {step}/{len(train_ds) // train_loader.batch_size}, "
                     f"Train loss: {loss.detach().item():.4f}"
                 )
-                yield {"plot":False, "weights": model.state_dict()}
+                yield {"plot": False, "weights": model.state_dict()}
 
             epoch_loss /= step
             epoch_loss_values.append(epoch_loss)
@@ -820,11 +820,12 @@ class TrainingWorker(GeneratorWorker):
                     if metric > best_metric:
                         best_metric = metric
                         best_metric_epoch = epoch + 1
+                        self.log("Saving best metric model")
                         torch.save(
                             model.state_dict(),
                             os.path.join(self.results_path, weights_filename),
                         )
-                        self.log("Saved best metric model")
+                        self.log("Saving complete")
                     self.log(
                         f"Current epoch: {epoch + 1}, Current mean dice: {metric:.4f}"
                         f"\nBest mean dice: {best_metric:.4f} "

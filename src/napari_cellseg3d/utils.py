@@ -150,9 +150,11 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
             size = int(size / anisotropy_factor[i])
         while pad < size:
 
-            if size-pad < 30 :
-                warnings.warn(f"Your value is close to a lower power of two; you might want to choose slightly smaller"
-                              f" sizes and/or crop your images down to {pad}")
+            # if size - pad < 30:
+            #     warnings.warn(
+            #         f"Your value is close to a lower power of two; you might want to choose slightly smaller"
+            #         f" sizes and/or crop your images down to {pad}"
+            #     )
 
             pad = 2**n
             n += 1
@@ -172,10 +174,10 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
 def anisotropy_zoom_factor(resolutions):
     """Computes a zoom factor to correct anisotropy, based on resolutions
 
-    Args:
-        resolutions: array for resolution (float) in microns for each axis
+        Args:
+            resolutions: array for resolution (float) in microns for each axis
 
-ith    Returns: an array with the corresponding zoom factors for each axis (all values divided by min)
+    ith    Returns: an array with the corresponding zoom factors for each axis (all values divided by min)
 
     """
 
