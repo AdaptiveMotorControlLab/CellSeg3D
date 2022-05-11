@@ -1,46 +1,28 @@
-# napari-cellseg-3d
+# CellSeg3D: a napari plug-in
 
-[![License](https://img.shields.io/pypi/l/napari-cellseg-3d.svg?color=green)](https://github.com/AdaptiveMotorControlLab/CellSeg3D/raw/main/LICENSE)
+
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/04991e21-9cee-4b21-bdfc-d465fd73247d/CELLSEGGIT.png?format=2500w" width="250" title="cellseg3d" alt="cellseg3d" align="right" vspace = "80">
+
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://www.gnu.org/licenses/mit)
 [![PyPI](https://img.shields.io/pypi/v/napari-cellseg-3d.svg?color=green)](https://pypi.org/project/napari-cellseg-3d)
 [![Python Version](https://img.shields.io/pypi/pyversions/napari-cellseg-3d.svg?color=green)](https://python.org)
 [![tests](https://github.com/AdaptiveMotorControlLab/CellSeg3D/workflows/tests/badge.svg)](https://github.com/AdaptiveMotorControlLab/CellSeg3D/actions)
 [![codecov](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3D/branch/main/graph/badge.svg)](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3D)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-cellseg-3d)](https://napari-hub.org/plugins/napari-cellseg-3d)
 
-plugin for cell segmentation
+
+
+A napari plugin for 3D cell segmentation: training, inference, and data review.
+
 
 ----------------------------------
-
-This [napari] plugin was generated with [Cookiecutter] using [@napari]'s [cookiecutter-napari-plugin] template.
-
-<!--
-Don't miss the full getting started guide to set up your new package:
-https://github.com/napari/cookiecutter-napari-plugin#getting-started
-
-and review the napari docs for plugin developers:
-https://napari.org/plugins/stable/index.html
--->
-
-## Requirements
-
-Requires manual installation of pytorch and MONAI.
-For Pytorch, please see [PyTorch]'s website for installation instructions.
-A CUDA-capable GPU is not needed but very strongly recommended, especially for training.
-
-If you get errors from MONAI regarding missing readers, please see [MONAI's optional dependencies] page for instructions on getting the readers required by your images.
-
 
 ## Installation
 
 You can install `napari-cellseg-3d` via [pip]:
 
     pip install napari-cellseg-3d
-
-For local installation, please run:
-
-```
-pip install -e .
-```
 
 ## Documentation
 
@@ -74,6 +56,13 @@ To run tests locally:
 Contributions are very welcome. Tests can be run with [tox], please ensure
 the coverage at least stays the same before you submit a pull request.
 
+For local installation, please run:
+
+```
+pip install -e .
+```
+
+
 ## License
 
 Distributed under the terms of the [MIT] license,
@@ -82,6 +71,14 @@ Distributed under the terms of the [MIT] license,
 ## Issues
 
 If you encounter any problems, please [file an issue] along with a detailed description.
+
+## Requirements
+
+Requires installation of torch and MONAI.
+For PyTorch, please see [PyTorch]'s website for installation instructions.
+A CUDA-capable GPU is not needed but very strongly recommended, especially for training.
+
+If you get errors from MONAI regarding missing readers, please see [MONAI's optional dependencies] page for instructions on getting the readers required by your images.
 
 [napari]: https://github.com/napari/napari
 [Cookiecutter]: https://github.com/audreyr/cookiecutter
@@ -101,3 +98,15 @@ If you encounter any problems, please [file an issue] along with a detailed desc
 
 [PyTorch]: https://pytorch.org/get-started/locally/
 [MONAI's optional dependencies]: https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies
+
+## Acknowlegements 
+
+This [napari] plugin was generated with [Cookiecutter] using [@napari]'s [cookiecutter-napari-plugin] template. This work was funded in part from project funding the Wyss Center to the Adaptive Motor Control Lab.
+
+<!--
+Don't miss the full getting started guide to set up your new package:
+https://github.com/napari/cookiecutter-napari-plugin#getting-started
+
+and review the napari docs for plugin developers:
+https://napari.org/plugins/stable/index.html
+-->
