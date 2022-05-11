@@ -99,7 +99,7 @@ If you get errors from MONAI regarding missing readers, please see [MONAI's opti
 [PyTorch]: https://pytorch.org/get-started/locally/
 [MONAI's optional dependencies]: https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies
 
-## Acknowlegements 
+## Acknowledgements 
 
 This [napari] plugin was generated with [Cookiecutter] using [@napari]'s [cookiecutter-napari-plugin] template. This work was funded in part from project funding the Wyss Center to the Adaptive Motor Control Lab.
 
