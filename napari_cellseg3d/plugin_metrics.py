@@ -4,7 +4,8 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
-from monai.transforms import SpatialPad, ToTensor
+from monai.transforms import SpatialPad
+from monai.transforms import ToTensor
 from tifffile import imread
 
 from napari_cellseg3d import interface as ui

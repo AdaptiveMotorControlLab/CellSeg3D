@@ -9,9 +9,9 @@ import torch
 from monai.data import CacheDataset
 from monai.data import DataLoader
 from monai.data import Dataset
-from monai.data import PatchDataset
 from monai.data import decollate_batch
 from monai.data import pad_list_data_collate
+from monai.data import PatchDataset
 from monai.inferers import sliding_window_inference
 from monai.metrics import DiceMetric
 from monai.transforms import AsDiscrete

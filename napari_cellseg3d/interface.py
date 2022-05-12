@@ -1,5 +1,5 @@
-from qtpy.QtCore import QUrl
 from qtpy.QtCore import Qt
+from qtpy.QtCore import QUrl
 from qtpy.QtGui import QDesktopServices
 from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QComboBox

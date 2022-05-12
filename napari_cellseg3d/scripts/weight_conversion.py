@@ -6,7 +6,6 @@ import torch
 from napari_cellseg3d.models.model_TRAILMAP import get_net
 from napari_cellseg3d.models.unet.model import UNet3D
 
-
 # not sure this actually works when put here
 
 

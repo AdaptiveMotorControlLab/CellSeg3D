@@ -1,12 +1,13 @@
 import os
+import shutil
 import warnings
-import torch
-from torch import nn
+import zipfile
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import napari
 import numpy as np
+import torch
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
@@ -866,8 +867,20 @@ class Trainer(ModelFramework):
 
         del self.worker
         self.worker = None
-        self.results_path_folder = ""
         self.empty_cuda_cache()
+
+        shutil.make_archive(
+            self.results_path_folder, "zip", self.results_path_folder
+        )
+
+        # if zipfile.is_zipfile(self.results_path_folder+".zip"):
+
+        # if not shutil.rmtree.avoids_symlink_attacks:
+        #     raise RuntimeError("shutil.rmtree is not safe on this platform")
+
+        # shutil.rmtree(self.results_path_folder)
+
+        self.results_path_folder = ""
 
         # self.clean_cache() # trying to fix memory leak
 
@@ -958,6 +971,7 @@ class Trainer(ModelFramework):
 
             plot_path = self.results_path_folder + "/Loss_plots"
             os.makedirs(plot_path, exist_ok=True)
+
             if self.canvas is not None:
                 self.canvas.figure.savefig(
                     (
