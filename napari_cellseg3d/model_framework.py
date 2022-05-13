@@ -123,8 +123,8 @@ class ModelFramework(BasePluginFolder):
 
         self.btn_save_log = ui.make_button(
             "Save log in results folder",
-            self.save_log,
-            self.container_report,
+            func=self.save_log,
+            parent=self.container_report,
             fixed=False,
         )
         self.btn_save_log.setVisible(False)
@@ -133,23 +133,38 @@ class ModelFramework(BasePluginFolder):
     def send_log(self, text):
         self.log.print_and_log(text)
 
-    def save_log(self, spec_path=None):
+    def save_log(self):
         """Saves the worker's log to disk at self.results_path when called
-
-        Args:
-            spec_path: if specified, saves to path instead of self.results_path
         """
         log = self.log.toPlainText()
 
-        if spec_path is None:
-            path = self.results_path
-        else:
-            path = spec_path
+        path = self.results_path
 
         if len(log) != 0:
             with open(
                 path + f"/Log_report_{utils.get_date_time()}.txt",
                 "x",
+            ) as f:
+                f.write(log)
+                f.close()
+        else:
+            warnings.warn(
+                "No job has been completed yet, please start one or re-open the log window."
+            )
+
+    def save_log_to_path(self, path):
+        """Saves the worker log to a specific path. Cannot be used with connect.
+
+        Args:
+            path (str): path to save folder
+        """
+
+        log = self.log.toPlainText()
+
+        if len(log) != 0:
+            with open(
+                    path + f"/Log_report_{utils.get_date_time()}.txt",
+                    "x",
             ) as f:
                 f.write(log)
                 f.close()
@@ -224,6 +239,9 @@ class ModelFramework(BasePluginFolder):
 
             * "label" : corresponding label
         """
+
+        if len(self.images_filepaths) == 0 or len(self.labels_filepaths) == 0:
+            raise ValueError("Data folders are empty")
 
         print("Images :\n")
         for file in self.images_filepaths:

@@ -79,11 +79,13 @@ class Trainer(ModelFramework):
 
             * A spin box to choose the validation interval
 
-        TODO:
+        TODO training plugin:
 
         * Choice of validation proportion
 
         * Custom model loading
+
+        * update docs
 
 
         Args:
@@ -119,6 +121,9 @@ class Trainer(ModelFramework):
         self.label_path = ""
         self.results_path = ""
         self.results_path_folder = ""
+
+        self.save_as_zip = False
+        """Whether to zip results folder once done. Creates a zipped copy of the results folder."""
         ######################
         ######################
         ######################
@@ -204,6 +209,11 @@ class Trainer(ModelFramework):
 
         ################################
         # interface
+
+        self.zip_choice = ui.make_checkbox("Compress results")
+
+        self.validation_percent_choice = ui.make_combobox(["80%", "90%"])
+
         self.epoch_choice = ui.make_n_spinboxes(
             min=2, max=1000, default=self.max_epochs
         )
@@ -417,6 +427,8 @@ class Trainer(ModelFramework):
         if self.results_path != "":
             self.lbl_result_path.setText(self.results_path)
 
+        data_layout.addWidget(self.zip_choice)  # save as zip
+
         data_group.setLayout(data_layout)
         data_tab_layout.addWidget(data_group, alignment=ui.LEFT_AL)
         # end of first group : Data
@@ -496,6 +508,12 @@ class Trainer(ModelFramework):
         augment_tab_l.addWidget(sampling_group_w)
         #######################
         ui.add_blank(augment_tab_w, augment_tab_l)
+        #######################
+        validation_group_w, validation_group_l = ui.make_group("Validation %")
+
+        validation_group_l.addWidget(self.validation_percent_choice)
+        validation_group_w.setLayout(validation_group_l)
+        augment_tab_l.addWidget(validation_group_w)
         #######################
         augment_group_w, augment_group_l = ui.make_group("Augmentation")
         augment_group_l.addWidget(
@@ -719,6 +737,8 @@ class Trainer(ModelFramework):
 
         """
         self.start_time = utils.get_time_filepath()
+        self.save_as_zip = self.zip_choice.isChecked()
+
         if self.stop_requested:
             self.log.print_and_log("Worker is already stopping !")
             return
@@ -740,12 +760,22 @@ class Trainer(ModelFramework):
             self.log.print_and_log("*" * 20)
 
             self.reset_loss_plot()
-
             self.num_samples = self.sample_choice.value()
             self.batch_size = self.batch_choice.value()
             self.val_interval = self.val_interval_choice.value()
-            self.data = self.create_train_dataset_dict()
+            try:
+                self.data = self.create_train_dataset_dict()
+            except ValueError as err:
+                self.data = None
+                raise err
             self.max_epochs = self.epoch_choice.value()
+
+            validation_percent_dict = {"80%": 0.8, "90%": 0.9}
+
+            validation_percent = validation_percent_dict[
+                self.validation_percent_choice.currentText()
+            ]
+            print(f"val % : {validation_percent}")
 
             self.learning_rate = self.learning_rate_dict[
                 self.learning_rate_choice.currentText()
@@ -768,7 +798,7 @@ class Trainer(ModelFramework):
             }
             self.results_path_folder = (
                 self.results_path
-                + f"/{model_dict['name']}_results_{utils.get_date_time()}"
+                + f"/{model_dict['name']}_{utils.get_date_time()}"
             )
             os.makedirs(
                 self.results_path_folder, exist_ok=False
@@ -783,7 +813,7 @@ class Trainer(ModelFramework):
                 weights_path = None
 
             self.log.print_and_log(
-                f"Notice : Saving results to : {self.results_path_folder}"
+                f"Saving results to : {self.results_path_folder}"
             )
 
             self.worker = TrainingWorker(
@@ -791,6 +821,7 @@ class Trainer(ModelFramework):
                 model_dict=model_dict,
                 weights_path=weights_path,
                 data_dicts=self.data,
+                validation_percent=validation_percent,
                 max_epochs=self.max_epochs,
                 loss_function=self.get_loss(self.loss_choice.currentText()),
                 learning_rate=self.learning_rate,
@@ -836,7 +867,7 @@ class Trainer(ModelFramework):
         self.remove_docked_widgets()
         self.display_status_report()
 
-        self.log.print_and_log(f"Worker started at {self.start_time}")
+        self.log.print_and_log(f"Worker started at {utils.get_time()}")
         self.log.print_and_log("\nWorker is running...")
 
     def on_finish(self):
@@ -857,7 +888,7 @@ class Trainer(ModelFramework):
             )
 
         self.log.print_and_log("Saving log")
-        self.save_log(spec_path=self.results_path_folder)
+        self.save_log_to_path(self.results_path_folder)
 
         self.log.print_and_log("Done")
         self.log.print_and_log("*" * 10)
@@ -869,9 +900,10 @@ class Trainer(ModelFramework):
         self.worker = None
         self.empty_cuda_cache()
 
-        shutil.make_archive(
-            self.results_path_folder, "zip", self.results_path_folder
-        )
+        if self.save_as_zip:
+            shutil.make_archive(
+                self.results_path_folder, "zip", self.results_path_folder
+            )
 
         # if zipfile.is_zipfile(self.results_path_folder+".zip"):
 
@@ -894,7 +926,8 @@ class Trainer(ModelFramework):
     @staticmethod
     def on_yield(data, widget):
         # print(
-        #     f"\nCatching results : for epoch {data['epoch']}, loss is {data['losses']} and validation is {data['val_metrics']}"
+        #     f"\nCatching results : for epoch {data['epoch']},
+        #     loss is {data['losses']} and validation is {data['val_metrics']}"
         # )
         if data["plot"]:
             widget.progress.setValue(

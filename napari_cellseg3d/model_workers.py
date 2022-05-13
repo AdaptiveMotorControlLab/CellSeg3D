@@ -389,6 +389,7 @@ class TrainingWorker(GeneratorWorker):
         model_dict,
         weights_path,
         data_dicts,
+        validation_percent,
         max_epochs,
         loss_function,
         learning_rate,
@@ -411,6 +412,8 @@ class TrainingWorker(GeneratorWorker):
             * weights_path : path to weights files if transfer learning is to be used
 
             * data_dicts : dict from :py:func:`Trainer.create_train_dataset_dict`
+
+            * validation_percent : percentage of images to use as validation
 
             * max_epochs : the amout of epochs to train for
 
@@ -437,6 +440,7 @@ class TrainingWorker(GeneratorWorker):
            Note: See :py:func:`~train`
         """
 
+        print("init")
         super().__init__(self.train)
         self._signals = LogSignal()
         self.log_signal = self._signals.log_signal
@@ -445,6 +449,7 @@ class TrainingWorker(GeneratorWorker):
         self.model_dict = model_dict
         self.weights_path = weights_path
         self.data_dicts = data_dicts
+        self.validation_percent = validation_percent
         self.max_epochs = max_epochs
         self.loss_function = loss_function
         self.learning_rate = learning_rate
@@ -459,6 +464,10 @@ class TrainingWorker(GeneratorWorker):
         self.do_augment = do_augmentation
         self.seed_dict = deterministic
 
+        self.train_files = []
+        self.val_files = []
+        print("end init")
+
     def log(self, text):
         """Sends a signal that ``text`` should be logged
 
@@ -471,6 +480,22 @@ class TrainingWorker(GeneratorWorker):
 
         self.log("\nParameters summary :\n")
 
+        self.log(
+            f"Percentage of dataset used for validation : {self.validation_percent*100}%"
+        )
+        self.log("-"*10)
+        self.log("Training files :\n")
+        [
+            self.log(f"{os.path.basename(str(train_file)[:-2])}\n")
+            for train_file in self.train_files
+        ]
+        self.log("-" * 10)
+        self.log("Validation files :\n")
+        [
+            self.log(f"{os.path.basename(str(val_file)[:-2])}\n")
+            for val_file in self.val_files
+        ]
+        self.log("-" * 10)
         if self.seed_dict["use deterministic"]:
             self.log(f"Deterministic training is enabled")
             self.log(f"Seed is {self.seed_dict['seed']}")
@@ -495,6 +520,7 @@ class TrainingWorker(GeneratorWorker):
             self.log(f"Using weights from : {self.weights_path}")
 
         # self.log("\n")
+        self.log("-" * 20)
 
     def train(self):
         """Trains the Pytorch model for the given number of epochs, with the selected model and data,
@@ -510,6 +536,8 @@ class TrainingWorker(GeneratorWorker):
         * weights_path : path to weights files if transfer learning is to be used
 
         * data_dicts : dict from :py:func:`Trainer.create_train_dataset_dict`
+
+        * validation_percent : percentage of images to use as validation
 
         * max_epochs : the amount of epochs to train for
 
@@ -569,23 +597,23 @@ class TrainingWorker(GeneratorWorker):
                 dropout_prob=0.3,
             )
         else:
-            model = model_class.get_net()
+            model = model_class.get_net()  # get an instance of the model
         model = model.to(self.device)
 
         epoch_loss_values = []
         val_metric_values = []
 
-        # TODO param : % of validation from training set
-        train_files, val_files = (
-            self.data_dicts[0 : int(len(self.data_dicts) * 0.9)],
-            self.data_dicts[int(len(self.data_dicts) * 0.9) :],
+        self.train_files, self.val_files = (
+            self.data_dicts[
+                0 : int(len(self.data_dicts) * self.validation_percent)
+            ],
+            self.data_dicts[
+                int(len(self.data_dicts) * self.validation_percent) :
+            ],
         )
-        print("Training files :")
-        [print(f"{train_file}\n") for train_file in train_files]
-        print("* " * 20)
-        print("* " * 20)
-        print("Validation files :")
-        [print(f"{val_file}\n") for val_file in val_files]
+
+        if self.train_files == [] or self.val_files == []:
+            self.log("ERROR : datasets are empty")
 
         if self.sampling:
             sample_loader = Compose(
@@ -643,14 +671,14 @@ class TrainingWorker(GeneratorWorker):
         if self.sampling:
             print("train_ds")
             train_ds = PatchDataset(
-                data=train_files,
+                data=self.train_files,
                 transform=train_transforms,
                 patch_func=sample_loader,
                 samples_per_image=self.num_samples,
             )
             print("val_ds")
             val_ds = PatchDataset(
-                data=val_files,
+                data=self.val_files,
                 transform=val_transforms,
                 patch_func=sample_loader,
                 samples_per_image=self.num_samples,
@@ -671,11 +699,13 @@ class TrainingWorker(GeneratorWorker):
             )
             print("Cache dataset : train")
             train_ds = CacheDataset(
-                data=train_files,
+                data=self.train_files,
                 transform=Compose(load_single_images, train_transforms),
             )
             print("Cache dataset : val")
-            val_ds = CacheDataset(data=val_files, transform=load_single_images)
+            val_ds = CacheDataset(
+                data=self.val_files, transform=load_single_images
+            )
         print("Dataloader")
         train_loader = DataLoader(
             train_ds,
