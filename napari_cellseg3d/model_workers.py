@@ -483,7 +483,7 @@ class TrainingWorker(GeneratorWorker):
         self.log(
             f"Percentage of dataset used for validation : {self.validation_percent*100}%"
         )
-        self.log("-"*10)
+        self.log("-" * 10)
         self.log("Training files :\n")
         [
             self.log(f"{os.path.basename(str(train_file)[:-2])}\n")

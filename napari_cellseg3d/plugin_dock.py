@@ -1,9 +1,7 @@
 import os
+from datetime import datetime
 import warnings
-
-# import shutil
 from pathlib import Path
-
 import pandas as pd
 
 # Qt
@@ -11,6 +9,7 @@ from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
 from napari_cellseg3d import interface as ui
+from napari_cellseg3d import utils
 
 GUI_MAXIMUM_WIDTH = 225
 GUI_MAXIMUM_HEIGHT = 350
@@ -46,16 +45,18 @@ class Datamanager(QWidget):
         self.button = ui.make_button(
             "1", self.button_func, parent=self, fixed=False
         )
+        self.time_label = ui.make_label("", self)
+        self.time_label.setVisible(False)
 
         io_panel, io_layout = ui.make_container_widget(vertical=False)
-        io_layout.addWidget(self.button)  # , alignment=utils.ABS_AL)
+        io_layout.addWidget(
+            ui.combine_blocks(
+                first=self.button, second=self.time_label, horizontal=True
+            )
+        )  # , alignment=utils.ABS_AL)
         io_panel.setLayout(io_layout)
         io_panel.setMaximumWidth(GUI_MAXIMUM_WIDTH)
         layout.addWidget(io_panel, alignment=ui.ABS_AL)
-
-        # set the layout
-        # layout.setAlignment(Qt.AlignTop)
-        # layout.setSpacing(4)
 
         self.setLayout(layout)
         # self.setMaximumHeight(GUI_MAXIMUM_HEIGHT)
@@ -69,6 +70,9 @@ class Datamanager(QWidget):
         self.image_dims = self.viewer.layers[0].data.shape
         self.as_folder = False
         """Whether to load as folder or single file"""
+
+        self.start_time = datetime.now()
+        self.time = None
 
     def prepare(self, label_dir, filetype, model_type, checkbox, as_folder):
         """Initialize the Datamanager, which loads the csv file and updates it
@@ -138,6 +142,8 @@ class Datamanager(QWidget):
                 df.to_csv(csv_path)
             else:
                 pass
+        self.start_time = datetime.now()
+        self.time = self.start_time
         return df, csv_path
 
     def create(self, label_dir, model_type, filename=None):
@@ -166,12 +172,17 @@ class Datamanager(QWidget):
             labels = [str(filename) for i in range(self.image_dims[0])]
 
         df = pd.DataFrame(
-            {"filename": labels, "train": ["Not checked"] * len(labels)}
+            {
+                "filename": labels,
+                "train": ["Not checked"] * len(labels),
+                "time": [""] * len(labels),
+            }
         )
         csv_path = os.path.join(label_dir, f"{model_type}_train0.csv")
         print("csv path for create")
         print(csv_path)
         df.to_csv(csv_path)
+
         return df, csv_path
 
     def update(self, slice_num):
@@ -183,11 +194,23 @@ class Datamanager(QWidget):
 
         """
         self.slice_num = slice_num
+
+        print(f"New slice review started at {utils.get_time()}")
         # print(self.df)
         if len(self.df) > 1:
             self.button.setText(
                 self.df.at[self.df.index[self.slice_num], "train"]
             )  # puts  button values at value of 1st csv item
+
+        self.time = datetime.now()
+
+        if self.button.text() == "Not checked":
+            self.time_label.setVisible(False)
+        else:
+            self.time_label.setVisible(True)
+            self.time_label.setText(
+                f"Previously completed in {self.df.at[self.df.index[self.slice_num], 'time']}"
+            )
 
     def button_func(self):  # updates csv every time you press button...
         if self.viewer.dims.ndisplay != 2:
@@ -195,11 +218,25 @@ class Datamanager(QWidget):
             warnings.warn("Please switch back to 2D mode !")
             return
         if self.button.text() == "Not checked":
+
+            start_time = self.time
+            finish_time = datetime.now()
+            self.time = finish_time
+
+            time_diff = utils.time_difference(start_time, finish_time)
+            print(f"Time taken : {time_diff}")
+
             self.button.setText("Checked")
+            self.time_label.setVisible(True)
+            self.time_label.setText(f"Completed in {time_diff}")
             self.df.at[self.df.index[self.slice_num], "train"] = "Checked"
+            self.df.at[self.df.index[self.slice_num], "time"] = time_diff
             self.df.to_csv(self.csv_path)
+
         else:
             self.button.setText("Not checked")
+            self.time_label.setVisible(False)
+            self.time = datetime.now()
             self.df.at[self.df.index[self.slice_num], "train"] = "Not checked"
             self.df.to_csv(self.csv_path)
 

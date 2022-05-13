@@ -134,8 +134,7 @@ class ModelFramework(BasePluginFolder):
         self.log.print_and_log(text)
 
     def save_log(self):
-        """Saves the worker's log to disk at self.results_path when called
-        """
+        """Saves the worker's log to disk at self.results_path when called"""
         log = self.log.toPlainText()
 
         path = self.results_path
@@ -163,8 +162,8 @@ class ModelFramework(BasePluginFolder):
 
         if len(log) != 0:
             with open(
-                    path + f"/Log_report_{utils.get_date_time()}.txt",
-                    "x",
+                path + f"/Log_report_{utils.get_date_time()}.txt",
+                "x",
             ) as f:
                 f.write(log)
                 f.close()

@@ -119,6 +119,30 @@ def align_array_sizes(array_shape, target_shape):
     return final_orig, final_targ
 
 
+def time_difference(time_start, time_finish, as_string=True):
+    """
+    Args:
+        time_start (datetime): time to subtract to time_finish
+        time_finish (datetime): time to add to (-time_start)
+        as_string (bool): if True, returns a string with the full time diff. Otherwise, returns as a list [hours,minutes,seconds]
+    """
+
+    time_taken = time_finish - time_start
+    days = divmod(time_taken.total_seconds(), 86400)  # Get days (without [0]!)
+    hours = divmod(days[1], 3600)  # Use remainder of days to calc hours
+    minutes = divmod(hours[1], 60)  # Use remainder of hours to calc minutes
+    seconds = divmod(minutes[1], 1)  # Use remainder of minutes to calc seconds
+
+    hours = f"{int(hours[0])}".zfill(2)
+    minutes = f"{int(minutes[0])}".zfill(2)
+    seconds = f"{int(seconds[0])}".zfill(2)
+
+    if as_string:
+        return f"{hours}:{minutes}:{seconds}"
+    else:
+        return [hours, minutes, seconds]
+
+
 def get_padding_dim(image_shape, anisotropy_factor=None):
     """
     Finds the nearest and superior power of two for each image dimension to zero-pad it for CNN processing,
