@@ -13,6 +13,10 @@ get_time
 **************************************
 .. autofunction:: napari_cellseg3d.utils::get_time
 
+time_difference
+**************************************
+.. autofunction:: napari_cellseg3d.utils::time_difference
+
 get_time_filepath
 **************************************
 .. autofunction:: napari_cellseg3d.utils::get_time_filepath

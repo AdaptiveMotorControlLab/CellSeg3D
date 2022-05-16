@@ -201,7 +201,7 @@ class InferenceWorker(GeneratorWorker):
         pad = utils.get_padding_dim(check)
         # print(pad)
         dims = 128
-        dims = 64
+        # dims = 64 # TODO
 
         model = self.model_dict["class"].get_net()
         if self.model_dict["name"] == "SegResNet":

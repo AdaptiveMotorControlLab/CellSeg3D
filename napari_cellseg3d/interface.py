@@ -91,7 +91,7 @@ def open_file_dialog(
         return filenames
 
 
-def make_label(name, parent):
+def make_label(name, parent=None):
     """Creates a QLabel
 
     Args:
@@ -101,7 +101,10 @@ def make_label(name, parent):
     Returns: created label
 
     """
-    return QLabel(name, parent)
+    if parent is not None:
+        return QLabel(name, parent)
+    else:
+        return QLabel(name)
 
 
 def make_scrollable(
@@ -302,7 +305,7 @@ def make_combobox(
     Args:
         entries array(str): Entries to add to the dropdown menu. Defaults to None, no entries if None
         parent (QWidget): parent QWidget to add dropdown menu to. Defaults to None, no parent is set if None
-        label (str) : if not None, creates a Qlabel with the contents of 'label', and returns the label as well
+        label (str) : if not None, creates a QLabel with the contents of 'label', and returns the label as well
         fixed (bool): if True, will set the size policy of the dropdown menu to Fixed in h and w. Defaults to True.
 
     Returns:

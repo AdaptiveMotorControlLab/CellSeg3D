@@ -39,6 +39,11 @@ The training module is comprised of several tabs.
 * The path to the labels folder
 * The path to the results folder
 
+* Whether to copy results to a zip file (for easier transferability)
+
+* Whether to use pre-trained weights that are provided; if you choose to do so, the model will be initialized with the specified weights, possibly improving performance (transfer learning).
+  You can also load custom weights; simply ensure they are compatible with the model.
+
 2) The second tab, **Augmentation**, lets you define dataset and augmentation parameters such as :
 
 * Whether to use images "as is" (**requires all images to be of the same size and cubic**) or extract patches.
@@ -77,6 +82,8 @@ Generalized Dice loss     `Generalized dice Loss from MONAI`_ with ``sigmoid=tru
 Dice-CE loss              `Dice-CE Loss from MONAI`_ with ``sigmoid=true``
 Tversky loss              `Tversky Loss from MONAI`_ with ``sigmoid=true``
 ========================  ================================================================================================
+
+
 .. _Dice Loss from MONAI: https://docs.monai.io/en/stable/losses.html#diceloss
 .. _Focal Loss from MONAI: https://docs.monai.io/en/stable/losses.html#focalloss
 .. _Dice-focal Loss from MONAI: https://docs.monai.io/en/stable/losses.html#dicefocalloss

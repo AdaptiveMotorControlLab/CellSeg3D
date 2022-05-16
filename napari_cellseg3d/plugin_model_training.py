@@ -2,11 +2,13 @@ import os
 import shutil
 import warnings
 import zipfile
+import pandas as pd
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import napari
 import numpy as np
+import pandas as pd
 import torch
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
@@ -22,8 +24,6 @@ from monai.losses import GeneralizedDiceLoss
 from monai.losses import TverskyLoss
 
 # Qt
-from qtpy.QtWidgets import QLabel
-from qtpy.QtWidgets import QProgressBar
 from qtpy.QtWidgets import QSizePolicy
 
 # local
@@ -205,6 +205,10 @@ class Trainer(ModelFramework):
         self.plot_dock = None
         """Docked widget with plots"""
 
+        self.df = None
+        self.loss_values = []
+        self.validation_values = []
+
         self.model_choice.setCurrentIndex(model_index)
 
         ################################
@@ -217,7 +221,7 @@ class Trainer(ModelFramework):
         self.epoch_choice = ui.make_n_spinboxes(
             min=2, max=1000, default=self.max_epochs
         )
-        self.lbl_epoch_choice = QLabel("Number of epochs : ", self)
+        self.lbl_epoch_choice = ui.make_label("Number of epochs : ", self)
 
         self.loss_choice, self.lbl_loss_choice = ui.make_combobox(
             sorted(self.loss_dict.keys()), label="Loss function"
@@ -227,19 +231,23 @@ class Trainer(ModelFramework):
         self.sample_choice = ui.make_n_spinboxes(
             min=2, max=50, default=self.num_samples
         )
-        self.lbl_sample_choice = QLabel("Number of patches per image : ", self)
+        self.lbl_sample_choice = ui.make_label(
+            "Number of patches per image : ", self
+        )
         self.sample_choice.setVisible(False)
         self.lbl_sample_choice.setVisible(False)
 
         self.batch_choice = ui.make_n_spinboxes(
             min=1, max=10, default=self.batch_size
         )
-        self.lbl_batch_choice = QLabel("Batch size : ", self)
+        self.lbl_batch_choice = ui.make_label("Batch size : ", self)
 
         self.val_interval_choice = ui.make_n_spinboxes(
             default=self.val_interval
         )
-        self.lbl_val_interv_choice = QLabel("Validation interval : ", self)
+        self.lbl_val_interv_choice = ui.make_label(
+            "Validation interval : ", self
+        )
 
         self.learning_rate_dict = {
             "1e-2": 1e-2,
@@ -270,14 +278,14 @@ class Trainer(ModelFramework):
         )
 
         self.patch_size_lbl = [
-            QLabel(f"Size of patch in {axis} :") for axis in "xyz"
+            ui.make_label(f"Size of patch in {axis} :", self) for axis in "xyz"
         ]
         for w in self.patch_size_widgets:
             w.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
             w.setVisible(False)
         for l in self.patch_size_lbl:
             l.setVisible(False)
-        self.sampling_container = QLabel()
+        self.sampling_container, l = ui.make_container_widget()
 
         self.patch_choice = ui.make_checkbox(
             "Extract patches from images", func=self.toggle_patch_dims
@@ -297,7 +305,6 @@ class Trainer(ModelFramework):
             self.box_seed, self.lbl_seed, horizontal=False
         )
 
-        self.progress = QProgressBar()
         self.progress.setVisible(False)
         """Dock widget containing the progress bar"""
 
@@ -893,6 +900,8 @@ class Trainer(ModelFramework):
         self.log.print_and_log("Done")
         self.log.print_and_log("*" * 10)
 
+        self.make_csv()
+
         self.btn_start.setText("Start")
         [btn.setVisible(True) for btn in self.close_buttons]
 
@@ -933,7 +942,10 @@ class Trainer(ModelFramework):
             widget.progress.setValue(
                 100 * (data["epoch"] + 1) // widget.max_epochs
             )
+
             widget.update_loss_plot(data["losses"], data["val_metrics"])
+            widget.loss_values = data["losses"]
+            widget.validation_values = data["val_metrics"]
 
         if widget.stop_requested:
             widget.log.print_and_log(
@@ -962,6 +974,21 @@ class Trainer(ModelFramework):
     #     # del self
     #     if self.get_device(show=False).type == "cuda":
     #         self.empty_cuda_cache()
+
+    def make_csv(self):
+
+        size_column = range(1, self.max_epochs + 1)
+        self.df = pd.DataFrame(
+            {
+                "epoch": size_column,
+                "loss": self.loss_values,
+                "validation": utils.fill_list_in_between(
+                    self.validation_values, self.val_interval - 1, ""
+                )[: len(size_column)],
+            }
+        )
+        path = os.path.join(self.results_path_folder, "training.csv")
+        self.df.to_csv(path)
 
     def plot_loss(self, loss, dice_metric):
         """Creates two subplots to plot the training loss and validation metric"""

@@ -8,7 +8,6 @@ import skimage.io as io
 
 # Qt
 from qtpy import QtGui
-from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QSizePolicy
 
@@ -55,12 +54,13 @@ class Reviewer(BasePluginSingleImage):
             "Start reviewing", self.run_review, self
         )
 
-        self.lbl_mod = QLabel("Name", self)
+        self.lbl_mod = ui.make_label("Name", self)
 
-        self.warn_label = QLabel(
+        self.warn_label = ui.make_label(
             "WARNING : You already have a review session running.\n"
             "Launching another will close the current one,\n"
-            " make sure to save your work beforehand"
+            " make sure to save your work beforehand",
+            None,
         )
         pal = self.warn_label.palette()
         pal.setColor(QtGui.QPalette.WindowText, QtGui.QColor("red"))

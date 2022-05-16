@@ -8,7 +8,6 @@ from magicgui.widgets import Container
 from magicgui.widgets import Slider
 
 # Qt
-from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QSizePolicy
 from tifffile import imwrite
 
@@ -51,7 +50,7 @@ class Cropping(BasePluginSingleImage):
 
         self.box_widgets = ui.make_n_spinboxes(3, 1, 1000, DEFAULT_CROP_SIZE)
         self.box_lbl = [
-            QLabel("Size in " + axis + " of cropped volume :")
+            ui.make_label("Size in " + axis + " of cropped volume :", self)
             for axis in "xyz"
         ]
 

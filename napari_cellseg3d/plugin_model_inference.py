@@ -5,9 +5,7 @@ import napari
 import numpy as np
 
 # Qt
-from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QSizePolicy
-from qtpy.QtWidgets import QWidget
 
 # local
 from napari_cellseg3d import interface as ui
@@ -28,29 +26,31 @@ class Inferer(ModelFramework):
         * Data :
             * A file extension choice for the images to load from selected folders
 
-            * Two buttons to choose the images folder to run segmentation and save results in, respectively
+            * Two fields to choose the images folder to run segmentation and save results in, respectively
+
+        * Inference options :
+            * A dropdown menu to select which model should be used for inference
+
+            * An option to load custom weights for the selected model (e.g. from training module)
+
 
         * Post-processing :
             * A box to select if data is anisotropic, if checked, asks for resolution in micron for each axis
 
             * A box to choose whether to threshold, if checked asks for a threshold between 0 and 1
 
-        * Display options :
-            * A dropdown menu to select which model should be used for inference
+            * A box to enable instance segmentation. If enabled, displays :
+                * The choice of method to use for instance segmentation
+                
+                * The probability threshold below which to remove objects
 
-            * A checkbox to choose whether to display results in napari afterwards. Will ask for how many results to display, capped at 10
+                * The size in pixels of small objects to remove
+
+        * A checkbox to choose whether to display results in napari afterwards. Will ask for how many results to display, capped at 10
 
         * A button to launch the inference process
 
         * A button to close the widget
-
-        TODO:
-
-        * Verify if way of loading model is  OK
-
-        * Padding OK ?
-
-        * Save toggle ?
 
         Args:
             viewer (napari.viewer.Viewer): napari viewer to display the widget in
@@ -100,7 +100,7 @@ class Inferer(ModelFramework):
         )
 
         self.display_number_choice = ui.make_n_spinboxes(1, 1, 10, 1)
-        self.lbl_display_number = QLabel("How many ? (max. 10)", self)
+        self.lbl_display_number = ui.make_label("How many ? (max. 10)", self)
 
         self.aniso_checkbox = ui.make_checkbox(
             "Anisotropic data", self.toggle_display_aniso
@@ -110,7 +110,8 @@ class Inferer(ModelFramework):
             n=3, min=1.0, max=1000, default=1.5, step=0.5, double=True
         )
         self.aniso_box_lbl = [
-            QLabel("Resolution in " + axis + " (microns) :") for axis in "xyz"
+            ui.make_label("Resolution in " + axis + " (microns) :", self)
+            for axis in "xyz"
         ]
 
         self.aniso_box_widgets[-1].setValue(5.0)  # TODO change default
@@ -147,7 +148,9 @@ class Inferer(ModelFramework):
         self.instance_prob_thresh = ui.make_n_spinboxes(
             n=1, max=0.99, default=0.7, step=0.05, double=True
         )
-        self.instance_prob_thresh_lbl = QLabel("Probability threshold :")
+        self.instance_prob_thresh_lbl = ui.make_label(
+            "Probability threshold :", self
+        )
         self.instance_prob_t_container = ui.combine_blocks(
             second=self.instance_prob_thresh,
             first=self.instance_prob_thresh_lbl,
@@ -157,8 +160,8 @@ class Inferer(ModelFramework):
         self.instance_small_object_thresh = ui.make_n_spinboxes(
             n=1, max=100, default=10, step=5
         )
-        self.instance_small_object_thresh_lbl = QLabel(
-            "Small object removal threshold :"
+        self.instance_small_object_thresh_lbl = ui.make_label(
+            "Small object removal threshold :", self
         )
         self.instance_small_object_t_container = ui.combine_blocks(
             second=self.instance_small_object_thresh,

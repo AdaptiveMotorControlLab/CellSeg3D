@@ -302,6 +302,33 @@ def check_annotations_dir(project_path):
         pass
 
 
+def fill_list_in_between(lst, n, elem):
+    """Fills a list with n * elem between each member of list.
+    Example with list = [1,2,3], n=2, elem='&' : returns [1, &, &,2,&,&,3,&,&]
+
+    Args:
+        lst: list to fill
+        n: number of elements to add
+        elem: added n times after each element of list
+
+    Returns :
+        Filled list
+    """
+
+    new_list = []
+    for i in range(len(lst)):
+        temp_list = [lst[i]]
+        while len(temp_list) < n + 1:
+            temp_list.append(elem)
+        if i < len(lst) - 1:
+            new_list += temp_list
+        else:
+            new_list.append(lst[i])
+            for j in range(n):
+                new_list.append(elem)
+            return new_list
+
+
 def check_zarr(project_path, ext):
     if not len(
         list(
