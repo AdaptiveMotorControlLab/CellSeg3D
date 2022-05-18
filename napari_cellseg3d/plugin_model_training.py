@@ -1,8 +1,6 @@
 import os
 import shutil
 import warnings
-import zipfile
-import pandas as pd
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -81,7 +79,6 @@ class Trainer(ModelFramework):
 
         TODO training plugin:
 
-        * Choice of validation proportion
 
         * Custom model loading
 
@@ -460,6 +457,15 @@ class Trainer(ModelFramework):
         ################
         ui.add_blank(self, data_tab_layout)
         ################
+
+        validation_group_w, validation_group_l = ui.make_group("Validation %")
+
+        validation_group_l.addWidget(self.validation_percent_choice)
+        validation_group_w.setLayout(validation_group_l)
+        data_tab_layout.addWidget(validation_group_w)
+        ################
+        ui.add_blank(self, data_tab_layout)
+        ################
         # buttons
 
         data_tab_layout.addWidget(
@@ -515,12 +521,6 @@ class Trainer(ModelFramework):
         augment_tab_l.addWidget(sampling_group_w)
         #######################
         ui.add_blank(augment_tab_w, augment_tab_l)
-        #######################
-        validation_group_w, validation_group_l = ui.make_group("Validation %")
-
-        validation_group_l.addWidget(self.validation_percent_choice)
-        validation_group_w.setLayout(validation_group_l)
-        augment_tab_l.addWidget(validation_group_w)
         #######################
         augment_group_w, augment_group_l = ui.make_group("Augmentation")
         augment_group_l.addWidget(

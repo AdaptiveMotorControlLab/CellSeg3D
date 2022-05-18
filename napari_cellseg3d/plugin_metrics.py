@@ -13,6 +13,8 @@ from napari_cellseg3d import utils
 from napari_cellseg3d.model_instance_seg import to_semantic
 from napari_cellseg3d.plugin_base import BasePluginFolder
 
+DEFAULT_THRESHOLD = 0.5
+
 
 class MetricsUtils(BasePluginFolder):
     """Plugin to evaluate metrics between two sets of labels, ground truh and prediction"""
@@ -40,7 +42,12 @@ class MetricsUtils(BasePluginFolder):
         self.btn_compute_dice = ui.make_button(
             "Compute Dice", self.compute_dice
         )
+
+        self.rotate_choice = ui.make_checkbox("Find best orientation")
+
         self.btn_reset_plot = ui.make_button("Clear plots", self.remove_plots)
+
+        self.threshold_box = ui.make_n_spinboxes(min=0.1, max = 1, default=DEFAULT_THRESHOLD,step=0.1, double=True)
 
         self.btn_result_path.setVisible(False)
         self.lbl_result_path.setVisible(False)
@@ -72,7 +79,7 @@ class MetricsUtils(BasePluginFolder):
 
         w, self.layout = ui.make_container_widget()
 
-        metrics_group_w, metrics_group_l = ui.make_group("Metrics")
+        metrics_group_w, metrics_group_l = ui.make_group("Data")
 
         self.lbl_image_files.setText("Ground truth")
 
@@ -96,11 +103,21 @@ class MetricsUtils(BasePluginFolder):
             alignment=ui.LEFT_AL,
         )
 
-        metrics_group_l.addWidget(self.btn_compute_dice, alignment=ui.LEFT_AL)
-
         metrics_group_w.setLayout(metrics_group_l)
+        ############################
+        ui.add_blank(self, self.layout)
+        ############################
+        param_group_w, param_group_l = ui.make_group("Parameters")
+
+        param_group_l.addWidget(self.threshold_box)
+        param_group_l.addWidget(self.rotate_choice)
+
+        param_group_w.setLayout(param_group_l)
 
         self.layout.addWidget(metrics_group_w)
+        self.layout.addWidget(param_group_w)
+
+        self.layout.addWidget(self.btn_compute_dice, alignment=ui.LEFT_AL)
 
         self.layout.addWidget(self.make_close_button(), alignment=ui.LEFT_AL)
 
@@ -109,7 +126,7 @@ class MetricsUtils(BasePluginFolder):
 
         ui.make_scrollable(self.layout, self)
 
-    def plot_dice(self, dice_coeffs):
+    def plot_dice(self, dice_coeffs, threshold=DEFAULT_THRESHOLD):
         """Plots the dice loss for each pair of labels on viewer"""
         self.btn_reset_plot.setVisible(True)
         colors = []
@@ -117,7 +134,7 @@ class MetricsUtils(BasePluginFolder):
         bckgrd_color = (0, 0, 0, 0)
 
         for coeff in dice_coeffs:  # TODO add threshold manual setting
-            if coeff < 0.5:
+            if coeff < threshold:
                 colors.append(ui.dark_red)  # 72071d # crimson red
             else:
                 colors.append(ui.default_cyan)  # 8dd3c7 # turquoise cyan
@@ -138,7 +155,7 @@ class MetricsUtils(BasePluginFolder):
             dice_plot.invert_yaxis()
 
             self.plots.append(self.canvas)
-            dice_plot.axvline(0.5, color=ui.dark_red)
+            dice_plot.axvline(threshold, color=ui.dark_red)
             dice_plot.set_title(
                 f"Session {len(self.plots)}\nMean dice : {np.mean(dice_coeffs):.4f}"
             )
@@ -157,12 +174,17 @@ class MetricsUtils(BasePluginFolder):
         self.btn_reset_plot.setVisible(False)
 
     def compute_dice(self):
-        """Computes the dice metric between pairs of labels. Rotates the prediction label to find matching orientation as well."""
+        """Computes the dice metric between pairs of labels.
+        Rotates the prediction label to find matching orientation as well."""
         # u = 0
         # t = 0
+
+        threshold = self.threshold_box.value()
+        rotate = self.rotate_choice.isChecked()
+
         total_metrics = []
         self.canvas = (
-            None  # kind of unsafe way to stack plots... but it works.
+            None  # kind of terrible way to stack plots... but it works.
         )
         id = 0
         for ground_path, pred_path in zip(
@@ -230,18 +252,20 @@ class MetricsUtils(BasePluginFolder):
             # )
             # u += 1
 
-            # TODO add rotation toggle
-            pred_flip_x = np.rot90(pred[0][0], axes=(0, 1))
-            pred_flip_y = np.rot90(pred[0][0], axes=(1, 2))
-            pred_flip_z = np.rot90(pred[0][0], axes=(0, 2))
             scores = []
+            if rotate:  # TODO : recored best rotation for display
+                pred_flip_x = np.rot90(pred[0][0], axes=(0, 1))
+                pred_flip_y = np.rot90(pred[0][0], axes=(1, 2))
+                pred_flip_z = np.rot90(pred[0][0], axes=(0, 2))
 
-            for p in [pred[0][0], pred_flip_x, pred_flip_y, pred_flip_z]:
-                scores.append(utils.dice_coeff(p, ground))
-                scores.append(utils.dice_coeff(np.flip(p), ground))
-                for i in range(3):
-                    scores.append(utils.dice_coeff(np.flip(p, axis=i), ground))
-
+                for p in [pred[0][0], pred_flip_x, pred_flip_y, pred_flip_z]:
+                    scores.append(utils.dice_coeff(p, ground))
+                    scores.append(utils.dice_coeff(np.flip(p), ground))
+                    for i in range(3):
+                        scores.append(utils.dice_coeff(np.flip(p, axis=i), ground))
+            else:
+                i=0
+                scores.append(utils.dice_coeff(pred, ground))
             # if t < 1:
             #     for i in range(3):
             #         self._viewer.add_image(
@@ -254,7 +278,7 @@ class MetricsUtils(BasePluginFolder):
 
             # print(scores)
             score = max(scores)
-            if score < 0.5:
+            if score < threshold:
                 # TODO add filename ?
                 self._viewer.dims.ndisplay = 3
                 self._viewer.add_image(
@@ -265,4 +289,4 @@ class MetricsUtils(BasePluginFolder):
                 )
             total_metrics.append(score)
         print(f"DICE METRIC :{total_metrics}")
-        self.plot_dice(total_metrics)
+        self.plot_dice(total_metrics, threshold)
