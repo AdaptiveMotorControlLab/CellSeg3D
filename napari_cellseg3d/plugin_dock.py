@@ -51,7 +51,9 @@ class Datamanager(QWidget):
         io_panel, io_layout = ui.make_container_widget(vertical=False)
         io_layout.addWidget(
             ui.combine_blocks(
-                first=self.button, second=self.time_label, horizontal=True
+                left_or_above=self.button,
+                right_or_below=self.time_label,
+                horizontal=True,
             )
         )  # , alignment=utils.ABS_AL)
         io_panel.setLayout(io_layout)

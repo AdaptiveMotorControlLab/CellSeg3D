@@ -1,3 +1,5 @@
+from typing import Union
+
 from qtpy.QtCore import Qt
 from qtpy.QtCore import QUrl
 from qtpy.QtGui import QDesktopServices
@@ -62,7 +64,7 @@ def add_blank(widget, layout):
 
 def open_file_dialog(
     widget,
-    possible_paths=[""],
+    possible_paths: list = [""],
     load_as_folder: bool = False,
     filetype: str = "Image file (*.tif *.tiff)",
 ):
@@ -159,7 +161,7 @@ def make_n_spinboxes(
     parent=None,
     double=False,
     fixed=True,
-):
+) -> Union[list, QWidget]:
     """
 
     Args:
@@ -303,7 +305,7 @@ def make_combobox(
     """Creates a dropdown menu with a title and adds specified entries to it
 
     Args:
-        entries array(str): Entries to add to the dropdown menu. Defaults to None, no entries if None
+        entries (array(str)): Entries to add to the dropdown menu. Defaults to None, no entries if None
         parent (QWidget): parent QWidget to add dropdown menu to. Defaults to None, no parent is set if None
         label (str) : if not None, creates a QLabel with the contents of 'label', and returns the label as well
         fixed (bool): if True, will set the size policy of the dropdown menu to Fixed in h and w. Defaults to True.
@@ -367,14 +369,22 @@ def make_checkbox(
 
 
 def combine_blocks(
-    second, first, min_spacing=0, horizontal=True, l=11, t=3, r=11, b=11
+    right_or_below,
+    left_or_above,
+    min_spacing=0,
+    horizontal=True,
+    l=11,
+    t=3,
+    r=11,
+    b=11,
 ):
-    """Combines two QWidget objects and puts them side by side (label on the left and button on the right)
+    """Combines two QWidget objects and puts them side by side (first on the left/top and second on the right/bottom depending on "horizontal")
+       Weird argument names due the initial implementation of it.  # TODO maybe fix arg names
 
     Args:
-        horizontal (bool): whether to stack widgets laterally or horizontally
-        second (QWidget): Second widget, to be displayed right/below of the label
-        first (QWidget): First widget, to be added on the left/above of button
+        horizontal (bool): whether to stack widgets vertically (False) or horizontally (True)
+        left_or_above (QWidget): First widget, to be added on the left/above of "second"
+        right_or_below (QWidget): Second widget, to be displayed right/below of "first"
         min_spacing (int): Minimum spacing between the two widgets (from the start of label to the start of button)
 
     Returns:
@@ -407,9 +417,9 @@ def combine_blocks(
     # temp_layout.setColumnMinimumWidth(1,100)
     # temp_layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
 
-    temp_layout.addWidget(first, r1, c1)  # , alignment=LEFT_AL)
+    temp_layout.addWidget(left_or_above, r1, c1)  # , alignment=LEFT_AL)
     # temp_layout.addStretch(100)
-    temp_layout.addWidget(second, r2, c2)  # , alignment=LEFT_AL)
+    temp_layout.addWidget(right_or_below, r2, c2)  # , alignment=LEFT_AL)
     temp_widget.setLayout(temp_layout)
     return temp_widget
 

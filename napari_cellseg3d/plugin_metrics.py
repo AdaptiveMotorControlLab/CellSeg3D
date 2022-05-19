@@ -17,7 +17,7 @@ DEFAULT_THRESHOLD = 0.5
 
 
 class MetricsUtils(BasePluginFolder):
-    """Plugin to evaluate metrics between two sets of labels, ground truh and prediction"""
+    """Plugin to evaluate metrics between two sets of labels, ground truth and prediction"""
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent):
         """Creates a MetricsUtils widget for computing and plotting dice metrics between labels.
@@ -47,7 +47,9 @@ class MetricsUtils(BasePluginFolder):
 
         self.btn_reset_plot = ui.make_button("Clear plots", self.remove_plots)
 
-        self.threshold_box = ui.make_n_spinboxes(min=0.1, max = 1, default=DEFAULT_THRESHOLD,step=0.1, double=True)
+        self.threshold_box = ui.make_n_spinboxes(
+            min=0.1, max=1, default=DEFAULT_THRESHOLD, step=0.1, double=True
+        )
 
         self.btn_result_path.setVisible(False)
         self.lbl_result_path.setVisible(False)
@@ -85,8 +87,8 @@ class MetricsUtils(BasePluginFolder):
 
         metrics_group_l.addWidget(
             ui.combine_blocks(
-                second=self.btn_image_files,
-                first=self.lbl_image_files,
+                right_or_below=self.btn_image_files,
+                left_or_above=self.lbl_image_files,
                 min_spacing=70,
             ),
             alignment=ui.LEFT_AL,
@@ -96,8 +98,8 @@ class MetricsUtils(BasePluginFolder):
 
         metrics_group_l.addWidget(
             ui.combine_blocks(
-                second=self.btn_label_files,
-                first=self.lbl_label_files,
+                right_or_below=self.btn_label_files,
+                left_or_above=self.lbl_label_files,
                 min_spacing=70,
             ),
             alignment=ui.LEFT_AL,
@@ -262,9 +264,11 @@ class MetricsUtils(BasePluginFolder):
                     scores.append(utils.dice_coeff(p, ground))
                     scores.append(utils.dice_coeff(np.flip(p), ground))
                     for i in range(3):
-                        scores.append(utils.dice_coeff(np.flip(p, axis=i), ground))
+                        scores.append(
+                            utils.dice_coeff(np.flip(p, axis=i), ground)
+                        )
             else:
-                i=0
+                i = 0
                 scores.append(utils.dice_coeff(pred, ground))
             # if t < 1:
             #     for i in range(3):

@@ -42,6 +42,14 @@ Interface and functionalities
   | You may also choose to **load custom weights** rather than the pre-trained ones, simply ensure they are **compatible** (e.g. produced from the training module for the same model)
 
 
+* **Inference parameters** :
+
+  | You can choose to use inference on the whole image at once, which generally yields better performance at the cost of more memory,
+  | or you can use a specific window size to run inference on smaller chunks one by one, for lower memory usage.
+  | You can also choose to keep the dataset in the RAM rather than the VRAM (cpu vs cuda device) to avoid running out of VRAM
+  | if you have several images.
+
+
 * **Anisotropy** :
 
   | If you want to see your results without **anisotropy** when you have anisotropic images, you can specify that you have anisotropic data

@@ -55,34 +55,44 @@ class Trainer(ModelFramework):
         """Creates a Trainer tab widget with the following functionalities :
 
         * First tab : Dataset parameters
-            * A filetype choice to select images in a folder
+            * A choice for the file extension of images to be loaded
 
-            * A button to choose the folder containing the images of the dataset. Validation files are chosen automatically from the whole dataset.
+            * A button to select images folder. Validation files are chosen automatically from the whole dataset.
 
-            * A button to choose the label folder (must have matching number and name of images)
+            * A button to choose the label folder (must have matching number and name regarding images folder)
 
-            * A button to choose where to save the results (weights). Defaults to the plugin's models/saved_weights folder
+            * A button to choose where to save the results (weights, log, plots). Defaults to the plugin's models/saved_weights folder
 
-            * A dropdown menu to choose which model to train
+            * A choice of whether to use pre-trained weights or load custom weights if desired
 
-        * Second tab : Training parameters
+            * A choice of the proportion of the dataset to use for validation.
 
-            * A dropdown menu to choose which loss function to use (see https://docs.monai.io/en/stable/losses.html)
+        * Second tab : Data augmentation
+
+            * A choice for using images as is or extracting smaller patches randomly, with a size and number choice.
+
+            * A toggle for data augmentation (elastic deforms, intensity shift, flipping, etc)
+
+        * Third tab : Training parameters
+
+            * A choice of model to use (see training module guide table)
+
+            * A dropdown menu to choose which loss function to use (see the training module guide table)
 
             * A spin box to choose the number of epochs to train for
 
             * A spin box to choose the batch size during training
 
-            * A spin box to choose the number of samples to take from an image when training
+            * A choice of learning rate for the optimizer
 
             * A spin box to choose the validation interval
+
+            * A choice of using random or deterministic training
 
         TODO training plugin:
 
 
         * Custom model loading
-
-        * update docs
 
 
         Args:
@@ -118,6 +128,7 @@ class Trainer(ModelFramework):
         self.label_path = ""
         self.results_path = ""
         self.results_path_folder = ""
+        """Path to the folder inside the results path that contains all results"""
 
         self.save_as_zip = False
         """Whether to zip results folder once done. Creates a zipped copy of the results folder."""
@@ -246,20 +257,18 @@ class Trainer(ModelFramework):
             "Validation interval : ", self
         )
 
-        self.learning_rate_dict = {
-            "1e-2": 1e-2,
-            "1e-3": 1e-3,
-            "1e-4": 1e-4,
-            "1e-5": 1e-5,
-            "1e-6": 1e-6,
-        }
+        learning_rate_vals = [
+            "1e-2",
+            "1e-3",
+            "1e-4",
+            "1e-5",
+            "1e-6",
+        ]
 
         (
             self.learning_rate_choice,
             self.lbl_learning_rate_choice,
-        ) = ui.make_combobox(
-            self.learning_rate_dict.keys(), label="Learning rate"
-        )
+        ) = ui.make_combobox(learning_rate_vals, label="Learning rate")
         self.learning_rate_choice.setCurrentIndex(1)
 
         self.augment_choice = ui.make_checkbox("Augment data")
@@ -536,8 +545,8 @@ class Trainer(ModelFramework):
 
         augment_tab_l.addWidget(
             ui.combine_blocks(
-                first=self.make_prev_button(),
-                second=self.make_next_button(),
+                left_or_above=self.make_prev_button(),
+                right_or_below=self.make_next_button(),
                 l=1,
             ),
             alignment=ui.LEFT_AL,
@@ -784,9 +793,7 @@ class Trainer(ModelFramework):
             ]
             print(f"val % : {validation_percent}")
 
-            self.learning_rate = self.learning_rate_dict[
-                self.learning_rate_choice.currentText()
-            ]
+            self.learning_rate = float(self.learning_rate_choice.currentText())
 
             seed_dict = {
                 "use deterministic": self.use_deterministic_choice.isChecked(),

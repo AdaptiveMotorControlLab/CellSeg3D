@@ -85,6 +85,9 @@ class InferenceWorker(GeneratorWorker):
         filetype,
         transforms,
         instance,
+        use_window,
+        window_infer_size,
+        keep_on_cpu,
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~inference` function.
 
@@ -103,7 +106,13 @@ class InferenceWorker(GeneratorWorker):
 
             * transforms: a dict containing transforms to perform at various times.
 
-            * instance : a dict containing parameters regarding instance segmentation
+            * instance: a dict containing parameters regarding instance segmentation
+
+            * use_window: use window inference with specific size or whole image
+
+            * window_infer_size: size of window if use_window is True
+
+            * keep_on_cpu: keep images on CPU or no
 
         Note: See :py:func:`~self.inference`
         """
@@ -121,6 +130,9 @@ class InferenceWorker(GeneratorWorker):
         self.filetype = filetype
         self.transforms = transforms
         self.instance_params = instance
+        self.use_window = use_window
+        self.window_infer_size = window_infer_size
+        self.keep_on_cpu = keep_on_cpu
 
         """These attributes are all arguments of :py:func:~inference, please see that for reference"""
 
@@ -149,9 +161,25 @@ class InferenceWorker(GeneratorWorker):
                 f"Thresholding is enabled at {self.transforms['thresh'][1]}"
             )
 
+        if self.use_window:
+            status = "enabled"
+        else:
+            status="disabled"
+
+        self.log(f"Window inference is {status}")
+
+        if self.keep_on_cpu:
+            self.log(f"Dataset loaded to CPU")
+        else:
+            self.log(f"Dataset loaded on {self.device}")
+
+        if self.instance_params["do_instance"]:
+            # TODO move instance seg
+            self.log(f"Instance segmentation enabled")
+            # self.log(f"")
+
     def inference(self):
         """
-
         Requires:
             * device: cuda or cpu device to use for torch
 
@@ -166,6 +194,12 @@ class InferenceWorker(GeneratorWorker):
             * filetype: the file extension to use when saving,
 
             * transforms: a dict containing transforms to perform at various times.
+
+            * use_window: use window inference with specific size or whole image
+
+            * window_infer_size: size of window if use_window is True
+
+            * keep_on_cpu: keep images on CPU or no
 
         Yields:
             dict: contains :
@@ -215,8 +249,8 @@ class InferenceWorker(GeneratorWorker):
 
         model.to(self.device)
 
-        print("FILEPATHS PRINT")
-        print(self.images_filepaths)
+        # print("FILEPATHS PRINT")
+        # print(self.images_filepaths)
 
         load_transforms = Compose(
             [
@@ -272,18 +306,31 @@ class InferenceWorker(GeneratorWorker):
 
                 inputs = inf_data["image"]
                 # print(inputs.shape)
-                inputs = inputs.to(self.device)
+                #  TODO figure out sliding window device
+                inputs = inputs.to("cpu")
 
                 model_output = lambda inputs: post_process_transforms(
                     self.model_dict["class"].get_output(model, inputs)
                 )
+                # TODO add more params
+
+                if self.keep_on_cpu:
+                    dataset_device = "cpu"
+                else:
+                    dataset_device = self.device
+
+                if self.use_window:
+                    window_size = self.window_infer_size
+                else:
+                    window_size = None
 
                 outputs = sliding_window_inference(
                     inputs,
-                    roi_size=None,
+                    roi_size=window_size,
                     sw_batch_size=1,
                     predictor=model_output,
-                    device=self.device,
+                    sw_device=self.device,
+                    device=dataset_device,
                 )
 
                 out = outputs.detach().cpu()

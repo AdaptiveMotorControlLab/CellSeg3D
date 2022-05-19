@@ -83,8 +83,8 @@ class ConvertUtils(BasePluginFolder):
         w, layout = ui.make_container_widget()
 
         results_widget = ui.combine_blocks(
-            second=self.btn_result_path,
-            first=self.lbl_result_path,
+            right_or_below=self.btn_result_path,
+            left_or_above=self.lbl_result_path,
             min_spacing=70,
         )
 
@@ -105,8 +105,8 @@ class ConvertUtils(BasePluginFolder):
 
         folder_group_l.addWidget(
             ui.combine_blocks(
-                second=self.btn_label_files,
-                first=self.lbl_label_files,
+                right_or_below=self.btn_label_files,
+                left_or_above=self.lbl_label_files,
                 min_spacing=70,
             ),
             alignment=ui.LEFT_AL,

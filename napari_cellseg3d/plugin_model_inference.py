@@ -41,7 +41,7 @@ class Inferer(ModelFramework):
 
             * A box to enable instance segmentation. If enabled, displays :
                 * The choice of method to use for instance segmentation
-                
+
                 * The probability threshold below which to remove objects
 
                 * The size in pixels of small objects to remove
@@ -71,6 +71,10 @@ class Inferer(ModelFramework):
         self.zoom = [1, 1, 1]
 
         self.instance_params = None
+
+        self.keep_on_cpu = False
+        self.use_window_inference = False
+        self.window_inference_size = None
 
         ############################
         ############################
@@ -128,6 +132,21 @@ class Inferer(ModelFramework):
             n=1, max=1, default=0.7, step=0.05, double=True
         )
 
+        self.window_infer_box = ui.make_checkbox("Use window inference")
+        self.window_infer_box.clicked.connect(self.toggle_display_window_size)
+        sizes_window = ["8", "16", "32", "64", "128", "256", "512"]
+        (
+            self.window_size_choice,
+            self.lbl_window_size_choice,
+        ) = ui.make_combobox(sizes_window, label="Window size")
+        self.keep_data_on_cpu_box = ui.make_checkbox("Keep data on CPU")
+
+        self.window_infer_params = ui.combine_blocks(
+            self.window_size_choice,
+            self.lbl_window_size_choice,
+            horizontal=False,
+        )
+
         ##################
         ##################
         # instance segmentation widgets
@@ -152,8 +171,8 @@ class Inferer(ModelFramework):
             "Probability threshold :", self
         )
         self.instance_prob_t_container = ui.combine_blocks(
-            second=self.instance_prob_thresh,
-            first=self.instance_prob_thresh_lbl,
+            right_or_below=self.instance_prob_thresh,
+            left_or_above=self.instance_prob_thresh_lbl,
             horizontal=False,
         )
 
@@ -164,8 +183,8 @@ class Inferer(ModelFramework):
             "Small object removal threshold :", self
         )
         self.instance_small_object_t_container = ui.combine_blocks(
-            second=self.instance_small_object_thresh,
-            first=self.instance_small_object_thresh_lbl,
+            right_or_below=self.instance_small_object_thresh,
+            left_or_above=self.instance_small_object_thresh_lbl,
             horizontal=False,
         )
         ##################
@@ -196,7 +215,7 @@ class Inferer(ModelFramework):
             warnings.warn("Image and label paths are not correctly set")
             return False
 
-    def toggle_display_number(self):
+    def toggle_display_number(self):  # TODO create method ?
         """Shows the choices for viewing results depending on whether :py:attr:`self.view_checkbox` is checked"""
         if self.view_checkbox.isChecked():
             self.display_number_choice.setVisible(True)
@@ -235,6 +254,13 @@ class Inferer(ModelFramework):
             self.instance_method_choice.setVisible(False)
             self.instance_prob_t_container.setVisible(False)
             self.instance_small_object_t_container.setVisible(False)
+
+    def toggle_display_window_size(self):
+        """Show or hide window size choice depending on status of self.window_infer_box"""
+        if self.window_infer_box.isChecked():
+            self.window_infer_params.setVisible(True)
+        else:
+            self.window_infer_params.setVisible(False)
 
     def build(self):
         """Puts all widgets in a layout and adds them to the napari Viewer"""
@@ -298,6 +324,28 @@ class Inferer(ModelFramework):
         #################################
         #################################
         ui.add_blank(self, tab_layout)
+        #################################
+        #################################
+        inference_param_group_w, inference_param_group_l = ui.make_group(
+            "Inference parameters"
+        )
+
+        inference_param_group_l.addWidget(
+            self.window_infer_box, alignment=ui.LEFT_AL
+        )
+
+        inference_param_group_l.addWidget(self.window_infer_params, alignment=ui.LEFT_AL)
+        self.window_infer_params.setVisible(False)
+
+        inference_param_group_l.addWidget(self.keep_data_on_cpu_box, alignment=ui.LEFT_AL)
+
+        inference_param_group_w.setLayout(inference_param_group_l)
+
+        tab_layout.addWidget(inference_param_group_w)
+
+        #################################
+        #################################
+        ui.add_blank(self,tab_layout)
         #################################
         #################################
         # post proc group
@@ -399,7 +447,7 @@ class Inferer(ModelFramework):
         )
         self.addTab(tab, "Inference")
 
-    def start(self):
+    def start(self): # TODO update
         """Start the inference process, enables :py:attr:`~self.worker` and does the following:
 
         * Checks if the output and input folders are correctly set
@@ -496,6 +544,10 @@ class Inferer(ModelFramework):
 
             self.show_res_nbr = self.display_number_choice.value()
 
+            self.keep_on_cpu = self.keep_data_on_cpu_box.isChecked()
+            self.use_window_inference = self.window_infer_box.isChecked()
+            self.window_inference_size = int(self.window_size_choice.currentText())
+
             self.worker = InferenceWorker(
                 device=device,
                 model_dict=model_dict,
@@ -505,6 +557,9 @@ class Inferer(ModelFramework):
                 filetype=self.filetype_choice.currentText(),
                 transforms=self.transforms,
                 instance=self.instance_params,
+                use_window=self.use_window_inference,
+                window_infer_size=self.window_inference_size,
+                keep_on_cpu=self.keep_on_cpu,
             )
 
             yield_connect_show_res = lambda data: self.on_yield(
