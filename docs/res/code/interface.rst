@@ -18,6 +18,9 @@ make_group
 **************************************
 .. autofunction:: napari_cellseg3d.interface::make_group
 
+add_to_group
+**************************************
+.. autofunction:: napari_cellseg3d.interface::add_to_group
 
 make_container
 **************************************

@@ -46,7 +46,7 @@ default_cyan = "#8dd3c7"  # turquoise cyan (default matplotlib line color under 
 napari_grey = "#262930"  # napari background color (grey)
 
 
-def add_blank(widget, layout):
+def add_blank(widget, layout=None):
     """
     Adds a space between consecutive buttons/labels in a layout when building a widget
 
@@ -58,7 +58,8 @@ def add_blank(widget, layout):
         QLabel : blank label
     """
     blank = QLabel("", widget)
-    layout.addWidget(blank, alignment=ABS_AL)
+    if layout is not None:
+        layout.addWidget(blank, alignment=ABS_AL)
     return blank
 
 
@@ -201,10 +202,28 @@ def make_n_spinboxes(
     return boxes
 
 
-def make_group(title, L=7, T=20, R=7, B=11, solo_dict=None):
-    """Creates a group with a header (`title`) and content margins for top/left/right/bottom `L, T, R, B` (in pixels)
+def add_to_group(title, widget, layout, L=7, T=20, R=7, B=11):
+    """Adds a single widget to a layout as a named group with margins specified.
+
+    Args:
+        title: title of the group
+        widget: widget to add in the group
+        layout: layout to add the group in
+        L: left margin (in pixels)
+        T: top margin (in pixels)
+        R: right margin (in pixels)
+        B: bottom margin (in pixels)
+
+    """
+    group, layout_internal = make_group(title, L, T, R, B)
+    layout_internal.addWidget(widget)
+    group.setLayout(layout_internal)
+    layout.addWidget(group)
+
+
+def make_group(title, L=7, T=20, R=7, B=11):
+    """Creates a group widget and layout, with a header (`title`) and content margins for top/left/right/bottom `L, T, R, B` (in pixels)
     Group widget and layout returned will have a Fixed size policy.
-    If solo_dict is not None, adds specified widget to specified layout and returns None.
 
     Args:
         title (str): Title of the group
@@ -212,23 +231,12 @@ def make_group(title, L=7, T=20, R=7, B=11, solo_dict=None):
         T (int): top margin
         R (int): right margin
         B (int): bottom margin
-        solo_dict (dict): shortcut if only one widget is to be added to the group. Should contain "widget" (QWidget) and "layout" (Qlayout), widget will be added to layout. Defaults to None
     """
     group = QGroupBox(title)
     group.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
     layout = QVBoxLayout()
     layout.setContentsMargins(L, T, R, B)
     layout.setSizeConstraint(QLayout.SetFixedSize)
-
-    if (
-        solo_dict is not None
-    ):  # use the dict to directly add a widget if it is alone in the group
-        external_lay = solo_dict["layout"]
-        external_wid = solo_dict["widget"]
-        layout.addWidget(external_wid)  # , alignment=LEFT_AL)
-        group.setLayout(layout)
-        external_lay.addWidget(group)
-        return
 
     return group, layout
 
@@ -329,6 +337,22 @@ def make_combobox(
         return menu, label
 
     return menu
+
+
+def add_widgets(layout, widgets, alignment=LEFT_AL):
+    """Adds all widgets in the list to layout, with the specified alignment.
+    If alignment is None, no alignment is set.
+    Args:
+        layout: layout to add widgets in
+        widgets: list of QWidgets to add to layout
+        alignment: any valid Qt.AlignmentFlag, see aliases at beginning of interface.py. If None, uses default of addWidget
+    """
+    if alignment is None:
+        for w in widgets:
+            layout.addWidget(w)
+    else:
+        for w in widgets:
+            layout.addWidget(w, alignment=alignment)
 
 
 def make_checkbox(

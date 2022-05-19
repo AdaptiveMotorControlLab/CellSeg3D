@@ -207,15 +207,12 @@ class ModelFramework(BasePluginFolder):
             self.log.clear()
         elif not self.container_docked:
 
-            self.container_report_layout.addWidget(  # DO NOT USE alignment here, it will break auto-resizing
-                self.progress  # , alignment=ui.CENTER_AL
+            ui.add_widgets(
+                self.container_report_layout,
+                [self.progress, self.log, self.btn_save_log],
+                alignment=None,
             )
-            self.container_report_layout.addWidget(
-                self.log
-            )  # , alignment=ui.CENTER_AL
-            self.container_report_layout.addWidget(
-                self.btn_save_log  # , alignment=ui.CENTER_AL
-            )
+
             self.container_report.setLayout(self.container_report_layout)
 
             report_dock = self._viewer.window.add_dock_widget(

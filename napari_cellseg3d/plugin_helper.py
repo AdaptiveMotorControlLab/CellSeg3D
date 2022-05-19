@@ -51,11 +51,15 @@ class Helper(QWidget):
 
     def build(self):
         vbox = QVBoxLayout()
-        vbox.addWidget(self.btn1, alignment=ui.LEFT_AL)
-        vbox.addWidget(self.btn2, alignment=ui.LEFT_AL)
-        vbox.addWidget(self.btnc, alignment=ui.LEFT_AL)
+
+        widgets = [
+            self.btn1,
+            self.btn2,
+            self.btnc,
+        ]
         if self.test:
-            vbox.addWidget(self.epoch, alignment=ui.ABS_AL)
+            widgets.append(self.epoch)
+        ui.add_widgets(vbox, widgets)
         self.setLayout(vbox)
         # self.show()
         # self._viewer.window.add_dock_widget(self, name="Help/About...", area="right")

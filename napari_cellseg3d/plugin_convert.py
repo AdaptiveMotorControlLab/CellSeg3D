@@ -88,9 +88,10 @@ class ConvertUtils(BasePluginFolder):
             min_spacing=70,
         )
 
-        ui.make_group(
+        ui.add_to_group(
             "Results",
-            solo_dict={"widget": results_widget, "layout": layout},
+            results_widget,
+            layout,
             L=3,
             T=11,
             R=3,
@@ -108,14 +109,16 @@ class ConvertUtils(BasePluginFolder):
                 right_or_below=self.btn_label_files,
                 left_or_above=self.lbl_label_files,
                 min_spacing=70,
-            ),
-            alignment=ui.LEFT_AL,
+            )
         )
-        folder_group_l.addWidget(
-            self.btn_convert_folder_instance, alignment=ui.HCENTER_AL
-        )
-        folder_group_l.addWidget(
-            self.btn_convert_folder_semantic, alignment=ui.HCENTER_AL
+
+        ui.add_widgets(
+            folder_group_l,
+            [
+                self.btn_convert_folder_instance,
+                self.btn_convert_folder_semantic,
+            ],
+            ui.HCENTER_AL,
         )
 
         folder_group_w.setLayout(folder_group_l)
@@ -127,11 +130,10 @@ class ConvertUtils(BasePluginFolder):
             "Convert selected layer", l, t, r, b
         )
 
-        layer_group_l.addWidget(
-            self.btn_convert_layer_instance, alignment=ui.HCENTER_AL
-        )
-        layer_group_l.addWidget(
-            self.btn_convert_layer_semantic, alignment=ui.HCENTER_AL
+        ui.add_widgets(
+            layer_group_l,
+            [self.btn_convert_layer_instance, self.btn_convert_layer_semantic],
+            ui.HCENTER_AL,
         )
 
         layer_group_w.setLayout(layer_group_l)
@@ -143,24 +145,26 @@ class ConvertUtils(BasePluginFolder):
             "Remove small objects", l, t, r, b
         )
 
-        small_group_l.addWidget(
-            self.small_object_thresh_choice, alignment=ui.HCENTER_AL
-        )
-        small_group_l.addWidget(
-            self.btn_remove_small_layer, alignment=ui.HCENTER_AL
-        )
-        small_group_l.addWidget(
-            self.btn_remove_small_folder, alignment=ui.HCENTER_AL
+        ui.add_widgets(
+            small_group_l,
+            [
+                self.small_object_thresh_choice,
+                self.btn_remove_small_layer,
+                self.btn_remove_small_folder,
+            ],
+            ui.HCENTER_AL,
         )
 
         small_group_w.setLayout(small_group_l)
         layout.addWidget(small_group_w)
         #############################################################
-        ui.add_blank(layout=layout, widget=self)
-        layout.addWidget(self.make_close_button())
 
-        ui.add_blank(layout=layout, widget=self)
-        layout.addWidget(self.lbl_error)
+        ui.add_widgets(layout, [
+            ui.add_blank(self),
+            self.make_close_button(),
+            ui.add_blank(self),
+            self.lbl_error
+        ])
 
         ui.make_scrollable(layout, self, min_wh=[230, 400], base_wh=[230, 450])
 

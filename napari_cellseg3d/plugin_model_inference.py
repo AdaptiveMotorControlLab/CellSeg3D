@@ -9,7 +9,7 @@ from qtpy.QtWidgets import QSizePolicy
 
 # local
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d import model_instance_seg as inst_seg
+from napari_cellseg3d import model_instance_seg as inst_seg # TODO move calls to model worker
 from napari_cellseg3d import utils
 from napari_cellseg3d.model_framework import ModelFramework
 from napari_cellseg3d.model_workers import InferenceWorker
@@ -113,10 +113,16 @@ class Inferer(ModelFramework):
         self.show_original_checkbox = ui.make_checkbox("Show originals")
 
         # ui.add_blank(self.view_results_container, view_results_layout)
-        view_results_layout.addWidget(self.view_checkbox)
-        view_results_layout.addWidget(self.lbl_display_number)
-        view_results_layout.addWidget(self.display_number_choice)
-        view_results_layout.addWidget(self.show_original_checkbox)
+        ui.add_widgets(
+            view_results_layout,
+            [
+                self.view_checkbox,
+                self.lbl_display_number,
+                self.display_number_choice,
+                self.show_original_checkbox,
+            ],
+            alignment=None,
+        )
 
         self.view_results_container.setLayout(view_results_layout)
 
@@ -226,14 +232,13 @@ class Inferer(ModelFramework):
             T=7, B=0
         )
 
-        instance_layout.addWidget(
-            self.instance_method_choice, alignment=ui.LEFT_AL
-        )
-        instance_layout.addWidget(
-            self.instance_prob_t_container, alignment=ui.LEFT_AL
-        )
-        instance_layout.addWidget(
-            self.instance_small_object_t_container, alignment=ui.LEFT_AL
+        ui.add_widgets(
+            instance_layout,
+            [
+                self.instance_method_choice,
+                self.instance_prob_t_container,
+                self.instance_small_object_t_container,
+            ],
         )
 
         self.instance_param_container.setLayout(instance_layout)
@@ -305,21 +310,23 @@ class Inferer(ModelFramework):
         #################################
         io_group, io_layout = ui.make_group("Data", L, T, R, B)
 
-        io_layout.addWidget(
-            ui.combine_blocks(self.filetype_choice, self.lbl_filetype),
-            alignment=ui.LEFT_AL,
-        )  # file extension
-        io_layout.addWidget(
-            ui.combine_blocks(self.btn_image_files, self.lbl_image_files),
-            alignment=ui.LEFT_AL,
-        )  # in folder
-        io_layout.addWidget(
-            ui.combine_blocks(self.btn_result_path, self.lbl_result_path),
-            alignment=ui.LEFT_AL,
-        )  # out folder
+        ui.add_widgets(
+            io_layout,
+            [
+                ui.combine_blocks(
+                    self.filetype_choice, self.lbl_filetype
+                ),  # file extension
+                ui.combine_blocks(
+                    self.btn_image_files, self.lbl_image_files
+                ),  # in folder
+                ui.combine_blocks(
+                    self.btn_result_path, self.lbl_result_path
+                ),  # out folder
+            ],
+        )
 
         io_group.setLayout(io_layout)
-        tab_layout.addWidget(io_group, alignment=ui.LEFT_AL)
+        tab_layout.addWidget(io_group)
         #################################
         #################################
         ui.add_blank(tab, tab_layout)
@@ -335,18 +342,19 @@ class Inferer(ModelFramework):
             B,
         )  # model choice
 
-        model_group_l.addWidget(self.model_choice, alignment=ui.LEFT_AL)
-        model_group_l.addWidget(
-            self.custom_weights_choice, alignment=ui.LEFT_AL
-        )
-        model_group_l.addWidget(
-            self.weights_path_container, alignment=ui.LEFT_AL
+        ui.add_widgets(
+            model_group_l,
+            [
+                self.model_choice,
+                self.custom_weights_choice,
+                self.weights_path_container,
+            ],
         )
         self.weights_path_container.setVisible(False)
-        self.lbl_model_choice.setVisible(False)  # TODO remove
+        self.lbl_model_choice.setVisible(False)  # TODO remove (?)
 
         model_group_w.setLayout(model_group_l)
-        tab_layout.addWidget(model_group_w, alignment=ui.LEFT_AL)
+        tab_layout.addWidget(model_group_w)
 
         #################################
         #################################
@@ -357,18 +365,15 @@ class Inferer(ModelFramework):
             "Inference parameters"
         )
 
-        inference_param_group_l.addWidget(
-            self.window_infer_box, alignment=ui.LEFT_AL
-        )
-
-        inference_param_group_l.addWidget(
-            self.window_infer_params, alignment=ui.LEFT_AL
+        ui.add_widgets(
+            inference_param_group_l,
+            [
+                self.window_infer_box,
+                self.window_infer_params,
+                self.keep_data_on_cpu_box,
+            ],
         )
         self.window_infer_params.setVisible(False)
-
-        inference_param_group_l.addWidget(
-            self.keep_data_on_cpu_box, alignment=ui.LEFT_AL
-        )
 
         inference_param_group_w.setLayout(inference_param_group_l)
 
@@ -382,26 +387,20 @@ class Inferer(ModelFramework):
         # post proc group
         post_proc_group, post_proc_layout = ui.make_group("Post-processing")
 
-        post_proc_layout.addWidget(self.aniso_checkbox, alignment=ui.LEFT_AL)
-        post_proc_layout.addWidget(
-            self.aniso_container, alignment=ui.LEFT_AL
-        )  # anisotropy
+        ui.add_widgets(
+            post_proc_layout,
+            [
+                self.aniso_checkbox,
+                self.aniso_container,  # anisotropy
+                self.thresholding_checkbox,
+                self.thresholding_container,  # thresholding
+                self.instance_box,
+                self.instance_param_container,  # instance segmentation
+            ],
+        )
+
         self.aniso_container.setVisible(False)
-
-        post_proc_layout.addWidget(
-            self.thresholding_checkbox, alignment=ui.LEFT_AL
-        )
-        post_proc_layout.addWidget(
-            self.thresholding_container, alignment=ui.LEFT_AL
-        )  # thresholding
         self.thresholding_container.setVisible(False)
-
-        # instance segmentation
-        post_proc_layout.addWidget(self.instance_box, alignment=ui.LEFT_AL)
-        post_proc_layout.addWidget(
-            self.instance_param_container, alignment=ui.LEFT_AL
-        )
-
         self.instance_param_container.setVisible(False)
 
         post_proc_group.setLayout(post_proc_layout)
@@ -415,17 +414,15 @@ class Inferer(ModelFramework):
             "Display options", L, T, R, B
         )
 
-        display_opt_layout.addWidget(
-            self.view_checkbox,  # ui.combine_blocks(self.view_checkbox, self.lbl_view),
-            alignment=ui.LEFT_AL,
-        )  # view_after bool
-
-        display_opt_layout.addWidget(
-            self.view_results_container, alignment=ui.LEFT_AL
+        ui.add_widgets(
+            display_opt_layout,
+            [
+                self.view_checkbox,  # ui.combine_blocks(self.view_checkbox, self.lbl_view),
+                self.view_results_container,  # view_after bool
+            ],
         )
 
         self.show_original_checkbox.toggle()
-
         self.view_results_container.setVisible(False)
 
         self.view_checkbox.toggle()
@@ -440,8 +437,13 @@ class Inferer(ModelFramework):
         ui.add_blank(self, tab_layout)
         ###################################
         ###################################
-        tab_layout.addWidget(self.btn_start, alignment=ui.LEFT_AL)
-        tab_layout.addWidget(self.btn_close, alignment=ui.LEFT_AL)
+        ui.add_widgets(
+            tab_layout,
+            [
+                self.btn_start,
+                self.btn_close,
+            ],
+        )
         ##################
         ############
         ######

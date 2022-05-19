@@ -83,27 +83,22 @@ class MetricsUtils(BasePluginFolder):
 
         metrics_group_w, metrics_group_l = ui.make_group("Data")
 
-        self.lbl_image_files.setText("Ground truth")
-
-        metrics_group_l.addWidget(
+        ui.add_widgets(metrics_group_l, [
             ui.combine_blocks(
                 right_or_below=self.btn_image_files,
                 left_or_above=self.lbl_image_files,
                 min_spacing=70,
-            ),
-            alignment=ui.LEFT_AL,
-        )
-
-        self.lbl_label_files.setText("Prediction")
-
-        metrics_group_l.addWidget(
+            ), # images -> ground truth
             ui.combine_blocks(
                 right_or_below=self.btn_label_files,
                 left_or_above=self.lbl_label_files,
                 min_spacing=70,
-            ),
-            alignment=ui.LEFT_AL,
-        )
+            ), # labels -> prediction
+        ])
+
+        self.lbl_image_files.setText("Ground truth")
+
+        self.lbl_label_files.setText("Prediction")
 
         metrics_group_w.setLayout(metrics_group_l)
         ############################
@@ -111,19 +106,21 @@ class MetricsUtils(BasePluginFolder):
         ############################
         param_group_w, param_group_l = ui.make_group("Parameters")
 
-        param_group_l.addWidget(self.threshold_box)
-        param_group_l.addWidget(self.rotate_choice)
+        ui.add_widgets(param_group_l, [self.threshold_box, self.rotate_choice], None)
 
         param_group_w.setLayout(param_group_l)
+        ##############################
+        ui.add_widgets(
+            self.layout,
+            [
+                metrics_group_w,
+                param_group_w,
+                self.btn_compute_dice,
+                self.make_close_button(),
+                self.btn_reset_plot,
+            ],
+        )
 
-        self.layout.addWidget(metrics_group_w)
-        self.layout.addWidget(param_group_w)
-
-        self.layout.addWidget(self.btn_compute_dice, alignment=ui.LEFT_AL)
-
-        self.layout.addWidget(self.make_close_button(), alignment=ui.LEFT_AL)
-
-        self.layout.addWidget(self.btn_reset_plot, alignment=ui.LEFT_AL)
         self.btn_reset_plot.setVisible(False)
 
         ui.make_scrollable(self.layout, self)

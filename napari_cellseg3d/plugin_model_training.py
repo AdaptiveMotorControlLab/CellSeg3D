@@ -410,37 +410,34 @@ class Trainer(ModelFramework):
         # first group : Data
         data_group, data_layout = ui.make_group("Data")
 
-        data_layout.addWidget(
-            ui.combine_blocks(self.filetype_choice, self.lbl_filetype),
-            alignment=ui.LEFT_AL,
-        )  # file extension
+        ui.add_widgets(
+            data_layout,
+            [
+                ui.combine_blocks(
+                    self.filetype_choice, self.lbl_filetype
+                ),  # file extension
+                ui.combine_blocks(
+                    self.btn_image_files, self.lbl_image_files
+                ),  # volumes
+                ui.combine_blocks(
+                    self.btn_label_files, self.lbl_label_files
+                ),  # labels
+                ui.combine_blocks(
+                    self.btn_result_path, self.lbl_result_path
+                ),  # results folder
+                # ui.combine_blocks(self.model_choice, self.lbl_model_choice),  # model choice  # TODO : add custom model choice
+                self.zip_choice,  # save as zip
+            ],
+        )
 
-        data_layout.addWidget(
-            ui.combine_blocks(self.btn_image_files, self.lbl_image_files),
-            alignment=ui.LEFT_AL,
-        )  # volumes
         if self.data_path != "":
             self.lbl_image_files.setText(self.data_path)
 
-        data_layout.addWidget(
-            ui.combine_blocks(self.btn_label_files, self.lbl_label_files),
-            alignment=ui.LEFT_AL,
-        )  # labels
         if self.label_path != "":
             self.lbl_label_files.setText(self.label_path)
 
-        # data_tab_layout.addWidget( # TODO : add custom model choice
-        #     ui.combine_blocks(self.model_choice, self.lbl_model_choice)
-        # )  # model choice
-
-        data_layout.addWidget(
-            ui.combine_blocks(self.btn_result_path, self.lbl_result_path),
-            alignment=ui.LEFT_AL,
-        )  # results folder
         if self.results_path != "":
             self.lbl_result_path.setText(self.results_path)
-
-        data_layout.addWidget(self.zip_choice)  # save as zip
 
         data_group.setLayout(data_layout)
         data_tab_layout.addWidget(data_group, alignment=ui.LEFT_AL)
@@ -450,41 +447,39 @@ class Trainer(ModelFramework):
         ################
         transfer_group_w, transfer_group_l = ui.make_group("Transfer learning")
 
-        transfer_group_l.addWidget(
-            self.use_transfer_choice, alignment=ui.LEFT_AL
+        ui.add_widgets(
+            transfer_group_l,
+            [
+                self.use_transfer_choice,
+                self.custom_weights_choice,
+                self.weights_path_container,
+            ],
         )
-        transfer_group_l.addWidget(
-            self.custom_weights_choice, alignment=ui.LEFT_AL
-        )
+
         self.custom_weights_choice.setVisible(False)
-        transfer_group_l.addWidget(
-            self.weights_path_container, alignment=ui.LEFT_AL
-        )
 
         transfer_group_w.setLayout(transfer_group_l)
         data_tab_layout.addWidget(transfer_group_w, alignment=ui.LEFT_AL)
         ################
         ui.add_blank(self, data_tab_layout)
         ################
-
-        validation_group_w, validation_group_l = ui.make_group("Validation %")
-
-        validation_group_l.addWidget(self.validation_percent_choice)
-        validation_group_w.setLayout(validation_group_l)
-        data_tab_layout.addWidget(validation_group_w)
+        ui.add_to_group(
+            "Validation %",
+            self.validation_percent_choice,
+            data_tab_layout,
+        )
         ################
         ui.add_blank(self, data_tab_layout)
         ################
         # buttons
-
-        data_tab_layout.addWidget(
-            self.make_next_button(), alignment=ui.LEFT_AL
-        )  # next
-        ui.add_blank(self, data_tab_layout)
-        data_tab_layout.addWidget(
-            self.close_buttons[0], alignment=ui.LEFT_AL
-        )  # close
-
+        ui.add_widgets(
+            data_tab_layout,
+            [
+                self.make_next_button(),  # next
+                ui.add_blank(self),
+                self.close_buttons[0],  # close
+            ],
+        )
         ##################
         ############
         ######
@@ -494,55 +489,56 @@ class Trainer(ModelFramework):
         ##################
         augment_tab_w, augment_tab_l = ui.make_container()
         ##################
-        sampling_group_w, sampling_group_l = ui.make_group("Sampling")
+        # extract patches or not
 
-        sampling_group_l.addWidget(
-            self.patch_choice, alignment=ui.LEFT_AL
-        )  # extract patches or not
-
-        #######################################################
         patch_size_w, patch_size_l = ui.make_container()
         [
             patch_size_l.addWidget(widget, alignment=ui.LEFT_AL)
             for widgts in zip(self.patch_size_lbl, self.patch_size_widgets)
             for widget in widgts
         ]  # patch sizes
-
         patch_size_w.setLayout(patch_size_l)
-        #######################################################
-        #######################################################
+
         sampling_w, sampling_l = ui.make_container()
 
-        sampling_l.addWidget(self.lbl_sample_choice, alignment=ui.LEFT_AL)
-        sampling_l.addWidget(
-            self.sample_choice, alignment=ui.LEFT_AL
-        )  # number of samples
-
+        ui.add_widgets(
+            sampling_l,
+            [
+                self.lbl_sample_choice,
+                self.sample_choice,  # number of samples
+            ],
+        )
         sampling_w.setLayout(sampling_l)
         #######################################################
         self.sampling_container = ui.combine_blocks(
-            sampling_w, patch_size_w, horizontal=False, min_spacing=130, b=5
+            sampling_w, patch_size_w, horizontal=False, min_spacing=130, b=0
         )
         self.sampling_container.setVisible(False)
         #######################################################
-        sampling_group_l.addWidget(self.sampling_container)
-        sampling_group_w.setLayout(sampling_group_l)
-        augment_tab_l.addWidget(sampling_group_w)
+        sampling = ui.combine_blocks(
+            left_or_above=self.patch_choice,
+            right_or_below=self.sampling_container,
+            horizontal=False,
+        )
+        ui.add_to_group("Sampling", sampling, augment_tab_l, B=0, T=11)
+        #######################
         #######################
         ui.add_blank(augment_tab_w, augment_tab_l)
         #######################
-        augment_group_w, augment_group_l = ui.make_group("Augmentation")
-        augment_group_l.addWidget(
-            self.augment_choice, alignment=ui.LEFT_AL
-        )  # augment data toggle
+        #######################
+        ui.add_to_group(
+            "Augmentation",
+            self.augment_choice,
+            augment_tab_l,
+        )
+        # augment data toggle
+
         self.augment_choice.toggle()
-
-        augment_group_w.setLayout(augment_group_l)
-        augment_tab_l.addWidget(augment_group_w)
+        #######################
         #######################
         ui.add_blank(augment_tab_w, augment_tab_l)
         #######################
-
+        #######################
         augment_tab_l.addWidget(
             ui.combine_blocks(
                 left_or_above=self.make_prev_button(),
@@ -565,20 +561,19 @@ class Trainer(ModelFramework):
         # solo groups for loss and model
         ui.add_blank(train_tab, train_tab_layout)
 
-        ui.make_group(
+        ui.add_to_group(
             "Model",
-            solo_dict={
-                "widget": self.model_choice,
-                "layout": train_tab_layout,
-            },
+            self.model_choice,
+            train_tab_layout,
         )  # model choice
         self.lbl_model_choice.setVisible(False)
 
         ui.add_blank(train_tab, train_tab_layout)
 
-        ui.make_group(
+        ui.add_to_group(
             "Loss",
-            solo_dict={"widget": self.loss_choice, "layout": train_tab_layout},
+            self.loss_choice,
+            train_tab_layout,
         )  # loss choice
         self.lbl_loss_choice.setVisible(False)
 
@@ -593,57 +588,53 @@ class Trainer(ModelFramework):
         )
 
         spacing = 20
-        train_param_group_l.addWidget(
-            ui.combine_blocks(
-                self.batch_choice,
-                self.lbl_batch_choice,
-                min_spacing=spacing,
-                horizontal=False,
-                l=5,
-                t=5,
-                r=5,
-                b=5,
-            ),
-            # alignment=ui.LEFT_AL,
-        )  # batch size
-        train_param_group_l.addWidget(
-            ui.combine_blocks(
-                self.learning_rate_choice,
-                self.lbl_learning_rate_choice,
-                min_spacing=spacing,
-                horizontal=False,
-                l=5,
-                t=5,
-                r=5,
-                b=5,
-            )
-        )  # learning rate
-        train_param_group_l.addWidget(
-            ui.combine_blocks(
-                self.epoch_choice,
-                self.lbl_epoch_choice,
-                min_spacing=spacing,
-                horizontal=False,
-                l=5,
-                t=5,
-                r=5,
-                b=5,
-            ),
-            alignment=ui.LEFT_AL,
-        )  # epochs
-        train_param_group_l.addWidget(
-            ui.combine_blocks(
-                self.val_interval_choice,
-                self.lbl_val_interv_choice,
-                min_spacing=spacing,
-                horizontal=False,
-                l=5,
-                t=5,
-                r=5,
-                b=5,
-            ),
-            alignment=ui.LEFT_AL,
-        )  # validation interval
+
+        ui.add_widgets(
+            train_param_group_l,
+            [
+                ui.combine_blocks(
+                    self.batch_choice,
+                    self.lbl_batch_choice,
+                    min_spacing=spacing,
+                    horizontal=False,
+                    l=5,
+                    t=5,
+                    r=5,
+                    b=5,
+                ),  # batch size
+                ui.combine_blocks(
+                    self.learning_rate_choice,
+                    self.lbl_learning_rate_choice,
+                    min_spacing=spacing,
+                    horizontal=False,
+                    l=5,
+                    t=5,
+                    r=5,
+                    b=5,
+                ),  # learning rate
+                ui.combine_blocks(
+                    self.epoch_choice,
+                    self.lbl_epoch_choice,
+                    min_spacing=spacing,
+                    horizontal=False,
+                    l=5,
+                    t=5,
+                    r=5,
+                    b=5,
+                ),  # epochs
+                ui.combine_blocks(
+                    self.val_interval_choice,
+                    self.lbl_val_interv_choice,
+                    min_spacing=spacing,
+                    horizontal=False,
+                    l=5,
+                    t=5,
+                    r=5,
+                    b=5,
+                ),  # validation interval
+            ],
+            None,
+        )
 
         train_param_group_w.setLayout(train_param_group_l)
         train_tab_layout.addWidget(train_param_group_w)
@@ -655,9 +646,12 @@ class Trainer(ModelFramework):
         seed_w, seed_l = ui.make_group(
             "Deterministic training", R=1, B=5, T=11
         )
+        ui.add_widgets(
+            seed_l,
+            [self.use_deterministic_choice, self.container_seed],
+            ui.LEFT_AL,
+        )
 
-        seed_l.addWidget(self.use_deterministic_choice, alignment=ui.LEFT_AL)
-        seed_l.addWidget(self.container_seed, alignment=ui.LEFT_AL)
         self.container_seed.setVisible(False)
 
         seed_w.setLayout(seed_l)
@@ -669,18 +663,14 @@ class Trainer(ModelFramework):
 
         ui.add_blank(self, train_tab_layout)
 
-        train_tab_layout.addWidget(
-            self.make_prev_button(), alignment=ui.LEFT_AL
-        )  # previous
-
-        train_tab_layout.addWidget(
-            self.btn_start, alignment=ui.LEFT_AL
-        )  # start
-        ui.add_blank(self, train_tab_layout)
-
-        train_tab_layout.addWidget(
-            self.close_buttons[2],
-            alignment=ui.LEFT_AL,
+        ui.add_widgets(
+            train_tab_layout,
+            [
+                self.make_prev_button(),  # previous
+                self.btn_start,  # start
+                ui.add_blank(self),
+                self.close_buttons[2],
+            ],
         )
         ##################
         ############
@@ -692,20 +682,20 @@ class Trainer(ModelFramework):
             containing_widget=data_tab,
             min_wh=[200, 300],
         )  # , max_wh=[200,1000])
-        self.addTab(data_tab, "Data")
 
         ui.make_scrollable(
             contained_layout=augment_tab_l,
             containing_widget=augment_tab_w,
             min_wh=[200, 300],
         )
-        self.addTab(augment_tab_w, "Augmentation")
 
         ui.make_scrollable(
             contained_layout=train_tab_layout,
             containing_widget=train_tab,
             min_wh=[200, 300],
         )
+        self.addTab(data_tab, "Data")
+        self.addTab(augment_tab_w, "Augmentation")
         self.addTab(train_tab, "Training")
         self.setMinimumSize(220, 200)
 
