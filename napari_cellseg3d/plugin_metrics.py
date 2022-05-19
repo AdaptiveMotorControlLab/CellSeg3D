@@ -83,18 +83,21 @@ class MetricsUtils(BasePluginFolder):
 
         metrics_group_w, metrics_group_l = ui.make_group("Data")
 
-        ui.add_widgets(metrics_group_l, [
-            ui.combine_blocks(
-                right_or_below=self.btn_image_files,
-                left_or_above=self.lbl_image_files,
-                min_spacing=70,
-            ), # images -> ground truth
-            ui.combine_blocks(
-                right_or_below=self.btn_label_files,
-                left_or_above=self.lbl_label_files,
-                min_spacing=70,
-            ), # labels -> prediction
-        ])
+        ui.add_widgets(
+            metrics_group_l,
+            [
+                ui.combine_blocks(
+                    right_or_below=self.btn_image_files,
+                    left_or_above=self.lbl_image_files,
+                    min_spacing=70,
+                ),  # images -> ground truth
+                ui.combine_blocks(
+                    right_or_below=self.btn_label_files,
+                    left_or_above=self.lbl_label_files,
+                    min_spacing=70,
+                ),  # labels -> prediction
+            ],
+        )
 
         self.lbl_image_files.setText("Ground truth")
 
@@ -106,7 +109,9 @@ class MetricsUtils(BasePluginFolder):
         ############################
         param_group_w, param_group_l = ui.make_group("Parameters")
 
-        ui.add_widgets(param_group_l, [self.threshold_box, self.rotate_choice], None)
+        ui.add_widgets(
+            param_group_l, [self.threshold_box, self.rotate_choice], None
+        )
 
         param_group_w.setLayout(param_group_l)
         ##############################

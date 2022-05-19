@@ -9,7 +9,9 @@ from qtpy.QtWidgets import QSizePolicy
 
 # local
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d import model_instance_seg as inst_seg # TODO move calls to model worker
+from napari_cellseg3d import (
+    model_instance_seg as inst_seg,
+)  # TODO move calls to model worker
 from napari_cellseg3d import utils
 from napari_cellseg3d.model_framework import ModelFramework
 from napari_cellseg3d.model_workers import InferenceWorker

@@ -159,12 +159,15 @@ class ConvertUtils(BasePluginFolder):
         layout.addWidget(small_group_w)
         #############################################################
 
-        ui.add_widgets(layout, [
-            ui.add_blank(self),
-            self.make_close_button(),
-            ui.add_blank(self),
-            self.lbl_error
-        ])
+        ui.add_widgets(
+            layout,
+            [
+                ui.add_blank(self),
+                self.make_close_button(),
+                ui.add_blank(self),
+                self.lbl_error,
+            ],
+        )
 
         ui.make_scrollable(layout, self, min_wh=[230, 400], base_wh=[230, 450])
 
