@@ -94,7 +94,7 @@ class ModelFramework(BasePluginFolder):
         self.lbl_weights_path.setReadOnly(True)
 
         self.weights_path_container = ui.combine_blocks(
-            self.btn_weights_path, self.lbl_weights_path
+            self.btn_weights_path, self.lbl_weights_path, b=0
         )
         self.weights_path_container.setVisible(False)
 
@@ -107,7 +107,7 @@ class ModelFramework(BasePluginFolder):
         (
             self.container_report,
             self.container_report_layout,
-        ) = ui.make_container_widget(10, 5, 5, 5)
+        ) = ui.make_container(10, 5, 5, 5)
         self.container_report.setSizePolicy(
             QSizePolicy.Fixed, QSizePolicy.Minimum
         )
@@ -130,7 +130,17 @@ class ModelFramework(BasePluginFolder):
         self.btn_save_log.setVisible(False)
         #####################################################
 
+    def toggle_visibility(self, checkbox, widget):
+        """Toggles the visibility of a widget based on the status of a checkbox.
+
+        Args:
+            checkbox: The QCheckbox that determines whether to show or not
+            widget: The widget to hide or show
+        """
+        widget.setVisible(checkbox.isChecked())
+
     def send_log(self, text):
+        """Emit a signal to print in a Log"""
         self.log.print_and_log(text)
 
     def save_log(self):
@@ -223,10 +233,9 @@ class ModelFramework(BasePluginFolder):
         self.progress.setValue(0)
 
     def toggle_weights_path(self):
-        if self.custom_weights_choice.isChecked():
-            self.weights_path_container.setVisible(True)
-        else:
-            self.weights_path_container.setVisible(False)
+        self.toggle_visibility(
+            self.custom_weights_choice, self.weights_path_container
+        )
 
     def create_train_dataset_dict(self):
         """Creates data dictionary for MONAI transforms and training.

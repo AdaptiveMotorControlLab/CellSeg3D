@@ -97,7 +97,7 @@ class Cropping(BasePluginSingleImage):
     def build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
 
-        w, layout = ui.make_container_widget(0, 0, 1, 11)
+        w, layout = ui.make_container(0, 0, 1, 11)
 
         data_group_w, data_group_l = ui.make_group("Data")
         data_group_l.addWidget(

@@ -164,7 +164,7 @@ class InferenceWorker(GeneratorWorker):
         if self.use_window:
             status = "enabled"
         else:
-            status="disabled"
+            status = "disabled"
 
         self.log(f"Window inference is {status}")
 
@@ -282,7 +282,9 @@ class InferenceWorker(GeneratorWorker):
         self.log("Done")
         # print(f"wh dir : {WEIGHTS_DIR}")
         # print(weights)
-        self.log("\nLoading weights...")
+        self.log(
+            "\nLoading weights..."
+        )  # TODO add try/except for invalid weights
 
         if self.weights_dict["custom"]:
             weights = self.weights_dict["path"]
@@ -306,13 +308,12 @@ class InferenceWorker(GeneratorWorker):
 
                 inputs = inf_data["image"]
                 # print(inputs.shape)
-                #  TODO figure out sliding window device
+
                 inputs = inputs.to("cpu")
 
                 model_output = lambda inputs: post_process_transforms(
                     self.model_dict["class"].get_output(model, inputs)
                 )
-                # TODO add more params
 
                 if self.keep_on_cpu:
                     dataset_device = "cpu"

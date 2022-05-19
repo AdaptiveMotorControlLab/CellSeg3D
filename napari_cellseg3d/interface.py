@@ -233,7 +233,7 @@ def make_group(title, L=7, T=20, R=7, B=11, solo_dict=None):
     return group, layout
 
 
-def make_container_widget(L=0, T=0, R=1, B=11, vertical=True):
+def make_container(L=0, T=0, R=1, B=11, vertical=True):
     """Creates a QWidget and a layout for the purpose of containing other modules, with a Fixed layout.
 
     Args:

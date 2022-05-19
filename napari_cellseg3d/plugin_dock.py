@@ -48,7 +48,7 @@ class Datamanager(QWidget):
         self.time_label = ui.make_label("", self)
         self.time_label.setVisible(False)
 
-        io_panel, io_layout = ui.make_container_widget(vertical=False)
+        io_panel, io_layout = ui.make_container(vertical=False)
         io_layout.addWidget(
             ui.combine_blocks(
                 left_or_above=self.button,

@@ -73,7 +73,7 @@ class Reviewer(BasePluginSingleImage):
 
         self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.MinimumExpanding)
 
-        tab, layout = ui.make_container_widget(0, 0, 1, 1)
+        tab, layout = ui.make_container(0, 0, 1, 1)
 
         global global_launched_before
         if global_launched_before:

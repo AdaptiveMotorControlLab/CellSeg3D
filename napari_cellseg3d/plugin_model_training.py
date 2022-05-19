@@ -291,7 +291,7 @@ class Trainer(ModelFramework):
             w.setVisible(False)
         for l in self.patch_size_lbl:
             l.setVisible(False)
-        self.sampling_container, l = ui.make_container_widget()
+        self.sampling_container, l = ui.make_container()
 
         self.patch_choice = ui.make_checkbox(
             "Extract patches from images", func=self.toggle_patch_dims
@@ -405,7 +405,7 @@ class Trainer(ModelFramework):
         ################
         ########################
         # first tab : model and dataset choices
-        data_tab, data_tab_layout = ui.make_container_widget()
+        data_tab, data_tab_layout = ui.make_container()
         ################
         # first group : Data
         data_group, data_layout = ui.make_group("Data")
@@ -492,7 +492,7 @@ class Trainer(ModelFramework):
         ######
         ############
         ##################
-        augment_tab_w, augment_tab_l = ui.make_container_widget()
+        augment_tab_w, augment_tab_l = ui.make_container()
         ##################
         sampling_group_w, sampling_group_l = ui.make_group("Sampling")
 
@@ -501,7 +501,7 @@ class Trainer(ModelFramework):
         )  # extract patches or not
 
         #######################################################
-        patch_size_w, patch_size_l = ui.make_container_widget()
+        patch_size_w, patch_size_l = ui.make_container()
         [
             patch_size_l.addWidget(widget, alignment=ui.LEFT_AL)
             for widgts in zip(self.patch_size_lbl, self.patch_size_widgets)
@@ -511,7 +511,7 @@ class Trainer(ModelFramework):
         patch_size_w.setLayout(patch_size_l)
         #######################################################
         #######################################################
-        sampling_w, sampling_l = ui.make_container_widget()
+        sampling_w, sampling_l = ui.make_container()
 
         sampling_l.addWidget(self.lbl_sample_choice, alignment=ui.LEFT_AL)
         sampling_l.addWidget(
@@ -560,7 +560,7 @@ class Trainer(ModelFramework):
         ######
         ############
         ##################
-        train_tab, train_tab_layout = ui.make_container_widget()
+        train_tab, train_tab_layout = ui.make_container()
         ##################
         # solo groups for loss and model
         ui.add_blank(train_tab, train_tab_layout)

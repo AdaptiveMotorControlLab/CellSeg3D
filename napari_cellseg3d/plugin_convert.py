@@ -80,7 +80,7 @@ class ConvertUtils(BasePluginFolder):
 
         l, t, r, b = 7, 20, 7, 11
 
-        w, layout = ui.make_container_widget()
+        w, layout = ui.make_container()
 
         results_widget = ui.combine_blocks(
             right_or_below=self.btn_result_path,

@@ -99,13 +99,29 @@ class Inferer(ModelFramework):
         ###########################
         # interface
 
+        self.view_results_container, view_results_layout = ui.make_container(
+            T=7, B=0
+        )
+
         self.view_checkbox = ui.make_checkbox(
             "View results in napari", self.toggle_display_number
         )
 
-        self.display_number_choice = ui.make_n_spinboxes(1, 1, 10, 1)
+        self.display_number_choice = ui.make_n_spinboxes(min=1, default=5)
         self.lbl_display_number = ui.make_label("How many ? (max. 10)", self)
 
+        self.show_original_checkbox = ui.make_checkbox("Show originals")
+
+        # ui.add_blank(self.view_results_container, view_results_layout)
+        view_results_layout.addWidget(self.view_checkbox)
+        view_results_layout.addWidget(self.lbl_display_number)
+        view_results_layout.addWidget(self.display_number_choice)
+        view_results_layout.addWidget(self.show_original_checkbox)
+
+        self.view_results_container.setLayout(view_results_layout)
+
+        ######################
+        ######################
         self.aniso_checkbox = ui.make_checkbox(
             "Anisotropic data", self.toggle_display_aniso
         )
@@ -124,13 +140,30 @@ class Inferer(ModelFramework):
             w.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.aniso_resolutions = []
 
+        self.aniso_container, aniso_layout = ui.make_container(T=7)
+        [
+            aniso_layout.addWidget(widget, alignment=ui.LEFT_AL)
+            for wdgts in zip(self.aniso_box_lbl, self.aniso_box_widgets)
+            for widget in wdgts
+        ]
+        # anisotropy
+        self.aniso_container.setLayout(aniso_layout)
+        # ui.add_blank(self.aniso_container, aniso_layout)
+
+        ######################
+        ######################
         self.thresholding_checkbox = ui.make_checkbox(
             "Perform thresholding", self.toggle_display_thresh
         )
 
         self.thresholding_count = ui.make_n_spinboxes(
-            n=1, max=1, default=0.7, step=0.05, double=True
+            max=1, default=0.7, step=0.05, double=True
         )
+
+        self.thresholding_container, thresh_layout = ui.make_container(T=7)
+        thresh_layout.addWidget(self.thresholding_count, alignment=ui.LEFT_AL)
+        # ui.add_blank(self.thresholding_container, thresh_layout)
+        self.thresholding_container.setLayout(thresh_layout)  # thresholding
 
         self.window_infer_box = ui.make_checkbox("Use window inference")
         self.window_infer_box.clicked.connect(self.toggle_display_window_size)
@@ -156,7 +189,8 @@ class Inferer(ModelFramework):
                 "Watershed": inst_seg.binary_watershed,
             }
         )
-        self.instance_choice = ui.make_checkbox(
+
+        self.instance_box = ui.make_checkbox(
             "Run instance segmentation", func=self.toggle_display_instance
         )
 
@@ -187,9 +221,25 @@ class Inferer(ModelFramework):
             left_or_above=self.instance_small_object_thresh_lbl,
             horizontal=False,
         )
+
+        self.instance_param_container, instance_layout = ui.make_container(
+            T=7, B=0
+        )
+
+        instance_layout.addWidget(
+            self.instance_method_choice, alignment=ui.LEFT_AL
+        )
+        instance_layout.addWidget(
+            self.instance_prob_t_container, alignment=ui.LEFT_AL
+        )
+        instance_layout.addWidget(
+            self.instance_small_object_t_container, alignment=ui.LEFT_AL
+        )
+
+        self.instance_param_container.setLayout(instance_layout)
+
         ##################
         ##################
-        self.show_original_checkbox = ui.make_checkbox("Show originals")
 
         self.btn_start = ui.make_button("Start inference", self.start)
         self.btn_close = self.make_close_button()
@@ -217,50 +267,27 @@ class Inferer(ModelFramework):
 
     def toggle_display_number(self):  # TODO create method ?
         """Shows the choices for viewing results depending on whether :py:attr:`self.view_checkbox` is checked"""
-        if self.view_checkbox.isChecked():
-            self.display_number_choice.setVisible(True)
-            self.lbl_display_number.setVisible(True)
-            self.show_original_checkbox.setVisible(True)
-        else:
-            self.display_number_choice.setVisible(False)
-            self.lbl_display_number.setVisible(False)
-            self.show_original_checkbox.setVisible(False)
+        self.toggle_visibility(self.view_checkbox, self.view_results_container)
 
     def toggle_display_aniso(self):
         """Shows the choices for correcting anisotropy when viewing results depending on whether :py:attr:`self.aniso_checkbox` is checked"""
-        if self.aniso_checkbox.isChecked():
-            for w, lbl in zip(self.aniso_box_widgets, self.aniso_box_lbl):
-                w.setVisible(True)
-                lbl.setVisible(True)
-        else:
-            for w, lbl in zip(self.aniso_box_widgets, self.aniso_box_lbl):
-                w.setVisible(False)
-                lbl.setVisible(False)
+        self.toggle_visibility(self.aniso_checkbox, self.aniso_container)
 
     def toggle_display_thresh(self):
         """Shows the choices for thresholding results depending on whether :py:attr:`self.thresholding_checkbox` is checked"""
-        if self.thresholding_checkbox.isChecked():
-            self.thresholding_count.setVisible(True)
-        else:
-            self.thresholding_count.setVisible(False)
+        self.toggle_visibility(
+            self.thresholding_checkbox, self.thresholding_container
+        )
 
     def toggle_display_instance(self):
         """Shows or hides the options for instance segmentation based on current user selection"""
-        if self.instance_choice.isChecked():
-            self.instance_method_choice.setVisible(True)
-            self.instance_prob_t_container.setVisible(True)
-            self.instance_small_object_t_container.setVisible(True)
-        else:
-            self.instance_method_choice.setVisible(False)
-            self.instance_prob_t_container.setVisible(False)
-            self.instance_small_object_t_container.setVisible(False)
+        self.toggle_visibility(
+            self.instance_box, self.instance_param_container
+        )
 
     def toggle_display_window_size(self):
         """Show or hide window size choice depending on status of self.window_infer_box"""
-        if self.window_infer_box.isChecked():
-            self.window_infer_params.setVisible(True)
-        else:
-            self.window_infer_params.setVisible(False)
+        self.toggle_visibility(self.window_infer_box, self.window_infer_params)
 
     def build(self):
         """Puts all widgets in a layout and adds them to the napari Viewer"""
@@ -269,8 +296,8 @@ class Inferer(ModelFramework):
         ######
         ############
         ##################
-        tab, tab_layout = ui.make_container_widget(
-            0, 0, 1, 1
+        tab, tab_layout = ui.make_container(
+            B=1
         )  # tab that will contain all widgets
 
         L, T, R, B = 7, 20, 7, 11  # margins for group boxes
@@ -295,7 +322,7 @@ class Inferer(ModelFramework):
         tab_layout.addWidget(io_group, alignment=ui.LEFT_AL)
         #################################
         #################################
-        ui.add_blank(self, tab_layout)
+        ui.add_blank(tab, tab_layout)
         #################################
         #################################
         # model group
@@ -323,7 +350,7 @@ class Inferer(ModelFramework):
 
         #################################
         #################################
-        ui.add_blank(self, tab_layout)
+        ui.add_blank(tab, tab_layout)
         #################################
         #################################
         inference_param_group_w, inference_param_group_l = ui.make_group(
@@ -334,10 +361,14 @@ class Inferer(ModelFramework):
             self.window_infer_box, alignment=ui.LEFT_AL
         )
 
-        inference_param_group_l.addWidget(self.window_infer_params, alignment=ui.LEFT_AL)
+        inference_param_group_l.addWidget(
+            self.window_infer_params, alignment=ui.LEFT_AL
+        )
         self.window_infer_params.setVisible(False)
 
-        inference_param_group_l.addWidget(self.keep_data_on_cpu_box, alignment=ui.LEFT_AL)
+        inference_param_group_l.addWidget(
+            self.keep_data_on_cpu_box, alignment=ui.LEFT_AL
+        )
 
         inference_param_group_w.setLayout(inference_param_group_l)
 
@@ -345,59 +376,39 @@ class Inferer(ModelFramework):
 
         #################################
         #################################
-        ui.add_blank(self,tab_layout)
+        ui.add_blank(tab, tab_layout)
         #################################
         #################################
         # post proc group
-        post_proc_group, post_proc_layout = ui.make_group(
-            "Post-processing", L, T, R, B
-        )
+        post_proc_group, post_proc_layout = ui.make_group("Post-processing")
 
         post_proc_layout.addWidget(self.aniso_checkbox, alignment=ui.LEFT_AL)
-
-        [
-            post_proc_layout.addWidget(widget, alignment=ui.LEFT_AL)
-            for wdgts in zip(self.aniso_box_lbl, self.aniso_box_widgets)
-            for widget in wdgts
-        ]
-        for w in self.aniso_box_widgets:
-            w.setVisible(False)
-        for w in self.aniso_box_lbl:
-            w.setVisible(False)
-        # anisotropy
-        ui.add_blank(post_proc_group, post_proc_layout)
+        post_proc_layout.addWidget(
+            self.aniso_container, alignment=ui.LEFT_AL
+        )  # anisotropy
+        self.aniso_container.setVisible(False)
 
         post_proc_layout.addWidget(
             self.thresholding_checkbox, alignment=ui.LEFT_AL
         )
         post_proc_layout.addWidget(
-            self.thresholding_count, alignment=ui.CENTER_AL
-        )
-        self.thresholding_count.setVisible(False)  # thresholding
-
-        ui.add_blank(post_proc_group, post_proc_layout)
+            self.thresholding_container, alignment=ui.LEFT_AL
+        )  # thresholding
+        self.thresholding_container.setVisible(False)
 
         # instance segmentation
-        post_proc_layout.addWidget(self.instance_choice, alignment=ui.LEFT_AL)
+        post_proc_layout.addWidget(self.instance_box, alignment=ui.LEFT_AL)
         post_proc_layout.addWidget(
-            self.instance_method_choice, alignment=ui.LEFT_AL
-        )
-        post_proc_layout.addWidget(
-            self.instance_prob_t_container, alignment=ui.LEFT_AL
-        )
-        post_proc_layout.addWidget(
-            self.instance_small_object_t_container, alignment=ui.LEFT_AL
+            self.instance_param_container, alignment=ui.LEFT_AL
         )
 
-        self.instance_method_choice.setVisible(False)
-        self.instance_prob_t_container.setVisible(False)
-        self.instance_small_object_t_container.setVisible(False)
+        self.instance_param_container.setVisible(False)
 
         post_proc_group.setLayout(post_proc_layout)
         tab_layout.addWidget(post_proc_group, alignment=ui.LEFT_AL)
         ###################################
         ###################################
-        ui.add_blank(self, tab_layout)
+        ui.add_blank(tab, tab_layout)
         ###################################
         ###################################
         display_opt_group, display_opt_layout = ui.make_group(
@@ -408,22 +419,17 @@ class Inferer(ModelFramework):
             self.view_checkbox,  # ui.combine_blocks(self.view_checkbox, self.lbl_view),
             alignment=ui.LEFT_AL,
         )  # view_after bool
+
         display_opt_layout.addWidget(
-            self.lbl_display_number, alignment=ui.LEFT_AL
+            self.view_results_container, alignment=ui.LEFT_AL
         )
-        display_opt_layout.addWidget(
-            self.display_number_choice,
-            alignment=ui.LEFT_AL,
-        )  # number of results to display
-        display_opt_layout.addWidget(
-            self.show_original_checkbox,
-            alignment=ui.LEFT_AL,
-        )  # show original bool
+
         self.show_original_checkbox.toggle()
 
-        self.display_number_choice.setVisible(False)
-        self.show_original_checkbox.setVisible(False)
-        self.lbl_display_number.setVisible(False)
+        self.view_results_container.setVisible(False)
+
+        self.view_checkbox.toggle()
+        self.toggle_display_number()
 
         # TODO : add custom model handling ?
         # self.lbl_label.setText("model.pth directory :")
@@ -447,7 +453,7 @@ class Inferer(ModelFramework):
         )
         self.addTab(tab, "Inference")
 
-    def start(self): # TODO update
+    def start(self):  # TODO update
         """Start the inference process, enables :py:attr:`~self.worker` and does the following:
 
         * Checks if the output and input folders are correctly set
@@ -537,7 +543,7 @@ class Inferer(ModelFramework):
                 )
 
             self.instance_params = {
-                "do_instance": self.instance_choice.isChecked(),
+                "do_instance": self.instance_box.isChecked(),
                 "method": method,
                 "name": self.instance_method_choice.currentText(),
             }
@@ -546,7 +552,9 @@ class Inferer(ModelFramework):
 
             self.keep_on_cpu = self.keep_data_on_cpu_box.isChecked()
             self.use_window_inference = self.window_infer_box.isChecked()
-            self.window_inference_size = int(self.window_size_choice.currentText())
+            self.window_inference_size = int(
+                self.window_size_choice.currentText()
+            )
 
             self.worker = InferenceWorker(
                 device=device,
