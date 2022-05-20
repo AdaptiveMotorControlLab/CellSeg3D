@@ -1,5 +1,6 @@
 import os
 
+import napari
 from tifffile import imwrite
 
 import napari_cellseg3d.interface as ui
@@ -142,7 +143,7 @@ class ConvertUtils(BasePluginFolder):
         ui.add_blank(layout=layout, widget=self)
         #############################################################
         small_group_w, small_group_l = ui.make_group(
-            "Remove small objects", l, t, r, b,parent=None
+            "Remove small objects", l, t, r, b, parent=None
         )
 
         ui.add_widgets(

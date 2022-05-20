@@ -98,9 +98,10 @@ class Inferer(ModelFramework):
         ###########################
         # interface
 
-        self.view_results_container, self.view_results_layout = ui.make_container(
-            T=7, B=0, parent=self
-        )
+        (
+            self.view_results_container,
+            self.view_results_layout,
+        ) = ui.make_container(T=7, B=0, parent=self)
 
         self.view_checkbox = ui.make_checkbox(
             "View results in napari", self.toggle_display_number
@@ -357,12 +358,7 @@ class Inferer(ModelFramework):
         # model group
 
         model_group_w, model_group_l = ui.make_group(
-            "Model choice",
-            L,
-            T,
-            R,
-            B,
-         parent = self
+            "Model choice", L, T, R, B, parent=self
         )  # model choice
 
         ui.add_widgets(

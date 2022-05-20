@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import napari
 import numpy as np
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,

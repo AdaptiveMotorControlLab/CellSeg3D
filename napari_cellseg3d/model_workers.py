@@ -39,12 +39,11 @@ from napari.qt.threading import WorkerBaseSignals
 from qtpy.QtCore import Signal
 from tifffile import imwrite
 
-# local
-from napari_cellseg3d.model_instance_seg import (
-    binary_watershed,
-    binary_connected,
-)
 from napari_cellseg3d import utils
+
+# local
+from napari_cellseg3d.model_instance_seg import binary_connected
+from napari_cellseg3d.model_instance_seg import binary_watershed
 
 """
 Writing something to log messages from outside the main thread is rather problematic (plenty of silent crashes...)
@@ -490,7 +489,7 @@ class TrainingWorker(GeneratorWorker):
         do_augmentation,
         deterministic,
     ):
-        """Initializes a worker for inference with the arguments needed by the :py:func:`~train` function.
+        """Initializes a worker for inference with the arguments needed by the :py:func:`~train` function. Note: See :py:func:`~train`
 
         Args:
             * device : device to train on, cuda or cpu
@@ -525,7 +524,7 @@ class TrainingWorker(GeneratorWorker):
 
             * deterministic : dict with "use deterministic" : bool, whether to use deterministic training, "seed": seed for RNG
 
-           Note: See :py:func:`~train`
+
         """
 
         print("init")

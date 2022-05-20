@@ -465,7 +465,7 @@ def save_stack(images, out_path, filetype=".png", check_warnings=False):
     """Saves the files in labels at location out_path as a stack of len(labels) .png files
 
     Args:
-        labels: array of label images
+        images: array of label images
         out_path: path to the directory for saving
     """
     num = images.shape[0]

@@ -3,6 +3,7 @@ import warnings
 from datetime import datetime
 from pathlib import Path
 
+import napari
 import pandas as pd
 
 # Qt
