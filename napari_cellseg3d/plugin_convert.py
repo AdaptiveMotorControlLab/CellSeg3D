@@ -297,7 +297,7 @@ class ConvertUtils(BasePluginFolder):
             )
 
     def check_ready_folder(self):
-        """Check if results and source folders are set"""
+        """Check if results and source folders are correctly set"""
         if self.results_path == "":
             err = "ERROR : please set results folder"
             print(err)
