@@ -697,7 +697,7 @@ class Trainer(ModelFramework):
         self.addTab(data_tab, "Data")
         self.addTab(augment_tab_w, "Augmentation")
         self.addTab(train_tab, "Training")
-        self.setMinimumSize(220, 200)
+        self.setMinimumSize(220, 100)
 
     def show_dialog_lab(self):
         """Shows the  dialog to load label files in a path, loads them (see :doc:model_framework) and changes the widget

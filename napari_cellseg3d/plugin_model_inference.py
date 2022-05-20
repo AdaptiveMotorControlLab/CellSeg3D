@@ -453,9 +453,11 @@ class Inferer(ModelFramework):
         ui.make_scrollable(
             containing_widget=tab,
             contained_layout=tab_layout,
-            min_wh=[200, 300],
+            min_wh=[200, 100],
         )
         self.addTab(tab, "Inference")
+
+        self.setMinimumSize(180, 100)
 
     def start(self):  # TODO update
         """Start the inference process, enables :py:attr:`~self.worker` and does the following:
