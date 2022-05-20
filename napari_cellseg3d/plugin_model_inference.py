@@ -1,8 +1,8 @@
 import os
 import warnings
-import numpy as np
 
 import napari
+import numpy as np
 
 # Qt
 from qtpy.QtWidgets import QLabel

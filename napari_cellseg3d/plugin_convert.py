@@ -4,11 +4,9 @@ from tifffile import imwrite
 
 import napari_cellseg3d.interface as ui
 from napari_cellseg3d import utils
-from napari_cellseg3d.model_instance_seg import (
-    to_semantic,
-    to_instance,
-    clear_small_objects,
-)
+from napari_cellseg3d.model_instance_seg import clear_small_objects
+from napari_cellseg3d.model_instance_seg import to_instance
+from napari_cellseg3d.model_instance_seg import to_semantic
 from napari_cellseg3d.plugin_base import BasePluginFolder
 
 

@@ -67,12 +67,12 @@ def test_get_padding_dim():
 
     assert pad == [2048, 32, 64]
 
-    tensor = torch.randn(65,70,80)
+    tensor = torch.randn(65, 70, 80)
     size = tensor.size()
 
     pad = utils.get_padding_dim(size)
 
-    assert pad == [128,128,128]
+    assert pad == [128, 128, 128]
 
 
 def test_normalize_x():

@@ -1,8 +1,8 @@
 import napari
 
 # Qt
-from qtpy.QtWidgets import QTabWidget
 from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QTabWidget
 
 from napari_cellseg3d.plugin_convert import ConvertUtils
 

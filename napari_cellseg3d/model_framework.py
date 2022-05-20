@@ -13,10 +13,10 @@ from qtpy.QtWidgets import QSizePolicy
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
 from napari_cellseg3d.log_utility import Log
-from napari_cellseg3d.models import TRAILMAP_test as TMAP
 from napari_cellseg3d.models import model_SegResNet as SegResNet
 from napari_cellseg3d.models import model_TRAILMAP as TRAILMAP
 from napari_cellseg3d.models import model_VNet as VNet
+from napari_cellseg3d.models import TRAILMAP_test as TMAP
 from napari_cellseg3d.plugin_base import BasePluginFolder
 
 warnings.formatwarning = utils.format_Warning
