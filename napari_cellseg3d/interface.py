@@ -221,7 +221,7 @@ def add_to_group(title, widget, layout, L=7, T=20, R=7, B=11):
     layout.addWidget(group)
 
 
-def make_group(title, L=7, T=20, R=7, B=11):
+def make_group(title, L=7, T=20, R=7, B=11, parent=None):
     """Creates a group widget and layout, with a header (`title`) and content margins for top/left/right/bottom `L, T, R, B` (in pixels)
     Group widget and layout returned will have a Fixed size policy.
 
@@ -231,8 +231,12 @@ def make_group(title, L=7, T=20, R=7, B=11):
         T (int): top margin
         R (int): right margin
         B (int): bottom margin
+        parent (QWidget) : parent widget. If None, no parent is set
     """
-    group = QGroupBox(title)
+    if parent is None:
+        group = QGroupBox(title)
+    else:
+        group = QGroupBox(title, parent=parent)
     group.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
     layout = QVBoxLayout()
     layout.setContentsMargins(L, T, R, B)
@@ -241,10 +245,11 @@ def make_group(title, L=7, T=20, R=7, B=11):
     return group, layout
 
 
-def make_container(L=0, T=0, R=1, B=11, vertical=True):
+def make_container(L=0, T=0, R=1, B=11, vertical=True, parent=None):
     """Creates a QWidget and a layout for the purpose of containing other modules, with a Fixed layout.
 
     Args:
+        parent : parent widget. If None, no widget is set
         L (int): left margin of layout
         T (int): top margin of layout
         R (int): right margin of layout
@@ -255,7 +260,10 @@ def make_container(L=0, T=0, R=1, B=11, vertical=True):
         QWidget : widget that contains the other widgets. Fixed size.
         QBoxLayout :  H/V Box layout to add contained widgets in. Fixed size.
     """
-    container_widget = QWidget()
+    if parent is None:
+        container_widget = QWidget()
+    else:
+        container_widget = QWidget(parent)
 
     if vertical:
         container_layout = QVBoxLayout()

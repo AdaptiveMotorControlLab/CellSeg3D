@@ -40,6 +40,10 @@ from qtpy.QtCore import Signal
 from tifffile import imwrite
 
 # local
+from napari_cellseg3d.model_instance_seg import (
+    binary_watershed,
+    binary_connected,
+)
 from napari_cellseg3d import utils
 
 """
@@ -64,6 +68,7 @@ class LogSignal(WorkerBaseSignals):
 
     log_signal = Signal(str)
     """qtpy.QtCore.Signal: signal to be sent when some text should be logged"""
+
     # Should not be an instance variable but a class variable, not defined in __init__, see
     # https://stackoverflow.com/questions/2970312/pyqt4-qtcore-pyqtsignal-object-has-no-attribute-connect
 
@@ -155,6 +160,9 @@ class InferenceWorker(GeneratorWorker):
 
     def log_parameters(self):
 
+        self.log("-" * 20)
+        self.log("Parameters summary :")
+
         self.log(f"Model is : {self.model_dict['name']}")
         if self.transforms["thresh"][0]:
             self.log(
@@ -173,10 +181,19 @@ class InferenceWorker(GeneratorWorker):
         else:
             self.log(f"Dataset loaded on {self.device}")
 
+        if self.transforms["zoom"][0]:
+            self.log(
+                f"Anisotropy parameters are : {self.transforms['zoom'][1]} microns in x,y,z"
+            )
+
         if self.instance_params["do_instance"]:
-            # TODO move instance seg
-            self.log(f"Instance segmentation enabled")
+            self.log(
+                f"Instance segmentation enabled, method : {self.instance_params['method']}\n"
+                f"Probability threshold is {self.instance_params['threshold']:.2f}\n"
+                f"Objects smaller than {self.instance_params['size_small']} pixels will be removed"
+            )
             # self.log(f"")
+        self.log("-" * 20)
 
     def inference(self):
         """
@@ -234,8 +251,7 @@ class InferenceWorker(GeneratorWorker):
         self.log("\nChecking dimensions...")
         pad = utils.get_padding_dim(check)
         # print(pad)
-        dims = 128
-        # dims = 64 # TODO
+        dims = self.model_dict["segres_size"]
 
         model = self.model_dict["class"].get_net()
         if self.model_dict["name"] == "SegResNet":
@@ -304,7 +320,7 @@ class InferenceWorker(GeneratorWorker):
             for i, inf_data in enumerate(inference_loader):
 
                 self.log("-" * 10)
-                self.log(f"Inference started on image n°{i+1}...")
+                self.log(f"Inference started on image n°{i + 1}...")
 
                 inputs = inf_data["image"]
                 # print(inputs.shape)
@@ -350,6 +366,7 @@ class InferenceWorker(GeneratorWorker):
                 out = post_process_transforms(out)
                 out = np.array(out).astype(np.float32)
                 out = np.squeeze(out)
+                to_instance = out  # avoid post processing since thresholding is done there anyway
 
                 # batch_len = out.shape[1]
                 # print("trying to check len")
@@ -391,8 +408,31 @@ class InferenceWorker(GeneratorWorker):
                     self.log(
                         f"\nRunning instance segmentation for image n°{image_id}"
                     )
-                    method = self.instance_params["method"]
-                    instance_labels = method(out)
+
+                    threshold = self.instance_params["threshold"]
+                    size_small = self.instance_params["size_small"]
+                    method_name = self.instance_params["method"]
+
+                    if method_name == "Watershed":
+
+                        def method(image):
+                            return binary_watershed(
+                                image, threshold, size_small
+                            )
+
+                    elif method_name == "Connected components":
+
+                        def method(image):
+                            return binary_connected(
+                                image, threshold, size_small
+                            )
+
+                    else:
+                        raise NotImplementedError(
+                            "Selected instance segmentation method is not defined"
+                        )
+
+                    instance_labels = method(to_instance)
 
                     instance_filepath = (
                         self.results_path
@@ -526,10 +566,11 @@ class TrainingWorker(GeneratorWorker):
 
     def log_parameters(self):
 
-        self.log("\nParameters summary :\n")
+        self.log("-" * 20)
+        self.log("Parameters summary :\n")
 
         self.log(
-            f"Percentage of dataset used for validation : {self.validation_percent*100}%"
+            f"Percentage of dataset used for validation : {self.validation_percent * 100}%"
         )
         self.log("-" * 10)
         self.log("Training files :\n")
@@ -892,7 +933,7 @@ class TrainingWorker(GeneratorWorker):
                     yield train_report
 
                     weights_filename = (
-                        f"{model_name}_best_metric" + f"_epoch_{epoch+1}.pth"
+                        f"{model_name}_best_metric" + f"_epoch_{epoch + 1}.pth"
                     )
 
                     if metric > best_metric:

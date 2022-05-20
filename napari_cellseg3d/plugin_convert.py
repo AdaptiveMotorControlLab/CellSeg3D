@@ -101,7 +101,7 @@ class ConvertUtils(BasePluginFolder):
         ui.add_blank(layout=layout, widget=self)
         #############################################################
         folder_group_w, folder_group_l = ui.make_group(
-            "Convert folder", l, t, r, b
+            "Convert folder", l, t, r, b, parent=None
         )
 
         folder_group_l.addWidget(
@@ -127,7 +127,7 @@ class ConvertUtils(BasePluginFolder):
         ui.add_blank(layout=layout, widget=self)
         #############################################################
         layer_group_w, layer_group_l = ui.make_group(
-            "Convert selected layer", l, t, r, b
+            "Convert selected layer", l, t, r, b, parent=None
         )
 
         ui.add_widgets(
@@ -142,7 +142,7 @@ class ConvertUtils(BasePluginFolder):
         ui.add_blank(layout=layout, widget=self)
         #############################################################
         small_group_w, small_group_l = ui.make_group(
-            "Remove small objects", l, t, r, b
+            "Remove small objects", l, t, r, b,parent=None
         )
 
         ui.add_widgets(

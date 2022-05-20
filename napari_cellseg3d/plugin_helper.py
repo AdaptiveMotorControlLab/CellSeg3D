@@ -14,7 +14,9 @@ class Helper(QWidget):
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
 
-        self.help_url = "https://adaptivemotorcontrollab.github.io/cellseg3d-docs/"
+        self.help_url = (
+            "https://adaptivemotorcontrollab.github.io/cellseg3d-docs/"
+        )
 
         self.about_url = "https://wysscenter.ch/advances/3d-computer-vision-for-brain-analysis"
         self._viewer = viewer
@@ -35,14 +37,11 @@ class Helper(QWidget):
         vbox = QVBoxLayout()
 
         widgets = [
+            self.info_label,
             self.btn1,
             self.btn2,
             self.btnc,
         ]
-        #################
-        if self.test:
-            widgets.append(self.epoch)
-        #################
         ui.add_widgets(vbox, widgets)
         self.setLayout(vbox)
         # self.show()

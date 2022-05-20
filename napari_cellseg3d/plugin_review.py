@@ -140,7 +140,7 @@ class Reviewer(BasePluginSingleImage):
 
         self.addTab(tab, "Review")
 
-        self.setMinimumSize(180,100)
+        self.setMinimumSize(180, 100)
         # self.show()
         # self._viewer.window.add_dock_widget(self, name="Reviewer", area="right")
 
