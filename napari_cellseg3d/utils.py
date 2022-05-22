@@ -60,6 +60,35 @@ def normalize_y(image):
     return image
 
 
+def sphericity_volume_area(volume, surface_area):
+    """Computes the sphericity from volume and area
+
+    .. math::
+       sphericity =\\frac {\\pi^\\frac{1}{3} (6 V_{p})^\\frac{2}{3}} {A_p}
+
+    """
+    return np.pi ** (1 / 3) * (6 * volume) ** (2 / 3) / surface_area
+
+
+def sphericity_axis(semi_major, semi_minor):
+    """Computes the sphericity from volume semi major (a) and semi minor (b) axes.
+
+    .. math::
+        sphericity = \\frac {2 \\sqrt[3]{ab^2}} {a+ \\frac {b^2} {\\sqrt{a^2-b^2}}ln( \\frac {a+ \\sqrt{a^2-b^2}} {b} )}
+
+    """
+    a = semi_major
+    b = semi_minor
+
+    root = (a**2 - b**2) ** (1 / 2)
+
+    return (
+        2
+        * (a * (b**2)) ** (1 / 3)
+        / (a + (b**2) / root * np.log((a + root) / b))
+    )
+
+
 def dice_coeff(y_true, y_pred):
     """Compute Dice-Sorensen coefficient between two numpy arrays
 

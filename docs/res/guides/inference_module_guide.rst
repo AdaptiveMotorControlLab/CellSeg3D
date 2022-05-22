@@ -41,6 +41,9 @@ Interface and functionalities
   | You can then choose one of the provided **models** above, which will be used for inference.
   | You may also choose to **load custom weights** rather than the pre-trained ones, simply ensure they are **compatible** (e.g. produced from the training module for the same model)
 
+.. note::
+    Currently the SegResNet model requires you to provide the size of the images the model was trained with due to the VAE module.
+    Provided weights use a size of 128, please leave it as is if you're not using custom weights.
 
 * **Inference parameters** :
 

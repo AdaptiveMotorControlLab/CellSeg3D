@@ -3,10 +3,17 @@ from __future__ import print_function
 
 import numpy as np
 from skimage.measure import label
+from skimage.measure import marching_cubes
+from skimage.measure import mesh_surface_area
+from skimage.measure import regionprops
 from skimage.morphology import remove_small_objects
 from skimage.segmentation import watershed
 from skimage.transform import resize
 from tifffile import imread
+
+from napari_cellseg3d.utils import fill_list_in_between
+from napari_cellseg3d.utils import sphericity_axis
+from napari_cellseg3d.utils import sphericity_volume_area
 
 
 def binary_connected(
@@ -162,3 +169,43 @@ def to_semantic(image, is_file_path=False):
     image[image >= 1] = 1
     result = image.astype(np.uint16)
     return result
+
+
+def volume_stats(volume_image):
+
+    properties = regionprops(volume_image)
+    number_objects = np.amax(volume_image)
+
+    sphericity_va = []
+    sphericity_ax = [
+        sphericity_axis(
+            region.axis_major_length * 0.5, region.axis_minor_length * 0.5
+        )
+        for region in properties
+    ]
+    # for region in properties:
+    # object = (volume_image == region.label).transpose(1, 2, 0)
+    # verts, faces, _, values = marching_cubes(
+    #     object, level=0, spacing=(1.0, 1.0, 1.0)
+    # )
+    # surface_area_pixels = mesh_surface_area(verts, faces)
+    # sphericity_va.append(
+    #     sphericity_volume_area(region.area, surface_area_pixels)
+    # )
+
+    volume = [region.area for region in properties]
+
+    def fill(lst, n=len(properties) - 1):
+        return fill_list_in_between(lst, n, "")
+
+    return {
+        "Volume": volume,
+        "Centroid": [region.centroid for region in properties],
+        # "Sphericity (volume/area)": sphericity_va,
+        "Sphericity (axes)": sphericity_ax,
+        "Image size": fill([volume_image.shape]),
+        "Total image volume": fill([len(volume_image.flatten())]),
+        "Total object volume (pixels)": fill([np.sum(volume)]),
+        "Filling ratio": fill([np.sum(volume) / len(volume_image.flatten())]),
+        "Number objects": fill([len(properties)]),
+    }

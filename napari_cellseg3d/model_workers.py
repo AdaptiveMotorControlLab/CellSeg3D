@@ -181,9 +181,7 @@ class InferenceWorker(GeneratorWorker):
             self.log(f"Dataset loaded on {self.device}")
 
         if self.transforms["zoom"][0]:
-            self.log(
-                f"Anisotropy parameters are : {self.transforms['zoom'][1]} microns in x,y,z"
-            )
+            self.log(f"Scaling factor : {self.transforms['zoom'][1]} (x,y,z)")
 
         if self.instance_params["do_instance"]:
             self.log(
@@ -436,7 +434,7 @@ class InferenceWorker(GeneratorWorker):
                     instance_filepath = (
                         self.results_path
                         + "/"
-                        + f"Instance_seg_labels_{image_id}"
+                        + f"Instance_seg_labels_{image_id}_"
                         + original_filename
                         + "_"
                         + self.model_dict["name"]

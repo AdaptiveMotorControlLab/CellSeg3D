@@ -28,6 +28,7 @@ class Helper(QWidget):
         self.btn2 = ui.make_button(
             "About...", lambda: ui.open_url(self.about_url)
         )
+
         self.btnc = ui.make_button("Close", self.remove_from_viewer)
 
         self.build()

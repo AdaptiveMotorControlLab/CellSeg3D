@@ -3,6 +3,7 @@ import warnings
 
 import napari
 import numpy as np
+import pandas as pd
 
 # Qt
 from qtpy.QtWidgets import QSizePolicy
@@ -11,6 +12,7 @@ from qtpy.QtWidgets import QSizePolicy
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
 from napari_cellseg3d.model_framework import ModelFramework
+from napari_cellseg3d.model_instance_seg import volume_stats
 from napari_cellseg3d.model_workers import InferenceWorker
 
 
@@ -70,6 +72,7 @@ class Inferer(ModelFramework):
         self.zoom = [1, 1, 1]
 
         self.instance_params = None
+        self.stats_to_csv = False
 
         self.keep_on_cpu = False
         self.use_window_inference = False
@@ -211,6 +214,9 @@ class Inferer(ModelFramework):
             left_or_above=self.instance_small_object_thresh_lbl,
             horizontal=False,
         )
+        self.save_stats_to_csv_box = ui.make_checkbox(
+            "Save stats to csv", parent=self
+        )
 
         (
             self.instance_param_container,
@@ -315,6 +321,7 @@ class Inferer(ModelFramework):
                 self.instance_method_choice,
                 self.instance_prob_t_container,
                 self.instance_small_object_t_container,
+                self.save_stats_to_csv_box,
             ],
         )
 
@@ -557,6 +564,7 @@ class Inferer(ModelFramework):
                 "threshold": self.instance_prob_thresh.value(),
                 "size_small": self.instance_small_object_thresh.value(),
             }
+            self.stats_to_csv = self.save_stats_to_csv_box.isChecked()
             # print(f"METHOD : {self.instance_method_choice.currentText()}")
 
             self.show_res_nbr = self.display_number_choice.value()
@@ -687,15 +695,35 @@ class Inferer(ModelFramework):
 
             if data["instance_labels"] is not None:
 
-                number_cells = np.amax(data["instance_labels"])
-
-                widget.log.print_and_log(
-                    f"\nNUMBER OF CELLS : {number_cells}\n"
-                )
-
+                labels = data["instance_labels"]
                 method = widget.instance_params["method"]
+                number_cells = np.amax(labels)
+
                 name = f"({number_cells})_{method}_instance_labels_{image_id}"
 
-                instance_layer = viewer.add_labels(
-                    data[f"instance_labels"], name=name
-                )
+                instance_layer = viewer.add_labels(labels, name=name)
+
+                if widget.stats_to_csv:  # TODO move to worker
+
+                    cell_data = volume_stats(
+                        labels
+                    )  # TODO test with area mesh function
+                    # count = np.tile("", len(cell_data["Volume"])-1)
+                    # cell_data["Cell count"] = np.insert(count, 0, number_cells)
+                    # cell_data["Total cell volume"] = np.insert(
+                    #     count, 0, tot_cell_volume
+                    # )
+                    # cell_data["Cell volume ratio"] = np.insert(
+                    #     count, 0, tot_cell_volume / len(labels.flatten())
+                    # )
+
+                    numeric_data = pd.DataFrame(cell_data)
+
+                    csv_name = f"/{method}_seg_results_{image_id}_{utils.get_date_time()}.csv"
+                    numeric_data.to_csv(
+                        widget.results_path + csv_name, index=False
+                    )
+
+                    # widget.log.print_and_log(
+                    #     f"\nNUMBER OF CELLS : {number_cells}\n"
+                    # )

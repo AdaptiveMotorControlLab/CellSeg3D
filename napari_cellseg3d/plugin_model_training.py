@@ -985,7 +985,7 @@ class Trainer(ModelFramework):
             }
         )
         path = os.path.join(self.results_path_folder, "training.csv")
-        self.df.to_csv(path)
+        self.df.to_csv(path, index=False)
 
     def plot_loss(self, loss, dice_metric):
         """Creates two subplots to plot the training loss and validation metric"""

@@ -33,6 +33,14 @@ dice_coeff
 **************************************
 .. autofunction:: napari_cellseg3d.utils::dice_coeff
 
+sphericity_volume_area
+**************************************
+.. autofunction:: napari_cellseg3d.utils::sphericity_volume_area
+
+sphericity_axis
+**************************************
+.. autofunction:: napari_cellseg3d.utils::sphericity_axis
+
 normalize_x
 **************************************
 .. autofunction:: napari_cellseg3d.utils::normalize_x

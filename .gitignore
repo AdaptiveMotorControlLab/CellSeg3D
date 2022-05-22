@@ -7,7 +7,8 @@ __pycache__/
 *.so
 
 # unwanted results files
-*.csv
+*.tif
+napari_cellseg3d/_tests/res/*.csv
 
 # Distribution / packaging
 .Python

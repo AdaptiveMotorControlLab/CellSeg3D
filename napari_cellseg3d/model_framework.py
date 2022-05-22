@@ -230,6 +230,7 @@ class ModelFramework(BasePluginFolder):
         self.progress.setValue(0)
 
     def toggle_weights_path(self):
+        """Toggle visibility of weight path"""
         self.toggle_visibility(
             self.custom_weights_choice, self.weights_path_container
         )
