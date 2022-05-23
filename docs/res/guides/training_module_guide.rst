@@ -39,6 +39,13 @@ The training module is comprised of several tabs.
 * The path to the labels folder
 * The path to the results folder
 
+* Whether to copy results to a zip file (for easier transferability)
+
+* Whether to use pre-trained weights that are provided; if you choose to do so, the model will be initialized with the specified weights, possibly improving performance (transfer learning).
+  You can also load custom weights; simply ensure they are compatible with the model.
+
+* The proportion of the dataset to keep for training versus validation; if you have a large dataset, you can set it to a lower value to have more accurate validation steps.
+
 2) The second tab, **Augmentation**, lets you define dataset and augmentation parameters such as :
 
 * Whether to use images "as is" (**requires all images to be of the same size and cubic**) or extract patches.
@@ -47,6 +54,7 @@ The training module is comprised of several tabs.
 
     * The size of patches to be extracted (ideally, please use a value **close to a power of two**, such as 120 or 60 to ensure correct size.)
     * The number of samples to extract from each of your images. A larger number will likely mean better performances, but longer training and larger memory usage.
+
 
 * Whether to perform data augmentation or not (elastic deforms, intensity shifts. random flipping,etc). A rule of thumb for augmentation is :
 
@@ -58,6 +66,7 @@ The training module is comprised of several tabs.
 
 * The **model** to use for training (see table above)
 * The **loss function** used for training (see table below)
+* The **learning rate** of the optimizer. Setting it to a lower value if you're using pre-trained weights can improve performance.
 * The **batch size** (larger means quicker training and possibly better performance but increased memory usage)
 * The **number of epochs** (a possibility is to start with 60 epochs, and decrease or increase depending on performance.)
 * The **epoch interval** for validation (for example, if set to two, the module will use the validation dataset to evaluate the model with the dice metric every two epochs.)
@@ -77,6 +86,8 @@ Generalized Dice loss     `Generalized dice Loss from MONAI`_ with ``sigmoid=tru
 Dice-CE loss              `Dice-CE Loss from MONAI`_ with ``sigmoid=true``
 Tversky loss              `Tversky Loss from MONAI`_ with ``sigmoid=true``
 ========================  ================================================================================================
+
+
 .. _Dice Loss from MONAI: https://docs.monai.io/en/stable/losses.html#diceloss
 .. _Focal Loss from MONAI: https://docs.monai.io/en/stable/losses.html#focalloss
 .. _Dice-focal Loss from MONAI: https://docs.monai.io/en/stable/losses.html#dicefocalloss

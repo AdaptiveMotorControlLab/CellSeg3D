@@ -1,3 +1,5 @@
+from typing import Union
+
 from qtpy.QtCore import Qt
 from qtpy.QtCore import QUrl
 from qtpy.QtGui import QDesktopServices
@@ -44,7 +46,7 @@ default_cyan = "#8dd3c7"  # turquoise cyan (default matplotlib line color under 
 napari_grey = "#262930"  # napari background color (grey)
 
 
-def add_blank(widget, layout):
+def add_blank(widget, layout=None):
     """
     Adds a space between consecutive buttons/labels in a layout when building a widget
 
@@ -56,13 +58,14 @@ def add_blank(widget, layout):
         QLabel : blank label
     """
     blank = QLabel("", widget)
-    layout.addWidget(blank, alignment=ABS_AL)
+    if layout is not None:
+        layout.addWidget(blank, alignment=ABS_AL)
     return blank
 
 
 def open_file_dialog(
     widget,
-    possible_paths=[""],
+    possible_paths: list = [""],
     load_as_folder: bool = False,
     filetype: str = "Image file (*.tif *.tiff)",
 ):
@@ -72,8 +75,8 @@ def open_file_dialog(
         widget (QWidget): Widget to display file dialog in
         possible_paths (str): Paths that may have been chosen before, can be a string
         or an array of strings containing the paths
-        load_as_folder (bool): Whether to open a folder or a single file. If True, will allow to open folder as a single file (2D stack interpreted as 3D)
-        filetype (str): The description and file extension to load (format : "Description (*.example1 *.example2)"). Default "Image file (*.tif *.tiff)"
+        load_as_folder (bool): Whether to open a folder or a single file. If True, will allow opening folder as a single file (2D stack interpreted as 3D)
+        filetype (str): The description and file extension to load (format : ``"Description (*.example1 *.example2)"``). Default ``"Image file (*.tif *.tiff)"``
 
     """
 
@@ -91,7 +94,7 @@ def open_file_dialog(
         return filenames
 
 
-def make_label(name, parent):
+def make_label(name, parent=None):
     """Creates a QLabel
 
     Args:
@@ -101,7 +104,10 @@ def make_label(name, parent):
     Returns: created label
 
     """
-    return QLabel(name, parent)
+    if parent is not None:
+        return QLabel(name, parent)
+    else:
+        return QLabel(name)
 
 
 def make_scrollable(
@@ -156,7 +162,7 @@ def make_n_spinboxes(
     parent=None,
     double=False,
     fixed=True,
-):
+) -> Union[list, QWidget]:
     """
 
     Args:
@@ -196,10 +202,28 @@ def make_n_spinboxes(
     return boxes
 
 
-def make_group(title, L=7, T=20, R=7, B=11, solo_dict=None):
-    """Creates a group with a header (`title`) and content margins for top/left/right/bottom `L, T, R, B` (in pixels)
+def add_to_group(title, widget, layout, L=7, T=20, R=7, B=11):
+    """Adds a single widget to a layout as a named group with margins specified.
+
+    Args:
+        title: title of the group
+        widget: widget to add in the group
+        layout: layout to add the group in
+        L: left margin (in pixels)
+        T: top margin (in pixels)
+        R: right margin (in pixels)
+        B: bottom margin (in pixels)
+
+    """
+    group, layout_internal = make_group(title, L, T, R, B)
+    layout_internal.addWidget(widget)
+    group.setLayout(layout_internal)
+    layout.addWidget(group)
+
+
+def make_group(title, L=7, T=20, R=7, B=11, parent=None):
+    """Creates a group widget and layout, with a header (`title`) and content margins for top/left/right/bottom `L, T, R, B` (in pixels)
     Group widget and layout returned will have a Fixed size policy.
-    If solo_dict is not None, adds specified widget to specified layout and returns None.
 
     Args:
         title (str): Title of the group
@@ -207,31 +231,25 @@ def make_group(title, L=7, T=20, R=7, B=11, solo_dict=None):
         T (int): top margin
         R (int): right margin
         B (int): bottom margin
-        solo_dict (dict): shortcut if only one widget is to be added to the group. Should contain "widget" (QWidget) and "layout" (Qlayout), widget will be added to layout. Defaults to None
+        parent (QWidget) : parent widget. If None, no parent is set
     """
-    group = QGroupBox(title)
+    if parent is None:
+        group = QGroupBox(title)
+    else:
+        group = QGroupBox(title, parent=parent)
     group.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
     layout = QVBoxLayout()
     layout.setContentsMargins(L, T, R, B)
     layout.setSizeConstraint(QLayout.SetFixedSize)
 
-    if (
-        solo_dict is not None
-    ):  # use the dict to directly add a widget if it is alone in the group
-        external_lay = solo_dict["layout"]
-        external_wid = solo_dict["widget"]
-        layout.addWidget(external_wid)  # , alignment=LEFT_AL)
-        group.setLayout(layout)
-        external_lay.addWidget(group)
-        return
-
     return group, layout
 
 
-def make_container_widget(L=0, T=0, R=1, B=11, vertical=True):
+def make_container(L=0, T=0, R=1, B=11, vertical=True, parent=None):
     """Creates a QWidget and a layout for the purpose of containing other modules, with a Fixed layout.
 
     Args:
+        parent : parent widget. If None, no widget is set
         L (int): left margin of layout
         T (int): top margin of layout
         R (int): right margin of layout
@@ -242,7 +260,10 @@ def make_container_widget(L=0, T=0, R=1, B=11, vertical=True):
         QWidget : widget that contains the other widgets. Fixed size.
         QBoxLayout :  H/V Box layout to add contained widgets in. Fixed size.
     """
-    container_widget = QWidget()
+    if parent is None:
+        container_widget = QWidget()
+    else:
+        container_widget = QWidget(parent)
 
     if vertical:
         container_layout = QVBoxLayout()
@@ -300,9 +321,9 @@ def make_combobox(
     """Creates a dropdown menu with a title and adds specified entries to it
 
     Args:
-        entries array(str): Entries to add to the dropdown menu. Defaults to None, no entries if None
+        entries (array(str)): Entries to add to the dropdown menu. Defaults to None, no entries if None
         parent (QWidget): parent QWidget to add dropdown menu to. Defaults to None, no parent is set if None
-        label (str) : if not None, creates a Qlabel with the contents of 'label', and returns the label as well
+        label (str) : if not None, creates a QLabel with the contents of 'label', and returns the label as well
         fixed (bool): if True, will set the size policy of the dropdown menu to Fixed in h and w. Defaults to True.
 
     Returns:
@@ -324,6 +345,22 @@ def make_combobox(
         return menu, label
 
     return menu
+
+
+def add_widgets(layout, widgets, alignment=LEFT_AL):
+    """Adds all widgets in the list to layout, with the specified alignment.
+    If alignment is None, no alignment is set.
+    Args:
+        layout: layout to add widgets in
+        widgets: list of QWidgets to add to layout
+        alignment: any valid Qt.AlignmentFlag, see aliases at beginning of interface.py. If None, uses default of addWidget
+    """
+    if alignment is None:
+        for w in widgets:
+            layout.addWidget(w)
+    else:
+        for w in widgets:
+            layout.addWidget(w, alignment=alignment)
 
 
 def make_checkbox(
@@ -364,14 +401,22 @@ def make_checkbox(
 
 
 def combine_blocks(
-    second, first, min_spacing=0, horizontal=True, l=11, t=3, r=11, b=11
+    right_or_below,
+    left_or_above,
+    min_spacing=0,
+    horizontal=True,
+    l=11,
+    t=3,
+    r=11,
+    b=11,
 ):
-    """Combines two QWidget objects and puts them side by side (label on the left and button on the right)
+    """Combines two QWidget objects and puts them side by side (first on the left/top and second on the right/bottom depending on "horizontal")
+       Weird argument names due the initial implementation of it.  # TODO maybe fix arg names
 
     Args:
-        horizontal (bool): whether to stack widgets laterally or horizontally
-        second (QWidget): Second widget, to be displayed right/below of the label
-        first (QWidget): First widget, to be added on the left/above of button
+        horizontal (bool): whether to stack widgets vertically (False) or horizontally (True)
+        left_or_above (QWidget): First widget, to be added on the left/above of "second"
+        right_or_below (QWidget): Second widget, to be displayed right/below of "first"
         min_spacing (int): Minimum spacing between the two widgets (from the start of label to the start of button)
 
     Returns:
@@ -404,9 +449,9 @@ def combine_blocks(
     # temp_layout.setColumnMinimumWidth(1,100)
     # temp_layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
 
-    temp_layout.addWidget(first, r1, c1)  # , alignment=LEFT_AL)
+    temp_layout.addWidget(left_or_above, r1, c1)  # , alignment=LEFT_AL)
     # temp_layout.addStretch(100)
-    temp_layout.addWidget(second, r2, c2)  # , alignment=LEFT_AL)
+    temp_layout.addWidget(right_or_below, r2, c2)  # , alignment=LEFT_AL)
     temp_widget.setLayout(temp_layout)
     return temp_widget
 

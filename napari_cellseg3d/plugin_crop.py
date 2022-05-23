@@ -8,7 +8,6 @@ from magicgui.widgets import Container
 from magicgui.widgets import Slider
 
 # Qt
-from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QSizePolicy
 from tifffile import imwrite
 
@@ -51,7 +50,7 @@ class Cropping(BasePluginSingleImage):
 
         self.box_widgets = ui.make_n_spinboxes(3, 1, 1000, DEFAULT_CROP_SIZE)
         self.box_lbl = [
-            QLabel("Size in " + axis + " of cropped volume :")
+            ui.make_label("Size in " + axis + " of cropped volume :", self)
             for axis in "xyz"
         ]
 
@@ -98,27 +97,24 @@ class Cropping(BasePluginSingleImage):
     def build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
 
-        w, layout = ui.make_container_widget(0, 0, 1, 11)
+        w, layout = ui.make_container(0, 0, 1, 11)
 
         data_group_w, data_group_l = ui.make_group("Data")
-        data_group_l.addWidget(
-            ui.combine_blocks(self.btn_image, self.lbl_image),
-            alignment=ui.LEFT_AL,
+
+        ui.add_widgets(
+            data_group_l,
+            [
+                ui.combine_blocks(self.btn_image, self.lbl_image),
+                self.crop_label_choice,  # whether to crop labels or no
+                ui.combine_blocks(self.btn_label, self.lbl_label),
+                self.file_handling_box,
+                self.filetype_choice,
+            ],
         )
-        data_group_l.addWidget(
-            self.crop_label_choice,
-            alignment=ui.LEFT_AL,
-        )  # whether to crop labels or no
+
         self.crop_label_choice.toggle()
         self.toggle_label_path()
 
-        data_group_l.addWidget(
-            ui.combine_blocks(self.btn_label, self.lbl_label),
-            alignment=ui.LEFT_AL,
-        )
-
-        data_group_l.addWidget(self.file_handling_box, alignment=ui.LEFT_AL)
-        data_group_l.addWidget(self.filetype_choice, alignment=ui.LEFT_AL)
         self.filetype_choice.setVisible(False)
 
         data_group_w.setLayout(data_group_l)
@@ -134,10 +130,18 @@ class Cropping(BasePluginSingleImage):
         ]
         dim_group_w.setLayout(dim_group_l)
         layout.addWidget(dim_group_w)
-
+        #####################
+        #####################
         ui.add_blank(self, layout)
-        layout.addWidget(self.btn_start, alignment=ui.LEFT_AL)
-        layout.addWidget(self.btn_close, alignment=ui.LEFT_AL)
+        #####################
+        #####################
+        ui.add_widgets(
+            layout,
+            [
+                self.btn_start,
+                self.btn_close,
+            ],
+        )
 
         ui.make_scrollable(layout, self, min_wh=[180, 100])
 

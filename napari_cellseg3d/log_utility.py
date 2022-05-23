@@ -34,7 +34,7 @@ class Log(QTextEdit):
         self.lock.acquire()
         try:
             print(text)
-            # causes issues if you clik on terminal (tied to CMD QuickEdit mode)
+            # causes issue if you clik on terminal (tied to CMD QuickEdit mode)
             self.moveCursor(QTextCursor.End)
             self.insertPlainText(f"\n{text}")
             self.verticalScrollBar().setValue(

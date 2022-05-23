@@ -1,12 +1,12 @@
 import os
 import shutil
 import warnings
-import zipfile
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import napari
 import numpy as np
+import pandas as pd
 import torch
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
@@ -22,8 +22,6 @@ from monai.losses import GeneralizedDiceLoss
 from monai.losses import TverskyLoss
 
 # Qt
-from qtpy.QtWidgets import QLabel
-from qtpy.QtWidgets import QProgressBar
 from qtpy.QtWidgets import QSizePolicy
 
 # local
@@ -57,31 +55,42 @@ class Trainer(ModelFramework):
         """Creates a Trainer tab widget with the following functionalities :
 
         * First tab : Dataset parameters
-            * A filetype choice to select images in a folder
+            * A choice for the file extension of images to be loaded
 
-            * A button to choose the folder containing the images of the dataset. Validation files are chosen automatically from the whole dataset.
+            * A button to select images folder. Validation files are chosen automatically from the whole dataset.
 
-            * A button to choose the label folder (must have matching number and name of images)
+            * A button to choose the label folder (must have matching number and name regarding images folder)
 
-            * A button to choose where to save the results (weights). Defaults to the plugin's models/saved_weights folder
+            * A button to choose where to save the results (weights, log, plots). Defaults to the plugin's models/saved_weights folder
 
-            * A dropdown menu to choose which model to train
+            * A choice of whether to use pre-trained weights or load custom weights if desired
 
-        * Second tab : Training parameters
+            * A choice of the proportion of the dataset to use for validation.
 
-            * A dropdown menu to choose which loss function to use (see https://docs.monai.io/en/stable/losses.html)
+        * Second tab : Data augmentation
+
+            * A choice for using images as is or extracting smaller patches randomly, with a size and number choice.
+
+            * A toggle for data augmentation (elastic deforms, intensity shift, flipping, etc)
+
+        * Third tab : Training parameters
+
+            * A choice of model to use (see training module guide table)
+
+            * A dropdown menu to choose which loss function to use (see the training module guide table)
 
             * A spin box to choose the number of epochs to train for
 
             * A spin box to choose the batch size during training
 
-            * A spin box to choose the number of samples to take from an image when training
+            * A choice of learning rate for the optimizer
 
             * A spin box to choose the validation interval
 
-        TODO:
+            * A choice of using random or deterministic training
 
-        * Choice of validation proportion
+        TODO training plugin:
+
 
         * Custom model loading
 
@@ -119,6 +128,10 @@ class Trainer(ModelFramework):
         self.label_path = ""
         self.results_path = ""
         self.results_path_folder = ""
+        """Path to the folder inside the results path that contains all results"""
+
+        self.save_as_zip = False
+        """Whether to zip results folder once done. Creates a zipped copy of the results folder."""
         ######################
         ######################
         ######################
@@ -200,14 +213,23 @@ class Trainer(ModelFramework):
         self.plot_dock = None
         """Docked widget with plots"""
 
+        self.df = None
+        self.loss_values = []
+        self.validation_values = []
+
         self.model_choice.setCurrentIndex(model_index)
 
         ################################
         # interface
+
+        self.zip_choice = ui.make_checkbox("Compress results")
+
+        self.validation_percent_choice = ui.make_combobox(["80%", "90%"])
+
         self.epoch_choice = ui.make_n_spinboxes(
             min=2, max=1000, default=self.max_epochs
         )
-        self.lbl_epoch_choice = QLabel("Number of epochs : ", self)
+        self.lbl_epoch_choice = ui.make_label("Number of epochs : ", self)
 
         self.loss_choice, self.lbl_loss_choice = ui.make_combobox(
             sorted(self.loss_dict.keys()), label="Loss function"
@@ -217,34 +239,36 @@ class Trainer(ModelFramework):
         self.sample_choice = ui.make_n_spinboxes(
             min=2, max=50, default=self.num_samples
         )
-        self.lbl_sample_choice = QLabel("Number of patches per image : ", self)
+        self.lbl_sample_choice = ui.make_label(
+            "Number of patches per image : ", self
+        )
         self.sample_choice.setVisible(False)
         self.lbl_sample_choice.setVisible(False)
 
         self.batch_choice = ui.make_n_spinboxes(
             min=1, max=10, default=self.batch_size
         )
-        self.lbl_batch_choice = QLabel("Batch size : ", self)
+        self.lbl_batch_choice = ui.make_label("Batch size : ", self)
 
         self.val_interval_choice = ui.make_n_spinboxes(
             default=self.val_interval
         )
-        self.lbl_val_interv_choice = QLabel("Validation interval : ", self)
+        self.lbl_val_interv_choice = ui.make_label(
+            "Validation interval : ", self
+        )
 
-        self.learning_rate_dict = {
-            "1e-2": 1e-2,
-            "1e-3": 1e-3,
-            "1e-4": 1e-4,
-            "1e-5": 1e-5,
-            "1e-6": 1e-6,
-        }
+        learning_rate_vals = [
+            "1e-2",
+            "1e-3",
+            "1e-4",
+            "1e-5",
+            "1e-6",
+        ]
 
         (
             self.learning_rate_choice,
             self.lbl_learning_rate_choice,
-        ) = ui.make_combobox(
-            self.learning_rate_dict.keys(), label="Learning rate"
-        )
+        ) = ui.make_combobox(learning_rate_vals, label="Learning rate")
         self.learning_rate_choice.setCurrentIndex(1)
 
         self.augment_choice = ui.make_checkbox("Augment data")
@@ -260,14 +284,14 @@ class Trainer(ModelFramework):
         )
 
         self.patch_size_lbl = [
-            QLabel(f"Size of patch in {axis} :") for axis in "xyz"
+            ui.make_label(f"Size of patch in {axis} :", self) for axis in "xyz"
         ]
         for w in self.patch_size_widgets:
             w.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
             w.setVisible(False)
         for l in self.patch_size_lbl:
             l.setVisible(False)
-        self.sampling_container = QLabel()
+        self.sampling_container, l = ui.make_container()
 
         self.patch_choice = ui.make_checkbox(
             "Extract patches from images", func=self.toggle_patch_dims
@@ -287,7 +311,6 @@ class Trainer(ModelFramework):
             self.box_seed, self.lbl_seed, horizontal=False
         )
 
-        self.progress = QProgressBar()
         self.progress.setVisible(False)
         """Dock widget containing the progress bar"""
 
@@ -382,38 +405,37 @@ class Trainer(ModelFramework):
         ################
         ########################
         # first tab : model and dataset choices
-        data_tab, data_tab_layout = ui.make_container_widget()
+        data_tab, data_tab_layout = ui.make_container()
         ################
         # first group : Data
         data_group, data_layout = ui.make_group("Data")
 
-        data_layout.addWidget(
-            ui.combine_blocks(self.filetype_choice, self.lbl_filetype),
-            alignment=ui.LEFT_AL,
-        )  # file extension
+        ui.add_widgets(
+            data_layout,
+            [
+                ui.combine_blocks(
+                    self.filetype_choice, self.lbl_filetype
+                ),  # file extension
+                ui.combine_blocks(
+                    self.btn_image_files, self.lbl_image_files
+                ),  # volumes
+                ui.combine_blocks(
+                    self.btn_label_files, self.lbl_label_files
+                ),  # labels
+                ui.combine_blocks(
+                    self.btn_result_path, self.lbl_result_path
+                ),  # results folder
+                # ui.combine_blocks(self.model_choice, self.lbl_model_choice),  # model choice  # TODO : add custom model choice
+                self.zip_choice,  # save as zip
+            ],
+        )
 
-        data_layout.addWidget(
-            ui.combine_blocks(self.btn_image_files, self.lbl_image_files),
-            alignment=ui.LEFT_AL,
-        )  # volumes
         if self.data_path != "":
             self.lbl_image_files.setText(self.data_path)
 
-        data_layout.addWidget(
-            ui.combine_blocks(self.btn_label_files, self.lbl_label_files),
-            alignment=ui.LEFT_AL,
-        )  # labels
         if self.label_path != "":
             self.lbl_label_files.setText(self.label_path)
 
-        # data_tab_layout.addWidget( # TODO : add custom model choice
-        #     ui.combine_blocks(self.model_choice, self.lbl_model_choice)
-        # )  # model choice
-
-        data_layout.addWidget(
-            ui.combine_blocks(self.btn_result_path, self.lbl_result_path),
-            alignment=ui.LEFT_AL,
-        )  # results folder
         if self.results_path != "":
             self.lbl_result_path.setText(self.results_path)
 
@@ -425,32 +447,39 @@ class Trainer(ModelFramework):
         ################
         transfer_group_w, transfer_group_l = ui.make_group("Transfer learning")
 
-        transfer_group_l.addWidget(
-            self.use_transfer_choice, alignment=ui.LEFT_AL
+        ui.add_widgets(
+            transfer_group_l,
+            [
+                self.use_transfer_choice,
+                self.custom_weights_choice,
+                self.weights_path_container,
+            ],
         )
-        transfer_group_l.addWidget(
-            self.custom_weights_choice, alignment=ui.LEFT_AL
-        )
+
         self.custom_weights_choice.setVisible(False)
-        transfer_group_l.addWidget(
-            self.weights_path_container, alignment=ui.LEFT_AL
-        )
 
         transfer_group_w.setLayout(transfer_group_l)
         data_tab_layout.addWidget(transfer_group_w, alignment=ui.LEFT_AL)
         ################
         ui.add_blank(self, data_tab_layout)
         ################
-        # buttons
-
-        data_tab_layout.addWidget(
-            self.make_next_button(), alignment=ui.LEFT_AL
-        )  # next
+        ui.add_to_group(
+            "Validation %",
+            self.validation_percent_choice,
+            data_tab_layout,
+        )
+        ################
         ui.add_blank(self, data_tab_layout)
-        data_tab_layout.addWidget(
-            self.close_buttons[0], alignment=ui.LEFT_AL
-        )  # close
-
+        ################
+        # buttons
+        ui.add_widgets(
+            data_tab_layout,
+            [
+                self.make_next_button(),  # next
+                ui.add_blank(self),
+                self.close_buttons[0],  # close
+            ],
+        )
         ##################
         ############
         ######
@@ -458,61 +487,62 @@ class Trainer(ModelFramework):
         ######
         ############
         ##################
-        augment_tab_w, augment_tab_l = ui.make_container_widget()
+        augment_tab_w, augment_tab_l = ui.make_container()
         ##################
-        sampling_group_w, sampling_group_l = ui.make_group("Sampling")
+        # extract patches or not
 
-        sampling_group_l.addWidget(
-            self.patch_choice, alignment=ui.LEFT_AL
-        )  # extract patches or not
-
-        #######################################################
-        patch_size_w, patch_size_l = ui.make_container_widget()
+        patch_size_w, patch_size_l = ui.make_container()
         [
             patch_size_l.addWidget(widget, alignment=ui.LEFT_AL)
             for widgts in zip(self.patch_size_lbl, self.patch_size_widgets)
             for widget in widgts
         ]  # patch sizes
-
         patch_size_w.setLayout(patch_size_l)
-        #######################################################
-        #######################################################
-        sampling_w, sampling_l = ui.make_container_widget()
 
-        sampling_l.addWidget(self.lbl_sample_choice, alignment=ui.LEFT_AL)
-        sampling_l.addWidget(
-            self.sample_choice, alignment=ui.LEFT_AL
-        )  # number of samples
+        sampling_w, sampling_l = ui.make_container()
 
+        ui.add_widgets(
+            sampling_l,
+            [
+                self.lbl_sample_choice,
+                self.sample_choice,  # number of samples
+            ],
+        )
         sampling_w.setLayout(sampling_l)
         #######################################################
         self.sampling_container = ui.combine_blocks(
-            sampling_w, patch_size_w, horizontal=False, min_spacing=130, b=5
+            sampling_w, patch_size_w, horizontal=False, min_spacing=130, b=0
         )
         self.sampling_container.setVisible(False)
         #######################################################
-        sampling_group_l.addWidget(self.sampling_container)
-        sampling_group_w.setLayout(sampling_group_l)
-        augment_tab_l.addWidget(sampling_group_w)
+        sampling = ui.combine_blocks(
+            left_or_above=self.patch_choice,
+            right_or_below=self.sampling_container,
+            horizontal=False,
+        )
+        ui.add_to_group("Sampling", sampling, augment_tab_l, B=0, T=11)
+        #######################
         #######################
         ui.add_blank(augment_tab_w, augment_tab_l)
         #######################
-        augment_group_w, augment_group_l = ui.make_group("Augmentation")
-        augment_group_l.addWidget(
-            self.augment_choice, alignment=ui.LEFT_AL
-        )  # augment data toggle
+        #######################
+        ui.add_to_group(
+            "Augmentation",
+            self.augment_choice,
+            augment_tab_l,
+        )
+        # augment data toggle
+
         self.augment_choice.toggle()
-
-        augment_group_w.setLayout(augment_group_l)
-        augment_tab_l.addWidget(augment_group_w)
+        #######################
         #######################
         ui.add_blank(augment_tab_w, augment_tab_l)
         #######################
-
+        #######################
         augment_tab_l.addWidget(
             ui.combine_blocks(
-                first=self.make_prev_button(),
-                second=self.make_next_button(),
+                left_or_above=self.make_prev_button(),
+                right_or_below=self.make_next_button(),
                 l=1,
             ),
             alignment=ui.LEFT_AL,
@@ -526,25 +556,24 @@ class Trainer(ModelFramework):
         ######
         ############
         ##################
-        train_tab, train_tab_layout = ui.make_container_widget()
+        train_tab, train_tab_layout = ui.make_container()
         ##################
         # solo groups for loss and model
         ui.add_blank(train_tab, train_tab_layout)
 
-        ui.make_group(
+        ui.add_to_group(
             "Model",
-            solo_dict={
-                "widget": self.model_choice,
-                "layout": train_tab_layout,
-            },
+            self.model_choice,
+            train_tab_layout,
         )  # model choice
         self.lbl_model_choice.setVisible(False)
 
         ui.add_blank(train_tab, train_tab_layout)
 
-        ui.make_group(
+        ui.add_to_group(
             "Loss",
-            solo_dict={"widget": self.loss_choice, "layout": train_tab_layout},
+            self.loss_choice,
+            train_tab_layout,
         )  # loss choice
         self.lbl_loss_choice.setVisible(False)
 
@@ -559,57 +588,53 @@ class Trainer(ModelFramework):
         )
 
         spacing = 20
-        train_param_group_l.addWidget(
-            ui.combine_blocks(
-                self.batch_choice,
-                self.lbl_batch_choice,
-                min_spacing=spacing,
-                horizontal=False,
-                l=5,
-                t=5,
-                r=5,
-                b=5,
-            ),
-            # alignment=ui.LEFT_AL,
-        )  # batch size
-        train_param_group_l.addWidget(
-            ui.combine_blocks(
-                self.learning_rate_choice,
-                self.lbl_learning_rate_choice,
-                min_spacing=spacing,
-                horizontal=False,
-                l=5,
-                t=5,
-                r=5,
-                b=5,
-            )
-        )  # learning rate
-        train_param_group_l.addWidget(
-            ui.combine_blocks(
-                self.epoch_choice,
-                self.lbl_epoch_choice,
-                min_spacing=spacing,
-                horizontal=False,
-                l=5,
-                t=5,
-                r=5,
-                b=5,
-            ),
-            alignment=ui.LEFT_AL,
-        )  # epochs
-        train_param_group_l.addWidget(
-            ui.combine_blocks(
-                self.val_interval_choice,
-                self.lbl_val_interv_choice,
-                min_spacing=spacing,
-                horizontal=False,
-                l=5,
-                t=5,
-                r=5,
-                b=5,
-            ),
-            alignment=ui.LEFT_AL,
-        )  # validation interval
+
+        ui.add_widgets(
+            train_param_group_l,
+            [
+                ui.combine_blocks(
+                    self.batch_choice,
+                    self.lbl_batch_choice,
+                    min_spacing=spacing,
+                    horizontal=False,
+                    l=5,
+                    t=5,
+                    r=5,
+                    b=5,
+                ),  # batch size
+                ui.combine_blocks(
+                    self.learning_rate_choice,
+                    self.lbl_learning_rate_choice,
+                    min_spacing=spacing,
+                    horizontal=False,
+                    l=5,
+                    t=5,
+                    r=5,
+                    b=5,
+                ),  # learning rate
+                ui.combine_blocks(
+                    self.epoch_choice,
+                    self.lbl_epoch_choice,
+                    min_spacing=spacing,
+                    horizontal=False,
+                    l=5,
+                    t=5,
+                    r=5,
+                    b=5,
+                ),  # epochs
+                ui.combine_blocks(
+                    self.val_interval_choice,
+                    self.lbl_val_interv_choice,
+                    min_spacing=spacing,
+                    horizontal=False,
+                    l=5,
+                    t=5,
+                    r=5,
+                    b=5,
+                ),  # validation interval
+            ],
+            None,
+        )
 
         train_param_group_w.setLayout(train_param_group_l)
         train_tab_layout.addWidget(train_param_group_w)
@@ -621,9 +646,12 @@ class Trainer(ModelFramework):
         seed_w, seed_l = ui.make_group(
             "Deterministic training", R=1, B=5, T=11
         )
+        ui.add_widgets(
+            seed_l,
+            [self.use_deterministic_choice, self.container_seed],
+            ui.LEFT_AL,
+        )
 
-        seed_l.addWidget(self.use_deterministic_choice, alignment=ui.LEFT_AL)
-        seed_l.addWidget(self.container_seed, alignment=ui.LEFT_AL)
         self.container_seed.setVisible(False)
 
         seed_w.setLayout(seed_l)
@@ -635,18 +663,14 @@ class Trainer(ModelFramework):
 
         ui.add_blank(self, train_tab_layout)
 
-        train_tab_layout.addWidget(
-            self.make_prev_button(), alignment=ui.LEFT_AL
-        )  # previous
-
-        train_tab_layout.addWidget(
-            self.btn_start, alignment=ui.LEFT_AL
-        )  # start
-        ui.add_blank(self, train_tab_layout)
-
-        train_tab_layout.addWidget(
-            self.close_buttons[2],
-            alignment=ui.LEFT_AL,
+        ui.add_widgets(
+            train_tab_layout,
+            [
+                self.make_prev_button(),  # previous
+                self.btn_start,  # start
+                ui.add_blank(self),
+                self.close_buttons[2],
+            ],
         )
         ##################
         ############
@@ -658,22 +682,22 @@ class Trainer(ModelFramework):
             containing_widget=data_tab,
             min_wh=[200, 300],
         )  # , max_wh=[200,1000])
-        self.addTab(data_tab, "Data")
 
         ui.make_scrollable(
             contained_layout=augment_tab_l,
             containing_widget=augment_tab_w,
             min_wh=[200, 300],
         )
-        self.addTab(augment_tab_w, "Augmentation")
 
         ui.make_scrollable(
             contained_layout=train_tab_layout,
             containing_widget=train_tab,
             min_wh=[200, 300],
         )
+        self.addTab(data_tab, "Data")
+        self.addTab(augment_tab_w, "Augmentation")
         self.addTab(train_tab, "Training")
-        self.setMinimumSize(220, 200)
+        self.setMinimumSize(220, 100)
 
     def show_dialog_lab(self):
         """Shows the  dialog to load label files in a path, loads them (see :doc:model_framework) and changes the widget
@@ -719,6 +743,8 @@ class Trainer(ModelFramework):
 
         """
         self.start_time = utils.get_time_filepath()
+        self.save_as_zip = self.zip_choice.isChecked()
+
         if self.stop_requested:
             self.log.print_and_log("Worker is already stopping !")
             return
@@ -740,16 +766,24 @@ class Trainer(ModelFramework):
             self.log.print_and_log("*" * 20)
 
             self.reset_loss_plot()
-
             self.num_samples = self.sample_choice.value()
             self.batch_size = self.batch_choice.value()
             self.val_interval = self.val_interval_choice.value()
-            self.data = self.create_train_dataset_dict()
+            try:
+                self.data = self.create_train_dataset_dict()
+            except ValueError as err:
+                self.data = None
+                raise err
             self.max_epochs = self.epoch_choice.value()
 
-            self.learning_rate = self.learning_rate_dict[
-                self.learning_rate_choice.currentText()
+            validation_percent_dict = {"80%": 0.8, "90%": 0.9}
+
+            validation_percent = validation_percent_dict[
+                self.validation_percent_choice.currentText()
             ]
+            print(f"val % : {validation_percent}")
+
+            self.learning_rate = float(self.learning_rate_choice.currentText())
 
             seed_dict = {
                 "use deterministic": self.use_deterministic_choice.isChecked(),
@@ -768,7 +802,7 @@ class Trainer(ModelFramework):
             }
             self.results_path_folder = (
                 self.results_path
-                + f"/{model_dict['name']}_results_{utils.get_date_time()}"
+                + f"/{model_dict['name']}_{utils.get_date_time()}"
             )
             os.makedirs(
                 self.results_path_folder, exist_ok=False
@@ -783,7 +817,7 @@ class Trainer(ModelFramework):
                 weights_path = None
 
             self.log.print_and_log(
-                f"Notice : Saving results to : {self.results_path_folder}"
+                f"Saving results to : {self.results_path_folder}"
             )
 
             self.worker = TrainingWorker(
@@ -791,6 +825,7 @@ class Trainer(ModelFramework):
                 model_dict=model_dict,
                 weights_path=weights_path,
                 data_dicts=self.data,
+                validation_percent=validation_percent,
                 max_epochs=self.max_epochs,
                 loss_function=self.get_loss(self.loss_choice.currentText()),
                 learning_rate=self.learning_rate,
@@ -836,7 +871,7 @@ class Trainer(ModelFramework):
         self.remove_docked_widgets()
         self.display_status_report()
 
-        self.log.print_and_log(f"Worker started at {self.start_time}")
+        self.log.print_and_log(f"Worker started at {utils.get_time()}")
         self.log.print_and_log("\nWorker is running...")
 
     def on_finish(self):
@@ -857,10 +892,12 @@ class Trainer(ModelFramework):
             )
 
         self.log.print_and_log("Saving log")
-        self.save_log(spec_path=self.results_path_folder)
+        self.save_log_to_path(self.results_path_folder)
 
         self.log.print_and_log("Done")
         self.log.print_and_log("*" * 10)
+
+        self.make_csv()
 
         self.btn_start.setText("Start")
         [btn.setVisible(True) for btn in self.close_buttons]
@@ -869,9 +906,10 @@ class Trainer(ModelFramework):
         self.worker = None
         self.empty_cuda_cache()
 
-        shutil.make_archive(
-            self.results_path_folder, "zip", self.results_path_folder
-        )
+        if self.save_as_zip:
+            shutil.make_archive(
+                self.results_path_folder, "zip", self.results_path_folder
+            )
 
         # if zipfile.is_zipfile(self.results_path_folder+".zip"):
 
@@ -894,13 +932,17 @@ class Trainer(ModelFramework):
     @staticmethod
     def on_yield(data, widget):
         # print(
-        #     f"\nCatching results : for epoch {data['epoch']}, loss is {data['losses']} and validation is {data['val_metrics']}"
+        #     f"\nCatching results : for epoch {data['epoch']},
+        #     loss is {data['losses']} and validation is {data['val_metrics']}"
         # )
         if data["plot"]:
             widget.progress.setValue(
                 100 * (data["epoch"] + 1) // widget.max_epochs
             )
+
             widget.update_loss_plot(data["losses"], data["val_metrics"])
+            widget.loss_values = data["losses"]
+            widget.validation_values = data["val_metrics"]
 
         if widget.stop_requested:
             widget.log.print_and_log(
@@ -929,6 +971,21 @@ class Trainer(ModelFramework):
     #     # del self
     #     if self.get_device(show=False).type == "cuda":
     #         self.empty_cuda_cache()
+
+    def make_csv(self):
+
+        size_column = range(1, self.max_epochs + 1)
+        self.df = pd.DataFrame(
+            {
+                "epoch": size_column,
+                "loss": self.loss_values,
+                "validation": utils.fill_list_in_between(
+                    self.validation_values, self.val_interval - 1, ""
+                )[: len(size_column)],
+            }
+        )
+        path = os.path.join(self.results_path_folder, "training.csv")
+        self.df.to_csv(path, index=False)
 
     def plot_loss(self, loss, dice_metric):
         """Creates two subplots to plot the training loss and validation metric"""

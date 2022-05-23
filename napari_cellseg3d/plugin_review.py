@@ -8,7 +8,6 @@ import skimage.io as io
 
 # Qt
 from qtpy import QtGui
-from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QSizePolicy
 
@@ -55,12 +54,13 @@ class Reviewer(BasePluginSingleImage):
             "Start reviewing", self.run_review, self
         )
 
-        self.lbl_mod = QLabel("Name", self)
+        self.lbl_mod = ui.make_label("Name", self)
 
-        self.warn_label = QLabel(
+        self.warn_label = ui.make_label(
             "WARNING : You already have a review session running.\n"
             "Launching another will close the current one,\n"
-            " make sure to save your work beforehand"
+            " make sure to save your work beforehand",
+            None,
         )
         pal = self.warn_label.palette()
         pal.setColor(QtGui.QPalette.WindowText, QtGui.QColor("red"))
@@ -73,7 +73,7 @@ class Reviewer(BasePluginSingleImage):
 
         self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.MinimumExpanding)
 
-        tab, layout = ui.make_container_widget(0, 0, 1, 1)
+        tab, layout = ui.make_container(0, 0, 1, 1)
 
         global global_launched_before
         if global_launched_before:
@@ -88,21 +88,20 @@ class Reviewer(BasePluginSingleImage):
         ###########################
         data_group_w, data_group_l = ui.make_group("Data")
 
-        data_group_l.addWidget(
-            ui.combine_blocks(
-                self.filetype_choice, self.file_handling_box, horizontal=False
-            ),
-            alignment=ui.LEFT_AL,
+        ui.add_widgets(
+            data_group_l,
+            [
+                ui.combine_blocks(
+                    self.filetype_choice,
+                    self.file_handling_box,
+                    horizontal=False,
+                ),
+                ui.combine_blocks(self.btn_image, self.lbl_image),
+                ui.combine_blocks(self.btn_label, self.lbl_label),
+            ],
         )
+
         self.filetype_choice.setVisible(False)
-
-        data_group_l.addWidget(
-            ui.combine_blocks(self.btn_image, self.lbl_image)
-        )
-
-        data_group_l.addWidget(
-            ui.combine_blocks(self.btn_label, self.lbl_label)
-        )
 
         data_group_w.setLayout(data_group_l)
         layout.addWidget(data_group_w)
@@ -111,18 +110,21 @@ class Reviewer(BasePluginSingleImage):
         ###########################
         csv_param_w, csv_param_l = ui.make_group("CSV parameters")
 
-        csv_param_l.addWidget(
-            ui.combine_blocks(
-                self.textbox,
-                self.lbl_mod,
-                horizontal=False,
-                l=5,
-                t=0,
-                r=5,
-                b=5,
-            )
+        ui.add_widgets(
+            csv_param_l,
+            [
+                ui.combine_blocks(
+                    self.textbox,
+                    self.lbl_mod,
+                    horizontal=False,
+                    l=5,
+                    t=0,
+                    r=5,
+                    b=5,
+                ),
+                self.checkBox,
+            ],
         )
-        csv_param_l.addWidget(self.checkBox)
 
         csv_param_w.setLayout(csv_param_l)
         layout.addWidget(csv_param_w)
@@ -130,14 +132,15 @@ class Reviewer(BasePluginSingleImage):
         ui.add_blank(self, layout)
         ###########################
 
-        layout.addWidget(self.btn_start)
-        layout.addWidget(self.btn_close)
+        ui.add_widgets(layout, [self.btn_start, self.btn_close])
 
         ui.make_scrollable(
             contained_layout=layout, containing_widget=tab, min_wh=[190, 300]
         )
 
         self.addTab(tab, "Review")
+
+        self.setMinimumSize(180, 100)
         # self.show()
         # self._viewer.window.add_dock_widget(self, name="Reviewer", area="right")
 

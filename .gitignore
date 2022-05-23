@@ -7,7 +7,8 @@ __pycache__/
 *.so
 
 # unwanted results files
-*.csv
+*.tif
+napari_cellseg3d/_tests/res/*.csv
 
 # Distribution / packaging
 .Python
@@ -90,7 +91,8 @@ venv/
 
 ########
 #project specific
-#dataset, weights, old logos
+#dataset, weights, old logos, requirements
 /napari_cellseg3d/models/dataset/
 /napari_cellseg3d/models/saved_weights/
 /docs/res/logo/old_logo/
+/reqs/

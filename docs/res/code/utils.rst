@@ -13,6 +13,10 @@ get_time
 **************************************
 .. autofunction:: napari_cellseg3d.utils::get_time
 
+time_difference
+**************************************
+.. autofunction:: napari_cellseg3d.utils::time_difference
+
 get_time_filepath
 **************************************
 .. autofunction:: napari_cellseg3d.utils::get_time_filepath
@@ -28,6 +32,14 @@ get_padding_dim
 dice_coeff
 **************************************
 .. autofunction:: napari_cellseg3d.utils::dice_coeff
+
+sphericity_volume_area
+**************************************
+.. autofunction:: napari_cellseg3d.utils::sphericity_volume_area
+
+sphericity_axis
+**************************************
+.. autofunction:: napari_cellseg3d.utils::sphericity_axis
 
 normalize_x
 **************************************

@@ -94,7 +94,7 @@ class ModelFramework(BasePluginFolder):
         self.lbl_weights_path.setReadOnly(True)
 
         self.weights_path_container = ui.combine_blocks(
-            self.btn_weights_path, self.lbl_weights_path
+            self.btn_weights_path, self.lbl_weights_path, b=0
         )
         self.weights_path_container.setVisible(False)
 
@@ -107,7 +107,7 @@ class ModelFramework(BasePluginFolder):
         (
             self.container_report,
             self.container_report_layout,
-        ) = ui.make_container_widget(10, 5, 5, 5)
+        ) = ui.make_container(10, 5, 5, 5)
         self.container_report.setSizePolicy(
             QSizePolicy.Fixed, QSizePolicy.Minimum
         )
@@ -123,28 +123,52 @@ class ModelFramework(BasePluginFolder):
 
         self.btn_save_log = ui.make_button(
             "Save log in results folder",
-            self.save_log,
-            self.container_report,
+            func=self.save_log,
+            parent=self.container_report,
             fixed=False,
         )
         self.btn_save_log.setVisible(False)
         #####################################################
 
-    def send_log(self, text):
-        self.log.print_and_log(text)
-
-    def save_log(self, spec_path=None):
-        """Saves the worker's log to disk at self.results_path when called
+    def toggle_visibility(self, checkbox, widget):
+        """Toggles the visibility of a widget based on the status of a checkbox.
 
         Args:
-            spec_path: if specified, saves to path instead of self.results_path
+            checkbox: The QCheckbox that determines whether to show or not
+            widget: The widget to hide or show
         """
+        widget.setVisible(checkbox.isChecked())
+
+    def send_log(self, text):
+        """Emit a signal to print in a Log"""
+        self.log.print_and_log(text)
+
+    def save_log(self):
+        """Saves the worker's log to disk at self.results_path when called"""
         log = self.log.toPlainText()
 
-        if spec_path is None:
-            path = self.results_path
+        path = self.results_path
+
+        if len(log) != 0:
+            with open(
+                path + f"/Log_report_{utils.get_date_time()}.txt",
+                "x",
+            ) as f:
+                f.write(log)
+                f.close()
         else:
-            path = spec_path
+            warnings.warn(
+                "No job has been completed yet, please start one or re-open the log window."
+            )
+
+    def save_log_to_path(self, path):
+        """Saves the worker log to a specific path. Cannot be used with connect.
+
+        Args:
+            path (str): path to save folder
+        """
+
+        log = self.log.toPlainText()
 
         if len(log) != 0:
             with open(
@@ -183,15 +207,12 @@ class ModelFramework(BasePluginFolder):
             self.log.clear()
         elif not self.container_docked:
 
-            self.container_report_layout.addWidget(  # DO NOT USE alignment here, it will break auto-resizing
-                self.progress  # , alignment=ui.CENTER_AL
+            ui.add_widgets(
+                self.container_report_layout,
+                [self.progress, self.log, self.btn_save_log],
+                alignment=None,
             )
-            self.container_report_layout.addWidget(
-                self.log
-            )  # , alignment=ui.CENTER_AL
-            self.container_report_layout.addWidget(
-                self.btn_save_log  # , alignment=ui.CENTER_AL
-            )
+
             self.container_report.setLayout(self.container_report_layout)
 
             report_dock = self._viewer.window.add_dock_widget(
@@ -209,10 +230,10 @@ class ModelFramework(BasePluginFolder):
         self.progress.setValue(0)
 
     def toggle_weights_path(self):
-        if self.custom_weights_choice.isChecked():
-            self.weights_path_container.setVisible(True)
-        else:
-            self.weights_path_container.setVisible(False)
+        """Toggle visibility of weight path"""
+        self.toggle_visibility(
+            self.custom_weights_choice, self.weights_path_container
+        )
 
     def create_train_dataset_dict(self):
         """Creates data dictionary for MONAI transforms and training.
@@ -224,6 +245,9 @@ class ModelFramework(BasePluginFolder):
 
             * "label" : corresponding label
         """
+
+        if len(self.images_filepaths) == 0 or len(self.labels_filepaths) == 0:
+            raise ValueError("Data folders are empty")
 
         print("Images :\n")
         for file in self.images_filepaths:

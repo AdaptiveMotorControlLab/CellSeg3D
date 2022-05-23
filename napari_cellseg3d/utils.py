@@ -60,6 +60,35 @@ def normalize_y(image):
     return image
 
 
+def sphericity_volume_area(volume, surface_area):
+    """Computes the sphericity from volume and area
+
+    .. math::
+       sphericity =\\frac {\\pi^\\frac{1}{3} (6 V_{p})^\\frac{2}{3}} {A_p}
+
+    """
+    return np.pi ** (1 / 3) * (6 * volume) ** (2 / 3) / surface_area
+
+
+def sphericity_axis(semi_major, semi_minor):
+    """Computes the sphericity from volume semi major (a) and semi minor (b) axes.
+
+    .. math::
+        sphericity = \\frac {2 \\sqrt[3]{ab^2}} {a+ \\frac {b^2} {\\sqrt{a^2-b^2}}ln( \\frac {a+ \\sqrt{a^2-b^2}} {b} )}
+
+    """
+    a = semi_major
+    b = semi_minor
+
+    root = (a**2 - b**2) ** (1 / 2)
+
+    return (
+        2
+        * (a * (b**2)) ** (1 / 3)
+        / (a + (b**2) / root * np.log((a + root) / b))
+    )
+
+
 def dice_coeff(y_true, y_pred):
     """Compute Dice-Sorensen coefficient between two numpy arrays
 
@@ -117,6 +146,30 @@ def align_array_sizes(array_shape, target_shape):
     print(final_orig, final_targ)
 
     return final_orig, final_targ
+
+
+def time_difference(time_start, time_finish, as_string=True):
+    """
+    Args:
+        time_start (datetime): time to subtract to time_finish
+        time_finish (datetime): time to add to (-time_start)
+        as_string (bool): if True, returns a string with the full time diff. Otherwise, returns as a list [hours,minutes,seconds]
+    """
+
+    time_taken = time_finish - time_start
+    days = divmod(time_taken.total_seconds(), 86400)  # Get days (without [0]!)
+    hours = divmod(days[1], 3600)  # Use remainder of days to calc hours
+    minutes = divmod(hours[1], 60)  # Use remainder of hours to calc minutes
+    seconds = divmod(minutes[1], 1)  # Use remainder of minutes to calc seconds
+
+    hours = f"{int(hours[0])}".zfill(2)
+    minutes = f"{int(minutes[0])}".zfill(2)
+    seconds = f"{int(seconds[0])}".zfill(2)
+
+    if as_string:
+        return f"{hours}:{minutes}:{seconds}"
+    else:
+        return [hours, minutes, seconds]
 
 
 def get_padding_dim(image_shape, anisotropy_factor=None):
@@ -278,6 +331,33 @@ def check_annotations_dir(project_path):
         pass
 
 
+def fill_list_in_between(lst, n, elem):
+    """Fills a list with n * elem between each member of list.
+    Example with list = [1,2,3], n=2, elem='&' : returns [1, &, &,2,&,&,3,&,&]
+
+    Args:
+        lst: list to fill
+        n: number of elements to add
+        elem: added n times after each element of list
+
+    Returns :
+        Filled list
+    """
+
+    new_list = []
+    for i in range(len(lst)):
+        temp_list = [lst[i]]
+        while len(temp_list) < n + 1:
+            temp_list.append(elem)
+        if i < len(lst) - 1:
+            new_list += temp_list
+        else:
+            new_list.append(lst[i])
+            for j in range(n):
+                new_list.append(elem)
+            return new_list
+
+
 def check_zarr(project_path, ext):
     if not len(
         list(
@@ -414,7 +494,7 @@ def save_stack(images, out_path, filetype=".png", check_warnings=False):
     """Saves the files in labels at location out_path as a stack of len(labels) .png files
 
     Args:
-        labels: array of label images
+        images: array of label images
         out_path: path to the directory for saving
     """
     num = images.shape[0]

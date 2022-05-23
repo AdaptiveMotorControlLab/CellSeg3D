@@ -13,6 +13,10 @@ binary_watershed
 **************************************
 .. autofunction:: napari_cellseg3d.model_instance_seg::binary_watershed
 
+volume_stats
+**************************************
+.. autofunction:: napari_cellseg3d.model_instance_seg::volume_stats
+
 clear_small_objects
 **************************************
 .. autofunction:: napari_cellseg3d.model_instance_seg::clear_small_objects

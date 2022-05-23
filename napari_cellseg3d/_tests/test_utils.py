@@ -8,6 +8,33 @@ import torch
 from napari_cellseg3d import utils
 
 
+def test_fill_list_in_between():
+
+    list = [1, 2, 3, 4, 5, 6]
+    res = [
+        1,
+        "",
+        "",
+        2,
+        "",
+        "",
+        3,
+        "",
+        "",
+        4,
+        "",
+        "",
+        5,
+        "",
+        "",
+        6,
+        "",
+        "",
+    ]
+
+    assert utils.fill_list_in_between(list, 2, "") == res
+
+
 def test_align_array_sizes():
 
     im = np.zeros((128, 512, 256))
