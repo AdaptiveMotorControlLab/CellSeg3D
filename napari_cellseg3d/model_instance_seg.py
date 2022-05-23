@@ -172,6 +172,24 @@ def to_semantic(image, is_file_path=False):
 
 
 def volume_stats(volume_image):
+    """Computes various statistics from instance labels and returns them in a dict.
+    Currently provided :
+
+        * "Volume": volume of each object
+        * "Centroid": x,y,z centroid coordinates for each object
+        * "Sphericity (axes)": sphericity computed from semi-minor and semi-major axes
+        * "Image size": size of the image
+        * "Total image volume": volume in pixels of the whole image
+        * "Total object volume (pixels)": total labeled volume in pixels
+        * "Filling ratio": ratio of labeled over total pixel volume
+        * "Number objects": total number of unique labeled objects
+
+    Args:
+        volume_image: instance labels image
+
+    Returns:
+        dict: Statistics described above
+        """
 
     properties = regionprops(volume_image)
     number_objects = np.amax(volume_image)

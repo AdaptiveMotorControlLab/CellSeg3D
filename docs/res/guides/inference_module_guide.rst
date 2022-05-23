@@ -75,6 +75,25 @@ Interface and functionalities
 .. _connected components: https://scikit-image.org/docs/dev/api/skimage.measure.html#skimage.measure.label
 
 
+* **Computing objects statistics** :
+
+You can choose to compute various stats from the labels and save them to a csv for later use.
+This includes, for each object :
+
+* Object volume (pixels)
+* :math:`X,Y,Z` coordinates of the centroid
+* Sphericity
+
+And more general statistics :
+
+* Image size
+* Total image volume (pixels)
+* Total object (labeled) volume (pixels)
+* Filling ratio (fraction of the volume that is labeled)
+* The number of labeled objects
+
+In the ``notebooks`` folder you can find an example of plotting cell statistics using the result csv.
+
 * **Viewing results** :
 
   | You can also select whether you'd like to **see the results** in napari afterwards.
