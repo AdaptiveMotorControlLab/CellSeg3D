@@ -12,7 +12,6 @@ from qtpy.QtWidgets import QSizePolicy
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
 from napari_cellseg3d.model_framework import ModelFramework
-from napari_cellseg3d.model_instance_seg import volume_stats
 from napari_cellseg3d.model_workers import InferenceWorker
 
 
@@ -587,6 +586,7 @@ class Inferer(ModelFramework):
                 use_window=self.use_window_inference,
                 window_infer_size=self.window_inference_size,
                 keep_on_cpu=self.keep_on_cpu,
+                stats_csv=self.stats_to_csv,
             )
 
             yield_connect_show_res = lambda data: self.on_yield(
@@ -703,21 +703,12 @@ class Inferer(ModelFramework):
 
                 instance_layer = viewer.add_labels(labels, name=name)
 
-                if widget.stats_to_csv:  # TODO move to worker
+                data_dict = data["object stats"]
+                if (
+                    widget.stats_to_csv and data_dict is not None
+                ):  # TODO move to worker
 
-                    cell_data = volume_stats(
-                        labels
-                    )  # TODO test with area mesh function
-                    # count = np.tile("", len(cell_data["Volume"])-1)
-                    # cell_data["Cell count"] = np.insert(count, 0, number_cells)
-                    # cell_data["Total cell volume"] = np.insert(
-                    #     count, 0, tot_cell_volume
-                    # )
-                    # cell_data["Cell volume ratio"] = np.insert(
-                    #     count, 0, tot_cell_volume / len(labels.flatten())
-                    # )
-
-                    numeric_data = pd.DataFrame(cell_data)
+                    numeric_data = pd.DataFrame(data_dict)
 
                     csv_name = f"/{method}_seg_results_{image_id}_{utils.get_date_time()}.csv"
                     numeric_data.to_csv(

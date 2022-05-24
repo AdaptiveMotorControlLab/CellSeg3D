@@ -209,6 +209,9 @@ class BasePluginFolder(QTabWidget):
 
     def make_close_button(self):
         btn = ui.make_button("Close", self.remove_from_viewer)
+        btn.setToolTip(
+            "Close the window and all docked widgets. Make sure to save your work !"
+        )
         return btn
 
     def make_prev_button(self):

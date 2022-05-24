@@ -1,13 +1,13 @@
 # napari-cellseg3d
 
-[![License](https://img.shields.io/pypi/l/napari-cellseg3d.svg?color=green)](https://github.com/C_Achard/napari-cellseg3d/raw/main/LICENSE)
-[![PyPI](https://img.shields.io/pypi/v/napari-cellseg3d.svg?color=green)](https://pypi.org/project/napari-cellseg3d)
+[![License](https://img.shields.io/pypi/l/napari-cellseg3d.svg?color=green)](https://github.com/C_Achard/napari-cellseg-annotator/raw/main/LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/napari-cellseg3d.svg?color=green)](https://pypi.org/project/napari-cellseg-annotator)
 [![Python Version](https://img.shields.io/pypi/pyversions/napari-cellseg3d.svg?color=green)](https://python.org)
-[![tests](https://github.com/C_Achard/napari-cellseg3d/workflows/tests/badge.svg)](https://github.com/C_Achard/napari-cellseg3d/actions)
-[![codecov](https://codecov.io/gh/C_Achard/napari-cellseg3d/branch/main/graph/badge.svg)](https://codecov.io/gh/C_Achard/napari-cellseg3d)
-[![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-cellseg3d)](https://napari-hub.org/plugins/napari-cellseg3d)
+[![tests](https://github.com/C_Achard/napari-cellseg3d/workflows/tests/badge.svg)](https://github.com/C_Achard/napari-cellseg-annotator/actions)
+[![codecov](https://codecov.io/gh/C_Achard/napari-cellseg3d/branch/main/graph/badge.svg)](https://codecov.io/gh/C_Achard/napari-cellseg-annotator)
+[![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-cellseg3d)](https://napari-hub.org/plugins/cellseg-annotator-test)
 
-plugin for cell segmentation
+napari plugin providing cell segmentation tools : training, inference, review...
 
 ----------------------------------
 
@@ -23,8 +23,11 @@ https://napari.org/plugins/stable/index.html
 
 ## Requirements
 
-Requires manual installation of pytorch and MONAI.
-For Pytorch, please see [PyTorch]'s website for installation instructions.
+**Python >= 3.8 required**
+
+Requires manual installation of **pytorch** and **MONAI**.
+
+For Pytorch, please see [PyTorch's website for installation instructions].
 A CUDA-capable GPU is not needed but very strongly recommended, especially for training.
 
 If you get errors from MONAI regarding missing readers, please see [MONAI's optional dependencies] page for instructions on getting the readers required by your images.
@@ -44,7 +47,7 @@ pip install -e .
 
 ## Documentation
 
-You can generate docs by running ``make html`` in the docs folder
+You can generate docs by running ``make html`` in the *docs* folder
 
 ## Usage
 
@@ -97,5 +100,5 @@ If you encounter any problems, please [file an issue] along with a detailed desc
 [pip]: https://pypi.org/project/pip/
 [PyPI]: https://pypi.org/
 
-[PyTorch]: https://pytorch.org/get-started/locally/
+[PyTorch's website for installation instructions]: https://pytorch.org/get-started/locally/
 [MONAI's optional dependencies]: https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies

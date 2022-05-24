@@ -319,6 +319,54 @@ class Trainer(ModelFramework):
         self.btn_model_path.setVisible(False)
         self.lbl_model_path.setVisible(False)
 
+        ############################
+        ############################
+        # tooltips
+        self.zip_choice.setToolTip(
+            "Checking this will save a copy of the results as a zip folder"
+        )
+        self.validation_percent_choice.setToolTip(
+            "Choose the proportion of images to retain for training.\nThe remaining images will be used for validation"
+        )
+        self.epoch_choice.setToolTip(
+            "The number of epochs to train for.\nThe more you train, the better the model will fit the training data"
+        )
+        self.loss_choice.setToolTip(
+            "The loss function to use for training.\nSee the list in the inference guide for more info"
+        )
+        self.sample_choice.setToolTip(
+            "The number of samples to extract per image"
+        )
+        self.batch_choice.setToolTip(
+            "The batch size to use for training.\n A larger value will feed more images per iteration to the model,\n"
+            " which is faster and possibly improves performance, but uses more memory"
+        )
+        self.val_interval_choice.setToolTip(
+            "The number of epochs to perform before validating data.\n "
+            "The lower the value, the more often the score of the model will be computed and the more often the weights will be saved."
+        )
+        self.learning_rate_choice.setToolTip(
+            "The learning rate to use in the optimizer. \nUse a lower value if you're using pre-trained weights"
+        )
+        self.augment_choice.setToolTip(
+            "Check this to enable data augmentation, which will randomly deform, flip and shift the intensity in images"
+            " to provide a more general dataset. \nUse this if you're extracting more than 10 samples per image"
+        )
+        [
+            w.setToolTip("Size of the sample to extract")
+            for w in self.patch_size_widgets
+        ]
+        self.patch_choice.setToolTip(
+            "Check this to automatically crop your images in smaller, cubic images for training."
+            "\nShould be used if you have a small dataset (and large images)"
+        )
+        self.use_deterministic_choice.setToolTip("Enable deterministic training for reproducibility."
+                                                 "Using the same seed with all other parameters being similar should yield the exact same results between two runs.")
+        self.use_transfer_choice.setToolTip("Use this you want to initialize the model with pre-trained weights or use your own weights.")
+        self.box_seed.setToolTip("Seed to use for RNG")
+        ############################
+        ############################
+
         self.build()
 
     def toggle_patch_dims(self):
