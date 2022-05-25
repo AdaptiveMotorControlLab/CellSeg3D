@@ -44,6 +44,7 @@ from napari_cellseg3d import utils
 # local
 from napari_cellseg3d.model_instance_seg import binary_connected
 from napari_cellseg3d.model_instance_seg import binary_watershed
+from napari_cellseg3d.model_instance_seg import volume_stats
 
 """
 Writing something to log messages from outside the main thread is rather problematic (plenty of silent crashes...)
@@ -92,6 +93,7 @@ class InferenceWorker(GeneratorWorker):
         use_window,
         window_infer_size,
         keep_on_cpu,
+        stats_csv,
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~inference` function.
 
@@ -118,6 +120,8 @@ class InferenceWorker(GeneratorWorker):
 
             * keep_on_cpu: keep images on CPU or no
 
+            * stats_csv: compute stats on cells and save them to a csv file
+
         Note: See :py:func:`~self.inference`
         """
 
@@ -137,6 +141,7 @@ class InferenceWorker(GeneratorWorker):
         self.use_window = use_window
         self.window_infer_size = window_infer_size
         self.keep_on_cpu = keep_on_cpu
+        self.stats_to_csv = stats_csv
 
         """These attributes are all arguments of :py:func:~inference, please see that for reference"""
 
@@ -214,6 +219,8 @@ class InferenceWorker(GeneratorWorker):
             * window_infer_size: size of window if use_window is True
 
             * keep_on_cpu: keep images on CPU or no
+
+            * stats_csv: compute stats on cells and save them to a csv file
 
         Yields:
             dict: contains :
@@ -447,6 +454,14 @@ class InferenceWorker(GeneratorWorker):
                         f"Instance segmentation results for image n°{image_id} have been saved as:"
                     )
                     self.log(os.path.split(instance_filepath)[1])
+
+                    if self.stats_to_csv:
+                        data_dict = volume_stats(
+                            instance_labels
+                        )  # TODO test with area mesh function
+                    else:
+                        data_dict = None
+
                 else:
                     instance_labels = None
 
@@ -457,6 +472,7 @@ class InferenceWorker(GeneratorWorker):
                     "image_id": i + 1,
                     "original": original,
                     "instance_labels": instance_labels,
+                    "object stats": data_dict,
                     "result": out,
                     "model_name": self.model_dict["name"],
                 }

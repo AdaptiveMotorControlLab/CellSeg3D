@@ -40,10 +40,7 @@ Interface and functionalities
 
   | You can then choose one of the provided **models** above, which will be used for inference.
   | You may also choose to **load custom weights** rather than the pre-trained ones, simply ensure they are **compatible** (e.g. produced from the training module for the same model)
-
-.. note::
-    Currently the SegResNet model requires you to provide the size of the images the model was trained with due to the VAE module.
-    Provided weights use a size of 128, please leave it as is if you're not using custom weights.
+  |  If you choose to use a SegResNet with custom weights, you will have to provide the size of images it was trained on to ensure compatibility. (See note below)
 
 * **Inference parameters** :
 
@@ -105,6 +102,10 @@ When you are done choosing your parameters, you can press the **Start** button t
 Once it has finished, results will be saved then displayed in napari; each output will be paired with its original.
 On the left side, a progress bar and a log will keep you informed on the process.
 
+
+.. note::
+    Currently the SegResNet model requires you to provide the size of the images the model was trained with due to the VAE module.
+    Provided weights use a size of 128, please leave it as is if you're not using custom weights.
 
 
 .. note::

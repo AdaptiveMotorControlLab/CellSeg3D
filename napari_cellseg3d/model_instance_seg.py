@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import numpy as np
 from skimage.measure import label
+
 # from skimage.measure import marching_cubes
 # from skimage.measure import mesh_surface_area
 from skimage.measure import regionprops
@@ -13,6 +14,7 @@ from tifffile import imread
 
 from napari_cellseg3d.utils import fill_list_in_between
 from napari_cellseg3d.utils import sphericity_axis
+
 # from napari_cellseg3d.utils import sphericity_volume_area
 
 
@@ -189,7 +191,7 @@ def volume_stats(volume_image):
 
     Returns:
         dict: Statistics described above
-        """
+    """
 
     properties = regionprops(volume_image)
     number_objects = np.amax(volume_image)
@@ -218,7 +220,9 @@ def volume_stats(volume_image):
 
     return {
         "Volume": volume,
-        "Centroid": [region.centroid for region in properties],
+        "Centroid x": [region.centroid[0] for region in properties],
+        "Centroid y": [region.centroid[1] for region in properties],
+        "Centroid z": [region.centroid[2] for region in properties],
         # "Sphericity (volume/area)": sphericity_va,
         "Sphericity (axes)": sphericity_ax,
         "Image size": fill([volume_image.shape]),

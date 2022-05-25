@@ -12,7 +12,6 @@ from qtpy.QtWidgets import QSizePolicy
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
 from napari_cellseg3d.model_framework import ModelFramework
-from napari_cellseg3d.model_instance_seg import volume_stats
 from napari_cellseg3d.model_workers import InferenceWorker
 
 
@@ -119,9 +118,6 @@ class Inferer(ModelFramework):
         ######################
         # TODO : better way ?
         self.segres_size = ui.make_n_spinboxes(min=1, max=1024, default=128)
-        self.segres_size.setToolTip(
-            "Image size on which the SegResNet has been trained (default : 128)"
-        )
         self.model_choice.currentIndexChanged.connect(
             self.toggle_display_segres_size
         )
@@ -234,6 +230,36 @@ class Inferer(ModelFramework):
         self.lbl_label_files.setVisible(False)
         self.btn_model_path.setVisible(False)
         self.lbl_model_path.setVisible(False)
+
+        ##################
+        ##################
+        #tooltips
+        self.view_checkbox.setToolTip("Show results in the napari viewer")
+        self.display_number_choice.setToolTip("Choose how many results to display once the work is done.\n"
+                                              "Maximum is 10 for clarity")
+        self.show_original_checkbox.setToolTip("Displays the image used for inference in the viewer")
+        self.segres_size.setToolTip(
+            "Image size on which the SegResNet has been trained (default : 128)"
+        )
+        self.aniso_checkbox.setToolTip("If you have anisotropic data, you can scale data using your resolution in microns")
+        [w.setToolTip("Resolution in microns") for w in self.aniso_box_widgets]
+        thresh_desc = "Thresholding : all values in the image below the chosen probability threshold will be set to 0, and all others to 1."
+        self.thresholding_checkbox.setToolTip(thresh_desc)
+        self.thresholding_count.setToolTip(thresh_desc)
+        self.window_infer_box.setToolTip("Sliding window inference runs the model on parts of the image"
+                                         "\nrather than the whole image, to reduce memory requirements."
+                                         "\nUse this if you have large images.")
+        self.window_size_choice.setToolTip("Size of the window to run inference with (in pixels)")
+        self.keep_data_on_cpu_box.setToolTip("If enabled, data will be kept on the RAM rather than the VRAM.\nCan avoid out of memory issues with CUDA")
+        self.instance_box.setToolTip("Instance segmentation will convert instance (0/1) labels to labels that attempt to assign an unique ID to each cell.")
+        self.instance_method_choice.setToolTip("Choose which method to use for instance segmentation"
+                                    "\nConnected components : all separated objects will be assigned an unique ID. Robust but will not work correctly with adjacent/touching objects\n"
+                                    "Watershed : assigns objects ID based on the probability gradient surrounding an object. Requires the model to surround objects in a gradient; can possibly correctly separate unique but touching/adjacent objects.")
+        self.instance_prob_thresh.setToolTip("All objects below this probability will be ignored (set to 0)")
+        self.instance_small_object_thresh.setToolTip("Will remove all objects smaller (in volume) than the specified number of pixels")
+        self.save_stats_to_csv_box.setToolTip("Will save several statistics for each object to a csv in the results folder. Stats include : volume, centroid coordinates, sphericity")
+        ##################
+        ##################
 
         self.build()
 
@@ -587,6 +613,7 @@ class Inferer(ModelFramework):
                 use_window=self.use_window_inference,
                 window_infer_size=self.window_inference_size,
                 keep_on_cpu=self.keep_on_cpu,
+                stats_csv=self.stats_to_csv,
             )
 
             yield_connect_show_res = lambda data: self.on_yield(
@@ -703,21 +730,12 @@ class Inferer(ModelFramework):
 
                 instance_layer = viewer.add_labels(labels, name=name)
 
-                if widget.stats_to_csv:  # TODO move to worker
+                data_dict = data["object stats"]
+                if (
+                    widget.stats_to_csv and data_dict is not None
+                ):  # TODO move to worker
 
-                    cell_data = volume_stats(
-                        labels
-                    )  # TODO test with area mesh function
-                    # count = np.tile("", len(cell_data["Volume"])-1)
-                    # cell_data["Cell count"] = np.insert(count, 0, number_cells)
-                    # cell_data["Total cell volume"] = np.insert(
-                    #     count, 0, tot_cell_volume
-                    # )
-                    # cell_data["Cell volume ratio"] = np.insert(
-                    #     count, 0, tot_cell_volume / len(labels.flatten())
-                    # )
-
-                    numeric_data = pd.DataFrame(cell_data)
+                    numeric_data = pd.DataFrame(data_dict)
 
                     csv_name = f"/{method}_seg_results_{image_id}_{utils.get_date_time()}.csv"
                     numeric_data.to_csv(
