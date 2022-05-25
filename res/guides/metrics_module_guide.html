@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Metrics utility guide &mdash; napari-cellseg-3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>Metrics utility guide &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
@@ -26,7 +26,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html"><img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+            <a href="../../index.html"><img src="../../_static/logo_diag.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -77,7 +77,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">napari-cellseg-3d</a>
+          <a href="../../index.html">napari-cellseg3d</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -102,7 +102,20 @@
 <div class="math notranslate nohighlight">
 \[\frac {2|X \cap Y|} {|X|+|Y|}\]</div>
 <p>It is a measure of similarity between two sets- <span class="math notranslate nohighlight">\(0\)</span> indicating no similarity and <span class="math notranslate nohighlight">\(1\)</span> complete similarity.</p>
-<p>You will need to provide two folders : one for ground truth labels and one for predicition labels.</p>
+<p>You will need to provide the following parameters:</p>
+<ul class="simple">
+<li><p>Two folders : one for ground truth labels and one for prediction labels.</p></li>
+<li><p>The threshold below which the score is considered insufficient.
+Any pair below that score will be shown on the viewer; and be displayed in red in the plot.</p></li>
+<li><p>Whether to automatically determine the best orientation for the computation by rotating and flipping;
+use this if your images do not have the same orientation.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Due to changes in orientation of images after running inference, the utility can rotate and flip images randomly to find the best Dice coefficient
+to compensate. If you have small images with a very large number of labels, this can lead to an inexact metric being computed.
+Images with a low score might be in the wrong orientation as well when displayed for comparison.</p>
+</div>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
 <p>This utility assumes that <strong>predictions are padded to a power of two already.</strong> Ground truth labels can be smaller,
@@ -111,12 +124,6 @@ Your files should have names that allow them to be sorted numerically as well; p
 </div>
 <p>Once you are ready, press the “Compute Dice” button. This will plot the Dice score for each ground truth-prediction labels pair on the side.
 Pairs with a low score will be displayed on the viewer for checking, ground truth in <strong>blue</strong>, low score prediction in <strong>red</strong>.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Due to changes in orientation of images after running inference, the utility will rotate and flip images to find the best Dice coefficient
-to compensate. If you have small images with a very large number of labels, this can lead to an inexact metric being computed.
-Images with a low score might be in the wrong orientation as well when displayed for comparison.</p>
-</div>
 <div class="section" id="source-code">
 <h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">

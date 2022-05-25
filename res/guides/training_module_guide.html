@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Training module guide &mdash; napari-cellseg-3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>Training module guide &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
@@ -26,7 +26,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html"><img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+            <a href="../../index.html"><img src="../../_static/logo_diag.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -74,7 +74,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">napari-cellseg-3d</a>
+          <a href="../../index.html">napari-cellseg3d</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -124,9 +124,17 @@ Pre-defined models are stored in napari-cellseg-3d/models.</p>
 </table>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
-<p>The machine learning models used by this program require all images of a dataset to be of the same size.
-Please ensure that all the images you are loading are of the <strong>same size</strong>, or to use the <strong>“extract patches” (in augmentation tab)</strong> with an appropriately small size
-to ensure all images being used by the model are of a workable size.</p>
+<div class="line-block">
+<div class="line">The machine learning models used by this program require all images of a dataset to be of the same size.</div>
+<div class="line">Please ensure that all the images you are loading are of the <strong>same size</strong>, or to use the <strong>“extract patches” (in augmentation tab)</strong> with an appropriately small size to ensure all images being used by the model are of a workable size.</div>
+</div>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<div class="line-block">
+<div class="line"><strong>All image sizes used should be as close to a power of two as possible, if not a power of two.</strong></div>
+<div class="line">Images are automatically padded; a 64 pixels cube will be used as is, but a 65 pixel cube will be padded up to 128 pixels, resulting in much higher memory use.</div>
+</div>
 </div>
 <p>The training module is comprised of several tabs.</p>
 <ol class="arabic simple">
@@ -136,45 +144,53 @@ to ensure all images being used by the model are of a workable size.</p>
 <li><p>The path to the images folder</p></li>
 <li><p>The path to the labels folder</p></li>
 <li><p>The path to the results folder</p></li>
+<li><p>Whether to copy results to a zip file (for easier transferability)</p></li>
+<li><p>Whether to use pre-trained weights that are provided; if you choose to do so, the model will be initialized with the specified weights, possibly improving performance (transfer learning).
+You can also load custom weights; simply ensure they are compatible with the model.</p></li>
+<li><p>The proportion of the dataset to keep for training versus validation; if you have a large dataset, you can set it to a lower value to have more accurate validation steps.</p></li>
 </ul>
 <ol class="arabic simple" start="2">
 <li><p>The second tab, <strong>Augmentation</strong>, lets you define dataset and augmentation parameters such as :</p></li>
 </ol>
-<ul class="simple">
+<ul>
 <li><p>Whether to use images “as is” (<strong>requires all images to be of the same size and cubic</strong>) or extract patches.</p></li>
-<li><dl class="simple">
-<dt>If you’re extracting patches :</dt><dd><ul>
-<li><p>The size of patches to be extracted (ideally, please use a value <strong>close to a power of two</strong>, such as 120 or 60.</p></li>
-<li><p>The number of samples to extract from each of your image to ensure correct size and perform data augmentation. A larger number will likely mean better performances, but longer training and larger memory usage.</p></li>
+<li><p>If you’re extracting patches :</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The size of patches to be extracted (ideally, please use a value <strong>close to a power of two</strong>, such as 120 or 60 to ensure correct size.)</p></li>
+<li><p>The number of samples to extract from each of your images. A larger number will likely mean better performances, but longer training and larger memory usage.</p></li>
 </ul>
-</dd>
-</dl>
+</div></blockquote>
 </li>
-<li><dl class="simple">
-<dt>Whether to perform data augmentation or not (elastic deforms, intensity shifts. random flipping,etc). A rule of thumb for augmentation is :</dt><dd><ul>
+<li><p>Whether to perform data augmentation or not (elastic deforms, intensity shifts. random flipping,etc). A rule of thumb for augmentation is :</p>
+<blockquote>
+<div><ul class="simple">
 <li><p>If you’re using the patch extraction method, enable it if you are using more than 10 samples per image with at least 5 images</p></li>
 <li><p>If you have a large dataset and are not using patches extraction, enable it.</p></li>
 </ul>
-</dd>
-</dl>
+</div></blockquote>
 </li>
 </ul>
 <ol class="arabic simple" start="3">
 <li><p>The third contains training related parameters :</p></li>
 </ol>
 <ul class="simple">
-<li><p>The model to use for training (see table above)</p></li>
-<li><p>The loss function used for training (see table below)</p></li>
-<li><p>The batch size (larger means quicker training and possibly better performance but increased memory usage)</p></li>
-<li><p>The number of epochs (a possibility is to start with 60 epochs, and decrease or increase depending on performance.)</p></li>
-<li><p>The epoch interval for validation (for example, if set to two, the module will use the validation dataset to evaluate the model with the dice metric every two epochs.)</p></li>
+<li><p>The <strong>model</strong> to use for training (see table above)</p></li>
+<li><p>The <strong>loss function</strong> used for training (see table below)</p></li>
+<li><p>The <strong>learning rate</strong> of the optimizer. Setting it to a lower value if you’re using pre-trained weights can improve performance.</p></li>
+<li><p>The <strong>batch size</strong> (larger means quicker training and possibly better performance but increased memory usage)</p></li>
+<li><p>The <strong>number of epochs</strong> (a possibility is to start with 60 epochs, and decrease or increase depending on performance.)</p></li>
+<li><p>The <strong>epoch interval</strong> for validation (for example, if set to two, the module will use the validation dataset to evaluate the model with the dice metric every two epochs.)</p></li>
 </ul>
-<p>If the dice metric is better on that validation interval, the model weights will be saved in the results folder.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the dice metric is better on a given validation interval, the model weights will be saved in the results folder.</p>
+</div>
 <p>The available loss functions are :</p>
 <table class="docutils align-default">
 <colgroup>
-<col style="width: 24%" />
-<col style="width: 76%" />
+<col style="width: 20%" />
+<col style="width: 80%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Function</p></th>

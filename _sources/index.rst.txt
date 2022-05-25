@@ -1,4 +1,4 @@
-Welcome to napari-cellseg-3d's documentation!
+Welcome to napari-cellseg3d's documentation!
 ===============================================================
 
 .. toctree::

@@ -4,7 +4,7 @@ Reviewer module guide
 =================================
 
 This module allows you to review your labels, from predictions or manual labeling,
-and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.
+and correct them if needed. It then saves the status of each file in a csv, as well as the time taken per slice review, for easier monitoring.
 
 
 
@@ -17,13 +17,13 @@ Launching the review process
     Folders can be stacks of either **.png** or **.tif** files, ideally numbered with the index of the slice at the end.
 
 .. note::
-    Only single .tif files or folder of several .png or .tif are supported.
+    Only single .tif files or folder of several .png or .tif are currently supported.
 
-* Model name :
+* Csv file name :
     You can then provide a model name, which will be used to name the csv file recording the status of each slice.
 
     If a corresponding csv file exists already, it will be used. If not, a new one will be created.
-    If you choose to create a new dataset, a new csv will be created no matter what,
+    If you choose to create a new dataset, a new csv will always be created,
     with a trailing number if several copies of it already exists.
 
 * Start :

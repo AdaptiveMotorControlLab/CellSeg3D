@@ -31,44 +31,81 @@ Interface and functionalities
 
 * **Loading data** :
 
-  | When launching the module, you will be asked to provide an image folder containing all the volumes you'd like to be labeled.
-  | All images with the chosen (**.tif** or **.tiff** currently supported) extension in this folder will be labeled.
-  | You can then choose an output folder, where all the results will be saved.
+  | When launching the module, you will be asked to provide an **image folder** containing all the volumes you'd like to be labeled.
+  | All images with the chosen extension (**.tif** or **.tiff** currently supported) in this folder will be labeled.
+  | You can then choose an **output folder**, where all the results will be saved.
 
 
 * **Model choice** :
 
-  | You can then choose one of the provided models above, which will be used for inference.
-  | You may also choose to load custom weights rather than the pre-trained ones, simply ensure they are compatible (e.g. produced from the training module for the same model)
+  | You can then choose one of the provided **models** above, which will be used for inference.
+  | You may also choose to **load custom weights** rather than the pre-trained ones, simply ensure they are **compatible** (e.g. produced from the training module for the same model)
+  |  If you choose to use a SegResNet with custom weights, you will have to provide the size of images it was trained on to ensure compatibility. (See note below)
+
+* **Inference parameters** :
+
+  | You can choose to use inference on the whole image at once, which generally yields better performance at the cost of more memory,
+  | or you can use a specific window size to run inference on smaller chunks one by one, for lower memory usage.
+  | You can also choose to keep the dataset in the RAM rather than the VRAM (cpu vs cuda device) to avoid running out of VRAM
+  | if you have several images.
 
 
 * **Anisotropy** :
 
-  | If you want to see your results without anisotropy when you have anisotropic images, you can specify that you have anisotropic data
-  | and set the resolution of your image in micron, this wil save and show the results without anisotropy.
+  | If you want to see your results without **anisotropy** when you have anisotropic images, you can specify that you have anisotropic data
+  | and set the **resolution of your imaging method in micron**, this wil save and show the results without anisotropy.
 
 
 * **Thresholding** :
 
-  | You can perform thresholding to binarize your labels, all values beneath the confidence threshold will be set to 0 using this.
-  | If you wish to use instance segmentation it is recommended to use thresholding.
+  | You can perform thresholding to **binarize your labels**,
+  | all values beneath the **confidence threshold** will be set to 0 using this.
 
 * **Instance segmentation** :
 
-  | You can convert the semantic segmentation into instance labels by using either the watershed or connected components method.
+  | You can convert the semantic segmentation into instance labels by using either the `watershed`_ or `connected components`_ method.
   | You can set the probability threshold from which a pixel is considered as a valid instance, as well as the minimum size in pixels for objects. All smaller objects will be removed.
   | Instance labels will be saved (and shown if applicable) separately from other results.
 
+
+.. _watershed: https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_watershed.html
+.. _connected components: https://scikit-image.org/docs/dev/api/skimage.measure.html#skimage.measure.label
+
+
+* **Computing objects statistics** :
+
+You can choose to compute various stats from the labels and save them to a csv for later use.
+This includes, for each object :
+
+* Object volume (pixels)
+* :math:`X,Y,Z` coordinates of the centroid
+* Sphericity
+
+And more general statistics :
+
+* Image size
+* Total image volume (pixels)
+* Total object (labeled) volume (pixels)
+* Filling ratio (fraction of the volume that is labeled)
+* The number of labeled objects
+
+In the ``notebooks`` folder you can find an example of plotting cell statistics using the result csv.
+
 * **Viewing results** :
 
-  | You can also select whether you'd like to see the results in napari afterwards.
-  | By default the first image processed will be displayed, but you can choose to display up to ten at once. You can also request to see the originals.
+  | You can also select whether you'd like to **see the results** in napari afterwards.
+  | By default the first image processed will be displayed, but you can choose to display up to **ten at once**.
+  | You can also request to see the originals.
 
 
 When you are done choosing your parameters, you can press the **Start** button to begin the inference process.
 Once it has finished, results will be saved then displayed in napari; each output will be paired with its original.
 On the left side, a progress bar and a log will keep you informed on the process.
 
+
+.. note::
+    Currently the SegResNet model requires you to provide the size of the images the model was trained with due to the VAE module.
+    Provided weights use a size of 128, please leave it as is if you're not using custom weights.
 
 
 .. note::

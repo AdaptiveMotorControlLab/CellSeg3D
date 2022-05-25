@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>utils.py &mdash; napari-cellseg-3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>utils.py &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
@@ -25,7 +25,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html"><img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+            <a href="../../index.html"><img src="../../_static/logo_diag.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -68,10 +68,13 @@
 <li class="toctree-l2"><a class="reference internal" href="#functions">Functions</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#get-date-time">get_date_time</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-time">get_time</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#time-difference">time_difference</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-time-filepath">get_time_filepath</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#save-stack">save_stack</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-padding-dim">get_padding_dim</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dice-coeff">dice_coeff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sphericity-volume-area">sphericity_volume_area</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sphericity-axis">sphericity_axis</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#normalize-x">normalize_x</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#normalize-y">normalize_y</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#denormalize-y">denormalize_y</a></li>
@@ -89,7 +92,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">napari-cellseg-3d</a>
+          <a href="../../index.html">napari-cellseg3d</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -117,6 +120,9 @@
 <div class="section" id="get-time">
 <h3>get_time<a class="headerlink" href="#get-time" title="Permalink to this headline">¶</a></h3>
 </div>
+<div class="section" id="time-difference">
+<h3>time_difference<a class="headerlink" href="#time-difference" title="Permalink to this headline">¶</a></h3>
+</div>
 <div class="section" id="get-time-filepath">
 <h3>get_time_filepath<a class="headerlink" href="#get-time-filepath" title="Permalink to this headline">¶</a></h3>
 </div>
@@ -128,6 +134,12 @@
 </div>
 <div class="section" id="dice-coeff">
 <h3>dice_coeff<a class="headerlink" href="#dice-coeff" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="sphericity-volume-area">
+<h3>sphericity_volume_area<a class="headerlink" href="#sphericity-volume-area" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="sphericity-axis">
+<h3>sphericity_axis<a class="headerlink" href="#sphericity-axis" title="Permalink to this headline">¶</a></h3>
 </div>
 <div class="section" id="normalize-x">
 <h3>normalize_x<a class="headerlink" href="#normalize-x" title="Permalink to this headline">¶</a></h3>

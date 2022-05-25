@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Advanced : Declaring a custom model &mdash; napari-cellseg-3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>Advanced : Declaring a custom model &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
@@ -26,7 +26,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html"><img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+            <a href="../../index.html"><img src="../../_static/logo_diag.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -74,7 +74,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">napari-cellseg-3d</a>
+          <a href="../../index.html">napari-cellseg3d</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -94,7 +94,7 @@
              
   <div class="section" id="advanced-declaring-a-custom-model">
 <span id="custom-model-guide"></span><h1>Advanced : Declaring a custom model<a class="headerlink" href="#advanced-declaring-a-custom-model" title="Permalink to this headline">¶</a></h1>
-<p>To add a custom model, you will need a <strong>.py</strong> file with the following structure to be placed in the <em>src/napari_cellseg_3d/models</em> folder:</p>
+<p>To add a custom model, you will need a <strong>.py</strong> file with the following structure to be placed in the <em>napari_cellseg3d/models</em> folder:</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>WIP</strong> : Currently you must modify <a class="reference internal" href="../code/model_framework.html#model-framework-py"><span class="std std-ref">model_framework.py</span></a> as well : import your model class and add it to the <code class="docutils literal notranslate"><span class="pre">model_dict</span></code> attribute</p>
@@ -106,7 +106,7 @@
 
 <span class="k">def</span> <span class="nf">get_weights_file</span><span class="p">():</span>
     <span class="k">return</span> <span class="s2">&quot;weights_file.pth&quot;</span> <span class="c1"># name of the weights file for the model,</span>
-    <span class="c1"># which should be in *src/napari_cellseg_3d/models/saved_weights*</span>
+    <span class="c1"># which should be in *napari_cellseg3d/models/saved_weights*</span>
 
 
 <span class="k">def</span> <span class="nf">get_output</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>

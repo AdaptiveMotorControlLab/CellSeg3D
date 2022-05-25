@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inference module guide &mdash; napari-cellseg-3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>Inference module guide &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
@@ -26,7 +26,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html"><img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+            <a href="../../index.html"><img src="../../_static/logo_diag.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -78,7 +78,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">napari-cellseg-3d</a>
+          <a href="../../index.html">napari-cellseg3d</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -132,46 +132,84 @@ to automatically label cells.</p>
 <ul>
 <li><p><strong>Loading data</strong> :</p>
 <div class="line-block">
-<div class="line">When launching the module, you will be asked to provide an image folder containing all the volumes you’d like to be labeled.</div>
-<div class="line">All images with the chosen (<strong>.tif</strong> or <strong>.tiff</strong> currently supported) extension in this folder will be labeled.</div>
-<div class="line">You can then choose an output folder, where all the results will be saved.</div>
+<div class="line">When launching the module, you will be asked to provide an <strong>image folder</strong> containing all the volumes you’d like to be labeled.</div>
+<div class="line">All images with the chosen extension (<strong>.tif</strong> or <strong>.tiff</strong> currently supported) in this folder will be labeled.</div>
+<div class="line">You can then choose an <strong>output folder</strong>, where all the results will be saved.</div>
 </div>
 </li>
 <li><p><strong>Model choice</strong> :</p>
 <div class="line-block">
-<div class="line">You can then choose one of the provided models above, which will be used for inference.</div>
-<div class="line">You may also choose to load custom weights rather than the pre-trained ones, simply ensure they are compatible (e.g. produced from the training module for the same model)</div>
+<div class="line">You can then choose one of the provided <strong>models</strong> above, which will be used for inference.</div>
+<div class="line">You may also choose to <strong>load custom weights</strong> rather than the pre-trained ones, simply ensure they are <strong>compatible</strong> (e.g. produced from the training module for the same model)</div>
+<div class="line-block">
+<div class="line">If you choose to use a SegResNet with custom weights, you will have to provide the size of images it was trained on to ensure compatibility. (See note below)</div>
+</div>
+</div>
+</li>
+<li><p><strong>Inference parameters</strong> :</p>
+<div class="line-block">
+<div class="line">You can choose to use inference on the whole image at once, which generally yields better performance at the cost of more memory,</div>
+<div class="line">or you can use a specific window size to run inference on smaller chunks one by one, for lower memory usage.</div>
+<div class="line">You can also choose to keep the dataset in the RAM rather than the VRAM (cpu vs cuda device) to avoid running out of VRAM</div>
+<div class="line">if you have several images.</div>
 </div>
 </li>
 <li><p><strong>Anisotropy</strong> :</p>
 <div class="line-block">
-<div class="line">If you want to see your results without anisotropy when you have anisotropic images, you can specify that you have anisotropic data</div>
-<div class="line">and set the resolution of your image in micron, this wil save and show the results without anisotropy.</div>
+<div class="line">If you want to see your results without <strong>anisotropy</strong> when you have anisotropic images, you can specify that you have anisotropic data</div>
+<div class="line">and set the <strong>resolution of your imaging method in micron</strong>, this wil save and show the results without anisotropy.</div>
 </div>
 </li>
 <li><p><strong>Thresholding</strong> :</p>
 <div class="line-block">
-<div class="line">You can perform thresholding to binarize your labels, all values beneath the confidence threshold will be set to 0 using this.</div>
-<div class="line">If you wish to use instance segmentation it is recommended to use thresholding.</div>
+<div class="line">You can perform thresholding to <strong>binarize your labels</strong>,</div>
+<div class="line">all values beneath the <strong>confidence threshold</strong> will be set to 0 using this.</div>
 </div>
 </li>
 <li><p><strong>Instance segmentation</strong> :</p>
 <div class="line-block">
-<div class="line">You can convert the semantic segmentation into instance labels by using either the watershed or connected components method.</div>
+<div class="line">You can convert the semantic segmentation into instance labels by using either the <a class="reference external" href="https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_watershed.html">watershed</a> or <a class="reference external" href="https://scikit-image.org/docs/dev/api/skimage.measure.html#skimage.measure.label">connected components</a> method.</div>
 <div class="line">You can set the probability threshold from which a pixel is considered as a valid instance, as well as the minimum size in pixels for objects. All smaller objects will be removed.</div>
 <div class="line">Instance labels will be saved (and shown if applicable) separately from other results.</div>
 </div>
 </li>
+</ul>
+<ul class="simple">
+<li><p><strong>Computing objects statistics</strong> :</p></li>
+</ul>
+<p>You can choose to compute various stats from the labels and save them to a csv for later use.
+This includes, for each object :</p>
+<ul class="simple">
+<li><p>Object volume (pixels)</p></li>
+<li><p><span class="math notranslate nohighlight">\(X,Y,Z\)</span> coordinates of the centroid</p></li>
+<li><p>Sphericity</p></li>
+</ul>
+<p>And more general statistics :</p>
+<ul class="simple">
+<li><p>Image size</p></li>
+<li><p>Total image volume (pixels)</p></li>
+<li><p>Total object (labeled) volume (pixels)</p></li>
+<li><p>Filling ratio (fraction of the volume that is labeled)</p></li>
+<li><p>The number of labeled objects</p></li>
+</ul>
+<p>In the <code class="docutils literal notranslate"><span class="pre">notebooks</span></code> folder you can find an example of plotting cell statistics using the result csv.</p>
+<ul>
 <li><p><strong>Viewing results</strong> :</p>
 <div class="line-block">
-<div class="line">You can also select whether you’d like to see the results in napari afterwards.</div>
-<div class="line">By default the first image processed will be displayed, but you can choose to display up to ten at once. You can also request to see the originals.</div>
+<div class="line">You can also select whether you’d like to <strong>see the results</strong> in napari afterwards.</div>
+<div class="line">By default the first image processed will be displayed, but you can choose to display up to <strong>ten at once</strong>.</div>
+<div class="line">You can also request to see the originals.</div>
 </div>
 </li>
 </ul>
 <p>When you are done choosing your parameters, you can press the <strong>Start</strong> button to begin the inference process.
 Once it has finished, results will be saved then displayed in napari; each output will be paired with its original.
 On the left side, a progress bar and a log will keep you informed on the process.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Currently the SegResNet model requires you to provide the size of the images the model was trained with due to the VAE module.
+Provided weights use a size of 128, please leave it as is if you’re not using custom weights.</p>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <div class="line-block">

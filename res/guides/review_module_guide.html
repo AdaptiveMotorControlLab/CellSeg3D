@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reviewer module guide &mdash; napari-cellseg-3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>Reviewer module guide &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
@@ -26,7 +26,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html"><img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+            <a href="../../index.html"><img src="../../_static/logo_diag.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -79,7 +79,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">napari-cellseg-3d</a>
+          <a href="../../index.html">napari-cellseg3d</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -100,7 +100,7 @@
   <div class="section" id="reviewer-module-guide">
 <span id="loader-module-guide"></span><h1>Reviewer module guide<a class="headerlink" href="#reviewer-module-guide" title="Permalink to this headline">¶</a></h1>
 <p>This module allows you to review your labels, from predictions or manual labeling,
-and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.</p>
+and correct them if needed. It then saves the status of each file in a csv, as well as the time taken per slice review, for easier monitoring.</p>
 <div class="section" id="launching-the-review-process">
 <h2>Launching the review process<a class="headerlink" href="#launching-the-review-process" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
@@ -114,13 +114,13 @@ Folders can be stacks of either <strong>.png</strong> or <strong>.tif</strong> f
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Only single .tif files or folder of several .png or .tif are supported.</p>
+<p>Only single .tif files or folder of several .png or .tif are currently supported.</p>
 </div>
 <ul>
 <li><dl>
-<dt>Model name :</dt><dd><p>You can then provide a model name, which will be used to name the csv file recording the status of each slice.</p>
+<dt>Csv file name :</dt><dd><p>You can then provide a model name, which will be used to name the csv file recording the status of each slice.</p>
 <p>If a corresponding csv file exists already, it will be used. If not, a new one will be created.
-If you choose to create a new dataset, a new csv will be created no matter what,
+If you choose to create a new dataset, a new csv will always be created,
 with a trailing number if several copies of it already exists.</p>
 </dd>
 </dl>
