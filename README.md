@@ -1,11 +1,11 @@
 # napari-cellseg3d
 
-[![License](https://img.shields.io/pypi/l/napari-cellseg3d.svg?color=green)](https://github.com/C_Achard/napari-cellseg-annotator/raw/main/LICENSE)
-[![PyPI](https://img.shields.io/pypi/v/napari-cellseg3d.svg?color=green)](https://pypi.org/project/napari-cellseg-annotator)
-[![Python Version](https://img.shields.io/pypi/pyversions/napari-cellseg3d.svg?color=green)](https://python.org)
-[![tests](https://github.com/C_Achard/napari-cellseg3d/workflows/tests/badge.svg)](https://github.com/C_Achard/napari-cellseg-annotator/actions)
-[![codecov](https://codecov.io/gh/C_Achard/napari-cellseg3d/branch/main/graph/badge.svg)](https://codecov.io/gh/C_Achard/napari-cellseg-annotator)
-[![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-cellseg3d)](https://napari-hub.org/plugins/cellseg-annotator-test)
+[![License](https://img.shields.io/pypi/l/napari-cellseg-annotator.svg?color=green)](https://github.com/AdaptiveMotorControlLab/CellSeg3d/raw/main/LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/napari-cellseg-annotator.svg?color=green)](https://pypi.org/project/napari-cellseg-annotator)
+[![Python Version](https://img.shields.io/pypi/pyversions/napari-cellseg-annotator.svg?color=green)](https://python.org)
+[![tests](https://github.com/AdaptiveMotorControlLab/CellSeg3d/workflows/tests/badge.svg)](https://github.com/AdaptiveMotorControlLab/CellSeg3d/actions)
+[![codecov](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3d/branch/main/graph/badge.svg)](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3d)
+[![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-cellseg-annotator)](https://napari-hub.org/plugins/cellseg-annotator-test)
 
 napari plugin providing cell segmentation tools : training, inference, review...
 
