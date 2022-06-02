@@ -83,7 +83,7 @@ A CUDA-capable GPU is not needed but very strongly recommended, especially for t
 
 If you get errors from MONAI regarding missing readers, please see [MONAI's optional dependencies] page for instructions on getting the readers required by your images.
 
-[[file an issue]: https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues
+[file an issue]: https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues
 [napari]: https://github.com/napari/napari
 [Cookiecutter]: https://github.com/audreyr/cookiecutter
 [@napari]: https://github.com/napari
