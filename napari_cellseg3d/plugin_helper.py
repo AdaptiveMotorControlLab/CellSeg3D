@@ -1,8 +1,12 @@
 import napari
+import pathlib
 
 # Qt
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
+from qtpy.QtGui import QPixmap
+from qtpy.QtGui import QIcon
+from qtpy.QtCore import QSize
 
 # local
 from napari_cellseg3d import interface as ui
@@ -18,13 +22,38 @@ class Helper(QWidget):
         )
 
         self.about_url = "https://wysscenter.ch/advances/3d-computer-vision-for-brain-analysis"
+        self.repo_url = "https://github.com/AdaptiveMotorControlLab/CellSeg3d"
         self._viewer = viewer
 
-        self.info_label = ui.make_label(f"napari-cellseg3d v.{0.01}", self)
+        path = pathlib.Path(__file__).parent.resolve()
+        url = str(path) + "/res/logo_alpha.png"
+        image = QPixmap(url)
+
+        self.logo_label = ui.make_button(
+            func=lambda: ui.open_url(self.repo_url)
+        )
+        self.logo_label.setIcon(QIcon(image))
+        self.logo_label.setMinimumSize(200, 200)
+        self.logo_label.setIconSize(QSize(200, 200))
+        self.logo_label.setStyleSheet(
+            "QPushButton { background-color: transparent }"
+        )
+        self.logo_label.setToolTip("Open Github page")
+
+        self.info_label = ui.make_label(
+            f"You are using napari-cellseg3d v.{'0.0.1'}\n\n"
+            f"Plugin for cell segmentation developed\n"
+            f"for the Mathis Lab of Adaptive Motor Control\n\n"
+            f"Code by Cyril Achard and Maxime Vidal\n"
+            f"\nReleased under the MIT license",
+            self,
+        )
 
         self.btn1 = ui.make_button(
             "Help...", lambda: ui.open_url(self.help_url)
         )
+        self.btn1.setToolTip("Go to documentation")
+
         self.btn2 = ui.make_button(
             "About...", lambda: ui.open_url(self.about_url)
         )
@@ -37,6 +66,7 @@ class Helper(QWidget):
         vbox = QVBoxLayout()
 
         widgets = [
+            self.logo_label,
             self.info_label,
             self.btn1,
             self.btn2,

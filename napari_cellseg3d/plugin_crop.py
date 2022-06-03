@@ -43,7 +43,7 @@ class Cropping(BasePluginSingleImage):
         self.btn_start = ui.make_button("Start", self.start, self)
 
         self.crop_label_choice = ui.make_checkbox(
-            "Crop labels as well ?", self.toggle_label_path
+            "Crop labels simultaneously", self.toggle_label_path
         )
         self.lbl_label.setVisible(False)
         self.btn_label.setVisible(False)
@@ -159,9 +159,9 @@ class Cropping(BasePluginSingleImage):
         if not self.as_folder:
             if self.image is not None:
                 im_filename = os.path.basename(self.image_path).split(".")[0]
-                print(im_filename)
+                # print(im_filename)
                 im_dir = os.path.split(self.image_path)[0] + "/cropped"
-                print(im_dir)
+                # print(im_dir)
                 os.makedirs(im_dir, exist_ok=True)
                 viewer.layers["cropped"].save(
                     im_dir + "/" + im_filename + "_cropped_" + time + ".tif"
@@ -170,9 +170,9 @@ class Cropping(BasePluginSingleImage):
             # print(self.label)
             if self.label is not None:
                 im_filename = os.path.basename(self.label_path).split(".")[0]
-                print(im_filename)
+                # print(im_filename)
                 im_dir = os.path.split(self.label_path)[0] + "/cropped"
-                print(im_dir)
+                # print(im_dir)
                 name = (
                     im_dir
                     + "/"
@@ -195,14 +195,14 @@ class Cropping(BasePluginSingleImage):
                 dir_name = im_dir + "/volume_cropped_" + time
                 utils.save_stack(dat, dir_name, filetype=self.filetype)
 
-            print(self.label)
+            # print(self.label)
             if self.label is not None:
 
                 # im_filename = os.path.basename(self.image_path).split(".")[0]
                 im_dir = os.path.split(self.label_path)[0]
 
                 dir_name = im_dir + "/labels_cropped_" + time
-                print(f"dir name {dir_name}")
+                # print(f"dir name {dir_name}")
                 dat = viewer.layers["cropped_labels"].data
                 utils.save_stack(dat, dir_name, filetype=self.filetype)
 
@@ -271,7 +271,8 @@ class Cropping(BasePluginSingleImage):
     def add_crop_sliders(
         self,
     ):
-
+        # modified version of code posted by Juan Nunez Iglesias here :
+        # https://forum.image.sc/t/napari-viewing-3d-image-of-large-tif-stack-cropping-image-w-general-shape/55500/2
         vw = self._viewer
 
         image_stack = np.array(self.image)
@@ -284,8 +285,8 @@ class Cropping(BasePluginSingleImage):
         self._y = 0
         self._z = 0
 
-        print(f"Crop variables")
-        print(image_stack.shape)
+        # print(f"Crop variables")
+        # print(image_stack.shape)
 
         # define crop sizes and boundaries for the image
         crop_sizes = [self._crop_size_x, self._crop_size_y, self._crop_size_z]

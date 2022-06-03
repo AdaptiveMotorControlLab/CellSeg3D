@@ -26,10 +26,6 @@ TRAILMAP          An emulation of the `TRAILMAP project on GitHub`_ using `3DUne
     | The machine learning models used by this program require all images of a dataset to be of the same size.
     | Please ensure that all the images you are loading are of the **same size**, or to use the **"extract patches" (in augmentation tab)** with an appropriately small size to ensure all images being used by the model are of a workable size.
 
-.. important::
-    | **All image sizes used should be as close to a power of two as possible, if not a power of two.**
-    | Images are automatically padded; a 64 pixels cube will be used as is, but a 65 pixel cube will be padded up to 128 pixels, resulting in much higher memory use.
-
 The training module is comprised of several tabs.
 
 
@@ -50,16 +46,18 @@ The training module is comprised of several tabs.
 
 * Whether to use images "as is" (**requires all images to be of the same size and cubic**) or extract patches.
 
+.. important::
+    | **All image sizes used should be as close to a power of two as possible, or equal to a power of two.**
+    | Images are automatically padded; a 64 pixels cube will be used as is, but a 65 pixel cube will be padded up to 128 pixels, resulting in much higher memory use.
+
 * If you're extracting patches :
 
-    * The size of patches to be extracted (ideally, please use a value **close to a power of two**, such as 120 or 60 to ensure correct size.)
+    * The size of patches to be extracted (ideally, please use a value **close or equal to a power of two**, such as 120 or 60 to ensure correct size. See above note.)
     * The number of samples to extract from each of your images. A larger number will likely mean better performances, but longer training and larger memory usage.
 
 
-* Whether to perform data augmentation or not (elastic deforms, intensity shifts. random flipping,etc). A rule of thumb for augmentation is :
-
-    * If you're using the patch extraction method, enable it if you are using more than 10 samples per image with at least 5 images
-    * If you have a large dataset and are not using patches extraction, enable it.
+* Whether to perform data augmentation or not (elastic deforms, intensity shifts. random flipping,etc).
+  Ideally it should always be enabled, but you can disable it if it causes issues.
 
 
 3) The third contains training related parameters :
@@ -101,13 +99,25 @@ perform data augmentation if you chose to, select a CUDA device if one is presen
 .. note::
     You can stop the training at any time by clicking on the start button again.
 
-    **The training will stop after the next validation interval is performed, to save the latest model should it be better.**
+    **The training will stop after the next batch has been processed, and will try to save the model. Please note that results might be broken if you stop the training.**
 
 .. note::
-    You can save the log to record the losses and validation metrics numerical values at each step. This log is autosaved as well when training completes.
+    You can save the log with the button underneath it to record the losses and validation metrics numerical values at each step. This log is autosaved as well when training completes.
 
-After two validations steps have been performed (depending on the interval you set), the training loss values and validation metrics will be automatically plotted
+After two validations steps have been performed (depending on the interval you set),
+the training loss values and validation metrics will be automatically plotted
 and shown on napari every time a validation step completes.
-This plot automatically saved each time validation is performed for now. The final version is stored separately in the results folder.
+This plot automatically saved each time validation is performed for now.
+The final version is stored separately in the results folder.
 
+.. figure:: ../images/plots_train.png
+   :align: center
+
+   Example of plots displayed by the training module after 40 epochs
+
+Source code
+--------------------------------
+* :doc:`../code/plugin_model_training`
+* :doc:`../code/model_framework`
+* :doc:`../code/model_workers`
 

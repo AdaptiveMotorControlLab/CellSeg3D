@@ -1,6 +1,6 @@
 .. _loader_module_guide:
 
-Reviewer module guide
+Review module guide
 =================================
 
 This module allows you to review your labels, from predictions or manual labeling,
@@ -17,9 +17,9 @@ Launching the review process
     Folders can be stacks of either **.png** or **.tif** files, ideally numbered with the index of the slice at the end.
 
 .. note::
-    Only single .tif files or folder of several .png or .tif are currently supported.
+    Only single 3D **.tif** files or 2D stacks of several **.png** or **.tif** in a folder are currently supported.
 
-* Csv file name :
+* CSV file name :
     You can then provide a model name, which will be used to name the csv file recording the status of each slice.
 
     If a corresponding csv file exists already, it will be used. If not, a new one will be created.
@@ -40,11 +40,11 @@ Interface & functionalities
 
 Once you have launched the review process, you will have access to the following functionalities:
 
-**1.** A dialog to choose the folder in which you want to save the verified and/or corrected annotations, and a button to save the labels. They will be saved as **.png**, with one file per slice.
+* A dialog to choose the folder in which you want to save the verified and/or corrected annotations, and a button to save the labels. They will be saved based on the file format you provided.
 
-**2.** A button to update the status of the slice in the csv file (in this case : checked/not checked)
+* A button to update the status of the slice in the csv file (in this case : checked/not checked)
 
-**3.** A plot with three projections in the x-y, y-z and x-z planes, to allow the reviewer to better see the surroundings of the label and properly establish whether the image should be labeled or not. You can **shift-click** anywhere on the image or label layer to update the plot to the location being reviewed.
+* A plot with three projections in the x-y, y-z and x-z planes, to allow the reviewer to better see the surroundings of the label and properly establish whether the image should be labeled or not. You can **shift-click** anywhere on the image or label layer to update the plot to the location being reviewed.
 
 Using these, you can check your labels, correct them, save them and keep track of which slices have been checked or not.
 

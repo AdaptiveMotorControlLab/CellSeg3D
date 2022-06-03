@@ -116,7 +116,7 @@ class Inferer(ModelFramework):
 
         ######################
         ######################
-        # TODO : better way ?
+        # TODO : better way to handle SegRes size reqs ?
         self.segres_size = ui.make_n_spinboxes(min=1, max=1024, default=128)
         self.model_choice.currentIndexChanged.connect(
             self.toggle_display_segres_size
@@ -233,31 +233,53 @@ class Inferer(ModelFramework):
 
         ##################
         ##################
-        #tooltips
+        # tooltips
         self.view_checkbox.setToolTip("Show results in the napari viewer")
-        self.display_number_choice.setToolTip("Choose how many results to display once the work is done.\n"
-                                              "Maximum is 10 for clarity")
-        self.show_original_checkbox.setToolTip("Displays the image used for inference in the viewer")
+        self.display_number_choice.setToolTip(
+            "Choose how many results to display once the work is done.\n"
+            "Maximum is 10 for clarity"
+        )
+        self.show_original_checkbox.setToolTip(
+            "Displays the image used for inference in the viewer"
+        )
         self.segres_size.setToolTip(
             "Image size on which the SegResNet has been trained (default : 128)"
         )
-        self.aniso_checkbox.setToolTip("If you have anisotropic data, you can scale data using your resolution in microns")
+        self.aniso_checkbox.setToolTip(
+            "If you have anisotropic data, you can scale data using your resolution in microns"
+        )
         [w.setToolTip("Resolution in microns") for w in self.aniso_box_widgets]
         thresh_desc = "Thresholding : all values in the image below the chosen probability threshold will be set to 0, and all others to 1."
         self.thresholding_checkbox.setToolTip(thresh_desc)
         self.thresholding_count.setToolTip(thresh_desc)
-        self.window_infer_box.setToolTip("Sliding window inference runs the model on parts of the image"
-                                         "\nrather than the whole image, to reduce memory requirements."
-                                         "\nUse this if you have large images.")
-        self.window_size_choice.setToolTip("Size of the window to run inference with (in pixels)")
-        self.keep_data_on_cpu_box.setToolTip("If enabled, data will be kept on the RAM rather than the VRAM.\nCan avoid out of memory issues with CUDA")
-        self.instance_box.setToolTip("Instance segmentation will convert instance (0/1) labels to labels that attempt to assign an unique ID to each cell.")
-        self.instance_method_choice.setToolTip("Choose which method to use for instance segmentation"
-                                    "\nConnected components : all separated objects will be assigned an unique ID. Robust but will not work correctly with adjacent/touching objects\n"
-                                    "Watershed : assigns objects ID based on the probability gradient surrounding an object. Requires the model to surround objects in a gradient; can possibly correctly separate unique but touching/adjacent objects.")
-        self.instance_prob_thresh.setToolTip("All objects below this probability will be ignored (set to 0)")
-        self.instance_small_object_thresh.setToolTip("Will remove all objects smaller (in volume) than the specified number of pixels")
-        self.save_stats_to_csv_box.setToolTip("Will save several statistics for each object to a csv in the results folder. Stats include : volume, centroid coordinates, sphericity")
+        self.window_infer_box.setToolTip(
+            "Sliding window inference runs the model on parts of the image"
+            "\nrather than the whole image, to reduce memory requirements."
+            "\nUse this if you have large images."
+        )
+        self.window_size_choice.setToolTip(
+            "Size of the window to run inference with (in pixels)"
+        )
+        self.keep_data_on_cpu_box.setToolTip(
+            "If enabled, data will be kept on the RAM rather than the VRAM.\nCan avoid out of memory issues with CUDA"
+        )
+        self.instance_box.setToolTip(
+            "Instance segmentation will convert instance (0/1) labels to labels that attempt to assign an unique ID to each cell."
+        )
+        self.instance_method_choice.setToolTip(
+            "Choose which method to use for instance segmentation"
+            "\nConnected components : all separated objects will be assigned an unique ID. Robust but will not work correctly with adjacent/touching objects\n"
+            "Watershed : assigns objects ID based on the probability gradient surrounding an object. Requires the model to surround objects in a gradient; can possibly correctly separate unique but touching/adjacent objects."
+        )
+        self.instance_prob_thresh.setToolTip(
+            "All objects below this probability will be ignored (set to 0)"
+        )
+        self.instance_small_object_thresh.setToolTip(
+            "Will remove all objects smaller (in volume) than the specified number of pixels"
+        )
+        self.save_stats_to_csv_box.setToolTip(
+            "Will save several statistics for each object to a csv in the results folder. Stats include : volume, centroid coordinates, sphericity"
+        )
         ##################
         ##################
 
@@ -282,7 +304,7 @@ class Inferer(ModelFramework):
         else:
             self.segres_size.setVisible(False)
 
-    def toggle_display_number(self):  # TODO create method ?
+    def toggle_display_number(self):
         """Shows the choices for viewing results depending on whether :py:attr:`self.view_checkbox` is checked"""
         self.toggle_visibility(self.view_checkbox, self.view_results_container)
 
@@ -513,7 +535,7 @@ class Inferer(ModelFramework):
         self.setMinimumSize(180, 100)
         # self.setBaseSize(210, 400)
 
-    def start(self):  # TODO update
+    def start(self):
         """Start the inference process, enables :py:attr:`~self.worker` and does the following:
 
         * Checks if the output and input folders are correctly set
@@ -524,11 +546,13 @@ class Inferer(ModelFramework):
 
         * Loads the images, pads them so their size is a power of two in every dim (see :py:func:`utils.get_padding_dim`)
 
-        * Performs sliding window inference (from MONAI) on every image
+        * Performs sliding window inference (from MONAI) on every image, with or without ROI of chosen size
 
         * Saves all outputs in the selected results folder
 
         * If the option has been selected, display the results in napari, up to the maximum number selected
+
+        * Runs instance segmentation, thresholding, and stats computing if requested
         """
 
         if not self.check_ready():
@@ -624,7 +648,7 @@ class Inferer(ModelFramework):
             self.worker.started.connect(self.on_start)
             self.worker.log_signal.connect(self.log.print_and_log)
             self.worker.yielded.connect(yield_connect_show_res)
-            self.worker.errored.connect(yield_connect_show_res)  # TODO fix
+            self.worker.errored.connect(yield_connect_show_res)  # TODO fix showing errors from thread
             self.worker.finished.connect(self.on_finish)
 
             if self.get_device(show=False) == "cuda":
@@ -733,7 +757,7 @@ class Inferer(ModelFramework):
                 data_dict = data["object stats"]
                 if (
                     widget.stats_to_csv and data_dict is not None
-                ):  # TODO move to worker
+                ):
 
                     numeric_data = pd.DataFrame(data_dict)
 

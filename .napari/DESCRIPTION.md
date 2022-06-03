@@ -1,15 +1,22 @@
 
-
-<!-- This file is designed to provide you with a starting template for documenting
+<!---->
+<!--
+TODO : complete
+This file is designed to provide you with a starting template for documenting
 the functionality of your plugin. Its content will be rendered on your plugin's
 napari hub page.
 
 The sections below are given as a guide for the flow of information only, and
 are in no way prescriptive. You should feel free to merge, remove, add and 
 rename sections at will to make this document work best for your plugin. 
-
+-->
 ## Description
 
+A napari plugin for 3D cell segmentation: training, inference, and data review. In particular, this project was developed for analysis of mesoSPIM-acquired (cleared tissue + lightsheet) datasets.
+
+A detailed walk-through and description is available [on the documentation website](https://adaptivemotorcontrollab.github.io/cellseg3d-docs/res/welcome.html).
+
+<!--
 This should be a detailed description of the context of your plugin and its 
 intended purpose.
 
@@ -38,9 +45,16 @@ hosted on GitHub for you, but will not be placed in your repository.
 Here is an example of an mp4 video embedded this way.
 
 https://user-images.githubusercontent.com/17995243/120088305-6c093380-c132-11eb-822d-620e81eb5f0e.mp4
-
+-->
 ## Intended Audience & Supported Data
 
+This plugin requires basic knowledge in machine learning;
+all the concepts required for the parameters of the plugin are still covered and explained for their contextual use in the plugin.
+
+Currently, this plugin requires 3D volumes as .tif files, for review and cropping 2D stacks as .tif or .png are supported as well.
+Feel free to open an issue on Github if you'd like to discuss implementation of a specific file type !
+
+<!--
 This section should describe the target audience for this plugin (any knowledge,
 skills and experience required), as well as a description of the types of data
 supported by this plugin.
@@ -53,7 +67,8 @@ make sure to mention this.
 
 If you know of researchers, groups or labs using your plugin, or if it has been cited
 anywhere, feel free to also include this information here.
-
+-->
+<!--
 ## Quickstart
 
 This section should go through step-by-step examples of how your plugin should be used.
@@ -65,8 +80,21 @@ Ideally, this section should start with minimal examples for those who just want
 quick overview of the plugin's functionality, but you should definitely link out to
 more complex and in-depth tutorials highlighting any intricacies of your plugin, and
 more detailed documentation if you have it.
+-->
+## Additional Install Steps 
 
-## Additional Install Steps (uncommon)
+**Python >= 3.8 required**
+
+Requires manual installation of **pytorch** and **MONAI**.
+
+For Pytorch, please see [PyTorch's website for installation instructions](https://pytorch.org/get-started/locally/).
+
+A **CUDA-capable GPU** is not needed but very strongly recommended, especially for training.
+Simply follow the instructions on Pytorch's install page.
+
+If you get errors from MONAI regarding missing readers, please see [MONAI's optional dependencies](https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies) page for instructions on getting the readers required by your images.
+
+<!--
 We will be providing installation instructions on the hub, which will be sufficient
 for the majority of plugins. They will include instructions to pip install, and
 to install via napari itself.
@@ -75,18 +103,25 @@ Most plugins can be installed out-of-the-box by just specifying the package requ
 over in `setup.cfg`. However, if your plugin has any more complex dependencies, or 
 requires any additional preparation before (or after) installation, you should add 
 this information here.
-
+-->
 ## Getting Help
 
+If you would like to report an issue with the plugin,
+please open an [issue on Github](https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues)
+<!--
 This section should point users to your preferred support tools, whether this be raising
 an issue on GitHub, asking a question on image.sc, or using some other method of contact.
 If you distinguish between usage support and bug/feature support, you should state that
 here.
+-->
 
 ## How to Cite
 
+
+<!--
 Many plugins may be used in the course of published (or publishable) research, as well as
 during conference talks and other public facing events. If you'd like to be cited in
-a particular format, or have a DOI you'd like used, you should provide that information here. -->
+a particular format, or have a DOI you'd like used, you should provide that information here. 
 
 The developer has not yet provided a napari-hub specific description.
+-->

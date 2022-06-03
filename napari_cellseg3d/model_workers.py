@@ -232,7 +232,7 @@ class InferenceWorker(GeneratorWorker):
 
         """
         sys = platform.system()
-        print(sys)
+        print(f"OS is {sys}")
         if sys == "Darwin":  # required for macOS ?
             torch.set_num_threads(1)
             self.log("Number of threads has been set to 1 for macOS")

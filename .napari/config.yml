@@ -1,0 +1,23 @@
+visibility: hidden
+
+project_urls:
+  Bug Tracker: https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues
+  Documentation: https://adaptivemotorcontrollab.github.io/cellseg3d-docs/res/welcome.html
+  Source Code: https://github.com/AdaptiveMotorControlLab/CellSeg3d
+  Project Site: https://github.com/AdaptiveMotorControlLab/CellSeg3d
+  User Support: https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues
+
+# Add labels from the EDAM Bioimaging ontology
+labels:
+  ontology: EDAM-BIOIMAGING:alpha06
+  terms:
+  - 3D image
+  - Cell segmentation
+  - Light-sheet microscopy
+  - Image visualisation
+  - Neuron image analysis
+  - Convolutional neural network
+  - Watershed segmentation
+  - Object counting
+  - Image crop
+  - Plotting

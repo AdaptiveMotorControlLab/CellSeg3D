@@ -39,12 +39,13 @@ class ConvertUtils(BasePluginFolder):
         self.btn_convert_layer_semantic = ui.make_button(
             "Convert to semantic labels", func=self.layer_to_semantic
         )
-        self.btn_convert_layer_instance = ui.make_button(
-            "Convert to instance labels", func=self.layer_to_instance
-        )
         self.btn_convert_folder_instance = ui.make_button(
             "Convert to instance labels", func=self.folder_to_instance
         )
+        self.btn_convert_layer_instance = ui.make_button(
+            "Convert to instance labels", func=self.layer_to_instance
+        )
+
         self.btn_remove_small_folder = ui.make_button(
             "Remove in folder", func=self.folder_remove_small
         )
@@ -60,6 +61,31 @@ class ConvertUtils(BasePluginFolder):
 
         self.btn_image_files.setVisible(False)
         self.lbl_image_files.setVisible(False)
+        ###############################
+        # tooltips
+        self.btn_convert_folder_semantic.setToolTip(
+            "Convert specified folder to semantic (0/1)"
+        )
+        self.btn_convert_folder_instance.setToolTip(
+            "Convert specified folder to instance (unique ID per object)"
+        )
+        self.btn_convert_layer_instance.setToolTip(
+            "Convert currently selected layer to instance (unique ID per object)"
+        )
+        self.btn_convert_layer_semantic.setToolTip(
+            "Convert currently selected layer to semantic (0/1)"
+        )
+
+        self.btn_remove_small_layer.setToolTip(
+            "Remove small objects on selected layer image"
+        )
+        self.btn_remove_small_folder.setToolTip(
+            "Remove small objects in all images of selected folder"
+        )
+        self.small_object_thresh_choice.setToolTip(
+            "All objects in the image smaller in volume than this number of pixels will be removed"
+        )
+        ###############################
 
         self.build()
 
