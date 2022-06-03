@@ -1,12 +1,12 @@
 # napari-cellseg3d: a napari plug-in for 3d deep learning models for cell segmentation
 
 
-<img src="docs/res/logo/logo_diag.png" title="cellseg3d" alt="cellseg3d logo" width="250" align="right" vspace = "80"/>
+<img src="docs/res/logo/logo_background.png" title="cellseg3d" alt="cellseg3d logo" width="250" align="right" vspace = "80"/>
 
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/AdaptiveMotorControlLab/CellSeg3d/raw/main/LICENSE)
-[![PyPI](https://img.shields.io/pypi/v/napari-cellseg3d.svg?color=green)](https://pypi.org/project/napari-cellseg3d)
-[![Python Version](https://img.shields.io/pypi/pyversions/CellSeg3d.svg?color=green)](https://python.org)
+[![PyPI](https://img.shields.io/pypi/v/napari-cellseg-annotator.svg?color=green)](https://pypi.org/project/napari-cellseg-annotator)
+[![Python Version](https://img.shields.io/pypi/pyversions/napari-cellseg-annotator.svg?color=green)](https://python.org)
 [![tests](https://github.com/AdaptiveMotorControlLab/CellSeg3d/workflows/tests/badge.svg)](https://github.com/AdaptiveMotorControlLab/CellSeg3d/actions)
 [![codecov](https://codecov.io/gh/AdaptiveMotorControlLab/napari-cellseg3d/branch/main/graph/badge.svg)](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3d)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-cellseg3d)](https://napari-hub.org/plugins/CellSeg3d)
