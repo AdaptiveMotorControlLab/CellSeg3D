@@ -273,7 +273,6 @@ class Trainer(ModelFramework):
 
         self.augment_choice = ui.make_checkbox("Augment data")
 
-        # TODO add self.tabs, self.close_buttons etc...
         self.close_buttons = [
             self.make_close_button() for i in range(NUMBER_TABS)
         ]
@@ -360,9 +359,13 @@ class Trainer(ModelFramework):
             "Check this to automatically crop your images in smaller, cubic images for training."
             "\nShould be used if you have a small dataset (and large images)"
         )
-        self.use_deterministic_choice.setToolTip("Enable deterministic training for reproducibility."
-                                                 "Using the same seed with all other parameters being similar should yield the exact same results between two runs.")
-        self.use_transfer_choice.setToolTip("Use this you want to initialize the model with pre-trained weights or use your own weights.")
+        self.use_deterministic_choice.setToolTip(
+            "Enable deterministic training for reproducibility."
+            "Using the same seed with all other parameters being similar should yield the exact same results between two runs."
+        )
+        self.use_transfer_choice.setToolTip(
+            "Use this you want to initialize the model with pre-trained weights or use your own weights."
+        )
         self.box_seed.setToolTip("Seed to use for RNG")
         ############################
         ############################

@@ -13,13 +13,19 @@ Welcome to napari-cellseg3d's documentation!
 
 .. toctree::
     :maxdepth: 1
-    :caption: Utilities & advanced guides:
+    :caption: Utilities :
 
     res/guides/metrics_module_guide
     res/guides/convert_module_guide
     res/guides/cropping_module_guide
-    res/guides/custom_model_template
 
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Advanced guides and walk-through:
+
+    res/guides/detailed_walkthrough
+    res/guides/custom_model_template
 
 .. toctree::
     :maxdepth: 1

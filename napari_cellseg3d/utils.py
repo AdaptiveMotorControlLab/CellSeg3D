@@ -24,7 +24,8 @@ Definitions of utility functions and variables
 # dev util
 def ENABLE_TEST_MODE():
     path = Path(os.path.expanduser("~"))
-    print(path)
+    # print(path)
+    print("TEST MODE ENABLED, DEV ONLY")
     if path == Path("C:/Users/Cyril"):
         return True
     return False
@@ -119,7 +120,7 @@ def align_array_sizes(array_shape, target_shape):
                     if j != i:
                         index_differences.append({"origin": i, "target": j})
 
-    print(index_differences)
+    # print(index_differences)
     if len(index_differences) == 0:
         return [0, 1, 2], [-3, -2, -1]
 
@@ -135,7 +136,7 @@ def align_array_sizes(array_shape, target_shape):
         targets[i] = reverse_mapping[targets[i]]
     infos = np.unique(origins, return_index=True, return_counts=True)
     info_dict = {"origins": infos[0], "index": infos[1], "counts": infos[2]}
-    print(info_dict)
+    # print(info_dict)
 
     final_orig = []
     final_targ = []
@@ -143,7 +144,7 @@ def align_array_sizes(array_shape, target_shape):
         if infos[2][i] == 1:
             final_orig.append(infos[0][i])
             final_targ.append(targets[infos[1][i]])
-    print(final_orig, final_targ)
+    # print(final_orig, final_targ)
 
     return final_orig, final_targ
 
@@ -445,10 +446,10 @@ def load_images(dir_or_path, filetype="", as_folder: bool = False):
 
     if not as_folder:
         filename_pattern_original = os.path.join(dir_or_path)
-        print(filename_pattern_original)
+        # print(filename_pattern_original)
     elif as_folder and filetype != "":
         filename_pattern_original = os.path.join(dir_or_path + "/*" + filetype)
-        print(filename_pattern_original)
+        # print(filename_pattern_original)
     else:
         raise ValueError("If loading as a folder, filetype must be specified")
 
@@ -641,7 +642,7 @@ def divide_imgs(images):
     W = -(-images.shape[2] // 412)
 
     diveded_imgs = np.zeros((images.shape[0] * H * W, 512, 512, 1), np.float32)
-    print(H, W)
+    # print(H, W)
 
     for z in range(images.shape[0]):
         image = images[z]

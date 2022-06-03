@@ -7,7 +7,6 @@ import pims
 import skimage.io as io
 
 # Qt
-from qtpy import QtGui
 from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QSizePolicy
 
@@ -62,9 +61,14 @@ class Reviewer(BasePluginSingleImage):
             " make sure to save your work beforehand",
             None,
         )
-        pal = self.warn_label.palette()
-        pal.setColor(QtGui.QPalette.WindowText, QtGui.QColor("red"))
-        self.warn_label.setPalette(pal)
+
+        ###########################
+        # tooltips
+        self.textbox.setToolTip("Name of the csv results file")
+        self.checkBox.setToolTip(
+            "Ignore any pre-existing csv with the specified name and create a new one"
+        )
+        ###########################
 
         self.build()
 

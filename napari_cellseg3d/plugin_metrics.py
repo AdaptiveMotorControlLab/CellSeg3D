@@ -48,12 +48,22 @@ class MetricsUtils(BasePluginFolder):
 
         self.btn_reset_plot = ui.make_button("Clear plots", self.remove_plots)
 
+        self.lbl_threshold_box = ui.make_label("Score threshold", self)
         self.threshold_box = ui.make_n_spinboxes(
             min=0.1, max=1, default=DEFAULT_THRESHOLD, step=0.1, double=True
         )
 
         self.btn_result_path.setVisible(False)
         self.lbl_result_path.setVisible(False)
+
+        self.rotate_choice.setToolTip(
+            "This will rotate and flip your images to find the orientation with the best Dice coefficient.\n"
+            "Use this if your labels and predictions are not oriented the same way."
+        )
+        self.threshold_box.setToolTip(
+            "Any label-prediction pair below this threshold will be shown in napari"
+        )
+        self.btn_reset_plot.setToolTip("Erase all plots")
 
         self.build()
 
@@ -110,8 +120,12 @@ class MetricsUtils(BasePluginFolder):
         ############################
         param_group_w, param_group_l = ui.make_group("Parameters")
 
+        thresh_container = ui.combine_blocks(
+            self.threshold_box, self.lbl_threshold_box, horizontal=False, l=2
+        )
+
         ui.add_widgets(
-            param_group_l, [self.threshold_box, self.rotate_choice], None
+            param_group_l, [thresh_container, self.rotate_choice], None
         )
 
         param_group_w.setLayout(param_group_l)
@@ -212,8 +226,8 @@ class MetricsUtils(BasePluginFolder):
             # origin, target = utils.align_array_sizes(array_shape=pad_ground, target_shape=pad_pred)
 
             # ground = np.moveaxis(ground, origin, target)
-            print(ground.shape)
-            print(pred.shape)
+            # print(ground.shape)
+            # print(pred.shape)
 
             while len(pred.shape) < 5:
                 pred = np.expand_dims(pred, axis=0)
@@ -295,5 +309,5 @@ class MetricsUtils(BasePluginFolder):
                     pred, name=f"pred_{i+1}", colormap="red", opacity=0.7
                 )
             total_metrics.append(score)
-        print(f"DICE METRIC :{total_metrics}")
+        # print(f"DICE METRIC :{total_metrics}")
         self.plot_dice(total_metrics, threshold)

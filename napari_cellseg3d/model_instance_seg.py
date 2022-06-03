@@ -115,14 +115,14 @@ def clear_small_objects(image, threshold, is_file_path=False):
     if is_file_path:
         image = imread(image)
 
-    print(threshold)
+    # print(threshold)
 
     labeled = label(image)
 
     result = remove_small_objects(labeled, threshold)
 
-    print(np.sum(labeled))
-    print(np.sum(result))
+    # print(np.sum(labeled))
+    # print(np.sum(result))
 
     if np.sum(labeled) == np.sum(result):
         print("Warning : no objects were removed")

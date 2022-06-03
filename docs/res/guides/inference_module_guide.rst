@@ -40,20 +40,17 @@ Interface and functionalities
 
   | You can then choose one of the provided **models** above, which will be used for inference.
   | You may also choose to **load custom weights** rather than the pre-trained ones, simply ensure they are **compatible** (e.g. produced from the training module for the same model)
-  |  If you choose to use a SegResNet with custom weights, you will have to provide the size of images it was trained on to ensure compatibility. (See note below)
+  | If you choose to use a SegResNet with custom weights, you will have to provide the size of images it was trained on to ensure compatibility. (See note below)
 
 * **Inference parameters** :
 
-  | You can choose to use inference on the whole image at once, which generally yields better performance at the cost of more memory,
-  | or you can use a specific window size to run inference on smaller chunks one by one, for lower memory usage.
-  | You can also choose to keep the dataset in the RAM rather than the VRAM (cpu vs cuda device) to avoid running out of VRAM
-  | if you have several images.
+  | You can choose to use inference on the whole image at once, which generally yields better performance at the cost of more memory, or you can use a specific window size to run inference on smaller chunks one by one, for lower memory usage.
+  | You can also choose to keep the dataset in the RAM rather than the VRAM (cpu vs cuda device) to avoid running out of VRAM if you have several images.
 
 
 * **Anisotropy** :
 
-  | If you want to see your results without **anisotropy** when you have anisotropic images, you can specify that you have anisotropic data
-  | and set the **resolution of your imaging method in micron**, this wil save and show the results without anisotropy.
+  | If you want to see your results without **anisotropy** when you have anisotropic images, you can specify that you have anisotropic data and set the **resolution of your imaging method in micron**, this wil save and show the results without anisotropy.
 
 
 * **Thresholding** :
@@ -74,22 +71,25 @@ Interface and functionalities
 
 * **Computing objects statistics** :
 
-You can choose to compute various stats from the labels and save them to a csv for later use.
-This includes, for each object :
+    You can choose to compute various stats from the labels and save them to a csv for later use.
 
-* Object volume (pixels)
-* :math:`X,Y,Z` coordinates of the centroid
-* Sphericity
+    This includes, for each object :
 
-And more general statistics :
+    * Object volume (pixels)
+    * :math:`X,Y,Z` coordinates of the centroid
+    * Sphericity
 
-* Image size
-* Total image volume (pixels)
-* Total object (labeled) volume (pixels)
-* Filling ratio (fraction of the volume that is labeled)
-* The number of labeled objects
 
-In the ``notebooks`` folder you can find an example of plotting cell statistics using the result csv.
+    And more general statistics :
+
+    * Image size
+    * Total image volume (pixels)
+    * Total object (labeled) volume (pixels)
+    * Filling ratio (fraction of the volume that is labeled)
+    * The number of labeled objects
+
+
+    In the ``notebooks`` folder you can find an example of plotting cell statistics using the result csv.
 
 * **Viewing results** :
 
@@ -130,3 +130,4 @@ Source code
 --------------------------------
 * :doc:`../code/plugin_model_inference`
 * :doc:`../code/model_framework`
+* :doc:`../code/model_workers`

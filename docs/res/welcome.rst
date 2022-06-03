@@ -4,14 +4,15 @@ Introduction
 
 Here you will find instructions on how to use the plug-in program.
 If the installation was successful, you'll see the napari-cellseg3D plugin
-
 in the Plugins section of napari.
 
-This plugin is intended for the review of labeled cell volumes [#]_ from mice whole-brain samples
-imaged by mesoSPIM microscopy [#]_ , and for training and using segmentation models from the MONAI project [#]_, or
-any custom model written in Pytorch.
+This plugin was initially developed for the review of labeled cell volumes [#]_ from mice whole-brain samples
+imaged by mesoSPIM microscopy [#]_ , and for training and using segmentation models from the MONAI project [#]_,
+or any custom model written in Pytorch.
+It should be adaptable to other tasks related to detection of 3D objects, as long as labels are available.
 
-From here you can access the guides on the several modules available for your tasks, such as :
+
+From this page you can access the guides on the several modules available for your tasks, such as :
 
 * Main modules :
     * Training : :ref:`training_module_guide`

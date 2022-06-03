@@ -17,6 +17,11 @@ You can :
 * Remove small objects :
     You can specify a size threshold in pixels; all objects smaller than this size will be removed in the image.
 
+.. figure:: ../images/converted_labels.png
+   :scale: 30 %
+   :align: center
+
+   Example of instance labels (left) converted to instance labels (right)
 
 Source code
 -------------------------------------------------

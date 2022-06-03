@@ -3,6 +3,12 @@
 Metrics utility guide
 ==========================
 
+.. figure:: ../images/plot_example_metrics.png
+   :scale: 35 %
+   :align: right
+
+   Dice metric plot result
+
 This utility allows to compute the Dice coefficient between two folders of labels.
 
 The Dice coefficient is defined as :
@@ -33,7 +39,6 @@ You will need to provide the following parameters:
 
 Once you are ready, press the "Compute Dice" button. This will plot the Dice score for each ground truth-prediction labels pair on the side.
 Pairs with a low score will be displayed on the viewer for checking, ground truth in **blue**, low score prediction in **red**.
-
 
 
 
