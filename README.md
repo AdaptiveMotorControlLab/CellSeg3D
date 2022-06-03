@@ -1,34 +1,36 @@
-# napari-cellseg3d: a napari plug-in for 3d deep learning models for cell segmentation
+# napari-cellseg3D: a napari plug-in for direct 3D cell segmentation with deep learning
 
 
-<img src="docs/res/logo/logo_background.png" title="cellseg3d" alt="cellseg3d logo" width="250" align="right" vspace = "80"/>
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/04991e21-9cee-4b21-bdfc-d465fd73247d/CELLSEGGIT.png?format=2500w" title="cellseg3d" alt="cellseg3d logo" width="250" align="right" vspace = "80"/>
 
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/AdaptiveMotorControlLab/CellSeg3d/raw/main/LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/napari-cellseg-annotator.svg?color=green)](https://pypi.org/project/napari-cellseg-annotator)
 [![Python Version](https://img.shields.io/pypi/pyversions/napari-cellseg-annotator.svg?color=green)](https://python.org)
-[![tests](https://github.com/AdaptiveMotorControlLab/CellSeg3d/workflows/tests/badge.svg)](https://github.com/AdaptiveMotorControlLab/CellSeg3d/actions)
+![Testing](https://github.com/AdaptiveMotorControlLab/CellSeg3d/workflows/Python%20package/badge.svg)
 [![codecov](https://codecov.io/gh/AdaptiveMotorControlLab/napari-cellseg3d/branch/main/graph/badge.svg)](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3d)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-cellseg3d)](https://napari-hub.org/plugins/CellSeg3d)
 
 
 A napari plugin for 3D cell segmentation: training, inference, and data review. In particular, this project was developed for analysis of mesoSPIM-acquired (cleared tissue + lightsheet) datasets.
 
-**Pre-Alpha version, please expect bugs and issues. Reporting them on the Github repository would help us a lot!**
-
 ----------------------------------
+
+## News
+
+**June 2022: This is an alpha version, please expect bugs and issues, and help us make the code better by reporting them as an issue!** 
+
+
 
 ## Installation
 
-You can install `napari-cellseg-3d` via [pip] (pypi-test placeholder):  
+You can install `napari-cellseg3d` via [pip] (pypi-test placeholder):  
 
     pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ napari-cellseg3d==0.0.3
 
 ## Documentation
 
-Available on the [Github pages website](https://adaptivemotorcontrollab.github.io/cellseg3d-docs/)
-
-Source files can be found at https://AdaptiveMotorControlLab.github.io/cellseg3d-docs
+Available at https://AdaptiveMotorControlLab.github.io/cellseg3d-docs
 
 You can also generate docs by running ``make html`` in the docs folder.
 
@@ -38,7 +40,7 @@ To use the plugin, please run:
 ```
 napari
 ```
-Then go into Plugins > napari-cellseg-3d, and choose which tool to use.
+Then go into Plugins > napari-cellseg3d, and choose which tool to use.
 
 - **Review**: This module allows you to review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.
 - **Inference**: This module allows you to use pre-trained segmentation algorithms on volumes to automatically label cells and compute statistics.
@@ -51,7 +53,7 @@ Then go into Plugins > napari-cellseg-3d, and choose which tool to use.
 
 Requires manual installation of **pytorch** and **MONAI**.
 
-For Pytorch, please see [PyTorch's website for installation instructions].
+For PyTorch, please see [PyTorch's website for installation instructions].
 A CUDA-capable GPU is not needed but very strongly recommended, especially for training.
 
 If you get errors from MONAI regarding missing readers, please see [MONAI's optional dependencies] page for instructions on getting the readers required by your images.
@@ -86,7 +88,7 @@ pip install -e .
 
 Distributed under the terms of the [MIT] license.
 
-"napari-cellseg-3d" is free and open source software.
+"napari-cellseg3d" is free and open source software.
 
 
 [file an issue]: https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues
@@ -113,7 +115,7 @@ Distributed under the terms of the [MIT] license.
 
 This plugin was developed by Cyril Achard & Maxime Vidal.
 
-This work was funded, in part, from the Wyss Center to the Adaptive Motor Control Lab.
+This work was funded, in part, from the Wyss Center to the [Mathis Laboratory of Adaptive Motor Control](https://www.mackenziemathislab.org/).
 
 
 ## Plugin base
