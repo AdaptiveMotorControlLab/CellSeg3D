@@ -28,12 +28,12 @@ To add a custom model, you will need a **.py** file with the following structure
 
     def get_validation(model, val_inputs):
         val_outputs = model(val_inputs) # should return the proper type for validation
-        # with single_window_inference from MONAI
+        # with sliding_window_inference from MONAI
         return val_outputs
 
 
     def ModelClass(x1,x2...):
         # your Pytorch model here...
-        return results
+        return results # should return as [C, N, D,H,W]
 
 

@@ -39,15 +39,22 @@
               <p class="caption"><span class="caption-text">Main modules guides:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Reviewer module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Review module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inference_module_guide.html">Inference module guide</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Training module guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Training module guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#source-code">Source code</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Utilities &amp; advanced guides:</span></p>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Utilities :</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="metrics_module_guide.html">Metrics utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="convert_module_guide.html">Label conversion utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cropping_module_guide.html">Cropping utility guide</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Advanced guides and walk-through:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Detailed walkthrough</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Source files:</span></p>
@@ -129,13 +136,6 @@ Pre-defined models are stored in napari-cellseg-3d/models.</p>
 <div class="line">Please ensure that all the images you are loading are of the <strong>same size</strong>, or to use the <strong>“extract patches” (in augmentation tab)</strong> with an appropriately small size to ensure all images being used by the model are of a workable size.</div>
 </div>
 </div>
-<div class="admonition important">
-<p class="admonition-title">Important</p>
-<div class="line-block">
-<div class="line"><strong>All image sizes used should be as close to a power of two as possible, if not a power of two.</strong></div>
-<div class="line">Images are automatically padded; a 64 pixels cube will be used as is, but a 65 pixel cube will be padded up to 128 pixels, resulting in much higher memory use.</div>
-</div>
-</div>
 <p>The training module is comprised of several tabs.</p>
 <ol class="arabic simple">
 <li><p>The first one, <strong>Data</strong>, will let you set :</p></li>
@@ -152,24 +152,27 @@ You can also load custom weights; simply ensure they are compatible with the mod
 <ol class="arabic simple" start="2">
 <li><p>The second tab, <strong>Augmentation</strong>, lets you define dataset and augmentation parameters such as :</p></li>
 </ol>
-<ul>
+<ul class="simple">
 <li><p>Whether to use images “as is” (<strong>requires all images to be of the same size and cubic</strong>) or extract patches.</p></li>
+</ul>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<div class="line-block">
+<div class="line"><strong>All image sizes used should be as close to a power of two as possible, or equal to a power of two.</strong></div>
+<div class="line">Images are automatically padded; a 64 pixels cube will be used as is, but a 65 pixel cube will be padded up to 128 pixels, resulting in much higher memory use.</div>
+</div>
+</div>
+<ul>
 <li><p>If you’re extracting patches :</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>The size of patches to be extracted (ideally, please use a value <strong>close to a power of two</strong>, such as 120 or 60 to ensure correct size.)</p></li>
+<li><p>The size of patches to be extracted (ideally, please use a value <strong>close or equal to a power of two</strong>, such as 120 or 60 to ensure correct size. See above note.)</p></li>
 <li><p>The number of samples to extract from each of your images. A larger number will likely mean better performances, but longer training and larger memory usage.</p></li>
 </ul>
 </div></blockquote>
 </li>
-<li><p>Whether to perform data augmentation or not (elastic deforms, intensity shifts. random flipping,etc). A rule of thumb for augmentation is :</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>If you’re using the patch extraction method, enable it if you are using more than 10 samples per image with at least 5 images</p></li>
-<li><p>If you have a large dataset and are not using patches extraction, enable it.</p></li>
-</ul>
-</div></blockquote>
-</li>
+<li><p>Whether to perform data augmentation or not (elastic deforms, intensity shifts. random flipping,etc).
+Ideally it should always be enabled, but you can disable it if it causes issues.</p></li>
 </ul>
 <ol class="arabic simple" start="3">
 <li><p>The third contains training related parameters :</p></li>
@@ -223,15 +226,29 @@ perform data augmentation if you chose to, select a CUDA device if one is presen
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>You can stop the training at any time by clicking on the start button again.</p>
-<p><strong>The training will stop after the next validation interval is performed, to save the latest model should it be better.</strong></p>
+<p><strong>The training will stop after the next batch has been processed, and will try to save the model. Please note that results might be broken if you stop the training.</strong></p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>You can save the log to record the losses and validation metrics numerical values at each step. This log is autosaved as well when training completes.</p>
+<p>You can save the log with the button underneath it to record the losses and validation metrics numerical values at each step. This log is autosaved as well when training completes.</p>
 </div>
-<p>After two validations steps have been performed (depending on the interval you set), the training loss values and validation metrics will be automatically plotted
+<p>After two validations steps have been performed (depending on the interval you set),
+the training loss values and validation metrics will be automatically plotted
 and shown on napari every time a validation step completes.
-This plot automatically saved each time validation is performed for now. The final version is stored separately in the results folder.</p>
+This plot automatically saved each time validation is performed for now.
+The final version is stored separately in the results folder.</p>
+<div class="figure align-center" id="id2">
+<img alt="../../_images/plots_train.png" src="../../_images/plots_train.png" />
+<p class="caption"><span class="caption-text">Example of plots displayed by the training module after 40 epochs</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<div class="section" id="source-code">
+<h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../code/plugin_model_training.html"><span class="doc">plugin_model_training.py</span></a></p></li>
+<li><p><a class="reference internal" href="../code/model_framework.html"><span class="doc">model_framework.py</span></a></p></li>
+<li><p><a class="reference internal" href="../code/model_workers.html"><span class="doc">model_workers.py</span></a></p></li>
+</ul>
+</div>
 </div>
 
 

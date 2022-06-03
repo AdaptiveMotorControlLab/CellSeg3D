@@ -18,7 +18,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Training module guide" href="training_module_guide.html" />
-    <link rel="prev" title="Reviewer module guide" href="review_module_guide.html" /> 
+    <link rel="prev" title="Review module guide" href="review_module_guide.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -39,7 +39,7 @@
               <p class="caption"><span class="caption-text">Main modules guides:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Reviewer module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Review module guide</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Inference module guide</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#interface-and-functionalities">Interface and functionalities</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#source-code">Source code</a></li>
@@ -47,11 +47,15 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="training_module_guide.html">Training module guide</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Utilities &amp; advanced guides:</span></p>
+<p class="caption"><span class="caption-text">Utilities :</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="metrics_module_guide.html">Metrics utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="convert_module_guide.html">Label conversion utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cropping_module_guide.html">Cropping utility guide</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Advanced guides and walk-through:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Detailed walkthrough</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Source files:</span></p>
@@ -141,23 +145,18 @@ to automatically label cells.</p>
 <div class="line-block">
 <div class="line">You can then choose one of the provided <strong>models</strong> above, which will be used for inference.</div>
 <div class="line">You may also choose to <strong>load custom weights</strong> rather than the pre-trained ones, simply ensure they are <strong>compatible</strong> (e.g. produced from the training module for the same model)</div>
-<div class="line-block">
 <div class="line">If you choose to use a SegResNet with custom weights, you will have to provide the size of images it was trained on to ensure compatibility. (See note below)</div>
-</div>
 </div>
 </li>
 <li><p><strong>Inference parameters</strong> :</p>
 <div class="line-block">
-<div class="line">You can choose to use inference on the whole image at once, which generally yields better performance at the cost of more memory,</div>
-<div class="line">or you can use a specific window size to run inference on smaller chunks one by one, for lower memory usage.</div>
-<div class="line">You can also choose to keep the dataset in the RAM rather than the VRAM (cpu vs cuda device) to avoid running out of VRAM</div>
-<div class="line">if you have several images.</div>
+<div class="line">You can choose to use inference on the whole image at once, which generally yields better performance at the cost of more memory, or you can use a specific window size to run inference on smaller chunks one by one, for lower memory usage.</div>
+<div class="line">You can also choose to keep the dataset in the RAM rather than the VRAM (cpu vs cuda device) to avoid running out of VRAM if you have several images.</div>
 </div>
 </li>
 <li><p><strong>Anisotropy</strong> :</p>
 <div class="line-block">
-<div class="line">If you want to see your results without <strong>anisotropy</strong> when you have anisotropic images, you can specify that you have anisotropic data</div>
-<div class="line">and set the <strong>resolution of your imaging method in micron</strong>, this wil save and show the results without anisotropy.</div>
+<div class="line">If you want to see your results without <strong>anisotropy</strong> when you have anisotropic images, you can specify that you have anisotropic data and set the <strong>resolution of your imaging method in micron</strong>, this wil save and show the results without anisotropy.</div>
 </div>
 </li>
 <li><p><strong>Thresholding</strong> :</p>
@@ -174,11 +173,11 @@ to automatically label cells.</p>
 </div>
 </li>
 </ul>
-<ul class="simple">
-<li><p><strong>Computing objects statistics</strong> :</p></li>
-</ul>
-<p>You can choose to compute various stats from the labels and save them to a csv for later use.
-This includes, for each object :</p>
+<ul>
+<li><p><strong>Computing objects statistics</strong> :</p>
+<blockquote>
+<div><p>You can choose to compute various stats from the labels and save them to a csv for later use.</p>
+<p>This includes, for each object :</p>
 <ul class="simple">
 <li><p>Object volume (pixels)</p></li>
 <li><p><span class="math notranslate nohighlight">\(X,Y,Z\)</span> coordinates of the centroid</p></li>
@@ -193,7 +192,8 @@ This includes, for each object :</p>
 <li><p>The number of labeled objects</p></li>
 </ul>
 <p>In the <code class="docutils literal notranslate"><span class="pre">notebooks</span></code> folder you can find an example of plotting cell statistics using the result csv.</p>
-<ul>
+</div></blockquote>
+</li>
 <li><p><strong>Viewing results</strong> :</p>
 <div class="line-block">
 <div class="line">You can also select whether you’d like to <strong>see the results</strong> in napari afterwards.</div>
@@ -243,6 +243,7 @@ Provided weights use a size of 128, please leave it as is if you’re not using 
 <ul class="simple">
 <li><p><a class="reference internal" href="../code/plugin_model_inference.html"><span class="doc">plugin_model_inference.py</span></a></p></li>
 <li><p><a class="reference internal" href="../code/model_framework.html"><span class="doc">model_framework.py</span></a></p></li>
+<li><p><a class="reference internal" href="../code/model_workers.html"><span class="doc">model_workers.py</span></a></p></li>
 </ul>
 </div>
 </div>
@@ -251,7 +252,7 @@ Provided weights use a size of 128, please leave it as is if you’re not using 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="review_module_guide.html" class="btn btn-neutral float-left" title="Reviewer module guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="review_module_guide.html" class="btn btn-neutral float-left" title="Review module guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="training_module_guide.html" class="btn btn-neutral float-right" title="Training module guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
