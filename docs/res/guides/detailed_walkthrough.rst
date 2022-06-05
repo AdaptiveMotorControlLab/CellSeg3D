@@ -8,15 +8,22 @@ The following guide will show in details how to use the plugin's workflow, start
 Preparing images and labels
 -------------------------------
 
-To get started with the entire workflow, you'll need at least one pair of image and corresponding labels;
+CellSeg3D was designed for cleared-brain tissue data (collected on mesoSPIM ligthsheet systems). Specifically, we provide a series
+of deep learning models that we have found to work well on cortical whole-neuron data. We also provide support for MONAI models, and
+we have ported TRAILMAP to PyTorch and trained the model on mesoSPIM collected data. We provide all the tooling for you to use these
+weights and also perform transfer learning by fine-tuning the model(s) on your data for even better performance!
+
+To get started with the entire workflow (i.e., fine-tuning on your data), you'll need at least one pair of image and corresponding labels;
 let's assume you have part of a cleared brain from mesoSPIM imaging as a large .tif file.
+
+If you want to test the models "as is", please see "Inference" sections in our docs.
 
 
 .. figure:: ../images/init_image_labels.png
    :scale: 40 %
    :align: center
 
-   Example of an anisotropic volume and its associated labels.
+   Example of an anisotropic volume (i.e., often times the z resolution is not the same as x and y) and its associated labels.
 
 
 .. note::
@@ -29,7 +36,7 @@ Cropping
 *****************
 
 To reduce memory requirements and build a dataset from a single, large volume,
-you can use the **cropping** tool to extract multiple smaller images from a large volume.
+you can use the **cropping** tool to extract multiple smaller images from a large volume for training.
 
 Simply load your image and labels (by checking the "Crop labels simultaneously" option),
 and select the volume size you desire to use.
@@ -75,24 +82,24 @@ Models for object detection
 Training
 *****************
 
-If you have a dataset of reasonably sized images with semantic labels, you're all set !
-First of all, load your data by inputting the paths to images and labels, as well as where you want the results to be saved.
+If you have a dataset of reasonably sized images (see cropping above) with semantic labels, you're all set to proceed!
+First, load your data by inputting the paths to images and labels, as well as where you want the results to be saved.
 
-There are a few more options on this tab :
-
-* Save as zip : simply copies the results in a zip archive for easier transfer
+There are a few more options on this tab:
 
 * Transfer weights : you can start the model with our pre-trained weights if your dataset comes from cleared brain tissue
-  image by mesoSPIM as well. If you have your own weights for the provided models, you can also choose to load them by
-  checking the related option; simply make sure they are compatible with the model.
+  imaged by a mesoSPIM (or other lightsheet). If you have your own weights for the provided models, you can also choose to load them by
+  checking the related option; simply make sure they are compatible with the model you selected.
 
   To import your own model, see : :ref:`custom_model_guide`, please note this is still a WIP.
 
 * Validation proportion : the percentage is listed is how many images will be used for training versus validation.
   Validation can work with as little as one image, however performance will greatly improve the more images there are.
-  Use 90% only if you have a very small dataset (less than 5 images)
+  Use 90% only if you have a very small dataset (less than 5 images).
 
-With this, we can switch to the next tab : data augmentation.
+* Save as zip : simply copies the results in a zip archive for easier transfer.
+
+Now, we can switch to the next tab : data augmentation.
 
 If you have cropped cubic images with a power of two as the edge length, you do not need to extract patches,
 your images are usable as is.
@@ -161,7 +168,7 @@ To start, simply choose which folder of images you'd like to run inference on, t
 Then, select the model you trained (see note below for SegResNet), and load your weights from training.
 
 .. note::
-    If you trained a SegResNet, set the counter below the model choice to the size of the images you trained the model on.
+    If you already trained a SegResNet, set the counter below the model choice to the size of the images you trained the model on.
     (Either use the size of the image itself if you did not extract patches, or the size of the nearest superior power of two of the patches you extracted)
 
     Example :
@@ -171,7 +178,7 @@ Then, select the model you trained (see note below for SegResNet), and load your
 
 
 Next, you can choose to use window inference, use this if you have very large images.
-Please note that using too small a window might degrade performance, set the size appropriately.
+Please note that using too small of a window might degrade performance, set the size appropriately.
 
 You can also keep the dataset on the CPU to reduce memory usage, but this might slow down the inference process.
 
@@ -294,8 +301,3 @@ for the plots to work.
 .. _notebooks folder of the repository: https://github.com/AdaptiveMotorControlLab/CellSeg3d/tree/main/notebooks
 
 With this complete, you can repeat the workflow as needed.
-
-
-
-
-
