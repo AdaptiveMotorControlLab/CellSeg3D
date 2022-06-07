@@ -3,7 +3,7 @@
 Detailed walkthrough
 ===================================
 
-The following guide will show in details how to use the plugin's workflow, starting from a large labeled volume.
+The following guide will show you how to use the plugin's workflow, starting from human-labeled annotation volume, to running inference on novel volumes.
 
 Preparing images and labels
 -------------------------------
@@ -116,11 +116,14 @@ In most cases this should left enabled.
 
 Finally, the last tab lets you choose :
 
-* The model
+* The models
 
-    * SegResNet is a lightweight model (low memory requirements) with decent performance.
-    * TRAILMAP is a recent model trained for axonal detection in cleared tissue; use it if your dataset is similar
-    * VNet is a possibly more performant model than SegResnet but requires much more memory
+    * SegResNet is a lightweight model (low memory requirements) from MONAI originally designed for 3D fMRI data.
+    * VNet is a heavier (than SegResNet) CNN from MONAI designed for medical image segmentation.
+    * TRAILMAP is our PyTorch implementation of a 3D CNN model trained for axonal detection in cleared tissue.
+    * TRAILMAP-MS is our implementation in PyTorch additionally trained on mouse cortical neural nuclei from mesoSPIM data.
+    * Note, the code is very modular, so it is relatively straightforward to use (and contribute) your model as well.
+    
 
 * The loss : for object detection in 3D volumes you'll likely want to use the Dice or Dice-focal Loss.
 
