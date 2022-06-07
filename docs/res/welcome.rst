@@ -80,6 +80,7 @@ This plugin has been developed by Cyril Achard and Maxime Vidal, supervised by M
 We also greatly thank Timokleia Kousi for her contributions to this project and the `Wyss Center`_ for project funding.
 
 The TRAILMAP models and original weights used here were ported to PyTorch but originate from the `TRAILMAP project on GitHub`_ [1]_.
+We also provide a model that was trained in-house on mesoSPIM nuclei data in collaboration with Dr. Stephane Pages and Timokleia Kousi.
 
 This plugin mainly uses the following libraries and software:
 
