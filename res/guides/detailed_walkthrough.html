@@ -116,14 +116,19 @@
              
   <div class="section" id="detailed-walkthrough">
 <span id="id1"></span><h1>Detailed walkthrough<a class="headerlink" href="#detailed-walkthrough" title="Permalink to this headline">¶</a></h1>
-<p>The following guide will show in details how to use the plugin’s workflow, starting from a large labeled volume.</p>
+<p>The following guide will show you how to use the plugin’s workflow, starting from human-labeled annotation volume, to running inference on novel volumes.</p>
 <div class="section" id="preparing-images-and-labels">
 <h2>Preparing images and labels<a class="headerlink" href="#preparing-images-and-labels" title="Permalink to this headline">¶</a></h2>
-<p>To get started with the entire workflow, you’ll need at least one pair of image and corresponding labels;
+<p>CellSeg3D was designed for cleared-brain tissue data (collected on mesoSPIM ligthsheet systems). Specifically, we provide a series
+of deep learning models that we have found to work well on cortical whole-neuron data. We also provide support for MONAI models, and
+we have ported TRAILMAP to PyTorch and trained the model on mesoSPIM collected data. We provide all the tooling for you to use these
+weights and also perform transfer learning by fine-tuning the model(s) on your data for even better performance!</p>
+<p>To get started with the entire workflow (i.e., fine-tuning on your data), you’ll need at least one pair of image and corresponding labels;
 let’s assume you have part of a cleared brain from mesoSPIM imaging as a large .tif file.</p>
+<p>If you want to test the models “as is”, please see “Inference” sections in our docs.</p>
 <div class="figure align-center" id="id2">
 <a class="reference internal image-reference" href="../../_images/init_image_labels.png"><img alt="../../_images/init_image_labels.png" src="../../_images/init_image_labels.png" style="width: 1188.0px; height: 738.0px;" /></a>
-<p class="caption"><span class="caption-text">Example of an anisotropic volume and its associated labels.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text">Example of an anisotropic volume (i.e., often times the z resolution is not the same as x and y) and its associated labels.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -134,7 +139,7 @@ or initially correct labels, please read the Review section right after Cropping
 <div class="section" id="cropping">
 <h3>Cropping<a class="headerlink" href="#cropping" title="Permalink to this headline">¶</a></h3>
 <p>To reduce memory requirements and build a dataset from a single, large volume,
-you can use the <strong>cropping</strong> tool to extract multiple smaller images from a large volume.</p>
+you can use the <strong>cropping</strong> tool to extract multiple smaller images from a large volume for training.</p>
 <p>Simply load your image and labels (by checking the “Crop labels simultaneously” option),
 and select the volume size you desire to use.</p>
 <div class="admonition note">
@@ -173,21 +178,21 @@ your operations.</p>
 <h2>Models for object detection<a class="headerlink" href="#models-for-object-detection" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="training">
 <h3>Training<a class="headerlink" href="#training" title="Permalink to this headline">¶</a></h3>
-<p>If you have a dataset of reasonably sized images with semantic labels, you’re all set !
-First of all, load your data by inputting the paths to images and labels, as well as where you want the results to be saved.</p>
-<p>There are a few more options on this tab :</p>
+<p>If you have a dataset of reasonably sized images (see cropping above) with semantic labels, you’re all set to proceed!
+First, load your data by inputting the paths to images and labels, as well as where you want the results to be saved.</p>
+<p>There are a few more options on this tab:</p>
 <ul>
-<li><p>Save as zip : simply copies the results in a zip archive for easier transfer</p></li>
 <li><p>Transfer weights : you can start the model with our pre-trained weights if your dataset comes from cleared brain tissue
-image by mesoSPIM as well. If you have your own weights for the provided models, you can also choose to load them by
-checking the related option; simply make sure they are compatible with the model.</p>
+imaged by a mesoSPIM (or other lightsheet). If you have your own weights for the provided models, you can also choose to load them by
+checking the related option; simply make sure they are compatible with the model you selected.</p>
 <p>To import your own model, see : <a class="reference internal" href="custom_model_template.html#custom-model-guide"><span class="std std-ref">Advanced : Declaring a custom model</span></a>, please note this is still a WIP.</p>
 </li>
 <li><p>Validation proportion : the percentage is listed is how many images will be used for training versus validation.
 Validation can work with as little as one image, however performance will greatly improve the more images there are.
-Use 90% only if you have a very small dataset (less than 5 images)</p></li>
+Use 90% only if you have a very small dataset (less than 5 images).</p></li>
+<li><p>Save as zip : simply copies the results in a zip archive for easier transfer.</p></li>
 </ul>
-<p>With this, we can switch to the next tab : data augmentation.</p>
+<p>Now, we can switch to the next tab : data augmentation.</p>
 <p>If you have cropped cubic images with a power of two as the edge length, you do not need to extract patches,
 your images are usable as is.
 However, if you are using larger images or with dissimilar sizes,
@@ -202,12 +207,14 @@ a power of two still, such as 64 or 120.</p>
 In most cases this should left enabled.</p>
 <p>Finally, the last tab lets you choose :</p>
 <ul>
-<li><p>The model</p>
+<li><p>The models</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>SegResNet is a lightweight model (low memory requirements) with decent performance.</p></li>
-<li><p>TRAILMAP is a recent model trained for axonal detection in cleared tissue; use it if your dataset is similar</p></li>
-<li><p>VNet is a possibly more performant model than SegResnet but requires much more memory</p></li>
+<li><p>SegResNet is a lightweight model (low memory requirements) from MONAI originally designed for 3D fMRI data.</p></li>
+<li><p>VNet is a heavier (than SegResNet) CNN from MONAI designed for medical image segmentation.</p></li>
+<li><p>TRAILMAP is our PyTorch implementation of a 3D CNN model trained for axonal detection in cleared tissue.</p></li>
+<li><p>TRAILMAP-MS is our implementation in PyTorch additionally trained on mouse cortical neural nuclei from mesoSPIM data.</p></li>
+<li><p>Note, the code is very modular, so it is relatively straightforward to use (and contribute) your model as well.</p></li>
 </ul>
 </div></blockquote>
 </li>
@@ -249,7 +256,7 @@ which you can then use in inference.</p>
 <p>Then, select the model you trained (see note below for SegResNet), and load your weights from training.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>If you trained a SegResNet, set the counter below the model choice to the size of the images you trained the model on.
+<p>If you already trained a SegResNet, set the counter below the model choice to the size of the images you trained the model on.
 (Either use the size of the image itself if you did not extract patches, or the size of the nearest superior power of two of the patches you extracted)</p>
 <p>Example :</p>
 <ul class="simple">
@@ -258,7 +265,7 @@ which you can then use in inference.</p>
 </ul>
 </div>
 <p>Next, you can choose to use window inference, use this if you have very large images.
-Please note that using too small a window might degrade performance, set the size appropriately.</p>
+Please note that using too small of a window might degrade performance, set the size appropriately.</p>
 <p>You can also keep the dataset on the CPU to reduce memory usage, but this might slow down the inference process.</p>
 <p>If you have anisotropic volumes, you can compensate for it by entering the resolution of your microscope.</p>
 <p>By default, inference will calculate and display probability maps (values between 0 and 1).</p>

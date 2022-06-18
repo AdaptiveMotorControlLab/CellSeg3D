@@ -39,8 +39,8 @@
               <p class="caption"><span class="caption-text">Main modules guides:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#acknowledgments-references">Acknowledgments &amp; References</a></li>
 </ul>
@@ -104,12 +104,12 @@
              
   <div class="section" id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
-<p>Here you will find instructions on how to use the plug-in program.
+<p>Here you will find instructions on how to use the plugin for direct-to-3D segmentation.
 If the installation was successful, you’ll see the napari-cellseg3D plugin
 in the Plugins section of napari.</p>
 <p>This plugin was initially developed for the review of labeled cell volumes <a class="footnote-reference brackets" href="#id5" id="id1">1</a> from mice whole-brain samples
 imaged by mesoSPIM microscopy <a class="footnote-reference brackets" href="#id6" id="id2">2</a> , and for training and using segmentation models from the MONAI project <a class="footnote-reference brackets" href="#id7" id="id3">3</a>,
-or any custom model written in Pytorch.
+or any custom model written in PyTorch.
 It should be adaptable to other tasks related to detection of 3D objects, as long as labels are available.</p>
 <p>From this page you can access the guides on the several modules available for your tasks, such as :</p>
 <ul class="simple">
@@ -139,28 +139,28 @@ It should be adaptable to other tasks related to detection of 3D objects, as lon
 </dl>
 </li>
 </ul>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>You can install <cite>napari-cellseg3d</cite> via [pip]:</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">napari-cellseg3d</span></code></p>
+<p>For local installation, please run:</p>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code></p>
+</div></blockquote>
+</div>
 <div class="section" id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
 <p>A <strong>CUDA-capable GPU</strong> is not needed but <strong>very strongly recommended</strong>, especially for training.</p>
 </div>
-<p>Requires installation of PyTorch and some optional dependencies of MONAI.</p>
+<p>This package requires you have napari installed first.</p>
+<p>It also depends on PyTorch and some optional dependencies of MONAI. These come in the pip package above, but if
+you need further assistance see below.</p>
 <ul class="simple">
-<li><p>For PyTorch, please see <a class="reference external" href="https://pytorch.org/get-started/locally/">PyTorch’s website</a> for installation instructions, with or without CUDA depending on your hardware.</p></li>
+<li><p>For help with PyTorch, please see <a class="reference external" href="https://pytorch.org/get-started/locally/">PyTorch’s website</a> for installation instructions, with or without CUDA depending on your hardware.</p></li>
 <li><p>If you get errors from MONAI regarding missing readers, please see <a class="reference external" href="https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies">MONAI’s optional dependencies</a> page for instructions on getting the readers required by your images.</p></li>
 </ul>
-</div>
-<div class="section" id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<p>You can install <cite>napari-cellseg3d</cite> via [pip]:</p>
-<blockquote>
-<div><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">napari-cellseg3d</span></code></p>
-</div></blockquote>
-<p>For local installation, please run:</p>
-<blockquote>
-<div><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code></p>
-</div></blockquote>
 </div>
 <div class="section" id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
@@ -168,7 +168,7 @@ It should be adaptable to other tasks related to detection of 3D objects, as lon
 <blockquote>
 <div><p><code class="docutils literal notranslate"><span class="pre">napari</span></code></p>
 </div></blockquote>
-<p>Then go into Plugins &gt; napari-cellseg3d, and choose which tool to use.</p>
+<p>Then go into Plugins &gt; napari-cellseg3d, and choose which tool to use:</p>
 <ul class="simple">
 <li><p><strong>Train</strong>:  This module allows you to train segmentation algorithms from labeled volumes.</p></li>
 <li><p><strong>Infer</strong>: This module allows you to use pre-trained segmentation algorithms on volumes to automatically label cells.</p></li>
@@ -179,9 +179,10 @@ It should be adaptable to other tasks related to detection of 3D objects, as lon
 </div>
 <div class="section" id="acknowledgments-references">
 <h2>Acknowledgments &amp; References<a class="headerlink" href="#acknowledgments-references" title="Permalink to this headline">¶</a></h2>
-<p>This plugin has been developed by Cyril Achard and Maxime Vidal for the <a class="reference external" href="http://www.mackenziemathislab.org/">Mathis Laboratory of Adaptive Motor Control</a>.</p>
+<p>This plugin has been developed by Cyril Achard and Maxime Vidal, supervised by Mackenzie Mathis for the <a class="reference external" href="http://www.mackenziemathislab.org/">Mathis Laboratory of Adaptive Motor Control</a>.</p>
 <p>We also greatly thank Timokleia Kousi for her contributions to this project and the <a class="reference external" href="https://wysscenter.ch/">Wyss Center</a> for project funding.</p>
-<p>The TRAILMAP models and original weights used here all originate from the <a class="reference external" href="https://github.com/AlbertPun/TRAILMAP">TRAILMAP project on GitHub</a> <a class="footnote-reference brackets" href="#id5" id="id4">1</a>.</p>
+<p>The TRAILMAP models and original weights used here were ported to PyTorch but originate from the <a class="reference external" href="https://github.com/AlbertPun/TRAILMAP">TRAILMAP project on GitHub</a> <a class="footnote-reference brackets" href="#id5" id="id4">1</a>.
+We also provide a model that was trained in-house on mesoSPIM nuclei data in collaboration with Dr. Stephane Pages and Timokleia Kousi.</p>
 <p>This plugin mainly uses the following libraries and software:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://napari.org/">napari website</a></p></li>
