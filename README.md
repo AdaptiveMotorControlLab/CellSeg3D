@@ -1,13 +1,12 @@
 # napari-cellseg3D: a napari plug-in for direct 3D cell segmentation with deep learning
 
 
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/04991e21-9cee-4b21-bdfc-d465fd73247d/CELLSEGGIT.png?format=2500w" title="cellseg3d" alt="cellseg3d logo" width="250" align="right" vspace = "80"/>
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/838605d0-9723-4e43-83cd-6dbfe4adf36b/cellseg-logo.png?format=1500w" title="cellseg3d" alt="cellseg3d logo" width="350" align="right" vspace = "80"/>
 
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/AdaptiveMotorControlLab/CellSeg3d/raw/main/LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/napari-cellseg-annotator.svg?color=green)](https://pypi.org/project/napari-cellseg-annotator)
 [![Python Version](https://img.shields.io/pypi/pyversions/napari-cellseg-annotator.svg?color=green)](https://python.org)
-![Testing](https://github.com/AdaptiveMotorControlLab/CellSeg3d/workflows/Python%20package/badge.svg)
 [![codecov](https://codecov.io/gh/AdaptiveMotorControlLab/napari-cellseg3d/branch/main/graph/badge.svg)](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3d)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-cellseg3d)](https://napari-hub.org/plugins/CellSeg3d)
 
@@ -113,9 +112,7 @@ Distributed under the terms of the [MIT] license.
 
 ## Acknowledgements 
 
-This plugin was developed by Cyril Achard & Maxime Vidal.
-
-This work was funded, in part, from the Wyss Center to the [Mathis Laboratory of Adaptive Motor Control](https://www.mackenziemathislab.org/).
+This plugin was developed by Cyril Achard, Maxime Vidal, Mackenzie Mathis. This work was funded, in part, from the Wyss Center to the [Mathis Laboratory of Adaptive Motor Control](https://www.mackenziemathislab.org/).
 
 
 ## Plugin base
