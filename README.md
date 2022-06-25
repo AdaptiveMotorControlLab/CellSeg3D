@@ -29,7 +29,7 @@ You can install `napari-cellseg3d` via [pip] (pypi-test placeholder):
 
 ## Documentation
 
-Available at https://AdaptiveMotorControlLab.github.io/cellseg3d-docs
+Available at https://AdaptiveMotorControlLab.github.io/CellSeg3d
 
 You can also generate docs by running ``make html`` in the docs folder.
 
@@ -50,11 +50,9 @@ Then go into Plugins > napari-cellseg3d, and choose which tool to use.
 ## Requirements
 **Python >= 3.8 required**
 
-Requires manual installation of **pytorch** and **MONAI**.
-
+Requires **pytorch** and **MONAI**.
 For PyTorch, please see [PyTorch's website for installation instructions].
 A CUDA-capable GPU is not needed but very strongly recommended, especially for training.
-
 If you get errors from MONAI regarding missing readers, please see [MONAI's optional dependencies] page for instructions on getting the readers required by your images.
 
 
