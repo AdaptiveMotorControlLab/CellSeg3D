@@ -20,7 +20,6 @@ imageio-ffmpeg>=0.4.5
 torch==1.11
 monai==0.8.1
 nibabel
-scikit-image
 pillow
 itk==5.2.0.post1
 vispy>=0.9.6
