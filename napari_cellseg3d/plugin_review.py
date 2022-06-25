@@ -184,20 +184,6 @@ class Reviewer(BasePluginSingleImage):
         else:
             zoom = [1, 1, 1]
 
-        #################################
-        #################################
-        #################################
-        # TODO test remove later
-        if utils.ENABLE_TEST_MODE():
-            if self.as_folder:
-                self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
-                self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
-            else:
-                self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
-                self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels/testing_im.tif"
-        #################################
-        #################################
-        #################################
 
         images = utils.load_images(
             self.image_path, self.filetype, self.as_folder

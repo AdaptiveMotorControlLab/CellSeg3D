@@ -77,25 +77,6 @@ class Inferer(ModelFramework):
         self.use_window_inference = False
         self.window_inference_size = None
 
-        ############################
-        ############################
-        ############################
-        ############################
-        # TEST TODO REMOVE
-        import glob
-
-        directory = "C:/Users/Cyril/Desktop/test/test"
-
-        # self.data_path = directory
-
-        self.images_filepaths = sorted(
-            glob.glob(os.path.join(directory, "*.tif"))
-        )
-        self.results_path = "C:/Users/Cyril/Desktop/test"
-
-        #######################
-        #######################
-        #######################
 
         ###########################
         # interface
@@ -116,7 +97,7 @@ class Inferer(ModelFramework):
 
         ######################
         ######################
-        # TODO : better way to handle SegRes size reqs ?
+        # TODO : better way to handle SegResNet size reqs ?
         self.segres_size = ui.make_n_spinboxes(min=1, max=1024, default=128)
         self.model_choice.currentIndexChanged.connect(
             self.toggle_display_segres_size
