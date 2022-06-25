@@ -64,7 +64,7 @@ class ModelFramework(BasePluginFolder):
             "VNet": VNet,
             "SegResNet": SegResNet,
             "TRAILMAP pre-trained": TRAILMAP,
-            "TRAILMAP test": TMAP,
+            "TRAILMAP_MS": TMAP,
         }
         """dict: dictionary of available models, with string for widget display as key
 
