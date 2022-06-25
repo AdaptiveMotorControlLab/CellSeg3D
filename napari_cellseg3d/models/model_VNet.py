@@ -11,7 +11,7 @@ def get_net():
 
 
 def get_weights_file():
-    utils.DownloadModel(model, train_dir)
+    utils.DownloadModel(modelname, target_dir)
     return "VNet_40e.pth"
 
 
