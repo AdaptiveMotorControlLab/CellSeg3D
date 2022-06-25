@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>model_framework.py &mdash; napari-cellseg3d  documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>model_framework.py &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -27,8 +26,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html">
-            <img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+            <a href="../../index.html" class="icon icon-home"> napari-cellseg3d
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -38,25 +36,25 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Main modules guides:</span></p>
+              <p class="caption"><span class="caption-text">Main modules guides:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/review_module_guide.html">Review module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/inference_module_guide.html">Inference module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/training_module_guide.html">Training module guide</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Utilities :</span></p>
+<p class="caption"><span class="caption-text">Utilities :</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/metrics_module_guide.html">Metrics utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/convert_module_guide.html">Label conversion utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/cropping_module_guide.html">Cropping utility guide</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
+<p class="caption"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/detailed_walkthrough.html">Detailed walkthrough</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
+<p class="caption"><span class="caption-text">Source files:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="interface.html">interface.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin_base.html">plugin_base.py</a></li>
@@ -105,232 +103,18 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="model-framework-py">
-<span id="id1"></span><h1>model_framework.py<a class="headerlink" href="#model-framework-py" title="Permalink to this headline"></a></h1>
-<section id="class-modelframework">
-<h2>Class : ModelFramework<a class="headerlink" href="#class-modelframework" title="Permalink to this headline"></a></h2>
-<section id="methods">
-<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline"></a></h3>
-<dl class="py class">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.model_framework.</span></span><span class="sig-name descname"><span class="pre">ModelFramework</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>A framework with buttons to use for loading images, labels, models, etc. for both inference and training</p>
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Creates a plugin framework with the following elements :</p>
-<ul class="simple">
-<li><p>A button to choose an image folder containing the images of a dataset (e.g. dataset/images)</p></li>
-<li><p>A button to choose a label folder containing the labels of a dataset (e.g. dataset/labels)</p></li>
-<li><p>A button to choose a results folder to save results in (e.g. dataset/inference_results)</p></li>
-<li><p>A file extension choice to choose which file types to load in the data folders</p></li>
-<li><p>A docked module with a log, a progress bar and a save button (see <code class="xref py py-func docutils literal notranslate"><span class="pre">display_status_report()</span></code>)</p></li>
-</ul>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>viewer</strong> (<em>napari.viewer.Viewer</em>) – viewer to load the widget in</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">create_train_dataset_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Creates data dictionary for MONAI transforms and training.</p>
-<dl class="simple">
-<dt>Returns: a dict with the following :</dt><dd><p><strong>Keys:</strong></p>
-<ul class="simple">
-<li><p>“image”: image</p></li>
-<li><p>“label” : corresponding label</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">display_status_report</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Adds a text log, a progress bar and a “save log” button on the left side of the viewer
-(usually when starting a worker)</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Automatically discovers any cuda device and uses it for tensor operations.
-If none is available (CUDA not installed), uses cpu instead.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Getter for loss function selected by user</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Getter for module (class and functions) associated to currently selected model</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">load_dataset_paths</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Loads all image paths (as str) in a given folder for which the extension matches the set filetype</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>all loaded file paths</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>array(str)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">load_dataset_paths</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Loads all image paths (as str) in a given folder for which the extension matches the set filetype</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>all loaded file paths</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>array(str)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">load_image_dataset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Show file dialog to set <a class="reference internal" href="#napari_cellseg3d.model_framework.ModelFramework.images_filepaths" title="napari_cellseg3d.model_framework.ModelFramework.images_filepaths"><code class="xref py py-attr docutils literal notranslate"><span class="pre">images_filepaths</span></code></a></p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">load_label_dataset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Show file dialog to set <a class="reference internal" href="#napari_cellseg3d.model_framework.ModelFramework.labels_filepaths" title="napari_cellseg3d.model_framework.ModelFramework.labels_filepaths"><code class="xref py py-attr docutils literal notranslate"><span class="pre">labels_filepaths</span></code></a></p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">load_model_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Show file dialog to set <a class="reference internal" href="#napari_cellseg3d.model_framework.ModelFramework.model_path" title="napari_cellseg3d.model_framework.ModelFramework.model_path"><code class="xref py py-attr docutils literal notranslate"><span class="pre">model_path</span></code></a></p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">load_results_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Show file dialog to set <a class="reference internal" href="#napari_cellseg3d.model_framework.ModelFramework.results_path" title="napari_cellseg3d.model_framework.ModelFramework.results_path"><code class="xref py py-attr docutils literal notranslate"><span class="pre">results_path</span></code></a></p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">remove_from_viewer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Close the widget and the docked widgets, if any</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">save_log</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Saves the worker’s log to disk at self.results_path when called</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">save_log_to_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Saves the worker log to a specific path. Cannot be used with connect.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – path to save folder</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">update_default</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Update default path for smoother file dialogs, here with <a class="reference internal" href="#napari_cellseg3d.model_framework.ModelFramework.model_path" title="napari_cellseg3d.model_framework.ModelFramework.model_path"><code class="xref py py-attr docutils literal notranslate"><span class="pre">model_path</span></code></a> included</p>
-</dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="attributes">
-<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline"></a></h3>
-<dl class="py class">
-<dt class="sig sig-object py" id="napari_cellseg3d.model_framework.ModelFramework">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.model_framework.</span></span><span class="sig-name descname"><span class="pre">ModelFramework</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.model_framework.ModelFramework" title="Permalink to this definition"></a></dt>
-<dd><p>A framework with buttons to use for loading images, labels, models, etc. for both inference and training</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="napari_cellseg3d.model_framework.ModelFramework._viewer">
-<span class="sig-name descname"><span class="pre">_viewer</span></span><a class="headerlink" href="#napari_cellseg3d.model_framework.ModelFramework._viewer" title="Permalink to this definition"></a></dt>
-<dd><p>Viewer to display the widget in</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="napari_cellseg3d.model_framework.ModelFramework.docked_widgets">
-<span class="sig-name descname"><span class="pre">docked_widgets</span></span><a class="headerlink" href="#napari_cellseg3d.model_framework.ModelFramework.docked_widgets" title="Permalink to this definition"></a></dt>
-<dd><p>List of docked widgets (returned by <code class="xref py py-func docutils literal notranslate"><span class="pre">viewer.window.add_dock_widget())()</span></code>,
-can be used to remove docked widgets</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="napari_cellseg3d.model_framework.ModelFramework.images_filepaths">
-<span class="sig-name descname"><span class="pre">images_filepaths</span></span><a class="headerlink" href="#napari_cellseg3d.model_framework.ModelFramework.images_filepaths" title="Permalink to this definition"></a></dt>
-<dd><p>paths to images for training or inference</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>array(str)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="napari_cellseg3d.model_framework.ModelFramework.labels_filepaths">
-<span class="sig-name descname"><span class="pre">labels_filepaths</span></span><a class="headerlink" href="#napari_cellseg3d.model_framework.ModelFramework.labels_filepaths" title="Permalink to this definition"></a></dt>
-<dd><p>paths to labels for training</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>array(str)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="napari_cellseg3d.model_framework.ModelFramework.model_path">
-<span class="sig-name descname"><span class="pre">model_path</span></span><a class="headerlink" href="#napari_cellseg3d.model_framework.ModelFramework.model_path" title="Permalink to this definition"></a></dt>
-<dd><p>path to custom model defined by user</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="napari_cellseg3d.model_framework.ModelFramework.results_path">
-<span class="sig-name descname"><span class="pre">results_path</span></span><a class="headerlink" href="#napari_cellseg3d.model_framework.ModelFramework.results_path" title="Permalink to this definition"></a></dt>
-<dd><p>path to output folder,to save results in</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="napari_cellseg3d.model_framework.ModelFramework.worker">
-<span class="sig-name descname"><span class="pre">worker</span></span><a class="headerlink" href="#napari_cellseg3d.model_framework.ModelFramework.worker" title="Permalink to this definition"></a></dt>
-<dd><p>Worker from model_workers.py, either inference or training</p>
-</dd></dl>
-
-</dd></dl>
-
-</section>
-</section>
-</section>
+  <div class="section" id="model-framework-py">
+<span id="id1"></span><h1>model_framework.py<a class="headerlink" href="#model-framework-py" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="class-modelframework">
+<h2>Class : ModelFramework<a class="headerlink" href="#class-modelframework" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
 
 
            </div>

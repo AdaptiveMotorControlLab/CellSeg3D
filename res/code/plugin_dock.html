@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>plugin_dock.py &mdash; napari-cellseg3d  documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>plugin_dock.py &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -27,8 +26,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html">
-            <img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+            <a href="../../index.html" class="icon icon-home"> napari-cellseg3d
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -38,25 +36,25 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Main modules guides:</span></p>
+              <p class="caption"><span class="caption-text">Main modules guides:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/review_module_guide.html">Review module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/inference_module_guide.html">Inference module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/training_module_guide.html">Training module guide</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Utilities :</span></p>
+<p class="caption"><span class="caption-text">Utilities :</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/metrics_module_guide.html">Metrics utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/convert_module_guide.html">Label conversion utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/cropping_module_guide.html">Cropping utility guide</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
+<p class="caption"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/detailed_walkthrough.html">Detailed walkthrough</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
+<p class="caption"><span class="caption-text">Source files:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="interface.html">interface.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin_base.html">plugin_base.py</a></li>
@@ -105,115 +103,18 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="plugin-dock-py">
-<h1>plugin_dock.py<a class="headerlink" href="#plugin-dock-py" title="Permalink to this headline"></a></h1>
-<section id="datamanager">
-<h2>Datamanager<a class="headerlink" href="#datamanager" title="Permalink to this headline"></a></h2>
-<section id="methods">
-<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline"></a></h3>
-<dl class="py class">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.plugin_dock.</span></span><span class="sig-name descname"><span class="pre">Datamanager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>A widget with a single checkbox that allows to store the status of
-a slice in csv file (checked/not checked)</p>
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Creates the datamanager widget in the specified viewer window.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>parent</strong> (<em>napari.viewer.Viewer</em>) – napari Viewer for the widget to be displayed in</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Create a new dataframe and save the csv
-:param label_dir: label path
-:type label_dir: str
-:param model_type: model type
-:type model_type: str</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>dataframe, csv path</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>(pandas.DataFrame, str)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">load_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkbox</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Loads newest csv or create new csv</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>label_dir</strong> (<em>str</em>) – label path</p></li>
-<li><p><strong>model_type</strong> (<em>str</em>) – model type</p></li>
-<li><p><strong>checkbox</strong> (<em>bool</em>) – create new dataset or not</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>(pandas.DataFrame, str) dataframe、csv path</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filetype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkbox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_folder</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Initialize the Datamanager, which loads the csv file and updates it
-with the index of the current slice.</p>
-<p>Args:
-label_dir (str): label path
-filetype (str) : file extension
-model_type (str): model type
-checkbox (bool): create new dataset or not
-as_folder (bool) : load as folder or as single file</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slice_num</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Updates the Datamanager with the index of the current slice, and updates
-the text with the status contained in the csv (e.g. checked/not checked).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>slice_num</strong> (<em>int</em>) – index of the current slice</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="attributes">
-<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline"></a></h3>
-<dl class="py class">
-<dt class="sig sig-object py" id="napari_cellseg3d.plugin_dock.Datamanager">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.plugin_dock.</span></span><span class="sig-name descname"><span class="pre">Datamanager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.plugin_dock.Datamanager" title="Permalink to this definition"></a></dt>
-<dd><p>A widget with a single checkbox that allows to store the status of
-a slice in csv file (checked/not checked)</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="napari_cellseg3d.plugin_dock.Datamanager.viewer">
-<span class="sig-name descname"><span class="pre">viewer</span></span><a class="headerlink" href="#napari_cellseg3d.plugin_dock.Datamanager.viewer" title="Permalink to this definition"></a></dt>
-<dd><p>viewer in which the widget is displayed</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>napari.viewer.Viewer</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-</section>
-</section>
-</section>
+  <div class="section" id="plugin-dock-py">
+<h1>plugin_dock.py<a class="headerlink" href="#plugin-dock-py" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="datamanager">
+<h2>Datamanager<a class="headerlink" href="#datamanager" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
 
 
            </div>

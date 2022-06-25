@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>plugin_model_inference.py &mdash; napari-cellseg3d  documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>plugin_model_inference.py &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -27,8 +26,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html">
-            <img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+            <a href="../../index.html" class="icon icon-home"> napari-cellseg3d
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -38,25 +36,25 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Main modules guides:</span></p>
+              <p class="caption"><span class="caption-text">Main modules guides:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/review_module_guide.html">Review module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/inference_module_guide.html">Inference module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/training_module_guide.html">Training module guide</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Utilities :</span></p>
+<p class="caption"><span class="caption-text">Utilities :</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/metrics_module_guide.html">Metrics utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/convert_module_guide.html">Label conversion utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/cropping_module_guide.html">Cropping utility guide</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
+<p class="caption"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/detailed_walkthrough.html">Detailed walkthrough</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
+<p class="caption"><span class="caption-text">Source files:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="interface.html">interface.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin_base.html">plugin_base.py</a></li>
@@ -105,182 +103,22 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="plugin-model-inference-py">
-<h1>plugin_model_inference.py<a class="headerlink" href="#plugin-model-inference-py" title="Permalink to this headline"></a></h1>
-<section id="class-inferer">
-<h2>Class : Inferer<a class="headerlink" href="#class-inferer" title="Permalink to this headline"></a></h2>
+  <div class="section" id="plugin-model-inference-py">
+<h1>plugin_model_inference.py<a class="headerlink" href="#plugin-model-inference-py" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="class-inferer">
+<h2>Class : Inferer<a class="headerlink" href="#class-inferer" title="Permalink to this headline">¶</a></h2>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
 <p>Inherits from : <a class="reference internal" href="model_framework.html"><span class="doc">model_framework.py</span></a></p>
 </div>
-<section id="methods">
-<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline"></a></h3>
-<dl class="py class">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.plugin_model_inference.</span></span><span class="sig-name descname"><span class="pre">Inferer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>A plugin to run already trained models in evaluation mode to preform inference and output a label on all
-given volumes.</p>
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Creates an Inference loader plugin with the following widgets :</p>
-<ul class="simple">
-<li><dl class="simple">
-<dt>Data :</dt><dd><ul>
-<li><p>A file extension choice for the images to load from selected folders</p></li>
-<li><p>Two fields to choose the images folder to run segmentation and save results in, respectively</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>Inference options :</dt><dd><ul>
-<li><p>A dropdown menu to select which model should be used for inference</p></li>
-<li><p>An option to load custom weights for the selected model (e.g. from training module)</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>Post-processing :</dt><dd><ul>
-<li><p>A box to select if data is anisotropic, if checked, asks for resolution in micron for each axis</p></li>
-<li><p>A box to choose whether to threshold, if checked asks for a threshold between 0 and 1</p></li>
-<li><dl class="simple">
-<dt>A box to enable instance segmentation. If enabled, displays :</dt><dd><ul>
-<li><p>The choice of method to use for instance segmentation</p></li>
-<li><p>The probability threshold below which to remove objects</p></li>
-<li><p>The size in pixels of small objects to remove</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><p>A checkbox to choose whether to display results in napari afterwards. Will ask for how many results to display, capped at 10</p></li>
-<li><p>A button to launch the inference process</p></li>
-<li><p>A button to close the widget</p></li>
-</ul>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>viewer</strong> (<em>napari.viewer.Viewer</em>) – napari viewer to display the widget in</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Puts all widgets in a layout and adds them to the napari Viewer</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">check_ready</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Checks if the paths to the files are properly set</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">on_error</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Catches errors and tries to clean up. TODO : upgrade</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">on_finish</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Catches finished signal from worker, resets workspace for next run.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">on_start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Catches start signal from worker to call <code class="xref py py-func docutils literal notranslate"><span class="pre">display_status_report()</span></code></p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">on_yield</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widget</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Displays the inference results in napari as long as data[“image_id”] is lower than nbr_to_show,
-and updates the status report docked widget (namely the progress bar)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>dict</em>) – dict yielded by <code class="xref py py-func docutils literal notranslate"><span class="pre">inference()</span></code>, contains : “image_id” : index of the returned image, “original” : original volume used for inference, “result” : inference result</p></li>
-<li><p><strong>widget</strong> (<em>QWidget</em>) – widget for accessing attributes</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">remove_from_viewer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Close the widget and the docked widgets, if any</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Start the inference process, enables <code class="xref py py-attr docutils literal notranslate"><span class="pre">worker</span></code> and does the following:</p>
-<ul class="simple">
-<li><p>Checks if the output and input folders are correctly set</p></li>
-<li><p>Loads the weights from the chosen model</p></li>
-<li><p>Creates a dict with all image paths (see <code class="xref py py-func docutils literal notranslate"><span class="pre">create_inference_dict()</span></code>)</p></li>
-<li><p>Loads the images, pads them so their size is a power of two in every dim (see <code class="xref py py-func docutils literal notranslate"><span class="pre">utils.get_padding_dim()</span></code>)</p></li>
-<li><p>Performs sliding window inference (from MONAI) on every image, with or without ROI of chosen size</p></li>
-<li><p>Saves all outputs in the selected results folder</p></li>
-<li><p>If the option has been selected, display the results in napari, up to the maximum number selected</p></li>
-<li><p>Runs instance segmentation, thresholding, and stats computing if requested</p></li>
-</ul>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">toggle_display_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Shows the choices for viewing results depending on whether <code class="xref py py-attr docutils literal notranslate"><span class="pre">self.view_checkbox</span></code> is checked</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">toggle_display_thresh</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Shows the choices for thresholding results depending on whether <code class="xref py py-attr docutils literal notranslate"><span class="pre">self.thresholding_checkbox</span></code> is checked</p>
-</dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="attributes">
-<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline"></a></h3>
-<dl class="py class">
-<dt class="sig sig-object py" id="napari_cellseg3d.plugin_model_inference.Inferer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.plugin_model_inference.</span></span><span class="sig-name descname"><span class="pre">Inferer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.plugin_model_inference.Inferer" title="Permalink to this definition"></a></dt>
-<dd><p>A plugin to run already trained models in evaluation mode to preform inference and output a label on all
-given volumes.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="napari_cellseg3d.plugin_model_inference.Inferer._viewer">
-<span class="sig-name descname"><span class="pre">_viewer</span></span><a class="headerlink" href="#napari_cellseg3d.plugin_model_inference.Inferer._viewer" title="Permalink to this definition"></a></dt>
-<dd><p>Viewer to display the widget in</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="napari_cellseg3d.plugin_model_inference.Inferer.models_dict">
-<span class="sig-name descname"><span class="pre">models_dict</span></span><a class="headerlink" href="#napari_cellseg3d.plugin_model_inference.Inferer.models_dict" title="Permalink to this definition"></a></dt>
-<dd><p>dictionary of available models, with string for widget display as key</p>
-<p>Currently implemented : SegResNet, VNet, TRAILMAP_test</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-</section>
-</section>
-</section>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
 
 
            </div>

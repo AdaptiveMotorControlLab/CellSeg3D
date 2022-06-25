@@ -6,15 +6,15 @@ Training module guide
 This module allows you to train pre-defined Pytorch models for cell segmentation.
 Pre-defined models are stored in napari-cellseg-3d/models.
 
-Currently, the following pre-defined models are provided :
+Currently, the following pre-defined models are available :
 
 ==============   ================================================================================================
 Model            Link to original paper
 ==============   ================================================================================================
-VNet             `Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation`_ from MONAI
-SegResNet        `3D MRI brain tumor segmentation using autoencoder regularization`_ from MONAI
-TRAILMAP_test     An emulation of the `TRAILMAP project on GitHub`_ using a custom copy in Pytorch
-TRAILMAP          An emulation of the `TRAILMAP project on GitHub`_ using `3DUnet for Pytorch`_
+VNet             `Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation`_
+SegResNet        `3D MRI brain tumor segmentation using autoencoder regularization`_
+TRAILMAP_MS       A PyTorch implementation of the `TRAILMAP project on GitHub`_ pretrained with MesoSpim data
+TRAILMAP          An implementation of the `TRAILMAP project on GitHub`_ using a `3DUNet for PyTorch`_
 ==============   ================================================================================================
 
 .. _Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation: https://arxiv.org/pdf/1606.04797.pdf
@@ -25,7 +25,6 @@ TRAILMAP          An emulation of the `TRAILMAP project on GitHub`_ using `3DUne
 .. important::
     | The machine learning models used by this program require all images of a dataset to be of the same size.
     | Please ensure that all the images you are loading are of the **same size**, or to use the **"extract patches" (in augmentation tab)** with an appropriately small size to ensure all images being used by the model are of a workable size.
-    | See instructions for the second tab for more information on the options provided to ensure this is the case.
 
 The training module is comprised of several tabs.
 
@@ -121,4 +120,3 @@ Source code
 * :doc:`../code/plugin_model_training`
 * :doc:`../code/model_framework`
 * :doc:`../code/model_workers`
-

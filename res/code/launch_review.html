@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>launch_review.py &mdash; napari-cellseg3d  documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>launch_review.py &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -27,8 +26,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html">
-            <img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+            <a href="../../index.html" class="icon icon-home"> napari-cellseg3d
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -38,25 +36,25 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Main modules guides:</span></p>
+              <p class="caption"><span class="caption-text">Main modules guides:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/review_module_guide.html">Review module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/inference_module_guide.html">Inference module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/training_module_guide.html">Training module guide</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Utilities :</span></p>
+<p class="caption"><span class="caption-text">Utilities :</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/metrics_module_guide.html">Metrics utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/convert_module_guide.html">Label conversion utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/cropping_module_guide.html">Cropping utility guide</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
+<p class="caption"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/detailed_walkthrough.html">Detailed walkthrough</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
+<p class="caption"><span class="caption-text">Source files:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="interface.html">interface.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin_base.html">plugin_base.py</a></li>
@@ -104,53 +102,15 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="launch-review-py">
-<h1>launch_review.py<a class="headerlink" href="#launch-review-py" title="Permalink to this headline"></a></h1>
-<section id="functions">
-<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline"></a></h2>
-<section id="launch-review">
-<h3>launch_review<a class="headerlink" href="#launch-review" title="Permalink to this headline"></a></h3>
-<dl class="py function">
-<dt class="sig sig-object py" id="napari_cellseg3d.launch_review.launch_review">
-<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.launch_review.</span></span><span class="sig-name descname"><span class="pre">launch_review</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">original</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkbox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filetype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom_factor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.launch_review.launch_review" title="Permalink to this definition"></a></dt>
-<dd><p>Launch the review process, loading the original image, the labels &amp; the raw labels (from prediction)
-in the viewer.</p>
-<p>Adds several widgets to the viewer :</p>
-<ul>
-<li><p>A data manager widget that lets the user choose a directory to save the labels in, and a save button to quickly
-save.</p></li>
-<li><p>A “checked/not checked” button to let the user confirm that a slice has been checked or not.</p>
-<blockquote>
-<div><p><strong>This writes in a csv file under the corresponding slice the slice status (i.e. checked or not checked)
-to allow tracking of the review process for a given dataset.</strong></p>
-</div></blockquote>
-</li>
-<li><p>A plot widget that, when shift-clicking on the volume or label,
-displays the chosen location on several projections (x-y, y-z, x-z),
-to allow the user to have a better all-around view of the object
-and determine whether it should be labeled or not.</p></li>
-</ul>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>viewer</strong> (<em>napari.viewer.Viewer</em>) – The viewer the widgets are to be displayed in</p></li>
-<li><p><strong>original</strong> (<em>dask.array.Array</em>) – The original images/volumes that have been labeled</p></li>
-<li><p><strong>base</strong> (<em>dask.array.Array</em>) – The labels for the volume</p></li>
-<li><p><strong>raw</strong> (<em>dask.array.Array</em>) – The raw labels from the prediction</p></li>
-<li><p><strong>r_path</strong> (<em>str</em>) – Path to the raw labels</p></li>
-<li><p><strong>model_type</strong> (<em>str</em>) – The name of the model to be displayed in csv filenames.</p></li>
-<li><p><strong>checkbox</strong> (<em>bool</em>) – Whether the “new model” checkbox has been checked or not, to create a new csv</p></li>
-<li><p><strong>filetype</strong> (<em>str</em>) – The file extension of the volumes and labels.</p></li>
-<li><p><strong>as_folder</strong> (<em>bool</em>) – Whether to load as folder or single file</p></li>
-<li><p><strong>zoom_factor</strong> (<em>array</em><em>(</em><em>int</em><em>)</em>) – zoom factors for each axis</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-</section>
-</section>
-</section>
+  <div class="section" id="launch-review-py">
+<h1>launch_review.py<a class="headerlink" href="#launch-review-py" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="launch-review">
+<h3>launch_review<a class="headerlink" href="#launch-review" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
 
 
            </div>

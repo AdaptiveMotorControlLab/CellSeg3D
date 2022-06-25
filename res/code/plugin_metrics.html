@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>plugin_metrics.py &mdash; napari-cellseg3d  documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>plugin_metrics.py &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -27,8 +26,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html">
-            <img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+            <a href="../../index.html" class="icon icon-home"> napari-cellseg3d
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -38,25 +36,25 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Main modules guides:</span></p>
+              <p class="caption"><span class="caption-text">Main modules guides:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/review_module_guide.html">Review module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/inference_module_guide.html">Inference module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/training_module_guide.html">Training module guide</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Utilities :</span></p>
+<p class="caption"><span class="caption-text">Utilities :</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/metrics_module_guide.html">Metrics utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/convert_module_guide.html">Label conversion utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/cropping_module_guide.html">Cropping utility guide</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
+<p class="caption"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/detailed_walkthrough.html">Detailed walkthrough</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
+<p class="caption"><span class="caption-text">Source files:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="interface.html">interface.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin_base.html">plugin_base.py</a></li>
@@ -105,92 +103,22 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="plugin-metrics-py">
-<h1>plugin_metrics.py<a class="headerlink" href="#plugin-metrics-py" title="Permalink to this headline"></a></h1>
-<section id="class-metricsutils">
-<h2>Class : MetricsUtils<a class="headerlink" href="#class-metricsutils" title="Permalink to this headline"></a></h2>
+  <div class="section" id="plugin-metrics-py">
+<h1>plugin_metrics.py<a class="headerlink" href="#plugin-metrics-py" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="class-metricsutils">
+<h2>Class : MetricsUtils<a class="headerlink" href="#class-metricsutils" title="Permalink to this headline">¶</a></h2>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
 <p>Inherits from : <a class="reference internal" href="plugin_base.html"><span class="doc">plugin_base.py</span></a></p>
 </div>
-<section id="methods">
-<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline"></a></h3>
-<dl class="py class">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.plugin_metrics.</span></span><span class="sig-name descname"><span class="pre">MetricsUtils</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Plugin to evaluate metrics between two sets of labels, ground truth and prediction</p>
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Creates a MetricsUtils widget for computing and plotting dice metrics between labels.
-:type viewer: <code class="xref py py-class docutils literal notranslate"><span class="pre">Viewer</span></code>
-:param viewer: viewer to display the widget in
-:param parent: parent widget</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Builds the layout of the widget.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">compute_dice</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Computes the dice metric between pairs of labels.
-Rotates the prediction label to find matching orientation as well.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">plot_dice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dice_coeffs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Plots the dice loss for each pair of labels on viewer</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">remove_plots</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Clears plots from window view</p>
-</dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="attributes">
-<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline"></a></h3>
-<dl class="py class">
-<dt class="sig sig-object py" id="napari_cellseg3d.plugin_metrics.MetricsUtils">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.plugin_metrics.</span></span><span class="sig-name descname"><span class="pre">MetricsUtils</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.plugin_metrics.MetricsUtils" title="Permalink to this definition"></a></dt>
-<dd><p>Plugin to evaluate metrics between two sets of labels, ground truth and prediction</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="napari_cellseg3d.plugin_metrics.MetricsUtils._viewer">
-<span class="sig-name descname"><span class="pre">_viewer</span></span><a class="headerlink" href="#napari_cellseg3d.plugin_metrics.MetricsUtils._viewer" title="Permalink to this definition"></a></dt>
-<dd><p>Viewer to display widget in</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="napari_cellseg3d.plugin_metrics.MetricsUtils.canvas">
-<span class="sig-name descname"><span class="pre">canvas</span></span><a class="headerlink" href="#napari_cellseg3d.plugin_metrics.MetricsUtils.canvas" title="Permalink to this definition"></a></dt>
-<dd><p>Canvas to render plots on</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="napari_cellseg3d.plugin_metrics.MetricsUtils.layout">
-<span class="sig-name descname"><span class="pre">layout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">QLayout</span></span></span><a class="headerlink" href="#napari_cellseg3d.plugin_metrics.MetricsUtils.layout" title="Permalink to this definition"></a></dt>
-<dd><p>Called for plotting</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="napari_cellseg3d.plugin_metrics.MetricsUtils.plots">
-<span class="sig-name descname"><span class="pre">plots</span></span><a class="headerlink" href="#napari_cellseg3d.plugin_metrics.MetricsUtils.plots" title="Permalink to this definition"></a></dt>
-<dd><p>Array that references all plots currently on the window</p>
-</dd></dl>
-
-</dd></dl>
-
-</section>
-</section>
-</section>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
 
 
            </div>
