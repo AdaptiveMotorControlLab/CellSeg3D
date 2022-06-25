@@ -17,15 +17,15 @@ A napari plugin for 3D cell segmentation: training, inference, and data review. 
 
 ## News
 
-**June 2022: This is an alpha version, please expect bugs and issues, and help us make the code better by reporting them as an issue!** 
+**June 2022: This is an alpha version, please expect bugs and issues, and help us make the code better by reporting them as an issue!**
 
 
 
 ## Installation
 
-You can install `napari-cellseg3d` via [pip] (pypi-test placeholder):  
+You can install `napari-cellseg3d` via [pip]:  
 
-    pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ napari-cellseg3d==0.0.3
+    pip install napari-cellseg3d
 
 ## Documentation
 
@@ -44,7 +44,7 @@ Then go into Plugins > napari-cellseg3d, and choose which tool to use.
 - **Review**: This module allows you to review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.
 - **Inference**: This module allows you to use pre-trained segmentation algorithms on volumes to automatically label cells and compute statistics.
 - **Train**:  This module allows you to train segmentation algorithms from labeled volumes.
-- **Utilities**: This module allows you to perform several actions like cropping your volumes and labels dynamically, by selecting a fixed size volume and moving it around the image; computing prediction scores from ground truth and predicition labels; or converting labels from instance to segmentation and the opposite. 
+- **Utilities**: This module allows you to perform several actions like cropping your volumes and labels dynamically, by selecting a fixed size volume and moving it around the image; computing prediction scores from ground truth and predicition labels; or converting labels from instance to segmentation and the opposite.
 
 
 ## Requirements
@@ -61,9 +61,9 @@ If you get errors from MONAI regarding missing readers, please see [MONAI's opti
 If you encounter any problems, please [file an issue] along with a detailed description.
 
 
-## Testing 
+## Testing
 
-To run tests locally: 
+To run tests locally:
 
 - Locally : run ``pytest`` in the plugin folder
 - Locally with coverage : In the plugin folder, run ``coverage run --source=src -m pytest`` then ``coverage.xml`` to generate a .xml coverage file.
@@ -71,7 +71,7 @@ To run tests locally:
 
 ## Contributing
 
-Contributions are very welcome. 
+Contributions are very welcome.
 
 Please ensure the coverage at least stays the same before you submit a pull request.
 
@@ -108,7 +108,7 @@ Distributed under the terms of the [MIT] license.
 [PyTorch's website for installation instructions]: https://pytorch.org/get-started/locally/
 [MONAI's optional dependencies]: https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies
 
-## Acknowledgements 
+## Acknowledgements
 
 This plugin was developed by Cyril Achard, Maxime Vidal, Mackenzie Mathis. This work was funded, in part, from the Wyss Center to the [Mathis Laboratory of Adaptive Motor Control](https://www.mackenziemathislab.org/).
 
