@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>plugin_review.py &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>plugin_review.py &mdash; napari-cellseg3d  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -26,7 +27,8 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html" class="icon icon-home"> napari-cellseg3d
+            <a href="../../index.html">
+            <img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -36,25 +38,25 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Main modules guides:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Main modules guides:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/review_module_guide.html">Review module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/inference_module_guide.html">Inference module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/training_module_guide.html">Training module guide</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Utilities :</span></p>
+<p class="caption" role="heading"><span class="caption-text">Utilities :</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/metrics_module_guide.html">Metrics utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/convert_module_guide.html">Label conversion utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/cropping_module_guide.html">Cropping utility guide</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Advanced guides and walk-through:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/detailed_walkthrough.html">Detailed walkthrough</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Source files:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="interface.html">interface.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin_base.html">plugin_base.py</a></li>
@@ -103,22 +105,129 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="plugin-review-py">
-<h1>plugin_review.py<a class="headerlink" href="#plugin-review-py" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="class-loader">
-<h2>Class : Loader<a class="headerlink" href="#class-loader" title="Permalink to this headline">¶</a></h2>
+  <section id="plugin-review-py">
+<h1>plugin_review.py<a class="headerlink" href="#plugin-review-py" title="Permalink to this headline"></a></h1>
+<section id="class-loader">
+<h2>Class : Loader<a class="headerlink" href="#class-loader" title="Permalink to this headline"></a></h2>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
 <p>Inherits from : <a class="reference internal" href="plugin_base.html"><span class="doc">plugin_base.py</span></a></p>
 </div>
-<div class="section" id="methods">
-<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="attributes">
-<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
-</div>
+<section id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.plugin_review.</span></span><span class="sig-name descname"><span class="pre">Reviewer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>A plugin for selecting volumes and labels file and launching the review process.
+Inherits from : <a class="reference internal" href="plugin_base.html"><span class="doc">plugin_base.py</span></a></p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Creates a Reviewer plugin with several buttons :</p>
+<ul class="simple">
+<li><p>Open file prompt to select volumes directory</p></li>
+<li><p>Open file prompt to select labels directory</p></li>
+<li><p>A dropdown menu with a choice of png or tif filetypes</p></li>
+<li><p>A checkbox if you want to create a new status csv for the dataset</p></li>
+<li><p>A button to launch the review process (see <a class="reference internal" href="launch_review.html"><span class="doc">launch_review.py</span></a>)</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Build buttons in a layout and add them to the napari Viewer</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">remove_from_viewer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Close widget and remove it from window.
+Sets the check for an active session to false, so that if the user closes manually and doesn’t launch the review,
+the active session warning does not display and a new viewer is not opened when launching for the first time.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">run_review</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Launches review process by loading the files from the chosen folders,
+and adds several widgets to the napari Viewer.
+If the review process has been launched once before,
+closes the window entirely and launches the review process in a fresh window.</p>
+<p>TODO:</p>
+<ul class="simple">
+<li><p>Save work done before leaving</p></li>
+</ul>
+<p>See <a class="reference internal" href="launch_review.html"><span class="doc">launch_review.py</span></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self.viewer</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>napari.viewer.Viewer</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.plugin_review.Reviewer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.plugin_review.</span></span><span class="sig-name descname"><span class="pre">Reviewer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.plugin_review.Reviewer" title="Permalink to this definition"></a></dt>
+<dd><p>A plugin for selecting volumes and labels file and launching the review process.
+Inherits from : <a class="reference internal" href="plugin_base.html"><span class="doc">plugin_base.py</span></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_cellseg3d.plugin_review.Reviewer._viewer">
+<span class="sig-name descname"><span class="pre">_viewer</span></span><a class="headerlink" href="#napari_cellseg3d.plugin_review.Reviewer._viewer" title="Permalink to this definition"></a></dt>
+<dd><p>viewer in which the widget is displayed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>napari.viewer.Viewer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_cellseg3d.plugin_review.Reviewer.filetype">
+<span class="sig-name descname"><span class="pre">filetype</span></span><a class="headerlink" href="#napari_cellseg3d.plugin_review.Reviewer.filetype" title="Permalink to this definition"></a></dt>
+<dd><p>filetype, .tif or .png</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_cellseg3d.plugin_review.Reviewer.image_path">
+<span class="sig-name descname"><span class="pre">image_path</span></span><a class="headerlink" href="#napari_cellseg3d.plugin_review.Reviewer.image_path" title="Permalink to this definition"></a></dt>
+<dd><p>path to image folder</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_cellseg3d.plugin_review.Reviewer.label_path">
+<span class="sig-name descname"><span class="pre">label_path</span></span><a class="headerlink" href="#napari_cellseg3d.plugin_review.Reviewer.label_path" title="Permalink to this definition"></a></dt>
+<dd><p>path to label folder</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
 
 
            </div>

@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Training module guide &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>Training module guide &mdash; napari-cellseg3d  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -26,7 +27,8 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html" class="icon icon-home"> napari-cellseg3d
+            <a href="../../index.html">
+            <img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -36,7 +38,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Main modules guides:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Main modules guides:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Review module guide</a></li>
@@ -46,18 +48,18 @@
 </ul>
 </li>
 </ul>
-<p class="caption"><span class="caption-text">Utilities :</span></p>
+<p class="caption" role="heading"><span class="caption-text">Utilities :</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="metrics_module_guide.html">Metrics utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="convert_module_guide.html">Label conversion utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cropping_module_guide.html">Cropping utility guide</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Advanced guides and walk-through:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Detailed walkthrough</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Source files:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../code/interface.html">interface.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_base.html">plugin_base.py</a></li>
@@ -99,11 +101,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="training-module-guide">
-<span id="id1"></span><h1>Training module guide<a class="headerlink" href="#training-module-guide" title="Permalink to this headline">¶</a></h1>
+  <section id="training-module-guide">
+<span id="id1"></span><h1>Training module guide<a class="headerlink" href="#training-module-guide" title="Permalink to this headline"></a></h1>
 <p>This module allows you to train pre-defined Pytorch models for cell segmentation.
 Pre-defined models are stored in napari-cellseg-3d/models.</p>
-<p>Currently, the following pre-defined models are available :</p>
+<p>Currently, the following pre-defined models are provided :</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 13%" />
@@ -116,16 +118,16 @@ Pre-defined models are stored in napari-cellseg-3d/models.</p>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>VNet</p></td>
-<td><p><a class="reference external" href="https://arxiv.org/pdf/1606.04797.pdf">Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation</a></p></td>
+<td><p><a class="reference external" href="https://arxiv.org/pdf/1606.04797.pdf">Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation</a> from MONAI</p></td>
 </tr>
 <tr class="row-odd"><td><p>SegResNet</p></td>
-<td><p><a class="reference external" href="https://arxiv.org/pdf/1810.11654.pdf">3D MRI brain tumor segmentation using autoencoder regularization</a></p></td>
+<td><p><a class="reference external" href="https://arxiv.org/pdf/1810.11654.pdf">3D MRI brain tumor segmentation using autoencoder regularization</a> from MONAI</p></td>
 </tr>
-<tr class="row-even"><td><p>TRAILMAP_MS</p></td>
-<td><p>A PyTorch implementation of the <a class="reference external" href="https://github.com/AlbertPun/TRAILMAP">TRAILMAP project on GitHub</a> pretrained with MesoSpim data</p></td>
+<tr class="row-even"><td><p>TRAILMAP_test</p></td>
+<td><p>An emulation of the <a class="reference external" href="https://github.com/AlbertPun/TRAILMAP">TRAILMAP project on GitHub</a> using a custom copy in Pytorch</p></td>
 </tr>
 <tr class="row-odd"><td><p>TRAILMAP</p></td>
-<td><p>An implementation of the <a class="reference external" href="https://github.com/AlbertPun/TRAILMAP">TRAILMAP project on GitHub</a> using a <a class="reference external" href="https://github.com/wolny/pytorch-3dunet">3DUNet for PyTorch</a></p></td>
+<td><p>An emulation of the <a class="reference external" href="https://github.com/AlbertPun/TRAILMAP">TRAILMAP project on GitHub</a> using <a class="reference external" href="https://github.com/wolny/pytorch-3dunet">3DUnet for Pytorch</a></p></td>
 </tr>
 </tbody>
 </table>
@@ -134,6 +136,7 @@ Pre-defined models are stored in napari-cellseg-3d/models.</p>
 <div class="line-block">
 <div class="line">The machine learning models used by this program require all images of a dataset to be of the same size.</div>
 <div class="line">Please ensure that all the images you are loading are of the <strong>same size</strong>, or to use the <strong>“extract patches” (in augmentation tab)</strong> with an appropriately small size to ensure all images being used by the model are of a workable size.</div>
+<div class="line">See instructions for the second tab for more information on the options provided to ensure this is the case.</div>
 </div>
 </div>
 <p>The training module is comprised of several tabs.</p>
@@ -237,19 +240,21 @@ the training loss values and validation metrics will be automatically plotted
 and shown on napari every time a validation step completes.
 This plot automatically saved each time validation is performed for now.
 The final version is stored separately in the results folder.</p>
-<div class="figure align-center" id="id2">
+<figure class="align-center" id="id2">
 <img alt="../../_images/plots_train.png" src="../../_images/plots_train.png" />
-<p class="caption"><span class="caption-text">Example of plots displayed by the training module after 40 epochs</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
-</div>
-<div class="section" id="source-code">
-<h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h2>
+<figcaption>
+<p><span class="caption-text">Example of plots displayed by the training module after 40 epochs</span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+<section id="source-code">
+<h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this headline"></a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../code/plugin_model_training.html"><span class="doc">plugin_model_training.py</span></a></p></li>
 <li><p><a class="reference internal" href="../code/model_framework.html"><span class="doc">model_framework.py</span></a></p></li>
 <li><p><a class="reference internal" href="../code/model_workers.html"><span class="doc">model_workers.py</span></a></p></li>
 </ul>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cropping utility guide &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>Cropping utility guide &mdash; napari-cellseg3d  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -26,7 +27,8 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html" class="icon icon-home"> napari-cellseg3d
+            <a href="../../index.html">
+            <img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -36,14 +38,14 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Main modules guides:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Main modules guides:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Review module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inference_module_guide.html">Inference module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="training_module_guide.html">Training module guide</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Utilities :</span></p>
+<p class="caption" role="heading"><span class="caption-text">Utilities :</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="metrics_module_guide.html">Metrics utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="convert_module_guide.html">Label conversion utility guide</a></li>
@@ -54,12 +56,12 @@
 </ul>
 </li>
 </ul>
-<p class="caption"><span class="caption-text">Advanced guides and walk-through:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Detailed walkthrough</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Source files:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../code/interface.html">interface.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_base.html">plugin_base.py</a></li>
@@ -101,15 +103,15 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="cropping-utility-guide">
-<span id="cropping-module-guide"></span><h1>Cropping utility guide<a class="headerlink" href="#cropping-utility-guide" title="Permalink to this headline">¶</a></h1>
+  <section id="cropping-utility-guide">
+<span id="cropping-module-guide"></span><h1>Cropping utility guide<a class="headerlink" href="#cropping-utility-guide" title="Permalink to this headline"></a></h1>
 <p>This module allows you to crop your volumes and labels dynamically,
 by selecting a fixed size volume and moving it around the image.</p>
 <p>You can then save the cropped volume and labels directly using napari,
 by selecting the layer and then using <strong>File -&gt; Save selected layer</strong>,
 or simply <strong>CTRL+S</strong> once you have selected the correct layer.</p>
-<div class="section" id="launching-the-cropping-process">
-<h2>Launching the cropping process<a class="headerlink" href="#launching-the-cropping-process" title="Permalink to this headline">¶</a></h2>
+<section id="launching-the-cropping-process">
+<h2>Launching the cropping process<a class="headerlink" href="#launching-the-cropping-process" title="Permalink to this headline"></a></h2>
 <p>First, you will be asked to load your images and labels; you can use the checkbox above the Open buttons to
 choose whether you want to load a single 3D <strong>.tif</strong> image or a folder of 2D images as a 3D stack.
 Folders can be stacks of either .png or .tif files, ideally numbered with the index of the slice at the end.</p>
@@ -120,9 +122,9 @@ Folders can be stacks of either .png or .tif files, ideally numbered with the in
 <p>You can then choose the size of the cropped volume, which will be constant throughout the process; make sure it is correct beforehand.
 Setting a larger size than the size of the image will cause issues.</p>
 <p>Once you are ready, you can press <strong>Start</strong> to start the review process.</p>
-</div>
-<div class="section" id="interface-functionalities">
-<h2>Interface &amp; functionalities<a class="headerlink" href="#interface-functionalities" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="interface-functionalities">
+<h2>Interface &amp; functionalities<a class="headerlink" href="#interface-functionalities" title="Permalink to this headline"></a></h2>
 <img alt="../../_images/cropping_process_example.png" src="../../_images/cropping_process_example.png" />
 <p>Once you have launched the review process, you will have access to three sliders that will let
 you <strong>change the position</strong> of the cropped volumes and labels in the x,y and z positions.</p>
@@ -140,15 +142,15 @@ a separate folder if you loaded a folder as a stack.
 If you want more options (name, format) you can save by selecting the layer and then
 using <strong>File -&gt; Save selected layer</strong>, or simply <strong>CTRL+S</strong> once you have selected the correct layer.</p>
 </div>
-</div>
-<div class="section" id="source-code">
-<h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="source-code">
+<h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this headline"></a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../code/plugin_crop.html"><span class="doc">plugin_crop.py</span></a></p></li>
 <li><p><a class="reference internal" href="../code/plugin_base.html"><span class="doc">plugin_base.py</span></a></p></li>
 </ul>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

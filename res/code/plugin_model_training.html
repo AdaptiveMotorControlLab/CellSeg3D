@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>plugin_model_training.py &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>plugin_model_training.py &mdash; napari-cellseg3d  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -26,7 +27,8 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html" class="icon icon-home"> napari-cellseg3d
+            <a href="../../index.html">
+            <img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -36,25 +38,25 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Main modules guides:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Main modules guides:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/review_module_guide.html">Review module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/inference_module_guide.html">Inference module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/training_module_guide.html">Training module guide</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Utilities :</span></p>
+<p class="caption" role="heading"><span class="caption-text">Utilities :</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/metrics_module_guide.html">Metrics utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/convert_module_guide.html">Label conversion utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/cropping_module_guide.html">Cropping utility guide</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Advanced guides and walk-through:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/detailed_walkthrough.html">Detailed walkthrough</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Source files:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="interface.html">interface.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin_base.html">plugin_base.py</a></li>
@@ -103,22 +105,281 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="plugin-model-training-py">
-<h1>plugin_model_training.py<a class="headerlink" href="#plugin-model-training-py" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="class-trainer">
-<h2>Class : Trainer<a class="headerlink" href="#class-trainer" title="Permalink to this headline">¶</a></h2>
+  <section id="plugin-model-training-py">
+<h1>plugin_model_training.py<a class="headerlink" href="#plugin-model-training-py" title="Permalink to this headline"></a></h1>
+<section id="class-trainer">
+<h2>Class : Trainer<a class="headerlink" href="#class-trainer" title="Permalink to this headline"></a></h2>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
 <p>Inherits from : <a class="reference internal" href="model_framework.html"><span class="doc">model_framework.py</span></a></p>
 </div>
-<div class="section" id="methods">
-<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="attributes">
-<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
-</div>
+<section id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.plugin_model_training.</span></span><span class="sig-name descname"><span class="pre">Trainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>A plugin to train pre-defined Pytorch models for one-channel segmentation directly in napari.
+Features parameter selection for training, dynamic loss plotting and automatic saving of the best weights during
+training through validation.</p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Creates a Trainer tab widget with the following functionalities :</p>
+<ul>
+<li><dl class="simple">
+<dt>First tab<span class="classifier">Dataset parameters</span></dt><dd><ul class="simple">
+<li><p>A choice for the file extension of images to be loaded</p></li>
+<li><p>A button to select images folder. Validation files are chosen automatically from the whole dataset.</p></li>
+<li><p>A button to choose the label folder (must have matching number and name regarding images folder)</p></li>
+<li><p>A button to choose where to save the results (weights, log, plots). Defaults to the plugin’s models/saved_weights folder</p></li>
+<li><p>A choice of whether to use pre-trained weights or load custom weights if desired</p></li>
+<li><p>A choice of the proportion of the dataset to use for validation.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Second tab : Data augmentation</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>A choice for using images as is or extracting smaller patches randomly, with a size and number choice.</p></li>
+<li><p>A toggle for data augmentation (elastic deforms, intensity shift, flipping, etc)</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Third tab : Training parameters</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>A choice of model to use (see training module guide table)</p></li>
+<li><p>A dropdown menu to choose which loss function to use (see the training module guide table)</p></li>
+<li><p>A spin box to choose the number of epochs to train for</p></li>
+<li><p>A spin box to choose the batch size during training</p></li>
+<li><p>A choice of learning rate for the optimizer</p></li>
+<li><p>A spin box to choose the validation interval</p></li>
+<li><p>A choice of using random or deterministic training</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<p>TODO training plugin:</p>
+<ul class="simple">
+<li><p>Custom model loading</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>viewer</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Viewer</span></code>) – napari viewer to display the widget in</p></li>
+<li><p><strong>data_path</strong> (<em>str</em>) – path to images</p></li>
+<li><p><strong>label_path</strong> (<em>str</em>) – path to labels</p></li>
+<li><p><strong>results_path</strong> (<em>str</em>) – path to results</p></li>
+<li><p><strong>model_index</strong> (<em>int</em>) – model to select by default</p></li>
+<li><p><strong>loss_index</strong> (<em>int</em>) – loss to select by default</p></li>
+<li><p><strong>epochs</strong> (<em>uint</em>) – number of epochs</p></li>
+<li><p><strong>samples</strong> (<em>uint</em>) – number of samples</p></li>
+<li><p><strong>batch</strong> (<em>uint</em>) – batch size</p></li>
+<li><p><strong>val_interval</strong> (<em>uint</em>) – epoch interval for validation</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Builds the layout of the widget and creates the following tabs and prompts:</p>
+<ul>
+<li><p>Model parameters :</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Choice of file type for data</p></li>
+<li><p>Dialog for images folder</p></li>
+<li><p>Dialog for label folder</p></li>
+<li><p>Dialog for results folder</p></li>
+<li><p>Model choice</p></li>
+<li><p>Number of samples to extract from images</p></li>
+<li><p>Next tab</p></li>
+<li><p>Close</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Training parameters :</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Loss function choice</p></li>
+<li><p>Batch size choice</p></li>
+<li><p>Epochs choice</p></li>
+<li><p>Validation interval choice</p></li>
+<li><p>Previous tab</p></li>
+<li><p>Start (see <code class="xref py py-func docutils literal notranslate"><span class="pre">start()</span></code>)</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">check_ready</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Checks that the paths to the images and labels are correctly set</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p>True if paths are set correctly (!=[“”])</p></li>
+<li><p>False and displays a warning if not</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">on_error</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Catches errored signal from worker</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">on_finish</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Catches finished signal from worker</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">on_start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Catches started signal from worker</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">plot_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loss</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dice_metric</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Creates two subplots to plot the training loss and validation metric</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">remove_from_viewer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Close the widget and the docked widgets, if any</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">show_dialog_dat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Shows the  dialog to load images files in a path, loads them (see :doc:model_framework) and changes the
+widget label <code class="xref py py-attr docutils literal notranslate"><span class="pre">self.lbl_dat</span></code> accordingly</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">show_dialog_lab</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Shows the  dialog to load label files in a path, loads them (see :doc:model_framework) and changes the widget
+label <code class="xref py py-attr docutils literal notranslate"><span class="pre">self.lbl_label</span></code> accordingly</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Initiates the <code class="xref py py-func docutils literal notranslate"><span class="pre">train()</span></code> function as a worker and does the following :</p>
+<ul class="simple">
+<li><p>Checks that filepaths are set correctly using <code class="xref py py-func docutils literal notranslate"><span class="pre">check_ready()</span></code></p></li>
+<li><p>If self.worker is None : creates a worker and starts the training</p></li>
+<li><p>If the button is clicked while training, stops the model once it finishes the next validation step and saves the results if better</p></li>
+<li><p>When the worker yields after a validation step, plots the loss if epoch &gt;= validation_step (to avoid empty plot on first validation)</p></li>
+<li><p>When the worker finishes, clears the memory (tries to for now)</p></li>
+</ul>
+<p>TODO:</p>
+<ul class="simple">
+<li><p>Fix memory allocation from torch</p></li>
+</ul>
+<p>Returns: Returns empty immediately if the file paths are not set correctly.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">update_loss_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loss</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Updates the plots on subsequent validation steps.
+Creates the plot on the second validation step (epoch == val_interval*2).
+Updates the plot on subsequent validation steps.
+Epoch is obtained from the length of the loss vector.</p>
+<p>Returns: returns empty if the epoch is &lt; than 2 * validation interval.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.plugin_model_training.Trainer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.plugin_model_training.</span></span><span class="sig-name descname"><span class="pre">Trainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.plugin_model_training.Trainer" title="Permalink to this definition"></a></dt>
+<dd><p>A plugin to train pre-defined Pytorch models for one-channel segmentation directly in napari.
+Features parameter selection for training, dynamic loss plotting and automatic saving of the best weights during
+training through validation.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_cellseg3d.plugin_model_training.Trainer._viewer">
+<span class="sig-name descname"><span class="pre">_viewer</span></span><a class="headerlink" href="#napari_cellseg3d.plugin_model_training.Trainer._viewer" title="Permalink to this definition"></a></dt>
+<dd><p>viewer in which the widget is displayed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>napari.viewer.Viewer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_cellseg3d.plugin_model_training.Trainer.canvas">
+<span class="sig-name descname"><span class="pre">canvas</span></span><a class="headerlink" href="#napari_cellseg3d.plugin_model_training.Trainer.canvas" title="Permalink to this definition"></a></dt>
+<dd><p>Canvas to plot loss and dice metric in</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_cellseg3d.plugin_model_training.Trainer.dice_metric_plot">
+<span class="sig-name descname"><span class="pre">dice_metric_plot</span></span><a class="headerlink" href="#napari_cellseg3d.plugin_model_training.Trainer.dice_metric_plot" title="Permalink to this definition"></a></dt>
+<dd><p>Plot for dice metric</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_cellseg3d.plugin_model_training.Trainer.loss_dict">
+<span class="sig-name descname"><span class="pre">loss_dict</span></span><a class="headerlink" href="#napari_cellseg3d.plugin_model_training.Trainer.loss_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Dict of loss functions</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_cellseg3d.plugin_model_training.Trainer.models_dict">
+<span class="sig-name descname"><span class="pre">models_dict</span></span><a class="headerlink" href="#napari_cellseg3d.plugin_model_training.Trainer.models_dict" title="Permalink to this definition"></a></dt>
+<dd><p>dictionary of available models, with string for widget display as key</p>
+<p>Currently implemented : SegResNet, VNet, TRAILMAP_test</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_cellseg3d.plugin_model_training.Trainer.train_loss_plot">
+<span class="sig-name descname"><span class="pre">train_loss_plot</span></span><a class="headerlink" href="#napari_cellseg3d.plugin_model_training.Trainer.train_loss_plot" title="Permalink to this definition"></a></dt>
+<dd><p>Plot for loss</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_cellseg3d.plugin_model_training.Trainer.worker">
+<span class="sig-name descname"><span class="pre">worker</span></span><a class="headerlink" href="#napari_cellseg3d.plugin_model_training.Trainer.worker" title="Permalink to this definition"></a></dt>
+<dd><p>model_workers.py</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Training worker for multithreading, should be a TrainingWorker instance from</p>
+</dd>
+<dt class="field-even">Type</dt>
+<dd class="field-even"><p>doc</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
 
 
            </div>
