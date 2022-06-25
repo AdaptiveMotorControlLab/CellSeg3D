@@ -16,7 +16,7 @@ from napari_cellseg3d.log_utility import Log
 from napari_cellseg3d.models import model_SegResNet as SegResNet
 from napari_cellseg3d.models import model_TRAILMAP as TRAILMAP
 from napari_cellseg3d.models import model_VNet as VNet
-from napari_cellseg3d.models import TRAILMAP_test as TMAP
+from napari_cellseg3d.models import TRAILMAP_MS as TMAP
 from napari_cellseg3d.plugin_base import BasePluginFolder
 
 warnings.formatwarning = utils.format_Warning
@@ -64,11 +64,11 @@ class ModelFramework(BasePluginFolder):
             "VNet": VNet,
             "SegResNet": SegResNet,
             "TRAILMAP pre-trained": TRAILMAP,
-            "TRAILMAP test": TMAP,
+            "TRAILMAP_MS": TMAP,
         }
         """dict: dictionary of available models, with string for widget display as key
 
-        Currently implemented : SegResNet, VNet, TRAILMAP_test"""
+        Currently implemented : SegResNet, VNet, TRAILMAP_MS"""
 
         self.worker = None
         """Worker from model_workers.py, either inference or training"""
@@ -129,15 +129,6 @@ class ModelFramework(BasePluginFolder):
         )
         self.btn_save_log.setVisible(False)
         #####################################################
-
-    def toggle_visibility(self, checkbox, widget):
-        """Toggles the visibility of a widget based on the status of a checkbox.
-
-        Args:
-            checkbox: The QCheckbox that determines whether to show or not
-            widget: The widget to hide or show
-        """
-        widget.setVisible(checkbox.isChecked())
 
     def send_log(self, text):
         """Emit a signal to print in a Log"""
@@ -231,7 +222,7 @@ class ModelFramework(BasePluginFolder):
 
     def toggle_weights_path(self):
         """Toggle visibility of weight path"""
-        self.toggle_visibility(
+        ui.toggle_visibility(
             self.custom_weights_choice, self.weights_path_container
         )
 

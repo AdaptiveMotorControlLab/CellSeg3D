@@ -1,4 +1,5 @@
 from typing import Union
+from typing import Optional
 
 from qtpy.QtCore import Qt
 from qtpy.QtCore import QUrl
@@ -312,6 +313,32 @@ def make_button(
     return btn
 
 
+class DropdownMenu(QComboBox):
+    """Creates a dropdown menu with a title and adds specified entries to it"""
+
+    def __init__(
+        self,
+        entries: Optional[list] = None,
+        parent: Optional[QWidget] = None,
+        label: Optional[str] = None,
+        fixed: Optional[bool] = True,
+    ):
+        """Args:
+        entries (array(str)): Entries to add to the dropdown menu. Defaults to None, no entries if None
+        parent (QWidget): parent QWidget to add dropdown menu to. Defaults to None, no parent is set if None
+        label (str) : if not None, creates a QLabel with the contents of 'label', and returns the label as well
+        fixed (bool): if True, will set the size policy of the dropdown menu to Fixed in h and w. Defaults to True.
+        """
+        super().__init__(parent)
+        self.label = None
+        if entries is not None:
+            self.addItems(entries)
+        if label is not None:
+            self.label = QLabel(label)
+        if fixed:
+            self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+
 def make_combobox(
     entries=None,
     parent: QWidget = None,
@@ -329,22 +356,13 @@ def make_combobox(
     Returns:
         QComboBox : created dropdown menu
     """
-    if parent is None:
-        menu = QComboBox()
-    else:
-        menu = QComboBox(parent)
-
-    if entries is not None:
-        menu.addItems(entries)
-
-    if fixed:
-        menu.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-
     if label is not None:
-        label = QLabel(label)
+        menu = DropdownMenu(entries, parent, label, fixed)
+        label = menu.label
         return menu, label
-
-    return menu
+    else:
+        menu = DropdownMenu(entries, parent, fixed=fixed)
+        return menu
 
 
 def add_widgets(layout, widgets, alignment=LEFT_AL):
@@ -363,6 +381,30 @@ def add_widgets(layout, widgets, alignment=LEFT_AL):
             layout.addWidget(w, alignment=alignment)
 
 
+class CheckBox(QCheckBox):
+    """Shortcut for creating QCheckBox with a title and a function"""
+
+    def __init__(
+        self,
+        title: Optional[str] = None,
+        func: Optional[callable] = None,
+        parent: Optional[QWidget] = None,
+        fixed: Optional[bool] = True,
+    ):
+        """
+        Args:
+            title (str-like): title of the checkbox. Defaults to None, if None no title is set
+            func (callable): function to execute when checkbox is toggled. Defaults to None, no binding is made if None
+            parent (QWidget): parent QWidget to add checkbox to. Defaults to None, no parent is set if None
+            fixed (bool): if True, will set the size policy of the checkbox to Fixed in h and w. Defaults to True.
+        """
+        super().__init__(title, parent)
+        if fixed:
+            self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        if func is not None:
+            self.toggled.connect(func)
+
+
 def make_checkbox(
     title: str = None,
     func: callable = None,
@@ -378,26 +420,10 @@ def make_checkbox(
         fixed (bool): if True, will set the size policy of the checkbox to Fixed in h and w. Defaults to True.
 
     Returns:
-        QCheckBox : created button
+        QCheckBox : created widget
     """
-    if parent is not None:
-        if title is not None:
-            box = QCheckBox(title, parent)
-        else:
-            box = QCheckBox(parent)
-    else:
-        if title is not None:
-            box = QCheckBox(title, parent)
-        else:
-            box = QCheckBox(parent)
 
-    if fixed:
-        box.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-
-    if func is not None:
-        box.toggled.connect(func)
-
-    return box
+    return CheckBox(title, func, parent, fixed)
 
 
 def combine_blocks(
@@ -454,6 +480,76 @@ def combine_blocks(
     temp_layout.addWidget(right_or_below, r2, c2)  # , alignment=LEFT_AL)
     temp_widget.setLayout(temp_layout)
     return temp_widget
+
+
+def toggle_visibility(checkbox, widget):
+    """Toggles the visibility of a widget based on the status of a checkbox.
+
+    Args:
+        checkbox: The QCheckbox that determines whether to show or not
+        widget: The widget to hide or show
+    """
+    widget.setVisible(checkbox.isChecked())
+
+
+class AnisotropyWidgets(QWidget):
+    def __init__(self, parent, default_x=1, default_y=1, default_z=1):
+        super().__init__(parent)
+
+        self._layout = QVBoxLayout()
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+
+        self.container, self._boxes_layout = make_container(T=7, parent=parent)
+        self.checkbox = make_checkbox(
+            "Anisotropic data", self.toggle_display_aniso, parent
+        )
+
+        self.box_widgets = make_n_spinboxes(
+            n=3, min=1.0, max=1000, default=1, step=0.5, double=True
+        )
+        self.box_widgets[0].setValue(default_x)  # TODO change default
+        self.box_widgets[1].setValue(default_y)  # TODO change default
+        self.box_widgets[2].setValue(default_z)  # TODO change default
+
+        for w in self.box_widgets:
+            w.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        self.box_widgets_lbl = [
+            make_label("Resolution in " + axis + " (microns) :", parent=parent)
+            for axis in "xyz"
+        ]
+
+        ##################
+        # tooltips
+        self.checkbox.setToolTip(
+            "If you have anisotropic data, you can scale data using your resolution in microns"
+        )
+        [w.setToolTip("Resolution in microns") for w in self.box_widgets]
+        ##################
+
+        self.build()
+
+    def toggle_display_aniso(self):
+        """Shows the choices for correcting anisotropy when viewing results depending on whether :py:attr:`self.checkbox` is checked"""
+        toggle_visibility(self.checkbox, self.container)
+
+    def build(self):
+        [
+            self._boxes_layout.addWidget(widget, alignment=LEFT_AL)
+            for widgets in zip(self.box_widgets_lbl, self.box_widgets)
+            for widget in widgets
+        ]
+        # anisotropy
+        self.container.setLayout(self._boxes_layout)
+        self.container.setVisible(False)
+
+        add_widgets(self._layout, [self.checkbox, self.container])
+        self.setLayout(self._layout)
+
+    def get_anisotropy_factors(self):
+        """Returns : the resolution in microns for each of the three dimensions"""
+        return [w.value() for w in self.box_widgets]
 
 
 def open_url(url):

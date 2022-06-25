@@ -62,6 +62,10 @@ class Reviewer(BasePluginSingleImage):
             None,
         )
 
+        self.anisotropy_widgets = ui.AnisotropyWidgets(
+            self, default_x=1.5, default_y=1.5, default_z=5
+        )
+
         ###########################
         # tooltips
         self.textbox.setToolTip("Name of the csv results file")
@@ -109,6 +113,10 @@ class Reviewer(BasePluginSingleImage):
 
         data_group_w.setLayout(data_group_l)
         layout.addWidget(data_group_w)
+        ###########################
+        ui.add_blank(self, layout)
+        ###########################
+        ui.add_to_group("Image parameters", self.anisotropy_widgets, layout)
         ###########################
         ui.add_blank(self, layout)
         ###########################
@@ -167,21 +175,15 @@ class Reviewer(BasePluginSingleImage):
 
         self.filetype = self.filetype_choice.currentText()
         self.as_folder = self.file_handling_box.isChecked()
+        if self.anisotropy_widgets.checkbox.isChecked():
+            zoom = utils.anisotropy_zoom_factor(
+                self.anisotropy_widgets.get_anisotropy_factors()
+            )
+            #reordering
+            zoom = [zoom[2], zoom[1], zoom[0]]
+        else:
+            zoom = [1, 1, 1]
 
-        #################################
-        #################################
-        #################################
-        # TODO test remove later
-        if utils.ENABLE_TEST_MODE():
-            if self.as_folder:
-                self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
-                self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
-            else:
-                self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
-                self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels/testing_im.tif"
-        #################################
-        #################################
-        #################################
 
         images = utils.load_images(
             self.image_path, self.filetype, self.as_folder
@@ -232,6 +234,7 @@ class Reviewer(BasePluginSingleImage):
                 self.checkBox.isChecked(),
                 self.filetype,
                 self.as_folder,
+                zoom,
             )
             warnings.warn(
                 "Opening several loader sessions in one window is not supported; opening in new window"
@@ -250,6 +253,7 @@ class Reviewer(BasePluginSingleImage):
                 self.checkBox.isChecked(),
                 self.filetype,
                 self.as_folder,
+                zoom,
             )
             self.remove_from_viewer()
 

@@ -54,10 +54,10 @@ class BasePluginSingleImage(QTabWidget):
 
         self.btn_image = ui.make_button("Open", self.show_dialog_images, self)
         """Button to load image folder"""
-        self.lbl_image = QLineEdit("Images directory", self)
+        self.lbl_image = QLineEdit("Image path", self)
         self.lbl_image.setReadOnly(True)
 
-        self.lbl_label = QLineEdit("Labels directory", self)
+        self.lbl_label = QLineEdit("Label path", self)
         """Button to load label folder"""
         self.lbl_label.setReadOnly(True)
         self.btn_label = ui.make_button("Open", self.show_dialog_labels, self)

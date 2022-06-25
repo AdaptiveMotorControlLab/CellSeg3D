@@ -119,11 +119,11 @@ Finally, the last tab lets you choose :
 * The models
 
     * SegResNet is a lightweight model (low memory requirements) from MONAI originally designed for 3D fMRI data.
-    * VNet is a heavier (than SegResNet) CNN from MONAI designed for medical image segmentation.
+    * VNet is a larger (than SegResNet) CNN from MONAI designed for medical image segmentation.
     * TRAILMAP is our PyTorch implementation of a 3D CNN model trained for axonal detection in cleared tissue.
-    * TRAILMAP-MS is our implementation in PyTorch additionally trained on mouse cortical neural nuclei from mesoSPIM data.
+    * TRAILMAP_MS is our implementation in PyTorch additionally trained on mouse cortical neural nuclei from mesoSPIM data.
     * Note, the code is very modular, so it is relatively straightforward to use (and contribute) your model as well.
-    
+
 
 * The loss : for object detection in 3D volumes you'll likely want to use the Dice or Dice-focal Loss.
 

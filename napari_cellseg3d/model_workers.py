@@ -455,6 +455,7 @@ class InferenceWorker(GeneratorWorker):
                     )
                     self.log(os.path.split(instance_filepath)[1])
 
+                    # print(self.stats_to_csv)
                     if self.stats_to_csv:
                         data_dict = volume_stats(
                             instance_labels
@@ -464,11 +465,12 @@ class InferenceWorker(GeneratorWorker):
 
                 else:
                     instance_labels = None
+                    data_dict = None
 
                 original = np.array(inf_data["image"]).astype(np.float32)
 
                 # logging(f"Inference completed on image {i+1}")
-                yield {
+                result = {
                     "image_id": i + 1,
                     "original": original,
                     "instance_labels": instance_labels,
@@ -476,6 +478,8 @@ class InferenceWorker(GeneratorWorker):
                     "result": out,
                     "model_name": self.model_dict["name"],
                 }
+                # print(result)
+                yield result
 
         model.to("cpu")
 

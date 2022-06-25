@@ -218,6 +218,11 @@ def volume_stats(volume_image):
     def fill(lst, n=len(properties) - 1):
         return fill_list_in_between(lst, n, "")
 
+    if len(volume_image.flatten()) != 0:
+        ratio = fill([np.sum(volume) / len(volume_image.flatten())])
+    else:
+        ratio = 0
+
     return {
         "Volume": volume,
         "Centroid x": [region.centroid[0] for region in properties],
@@ -228,6 +233,6 @@ def volume_stats(volume_image):
         "Image size": fill([volume_image.shape]),
         "Total image volume": fill([len(volume_image.flatten())]),
         "Total object volume (pixels)": fill([np.sum(volume)]),
-        "Filling ratio": fill([np.sum(volume) / len(volume_image.flatten())]),
+        "Filling ratio": ratio,
         "Number objects": fill([len(properties)]),
     }
