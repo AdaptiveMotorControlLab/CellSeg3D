@@ -5,7 +5,7 @@
 
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/AdaptiveMotorControlLab/CellSeg3d/raw/main/LICENSE)
-[![PyPI](https://img.shields.io/pypi/v/napari-cellseg-annotator.svg?color=green)](https://pypi.org/project/napari-cellseg-annotator)
+[![PyPI](https://img.shields.io/pypi/v/napari-cellseg3d.svg?color=green)](https://pypi.org/project/napari-cellseg3d)
 [![Python Version](https://img.shields.io/pypi/pyversions/napari-cellseg-annotator.svg?color=green)](https://python.org)
 [![codecov](https://codecov.io/gh/AdaptiveMotorControlLab/napari-cellseg3d/branch/main/graph/badge.svg)](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3d)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-cellseg3d)](https://napari-hub.org/plugins/CellSeg3d)
@@ -29,7 +29,7 @@ You can install `napari-cellseg3d` via [pip] (pypi-test placeholder):
 
 ## Documentation
 
-Available at https://AdaptiveMotorControlLab.github.io/cellseg3d-docs
+Available at https://AdaptiveMotorControlLab.github.io/CellSeg3d
 
 You can also generate docs by running ``make html`` in the docs folder.
 
@@ -50,11 +50,9 @@ Then go into Plugins > napari-cellseg3d, and choose which tool to use.
 ## Requirements
 **Python >= 3.8 required**
 
-Requires manual installation of **pytorch** and **MONAI**.
-
+Requires **pytorch** and **MONAI**.
 For PyTorch, please see [PyTorch's website for installation instructions].
 A CUDA-capable GPU is not needed but very strongly recommended, especially for training.
-
 If you get errors from MONAI regarding missing readers, please see [MONAI's optional dependencies] page for instructions on getting the readers required by your images.
 
 
