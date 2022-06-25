@@ -15,7 +15,7 @@ jobs:
     # Standard drop-in approach that should work for most people.
     - uses: ammaraskar/sphinx-action@master
       with:
-        pre-build-command: "pip install -r requirements.txt napari-cellseg3d"
+        pre-build-command: "pip install -r requirements.txt napari-cellseg3d opencv-python-headless"
         docs-folder: "docs/"
 
     - name: GitHub Pages action
