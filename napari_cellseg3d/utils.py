@@ -82,12 +82,17 @@ def sphericity_axis(semi_major, semi_minor):
     b = semi_minor
 
     root = (a**2 - b**2) ** (1 / 2)
+    try:
+        result = (
+            2
+            * (a * (b**2)) ** (1 / 3)
+            / (a + (b**2) / root * np.log((a + root) / b))
+        )
+    except ZeroDivisionError:
+        print("Zero division in sphericity calculation was replaced by 0")
+        result = 0
 
-    return (
-        2
-        * (a * (b**2)) ** (1 / 3)
-        / (a + (b**2) / root * np.log((a + root) / b))
-    )
+    return result
 
 
 def dice_coeff(y_true, y_pred):

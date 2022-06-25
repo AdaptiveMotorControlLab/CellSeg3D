@@ -123,27 +123,11 @@ class Inferer(ModelFramework):
         )
         self.model_choice.setCurrentIndex(0)
 
-        self.aniso_checkbox = ui.make_checkbox(
-            "Anisotropic data", self.toggle_display_aniso
+        self.anisotropy_wdgt = ui.AnisotropyWidgets(
+            self, default_x=1.5, default_y=1.5, default_z=5
         )
 
-        self.aniso_box_widgets = ui.make_n_spinboxes(
-            n=3, min=1.0, max=1000, default=1.5, step=0.5, double=True
-        )
-        self.aniso_box_lbl = [
-            ui.make_label("Resolution in " + axis + " (microns) :", self)
-            for axis in "xyz"
-        ]
-
-        self.aniso_box_widgets[-1].setValue(5.0)  # TODO change default
-
-        for w in self.aniso_box_widgets:
-            w.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.aniso_resolutions = []
-
-        self.aniso_container, self.aniso_layout = ui.make_container(
-            T=7, parent=self
-        )
 
         # ui.add_blank(self.aniso_container, aniso_layout)
 
@@ -245,10 +229,7 @@ class Inferer(ModelFramework):
         self.segres_size.setToolTip(
             "Image size on which the SegResNet has been trained (default : 128)"
         )
-        self.aniso_checkbox.setToolTip(
-            "If you have anisotropic data, you can scale data using your resolution in microns"
-        )
-        [w.setToolTip("Resolution in microns") for w in self.aniso_box_widgets]
+
         thresh_desc = "Thresholding : all values in the image below the chosen probability threshold will be set to 0, and all others to 1."
         self.thresholding_checkbox.setToolTip(thresh_desc)
         self.thresholding_count.setToolTip(thresh_desc)
@@ -306,27 +287,21 @@ class Inferer(ModelFramework):
 
     def toggle_display_number(self):
         """Shows the choices for viewing results depending on whether :py:attr:`self.view_checkbox` is checked"""
-        self.toggle_visibility(self.view_checkbox, self.view_results_container)
-
-    def toggle_display_aniso(self):
-        """Shows the choices for correcting anisotropy when viewing results depending on whether :py:attr:`self.aniso_checkbox` is checked"""
-        self.toggle_visibility(self.aniso_checkbox, self.aniso_container)
+        ui.toggle_visibility(self.view_checkbox, self.view_results_container)
 
     def toggle_display_thresh(self):
         """Shows the choices for thresholding results depending on whether :py:attr:`self.thresholding_checkbox` is checked"""
-        self.toggle_visibility(
+        ui.toggle_visibility(
             self.thresholding_checkbox, self.thresholding_container
         )
 
     def toggle_display_instance(self):
         """Shows or hides the options for instance segmentation based on current user selection"""
-        self.toggle_visibility(
-            self.instance_box, self.instance_param_container
-        )
+        ui.toggle_visibility(self.instance_box, self.instance_param_container)
 
     def toggle_display_window_size(self):
         """Show or hide window size choice depending on status of self.window_infer_box"""
-        self.toggle_visibility(self.window_infer_box, self.window_infer_params)
+        ui.toggle_visibility(self.window_infer_box, self.window_infer_params)
 
     def build(self):
         """Puts all widgets in a layout and adds them to the napari Viewer"""
@@ -345,14 +320,7 @@ class Inferer(ModelFramework):
 
         self.view_results_container.setLayout(self.view_results_layout)
 
-        [
-            self.aniso_layout.addWidget(widget, alignment=ui.LEFT_AL)
-            for wdgts in zip(self.aniso_box_lbl, self.aniso_box_widgets)
-            for widget in wdgts
-        ]
-        # anisotropy
-        self.aniso_container.setLayout(self.aniso_layout)
-        self.aniso_container.setVisible(False)
+        self.anisotropy_wdgt.build()
 
         self.thresh_layout.addWidget(
             self.thresholding_count, alignment=ui.LEFT_AL
@@ -467,8 +435,7 @@ class Inferer(ModelFramework):
         ui.add_widgets(
             post_proc_layout,
             [
-                self.aniso_checkbox,
-                self.aniso_container,  # anisotropy
+                self.anisotropy_wdgt,  # anisotropy
                 self.thresholding_checkbox,
                 self.thresholding_container,  # thresholding
                 self.instance_box,
@@ -476,7 +443,7 @@ class Inferer(ModelFramework):
             ],
         )
 
-        self.aniso_container.setVisible(False)
+        self.anisotropy_wdgt.container.setVisible(False)
         self.thresholding_container.setVisible(False)
         self.instance_param_container.setVisible(False)
 
@@ -587,10 +554,10 @@ class Inferer(ModelFramework):
                     "path": self.get_model(model_key).get_weights_file(),
                 }
 
-            if self.aniso_checkbox.isChecked():
-                self.aniso_resolutions = [
-                    w.value() for w in self.aniso_box_widgets
-                ]
+            if self.anisotropy_wdgt.checkbox.isChecked():
+                self.aniso_resolutions = (
+                    self.anisotropy_wdgt.get_anisotropy_factors()
+                )
                 self.zoom = utils.anisotropy_zoom_factor(
                     self.aniso_resolutions
                 )
@@ -603,7 +570,7 @@ class Inferer(ModelFramework):
                     self.thresholding_count.value(),
                 ],
                 "zoom": [
-                    self.aniso_checkbox.isChecked(),
+                    self.anisotropy_wdgt.checkbox.isChecked(),
                     self.zoom,
                 ],
             }
@@ -648,7 +615,9 @@ class Inferer(ModelFramework):
             self.worker.started.connect(self.on_start)
             self.worker.log_signal.connect(self.log.print_and_log)
             self.worker.yielded.connect(yield_connect_show_res)
-            self.worker.errored.connect(yield_connect_show_res)  # TODO fix showing errors from thread
+            self.worker.errored.connect(
+                yield_connect_show_res
+            )  # TODO fix showing errors from thread
             self.worker.finished.connect(self.on_finish)
 
             if self.get_device(show=False) == "cuda":
@@ -705,6 +674,8 @@ class Inferer(ModelFramework):
             data (dict): dict yielded by :py:func:`~inference()`, contains : "image_id" : index of the returned image, "original" : original volume used for inference, "result" : inference result
             widget (QWidget): widget for accessing attributes
         """
+        # viewer, progress, show_res, show_res_number, zoon, show_original
+
         # check that viewer checkbox is on and that max number of displays has not been reached.
         image_id = data["image_id"]
         model_name = data["model_name"]
@@ -712,7 +683,7 @@ class Inferer(ModelFramework):
 
         viewer = widget._viewer
 
-        widget.progress.setValue(100 * (image_id) // total)
+        widget.progress.setValue(100 * image_id // total)
 
         if widget.show_res and image_id <= widget.show_res_nbr:
 
@@ -750,14 +721,13 @@ class Inferer(ModelFramework):
                 method = widget.instance_params["method"]
                 number_cells = np.amax(labels)
 
-                name = f"({number_cells})_{method}_instance_labels_{image_id}"
+                name = f"({number_cells} objects)_{method}_instance_labels_{image_id}"
 
                 instance_layer = viewer.add_labels(labels, name=name)
 
                 data_dict = data["object stats"]
-                if (
-                    widget.stats_to_csv and data_dict is not None
-                ):
+
+                if widget.stats_to_csv and data_dict is not None:
 
                     numeric_data = pd.DataFrame(data_dict)
 

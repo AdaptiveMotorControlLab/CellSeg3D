@@ -130,15 +130,6 @@ class ModelFramework(BasePluginFolder):
         self.btn_save_log.setVisible(False)
         #####################################################
 
-    def toggle_visibility(self, checkbox, widget):
-        """Toggles the visibility of a widget based on the status of a checkbox.
-
-        Args:
-            checkbox: The QCheckbox that determines whether to show or not
-            widget: The widget to hide or show
-        """
-        widget.setVisible(checkbox.isChecked())
-
     def send_log(self, text):
         """Emit a signal to print in a Log"""
         self.log.print_and_log(text)
@@ -231,7 +222,7 @@ class ModelFramework(BasePluginFolder):
 
     def toggle_weights_path(self):
         """Toggle visibility of weight path"""
-        self.toggle_visibility(
+        ui.toggle_visibility(
             self.custom_weights_choice, self.weights_path_container
         )
 

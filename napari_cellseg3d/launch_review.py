@@ -9,6 +9,7 @@ from matplotlib.backends.backend_qt5agg import (
 from matplotlib.figure import Figure
 from qtpy.QtWidgets import QSizePolicy
 from scipy import ndimage
+from monai.transforms import Zoom
 from tifffile import imwrite
 
 from napari_cellseg3d import utils
@@ -25,6 +26,7 @@ def launch_review(
     checkbox,
     filetype,
     as_folder,
+    zoom_factor,
 ):
     """Launch the review process, loading the original image, the labels & the raw labels (from prediction)
     in the viewer.
@@ -64,11 +66,12 @@ def launch_review(
 
         as_folder (bool): Whether to load as folder or single file
 
+        zoom_factor (array(int)): zoom factors for each axis
+
 
     """
     images_original = original
     base_label = base
-
 
     view1 = viewer
 
@@ -79,14 +82,17 @@ def launch_review(
         name="volume",
         colormap="inferno",
         contrast_limits=[200, 1000],
+        scale=zoom_factor,
     )  # anything bigger than 255 will get mapped to 255... they did it like this because it must have rgb images
-    view1.add_labels(base_label, name="labels", seed=0.6)
+    view1.add_labels(base_label, name="labels", seed=0.6, scale=zoom_factor)
+
     if raw is not None:  # raw labels is from the prediction
         view1.add_image(
             ndimage.gaussian_filter(raw, sigma=3),
             colormap="magenta",
             name="low_confident",
             blending="additive",
+            scale=zoom_factor,
         )
     else:
         pass
@@ -199,17 +205,17 @@ def launch_review(
 
         xy_axes = canvas.figure.add_subplot(3, 1, 1)
         canvas.figure.suptitle("Shift-click on image for plot \n", fontsize=8)
-        xy_axes.imshow(np.zeros((100, 100), np.uint8))
+        xy_axes.imshow(np.zeros((100, 100), np.int16))
         xy_axes.scatter(50, 50, s=10, c="red", alpha=0.25)
         xy_axes.set_xlabel("x axis")
         xy_axes.set_ylabel("y axis")
         yz_axes = canvas.figure.add_subplot(3, 1, 2)
-        yz_axes.imshow(np.zeros((100, 100), np.uint8))
+        yz_axes.imshow(np.zeros((100, 100), np.int16))
         yz_axes.scatter(50, 50, s=10, c="red", alpha=0.25)
         yz_axes.set_xlabel("y axis")
         yz_axes.set_ylabel("z axis")
         zx_axes = canvas.figure.add_subplot(3, 1, 3)
-        zx_axes.imshow(np.zeros((100, 100), np.uint8))
+        zx_axes.imshow(np.zeros((100, 100), np.int16))
         zx_axes.scatter(50, 50, s=10, c="red", alpha=0.25)
         zx_axes.set_xlabel("x axis")
         zx_axes.set_ylabel("z axis")
@@ -232,12 +238,13 @@ def launch_review(
                 print(m_point)
 
                 crop_big = crop_img(
-                    [m_point[0], m_point[1], m_point[2]], viewer.layers[0]
+                    [m_point[0], m_point[1], m_point[2]],
+                    viewer.layers["volume"],
                 )
 
-                xy_axes.imshow(crop_big[50], "gray")
-                yz_axes.imshow(crop_big.transpose(1, 0, 2)[50], "gray")
-                zx_axes.imshow(crop_big.transpose(2, 0, 1)[50], "gray")
+                xy_axes.imshow(crop_big[50], cmap="inferno", vmin=200, vmax=2000)
+                yz_axes.imshow(crop_big.transpose(1, 0, 2)[50], cmap="inferno", vmin=200, vmax=2000)
+                zx_axes.imshow(crop_big.transpose(2, 0, 1)[50], cmap="inferno", vmin=200, vmax=2000)
                 canvas.draw_idle()
             except Exception as e:
                 print(e)
@@ -256,21 +263,36 @@ def launch_review(
     view1.dims.events.current_step.connect(update_button)
 
     def crop_img(points, layer):
+
+        if zoom_factor != [1,1,1]:
+            im = np.array(layer.data, dtype=np.int16)
+            image = Zoom(
+                zoom_factor,
+                keep_size=False,
+                padding_mode="empty",
+            )(np.expand_dims(im, axis=0))
+            image = image[0]
+        # image = ndimage.zoom(layer.data, zoom_factor, mode="nearest") # cleaner but much slower...
+        else :
+            image = layer.data
+
         min_vals = [x - 50 for x in points]
         max_vals = [x + 50 for x in points]
         yohaku_minus = [n if n < 0 else 0 for n in min_vals]
         yohaku_plus = [
-            x - layer.data.shape[i] if layer.data.shape[i] < x else 0
+            x - image.shape[i] if image.shape[i] < x else 0
             for i, x in enumerate(max_vals)
         ]
         crop_slice = tuple(
             slice(np.maximum(0, n), x) for n, x in zip(min_vals, max_vals)
         )
+
         if as_folder:
-            crop_temp = layer.data[crop_slice].persist().compute()
+            crop_temp = image[crop_slice].persist().compute()
         else:
+
             crop_temp = layer.data[crop_slice]
-        cropped_img = np.zeros((100, 100, 100), np.uint8)
+        cropped_img = np.zeros((100, 100, 100), np.int16)
         cropped_img[
             -yohaku_minus[0] : 100 - yohaku_plus[0],
             -yohaku_minus[1] : 100 - yohaku_plus[1],
