@@ -49,6 +49,9 @@ add_blank
 **************************************
 .. autofunction:: napari_cellseg3d.interface::add_blank
 
+toggle_visibility
+**************************************
+.. autofunction:: napari_cellseg3d.interface::toggle_visibility
 
 open_file_dialog
 **************************************
