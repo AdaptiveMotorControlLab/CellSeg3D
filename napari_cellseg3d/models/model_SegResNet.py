@@ -1,11 +1,16 @@
 from monai.networks.nets import SegResNetVAE
+from napari_cellseg3d import utils
+import os
 
+modelname = "SegResNet"
+target_dir = os.path.join("models","pretrained")
 
 def get_net():
     return SegResNetVAE
 
 
 def get_weights_file():
+    utils.DownloadModel(modelname, target_dir)
     return "SegResNet.pth"
 
 

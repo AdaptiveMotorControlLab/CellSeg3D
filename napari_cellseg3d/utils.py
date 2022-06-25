@@ -12,28 +12,13 @@ from skimage import io
 from skimage.filters import gaussian
 from tifffile import imread as tfl_imread
 from tqdm import tqdm
+import importlib.util
 
 """
 utils.py
 ====================================
 Definitions of utility functions and variables
 """
-
-##################
-##################
-# dev util
-def ENABLE_TEST_MODE():
-    path = Path(os.path.expanduser("~"))
-    # print(path)
-    print("TEST MODE ENABLED, DEV ONLY")
-    if path == Path("C:/Users/Cyril"):
-        return True
-    return False
-
-
-##################
-##################
-
 
 def normalize_x(image):
     """Normalizes the values of an image array to be between [-1;1] rather than [0;255]
@@ -996,3 +981,64 @@ def merge_imgs(imgs, original_image_shape):
 
     print(merged_imgs.shape)
     return merged_imgs
+
+
+def read_plainconfig(configname):
+    """
+    This code is adapted from DeepLabCut with permission from MWMathis
+    """
+    if not os.path.exists(configname):
+        raise FileNotFoundError(
+            f"Config {configname} is not found. Please make sure that the file exists."
+        )
+    with open(configname) as file:
+        return YAML().load(file)
+
+def DownloadModel(modelname, target_dir):
+    """
+    Downloads a specific pretained model.
+    This code is adapted from DeepLabCut with permission from MWMathis
+    """
+    import urllib.request
+    import tarfile
+    from tqdm import tqdm
+
+    def show_progress(count, block_size, total_size):
+        pbar.update(block_size)
+
+    def tarfilenamecutting(tarf):
+        """' auxfun to extract folder path
+        ie. /xyz-trainsetxyshufflez/
+        """
+        for memberid, member in enumerate(tarf.getmembers()):
+            if memberid == 0:
+                parent = str(member.path)
+                l = len(parent) + 1
+            if member.path.startswith(parent):
+                member.path = member.path[l:]
+                yield member
+    #TODO: fix error in line 1021;
+    cellseg3d_path = os.path.split(importlib.util.find_spec("napari-cellseg3d").origin)[0]
+    neturls = read_plainconfig(os.path.join(cellseg3d_path,"models","pretrained","pretrained_model_urls.yaml",))
+
+    if modelname in neturls.keys():
+        url = neturls[modelname]
+        response = urllib.request.urlopen(url)
+        print(
+            "Downloading the model from the M.W. Mathis Lab server {}....".format(
+                url
+            )
+        )
+        total_size = int(response.getheader("Content-Length"))
+        pbar = tqdm(unit="B", total=total_size, position=0)
+        filename, _ = urllib.request.urlretrieve(url, reporthook=show_progress)
+        with tarfile.open(filename, mode="r:gz") as tar:
+            tar.extractall(target_dir, members=tarfilenamecutting(tar))
+    else:
+        models = [
+            fn
+            for fn in neturls.keys()
+            if "VNet_" not in fn and "SegResNet" not in fn and "TRAILMAP_" not in fn
+        ]
+        print("Model does not exist: ", modelname)
+        #print("Pick one of the following: ", models)

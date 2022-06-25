@@ -1,9 +1,13 @@
 from napari_cellseg3d.models.unet.model import UNet3D
+from napari_cellseg3d import utils
+import os
 
+modelname = "TRAILMAP"
+target_dir = os.path.join("models","pretrained")
 
 def get_weights_file():
-    # return "TMP_TEST_40e.pth"
-    return "trailmaptorchpretrained.pth"
+    utils.DownloadModel(model, train_dir)
+    return "TRAILMAP_PyTorch.pth" #original model form Luo lab, transfered to pytroch
 
 
 def get_net():
