@@ -8,7 +8,7 @@ def get_weights_file():
 
 
 def get_net():
-    return TRAILMAP_test(1, 1)
+    return TRAILMAP_MS(1, 1)
 
 
 def get_output(model, input):
@@ -22,7 +22,7 @@ def get_validation(model, val_inputs):
     return model(val_inputs)
 
 
-class TRAILMAP_test(nn.Module):
+class TRAILMAP_MS(nn.Module):
     def __init__(self, in_ch, out_ch):
         super().__init__()
         self.conv0 = self.encoderBlock(in_ch, 32, 3)  # input
