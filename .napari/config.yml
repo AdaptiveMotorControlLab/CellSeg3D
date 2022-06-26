@@ -1,4 +1,4 @@
-visibility: visible
+visibility: public
 # note : remember to add napari-hub preview app to repo
 
 project_urls:
