@@ -1,4 +1,5 @@
 visibility: visible
+# note : remember to add napari-hub preview app to repo
 
 project_urls:
   Bug Tracker: https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues
