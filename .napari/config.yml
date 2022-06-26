@@ -1,4 +1,4 @@
-visibility: hidden
+visibility: visible
 
 project_urls:
   Bug Tracker: https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues
