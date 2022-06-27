@@ -6,7 +6,7 @@ modelname = "TRAILMAP"
 target_dir = os.path.join("models","pretrained")
 
 def get_weights_file():
-    uutils.DownloadModel(modelname, target_dir)
+    utils.download_model(modelname, target_dir)
     return "TRAILMAP_PyTorch.pth" #original model from Liqun Luo lab, transfered to pytorch
 
 

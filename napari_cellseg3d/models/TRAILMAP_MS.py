@@ -7,7 +7,7 @@ modelname = "TRAILMAP_MS"
 target_dir = os.path.join("models","pretrained")
 
 def get_weights_file():
-    utils.DownloadModel(modelname, target_dir)
+    utils.download_model(modelname, target_dir)
     return "TRAILMAP_MS_best_metric_epoch_26.pth" #model additionally trained on Mathis/Wyss mesoSPIM data
 
 

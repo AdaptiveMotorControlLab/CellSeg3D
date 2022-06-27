@@ -983,25 +983,14 @@ def merge_imgs(imgs, original_image_shape):
     return merged_imgs
 
 
-def read_plainconfig(configname):
-    """
-    This code is adapted from DeepLabCut with permission from MWMathis
-    """
-    if not os.path.exists(configname):
-        raise FileNotFoundError(
-            f"Config {configname} is not found. Please make sure that the file exists."
-        )
-    with open(configname) as file:
-        return YAML().load(file)
-
-def DownloadModel(modelname, target_dir):
+def download_model(modelname, target_dir):
     """
     Downloads a specific pretained model.
     This code is adapted from DeepLabCut with permission from MWMathis
     """
+    import json
     import urllib.request
     import tarfile
-    from tqdm import tqdm
 
     def show_progress(count, block_size, total_size):
         pbar.update(block_size)
@@ -1017,18 +1006,17 @@ def DownloadModel(modelname, target_dir):
             if member.path.startswith(parent):
                 member.path = member.path[l:]
                 yield member
+
     #TODO: fix error in line 1021;
     cellseg3d_path = os.path.split(importlib.util.find_spec("napari-cellseg3d").origin)[0]
-    neturls = read_plainconfig(os.path.join(cellseg3d_path,"models","pretrained","pretrained_model_urls.yaml",))
+    json_path = os.path.join(cellseg3d_path, "models", "pretrained", "pretrained_model_urls.json")
+    with open(json_path) as f:
+        neturls = json.load(f)
 
     if modelname in neturls.keys():
         url = neturls[modelname]
         response = urllib.request.urlopen(url)
-        print(
-            "Downloading the model from the M.W. Mathis Lab server {}....".format(
-                url
-            )
-        )
+        print(f"Downloading the model from the M.W. Mathis Lab server {url}....")
         total_size = int(response.getheader("Content-Length"))
         pbar = tqdm(unit="B", total=total_size, position=0)
         filename, _ = urllib.request.urlretrieve(url, reporthook=show_progress)

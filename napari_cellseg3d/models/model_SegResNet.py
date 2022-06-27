@@ -10,7 +10,7 @@ def get_net():
 
 
 def get_weights_file():
-    utils.DownloadModel(modelname, target_dir)
+    utils.download_model(modelname, target_dir)
     return "SegResNet.pth"
 
 
