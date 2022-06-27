@@ -3,16 +3,14 @@ from monai.networks.nets import VNet
 from napari_cellseg3d import utils
 import os
 
-modelname = "VNet"
-target_dir = os.path.join("models","pretrained")
 
 def get_net():
     return VNet()
 
 
 def get_weights_file():
-    utils.download_model(modelname, target_dir)
-    return "VNet_40e.pth"
+    target_dir = utils.download_model("VNet")
+    return os.path.join(target_dir, "VNet_40e.pth")
 
 
 def get_output(model, input):

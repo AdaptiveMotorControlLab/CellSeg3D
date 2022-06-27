@@ -983,7 +983,7 @@ def merge_imgs(imgs, original_image_shape):
     return merged_imgs
 
 
-def download_model(modelname, target_dir):
+def download_model(modelname):
     """
     Downloads a specific pretained model.
     This code is adapted from DeepLabCut with permission from MWMathis
@@ -995,24 +995,11 @@ def download_model(modelname, target_dir):
     def show_progress(count, block_size, total_size):
         pbar.update(block_size)
 
-    def tarfilenamecutting(tarf):
-        """' auxfun to extract folder path
-        ie. /xyz-trainsetxyshufflez/
-        """
-        for memberid, member in enumerate(tarf.getmembers()):
-            if memberid == 0:
-                parent = str(member.path)
-                l = len(parent) + 1
-            if member.path.startswith(parent):
-                member.path = member.path[l:]
-                yield member
-
-    #TODO: fix error in line 1021;
-    cellseg3d_path = os.path.split(importlib.util.find_spec("napari-cellseg3d").origin)[0]
-    json_path = os.path.join(cellseg3d_path, "models", "pretrained", "pretrained_model_urls.json")
+    cellseg3d_path = os.path.split(importlib.util.find_spec("napari_cellseg3d").origin)[0]
+    pretrained_folder_path = os.path.join(cellseg3d_path, "models", "pretrained")
+    json_path = os.path.join(pretrained_folder_path, "pretrained_model_urls.json")
     with open(json_path) as f:
         neturls = json.load(f)
-
     if modelname in neturls.keys():
         url = neturls[modelname]
         response = urllib.request.urlopen(url)
@@ -1021,12 +1008,9 @@ def download_model(modelname, target_dir):
         pbar = tqdm(unit="B", total=total_size, position=0)
         filename, _ = urllib.request.urlretrieve(url, reporthook=show_progress)
         with tarfile.open(filename, mode="r:gz") as tar:
-            tar.extractall(target_dir, members=tarfilenamecutting(tar))
+            tar.extractall(pretrained_folder_path)
+        return pretrained_folder_path
     else:
-        models = [
-            fn
-            for fn in neturls.keys()
-            if "VNet_" not in fn and "SegResNet" not in fn and "TRAILMAP_" not in fn
-        ]
-        print("Model does not exist: ", modelname)
-        #print("Pick one of the following: ", models)
+        raise ValueError(
+            f"Unknown model. `modelname` should be one of {', '.join(neturls)}"
+        )

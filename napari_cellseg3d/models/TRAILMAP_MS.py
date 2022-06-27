@@ -3,12 +3,11 @@ from torch import nn
 from napari_cellseg3d import utils
 import os
 
-modelname = "TRAILMAP_MS"
-target_dir = os.path.join("models","pretrained")
 
 def get_weights_file():
-    utils.download_model(modelname, target_dir)
-    return "TRAILMAP_MS_best_metric_epoch_26.pth" #model additionally trained on Mathis/Wyss mesoSPIM data
+    # model additionally trained on Mathis/Wyss mesoSPIM data
+    target_dir = utils.download_model("TRAILMAP_MS")
+    return os.path.join(target_dir, "TRAILMAP_MS_best_metric_epoch_26.pth")
 
 
 def get_net():
