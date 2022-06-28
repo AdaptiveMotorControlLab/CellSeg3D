@@ -72,19 +72,7 @@ class Cropping(BasePluginSingleImage):
 
         self.build()
 
-        ###########################################
-        if utils.ENABLE_TEST_MODE():
-            # TODO : remove/disable once done
-            if self.as_folder:
-                self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample"
-                if self.crop_label_choice.isChecked():
-                    self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_png/sample_labels"
-            else:
-                self.image_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/volumes/images.tif"
-                if self.crop_label_choice.isChecked():
-                    self.label_path = "C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif/labels/testing_im.tif"
-
-        ###########################################
+        
 
     def toggle_label_path(self):
         if self.crop_label_choice.isChecked():

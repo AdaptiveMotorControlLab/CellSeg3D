@@ -67,23 +67,7 @@ class MetricsUtils(BasePluginFolder):
 
         self.build()
 
-        ######################################
-        # TODO test remove
-        import glob
-        import os
-
-        if utils.ENABLE_TEST_MODE():
-            ground_directory = "C:/Users/Cyril/Desktop/Proj_bachelor/data/cropped_visual/train/lab"
-            # ground_directory = "C:/Users/Cyril/Desktop/test/labels"
-            pred_directory = "C:/Users/Cyril/Desktop/test/pred"
-            # pred_directory = "C:/Users/Cyril/Desktop/test"
-            self.images_filepaths = sorted(
-                glob.glob(os.path.join(ground_directory, "*.tif"))
-            )
-            self.labels_filepaths = sorted(
-                glob.glob(os.path.join(pred_directory, "*.tif"))
-            )
-        ###############################################################################
+        
 
     def build(self):
         """Builds the layout of the widget."""

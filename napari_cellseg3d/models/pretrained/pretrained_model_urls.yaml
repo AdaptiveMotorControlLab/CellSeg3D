@@ -1,6 +1,0 @@
-#celleg3d custom model zoo:
-TRAILMAP_MS: http://deeplabcut.rowland.harvard.edu/models/DLC_human_fullbody_resnet_101.tar.gz
-SegResNet: http://deeplabcut.rowland.harvard.edu/models/DLC_human_fullbody_resnet_101.tar.gz
-VNet: http://deeplabcut.rowland.harvard.edu/models/DLC_human_fullbody_resnet_101.tar.gz
-
-#todo: model weights should be updated for monai project once API is stable

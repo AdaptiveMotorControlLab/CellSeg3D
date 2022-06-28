@@ -12,28 +12,13 @@ from skimage import io
 from skimage.filters import gaussian
 from tifffile import imread as tfl_imread
 from tqdm import tqdm
+import importlib.util
 
 """
 utils.py
 ====================================
 Definitions of utility functions and variables
 """
-
-##################
-##################
-# dev util
-def ENABLE_TEST_MODE():
-    path = Path(os.path.expanduser("~"))
-    # print(path)
-    print("TEST MODE ENABLED, DEV ONLY")
-    if path == Path("C:/Users/Cyril"):
-        return True
-    return False
-
-
-##################
-##################
-
 
 def normalize_x(image):
     """Normalizes the values of an image array to be between [-1;1] rather than [0;255]
@@ -996,3 +981,36 @@ def merge_imgs(imgs, original_image_shape):
 
     print(merged_imgs.shape)
     return merged_imgs
+
+
+def download_model(modelname):
+    """
+    Downloads a specific pretained model.
+    This code is adapted from DeepLabCut with permission from MWMathis
+    """
+    import json
+    import urllib.request
+    import tarfile
+
+    def show_progress(count, block_size, total_size):
+        pbar.update(block_size)
+
+    cellseg3d_path = os.path.split(importlib.util.find_spec("napari_cellseg3d").origin)[0]
+    pretrained_folder_path = os.path.join(cellseg3d_path, "models", "pretrained")
+    json_path = os.path.join(pretrained_folder_path, "pretrained_model_urls.json")
+    with open(json_path) as f:
+        neturls = json.load(f)
+    if modelname in neturls.keys():
+        url = neturls[modelname]
+        response = urllib.request.urlopen(url)
+        print(f"Downloading the model from the M.W. Mathis Lab server {url}....")
+        total_size = int(response.getheader("Content-Length"))
+        pbar = tqdm(unit="B", total=total_size, position=0)
+        filename, _ = urllib.request.urlretrieve(url, reporthook=show_progress)
+        with tarfile.open(filename, mode="r:gz") as tar:
+            tar.extractall(pretrained_folder_path)
+        return pretrained_folder_path
+    else:
+        raise ValueError(
+            f"Unknown model. `modelname` should be one of {', '.join(neturls)}"
+        )

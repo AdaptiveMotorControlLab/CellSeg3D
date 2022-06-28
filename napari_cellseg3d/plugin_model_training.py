@@ -132,44 +132,7 @@ class Trainer(ModelFramework):
 
         self.save_as_zip = False
         """Whether to zip results folder once done. Creates a zipped copy of the results folder."""
-        ######################
-        ######################
-        ######################
-        # TEST TODO REMOVE
-        import glob
-
-        if utils.ENABLE_TEST_MODE():
-            directory = os.path.dirname(os.path.realpath(__file__)) + str(
-                Path("/models/dataset/volumes")
-            )
-            self.data_path = directory
-
-            lab_directory = os.path.dirname(os.path.realpath(__file__)) + str(
-                Path("/models/dataset/lab_sem")
-            )
-            self.label_path = lab_directory
-
-            self.images_filepaths = sorted(
-                glob.glob(os.path.join(directory, "*.tif"))
-            )
-
-            self.labels_filepaths = sorted(
-                glob.glob(os.path.join(lab_directory, "*.tif"))
-            )
-
-            if results_path == "":
-                self.results_path = "C:/Users/Cyril/Desktop/test/models"
-            else:
-                self.results_path = results_path
-
-            if data_path != "":
-                self.data_path = data_path
-
-            if label_path != "":
-                self.label_path = label_path
-        #######################
-        #######################
-        #######################
+        
 
         # recover default values
         self.num_samples = samples

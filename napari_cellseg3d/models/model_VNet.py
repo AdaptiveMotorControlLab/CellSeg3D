@@ -1,5 +1,7 @@
 from monai.inferers import sliding_window_inference
 from monai.networks.nets import VNet
+from napari_cellseg3d import utils
+import os
 
 
 def get_net():
@@ -7,8 +9,8 @@ def get_net():
 
 
 def get_weights_file():
-    # return "dice_VNet.pth"
-    return "VNet_40e.pth"
+    target_dir = utils.download_model("VNet")
+    return os.path.join(target_dir, "VNet_40e.pth")
 
 
 def get_output(model, input):
