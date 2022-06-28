@@ -17,7 +17,7 @@ To add a custom model, you will need a **.py** file with the following structure
 
     def get_weights_file():
         return "weights_file.pth" # name of the weights file for the model,
-        # which should be in *napari_cellseg3d/models/saved_weights*
+        # which should be in *napari_cellseg3d/models/pretrained*
 
 
     def get_output(model, input):
@@ -35,5 +35,3 @@ To add a custom model, you will need a **.py** file with the following structure
     def ModelClass(x1,x2...):
         # your Pytorch model here...
         return results # should return as [C, N, D,H,W]
-
-
