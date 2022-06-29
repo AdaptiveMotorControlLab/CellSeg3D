@@ -4,7 +4,6 @@ import warnings
 import napari
 import numpy as np
 import pandas as pd
-
 # Qt
 from qtpy.QtWidgets import QSizePolicy
 
@@ -76,7 +75,6 @@ class Inferer(ModelFramework):
         self.keep_on_cpu = False
         self.use_window_inference = False
         self.window_inference_size = None
-
 
         ###########################
         # interface

@@ -1,15 +1,15 @@
+import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 from magicgui import magicgui
-from matplotlib.backends.backend_qt5agg import (
-    FigureCanvasQTAgg as FigureCanvas,
-)
+from matplotlib.backends.backend_qt5agg import \
+    FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+from monai.transforms import Zoom
 from qtpy.QtWidgets import QSizePolicy
 from scipy import ndimage
-from monai.transforms import Zoom
 from tifffile import imwrite
 
 from napari_cellseg3d import utils
@@ -147,6 +147,7 @@ def launch_review(
 
     layer = view1.layers[0]
     layer1 = view1.layers[1]
+
     # if not as_folder:
     #     r_path = os.path.dirname(r_path)
 
@@ -164,20 +165,19 @@ def launch_review(
         dirname = Path(r_path)
         # def saver():
         out_dir = file_widget.dirname.value
+
         # print("The directory is:", out_dir)
 
         def quicksave():
             if not as_folder:
                 if viewer.layers["labels"] is not None:
-                    time = utils.get_date_time()
-                    name = str(out_dir) + "/labels_reviewed_" + time + ".tif"
+                    name = os.path.join(str(out_dir), "labels_reviewed.tif")
                     dat = viewer.layers["labels"].data
                     imwrite(name, data=dat)
 
             else:
                 if viewer.layers["labels"] is not None:
-                    time = utils.get_date_time()
-                    dir_name = str(out_dir) + "/labels_reviewed_" + time
+                    dir_name = os.path.join(str(out_dir), "labels_reviewed")
                     dat = viewer.layers["labels"].data
                     utils.save_stack(dat, dir_name, filetype=filetype)
 
@@ -206,17 +206,17 @@ def launch_review(
         xy_axes = canvas.figure.add_subplot(3, 1, 1)
         canvas.figure.suptitle("Shift-click on image for plot \n", fontsize=8)
         xy_axes.imshow(np.zeros((100, 100), np.int16))
-        xy_axes.scatter(50, 50, s=10, c="red", alpha=0.25)
+        xy_axes.scatter(50, 50, s=10, c="green", alpha=0.25)
         xy_axes.set_xlabel("x axis")
         xy_axes.set_ylabel("y axis")
         yz_axes = canvas.figure.add_subplot(3, 1, 2)
         yz_axes.imshow(np.zeros((100, 100), np.int16))
-        yz_axes.scatter(50, 50, s=10, c="red", alpha=0.25)
+        yz_axes.scatter(50, 50, s=10, c="green", alpha=0.25)
         yz_axes.set_xlabel("y axis")
         yz_axes.set_ylabel("z axis")
         zx_axes = canvas.figure.add_subplot(3, 1, 3)
         zx_axes.imshow(np.zeros((100, 100), np.int16))
-        zx_axes.scatter(50, 50, s=10, c="red", alpha=0.25)
+        zx_axes.scatter(50, 50, s=10, c="green", alpha=0.25)
         zx_axes.set_xlabel("x axis")
         zx_axes.set_ylabel("z axis")
 
@@ -234,17 +234,33 @@ def launch_review(
 
         if "shift" in event.modifiers:
             try:
-                m_point = np.round(viewer.cursor.position).astype(int)
-                print(m_point)
+                cursor_position = np.round(viewer.cursor.position).astype(int)
+                print(cursor_position)
 
-                crop_big = crop_img(
-                    [m_point[0], m_point[1], m_point[2]],
+                cropped_volume = crop_volume_around_point(
+                    [
+                        cursor_position[0],
+                        cursor_position[1],
+                        cursor_position[2],
+                    ],
                     viewer.layers["volume"],
                 )
 
-                xy_axes.imshow(crop_big[50], cmap="inferno", vmin=200, vmax=2000)
-                yz_axes.imshow(crop_big.transpose(1, 0, 2)[50], cmap="inferno", vmin=200, vmax=2000)
-                zx_axes.imshow(crop_big.transpose(2, 0, 1)[50], cmap="inferno", vmin=200, vmax=2000)
+                xy_axes.imshow(
+                    cropped_volume[50], cmap="inferno", vmin=200, vmax=2000
+                )
+                yz_axes.imshow(
+                    cropped_volume.transpose(1, 0, 2)[50],
+                    cmap="inferno",
+                    vmin=200,
+                    vmax=2000,
+                )
+                zx_axes.imshow(
+                    cropped_volume.transpose(2, 0, 1)[50],
+                    cmap="inferno",
+                    vmin=200,
+                    vmax=2000,
+                )
                 canvas.draw_idle()
             except Exception as e:
                 print(e)
@@ -262,40 +278,49 @@ def launch_review(
 
     view1.dims.events.current_step.connect(update_button)
 
-    def crop_img(points, layer):
+    def crop_volume_around_point(points, layer):
 
-        if zoom_factor != [1,1,1]:
-            im = np.array(layer.data, dtype=np.int16)
-            image = Zoom(
+        if zoom_factor != [1, 1, 1]:
+            vol = np.array(layer.data, dtype=np.int16)
+            volume = Zoom(
                 zoom_factor,
                 keep_size=False,
                 padding_mode="empty",
-            )(np.expand_dims(im, axis=0))
-            image = image[0]
+            )(np.expand_dims(vol, axis=0))
+            volume = volume[0]
         # image = ndimage.zoom(layer.data, zoom_factor, mode="nearest") # cleaner but much slower...
-        else :
-            image = layer.data
+        else:
+            volume = layer.data
 
-        min_vals = [x - 50 for x in points]
-        max_vals = [x + 50 for x in points]
-        yohaku_minus = [n if n < 0 else 0 for n in min_vals]
-        yohaku_plus = [
-            x - image.shape[i] if image.shape[i] < x else 0
-            for i, x in enumerate(max_vals)
+        min_coordinates = [point - 50 for point in points]
+        max_coordinates = [point + 50 for point in points]
+        inferior_bound = [
+            min_coordinate if min_coordinate < 0 else 0
+            for min_coordinate in min_coordinates
         ]
+        superior_bound = [
+            max_coordinate - volume.shape[i]
+            if volume.shape[i] < max_coordinate
+            else 0
+            for i, max_coordinate in enumerate(max_coordinates)
+        ]
+
         crop_slice = tuple(
-            slice(np.maximum(0, n), x) for n, x in zip(min_vals, max_vals)
+            slice(np.maximum(0, min_coordinate), max_coordinate)
+            for min_coordinate, max_coordinate in zip(
+                min_coordinates, max_coordinates
+            )
         )
 
         if as_folder:
-            crop_temp = image[crop_slice].persist().compute()
+            crop_temp = volume[crop_slice].persist().compute()
         else:
-
             crop_temp = layer.data[crop_slice]
-        cropped_img = np.zeros((100, 100, 100), np.int16)
-        cropped_img[
-            -yohaku_minus[0] : 100 - yohaku_plus[0],
-            -yohaku_minus[1] : 100 - yohaku_plus[1],
-            -yohaku_minus[2] : 100 - yohaku_plus[2],
+
+        cropped_volume = np.zeros((100, 100, 100), np.int16)
+        cropped_volume[
+            -inferior_bound[0] : 100 - superior_bound[0],
+            -inferior_bound[1] : 100 - superior_bound[1],
+            -inferior_bound[2] : 100 - superior_bound[2],
         ] = crop_temp
-        return cropped_img
+        return cropped_volume

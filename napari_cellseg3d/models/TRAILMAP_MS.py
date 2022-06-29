@@ -1,7 +1,9 @@
+import os
+
 import torch
 from torch import nn
+
 from napari_cellseg3d import utils
-import os
 
 
 def get_weights_file():

@@ -1,3 +1,4 @@
+import importlib.util
 import os
 import warnings
 from datetime import datetime
@@ -12,13 +13,13 @@ from skimage import io
 from skimage.filters import gaussian
 from tifffile import imread as tfl_imread
 from tqdm import tqdm
-import importlib.util
 
 """
 utils.py
 ====================================
 Definitions of utility functions and variables
 """
+
 
 def normalize_x(image):
     """Normalizes the values of an image array to be between [-1;1] rather than [0;255]
@@ -989,21 +990,29 @@ def download_model(modelname):
     This code is adapted from DeepLabCut with permission from MWMathis
     """
     import json
-    import urllib.request
     import tarfile
+    import urllib.request
 
     def show_progress(count, block_size, total_size):
         pbar.update(block_size)
 
-    cellseg3d_path = os.path.split(importlib.util.find_spec("napari_cellseg3d").origin)[0]
-    pretrained_folder_path = os.path.join(cellseg3d_path, "models", "pretrained")
-    json_path = os.path.join(pretrained_folder_path, "pretrained_model_urls.json")
+    cellseg3d_path = os.path.split(
+        importlib.util.find_spec("napari_cellseg3d").origin
+    )[0]
+    pretrained_folder_path = os.path.join(
+        cellseg3d_path, "models", "pretrained"
+    )
+    json_path = os.path.join(
+        pretrained_folder_path, "pretrained_model_urls.json"
+    )
     with open(json_path) as f:
         neturls = json.load(f)
     if modelname in neturls.keys():
         url = neturls[modelname]
         response = urllib.request.urlopen(url)
-        print(f"Downloading the model from the M.W. Mathis Lab server {url}....")
+        print(
+            f"Downloading the model from the M.W. Mathis Lab server {url}...."
+        )
         total_size = int(response.getheader("Content-Length"))
         pbar = tqdm(unit="B", total=total_size, position=0)
         filename, _ = urllib.request.urlretrieve(url, reporthook=show_progress)

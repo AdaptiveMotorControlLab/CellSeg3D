@@ -1,12 +1,12 @@
-import napari
 import pathlib
 
+import napari
+from qtpy.QtCore import QSize
+from qtpy.QtGui import QIcon
+from qtpy.QtGui import QPixmap
 # Qt
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
-from qtpy.QtGui import QPixmap
-from qtpy.QtGui import QIcon
-from qtpy.QtCore import QSize
 
 # local
 from napari_cellseg3d import interface as ui
