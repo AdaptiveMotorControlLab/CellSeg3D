@@ -5,7 +5,6 @@ from pathlib import Path
 
 import napari
 import pandas as pd
-
 # Qt
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget

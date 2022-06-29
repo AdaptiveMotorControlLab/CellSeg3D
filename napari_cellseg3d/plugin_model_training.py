@@ -8,11 +8,9 @@ import napari
 import numpy as np
 import pandas as pd
 import torch
-from matplotlib.backends.backend_qt5agg import (
-    FigureCanvasQTAgg as FigureCanvas,
-)
+from matplotlib.backends.backend_qt5agg import \
+    FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-
 # MONAI
 from monai.losses import DiceCELoss
 from monai.losses import DiceFocalLoss
@@ -20,7 +18,6 @@ from monai.losses import DiceLoss
 from monai.losses import FocalLoss
 from monai.losses import GeneralizedDiceLoss
 from monai.losses import TverskyLoss
-
 # Qt
 from qtpy.QtWidgets import QSizePolicy
 
@@ -132,7 +129,6 @@ class Trainer(ModelFramework):
 
         self.save_as_zip = False
         """Whether to zip results folder once done. Creates a zipped copy of the results folder."""
-        
 
         # recover default values
         self.num_samples = samples

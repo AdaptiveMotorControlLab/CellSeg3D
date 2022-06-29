@@ -5,7 +5,6 @@ import napari
 import numpy as np
 import pims
 import skimage.io as io
-
 # Qt
 from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QSizePolicy
@@ -179,11 +178,10 @@ class Reviewer(BasePluginSingleImage):
             zoom = utils.anisotropy_zoom_factor(
                 self.anisotropy_widgets.get_anisotropy_factors()
             )
-            #reordering
+            # reordering
             zoom = [zoom[2], zoom[1], zoom[0]]
         else:
             zoom = [1, 1, 1]
-
 
         images = utils.load_images(
             self.image_path, self.filetype, self.as_folder

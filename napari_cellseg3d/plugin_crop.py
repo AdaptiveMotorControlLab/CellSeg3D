@@ -6,7 +6,6 @@ import numpy as np
 from magicgui import magicgui
 from magicgui.widgets import Container
 from magicgui.widgets import Slider
-
 # Qt
 from qtpy.QtWidgets import QSizePolicy
 from tifffile import imwrite
@@ -71,8 +70,6 @@ class Cropping(BasePluginSingleImage):
         self.crop_labels = False
 
         self.build()
-
-        
 
     def toggle_label_path(self):
         if self.crop_label_choice.isChecked():

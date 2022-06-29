@@ -1,6 +1,8 @@
-from monai.networks.nets import SegResNetVAE
-from napari_cellseg3d import utils
 import os
+
+from monai.networks.nets import SegResNetVAE
+
+from napari_cellseg3d import utils
 
 
 def get_net():
