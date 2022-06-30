@@ -17,9 +17,9 @@ scikit-image>=0.19.2
 matplotlib>=3.4.1
 tifffile>=2022.2.9
 imageio-ffmpeg>=0.4.5
-torch==1.11
-monai==0.8.1
+torch>=1.11
+monai>=0.8.1
 nibabel
 pillow
-itk==5.2.0.post1
+itk>=5.2.0.post1
 vispy>=0.9.6
