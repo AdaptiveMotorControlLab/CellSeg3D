@@ -113,7 +113,6 @@ def resize(image, zoom_factors):
 
 
 def align_array_sizes(array_shape, target_shape):
-
     index_differences = []
     for i in range(len(target_shape)):
         if target_shape[i] != array_shape[i]:
@@ -331,7 +330,6 @@ def fill_list_in_between(lst, n, elem):
     Returns :
         Filled list
     """
-
     new_list = []
     for i in range(len(lst)):
         temp_list = [lst[i]]
@@ -603,25 +601,6 @@ def format_Warning(message, category, filename, lineno, line=""):
         + str(message)
         + "\n"
     )
-
-
-# def dice_coeff(y_true, y_pred):
-#     smooth = 1.
-#     y_true_f = y_true.flatten()
-#     y_pred_f = K.flatten(y_pred)
-#     intersection = K.sum(y_true_f * y_pred_f)
-#     score = (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
-#     return score
-
-
-# def dice_loss(y_true, y_pred):
-#     loss = 1 - dice_coeff(y_true, y_pred)
-#     return loss
-
-
-# def bce_dice_loss(y_true, y_pred):
-#     loss = binary_crossentropy(y_true, y_pred) + dice_loss(y_true, y_pred)
-#     return loss
 
 
 def divide_imgs(images):

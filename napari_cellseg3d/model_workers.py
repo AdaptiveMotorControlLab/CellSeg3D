@@ -179,6 +179,7 @@ class InferenceWorker(GeneratorWorker):
         instance,
         use_window,
         window_infer_size,
+        window_overlap_percentage,
         keep_on_cpu,
         stats_csv,
     ):
@@ -205,6 +206,8 @@ class InferenceWorker(GeneratorWorker):
 
             * window_infer_size: size of window if use_window is True
 
+            * window_overlap_percentage: overlap of sliding windows if use_window is True
+
             * keep_on_cpu: keep images on CPU or no
 
             * stats_csv: compute stats on cells and save them to a csv file
@@ -228,6 +231,7 @@ class InferenceWorker(GeneratorWorker):
         self.instance_params = instance
         self.use_window = use_window
         self.window_infer_size = window_infer_size
+        self.window_overlap_percentage = window_overlap_percentage
         self.keep_on_cpu = keep_on_cpu
         self.stats_to_csv = stats_csv
         """These attributes are all arguments of :py:func:~inference, please see that for reference"""
@@ -350,8 +354,6 @@ class InferenceWorker(GeneratorWorker):
         #     pad = utils.get_padding_dim(check, anisotropy_factor=zoom)
         # else:
         self.log("\nChecking dimensions...")
-        pad = utils.get_padding_dim(check)
-        # print(pad)
         dims = self.model_dict["segres_size"]
 
         model = self.model_dict["class"].get_net()
@@ -364,6 +366,14 @@ class InferenceWorker(GeneratorWorker):
                 ],  # TODO FIX ! find a better way & remove model-specific code
                 out_channels=1,
                 # dropout_prob=0.3,
+            )
+        elif self.model_dict["name"] == "SwinUNetR":
+            model = self.model_dict["class"].get_net()(
+                img_size=[dims, dims, dims],
+                in_channels=1,
+                out_channels=1,
+                feature_size=48,
+                use_checkpoint=False,
             )
 
         self.log_parameters()
@@ -380,7 +390,6 @@ class InferenceWorker(GeneratorWorker):
                 EnsureChannelFirstd(keys=["image"]),
                 # Orientationd(keys=["image"], axcodes="PLI"),
                 # anisotropic_transform,
-                SpatialPadd(keys=["image"], spatial_size=pad),
                 EnsureTyped(keys=["image"]),
             ]
         )
@@ -437,10 +446,18 @@ class InferenceWorker(GeneratorWorker):
                 # print(inputs.shape)
 
                 inputs = inputs.to("cpu")
+                print(inputs.shape)
 
-                model_output = lambda inputs: post_process_transforms(
-                    self.model_dict["class"].get_output(model, inputs)
-                )
+                if self.model_dict["name"] == "SwinUNetR":
+                    model_output = lambda inputs: post_process_transforms(
+                        torch.sigmoid(
+                            self.model_dict["class"].get_output(model, inputs)
+                        )
+                    )
+                else:
+                    model_output = lambda inputs: post_process_transforms(
+                        self.model_dict["class"].get_output(model, inputs)
+                    )
 
                 if self.keep_on_cpu:
                     dataset_device = "cpu"
@@ -449,9 +466,10 @@ class InferenceWorker(GeneratorWorker):
 
                 if self.use_window:
                     window_size = self.window_infer_size
+                    window_overlap = self.window_overlap_percentage
                 else:
                     window_size = None
-
+                    window_overlap = 0.25
                 outputs = sliding_window_inference(
                     inputs,
                     roi_size=window_size,
@@ -459,12 +477,13 @@ class InferenceWorker(GeneratorWorker):
                     predictor=model_output,
                     sw_device=self.device,
                     device=dataset_device,
+                    overlap=window_overlap,
                 )
-
+                print("done window infernce")
                 out = outputs.detach().cpu()
                 # del outputs # TODO fix memory ?
                 # outputs = None
-
+                print(out.shape)
                 if self.transforms["zoom"][0]:
                     zoom = self.transforms["zoom"][1]
                     anisotropic_transform = Zoom(
@@ -474,9 +493,11 @@ class InferenceWorker(GeneratorWorker):
                     )
                     out = anisotropic_transform(out[0])
 
-                out = post_process_transforms(out)
+                # out = post_process_transforms(out)
                 out = np.array(out).astype(np.float32)
+                print(out.shape)
                 out = np.squeeze(out)
+                print(out.shape)
                 to_instance = out  # avoid post processing since thresholding is done there anyway
 
                 # batch_len = out.shape[1]
@@ -824,6 +845,19 @@ class TrainingWorker(GeneratorWorker):
                 input_image_size=utils.get_padding_dim(size),
                 out_channels=1,
                 dropout_prob=0.3,
+            )
+        elif model_name == "SwinUNetR":
+            if self.sampling:
+                size = self.sample_size
+            else:
+                size = check
+            print(f"Size of image : {size}")
+            model = model_class.get_net()(
+                img_size=utils.get_padding_dim(size),
+                in_channels=1,
+                out_channels=1,
+                feature_size=48,
+                use_checkpoint=True,
             )
         else:
             model = model_class.get_net()  # get an instance of the model

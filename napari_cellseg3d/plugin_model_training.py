@@ -31,7 +31,7 @@ from napari_cellseg3d.model_framework import ModelFramework
 from napari_cellseg3d.model_workers import TrainingWorker
 
 NUMBER_TABS = 3
-DEFAULT_PATCH_SIZE = 60
+DEFAULT_PATCH_SIZE = 64
 
 
 class Trainer(ModelFramework):

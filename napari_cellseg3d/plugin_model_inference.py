@@ -76,6 +76,7 @@ class Inferer(ModelFramework):
         self.keep_on_cpu = False
         self.use_window_inference = False
         self.window_inference_size = None
+        self.window_overlap_percentage = None
 
         ###########################
         # interface
@@ -132,6 +133,17 @@ class Inferer(ModelFramework):
         self.window_infer_box.clicked.connect(self.toggle_display_window_size)
 
         sizes_window = ["8", "16", "32", "64", "128", "256", "512"]
+        # (
+        #     self.window_size_choice,
+        #     self.lbl_window_size_choice,
+        # ) = ui.make_combobox(sizes_window, label="Window size and overlap")
+        # self.window_overlap = ui.make_n_spinboxes(
+        #     max=1,
+        #     default=0.7,
+        #     step=0.05,
+        #     double=True,
+        # )
+
         self.window_size_choice = ui.DropdownMenu(
             sizes_window, label="Window size"
         )
@@ -144,6 +156,11 @@ class Inferer(ModelFramework):
             self.lbl_window_size_choice,
             horizontal=False,
         )
+        # self.window_infer_params = ui.combine_blocks(
+        #     self.window_overlap,
+        #     self.window_infer_params,
+        #     horizontal=False,
+        # )
 
         ##################
         ##################
@@ -210,7 +227,7 @@ class Inferer(ModelFramework):
             "Displays the image used for inference in the viewer"
         )
         self.segres_size.setToolTip(
-            "Image size on which the SegResNet has been trained (default : 128)"
+            "Image size on which the model has been trained (default : 128)"
         )
 
         thresh_desc = "Thresholding : all values in the image below the chosen probability threshold will be set to 0, and all others to 1."
@@ -224,6 +241,11 @@ class Inferer(ModelFramework):
         self.window_size_choice.setToolTip(
             "Size of the window to run inference with (in pixels)"
         )
+
+        # self.window_overlap.setToolTip(
+        #     "Amount of overlap between sliding windows"
+        # )
+
         self.keep_data_on_cpu_box.setToolTip(
             "If enabled, data will be kept on the RAM rather than the VRAM.\nCan avoid out of memory issues with CUDA"
         )
@@ -263,7 +285,10 @@ class Inferer(ModelFramework):
             return False
 
     def toggle_display_segres_size(self):
-        if self.model_choice.currentText() == "SegResNet":
+        if (
+            self.model_choice.currentText() == "SegResNet"
+            or self.model_choice.currentText() == "SwinUNetR"
+        ):
             self.segres_size.setVisible(True)
         else:
             self.segres_size.setVisible(False)
@@ -575,6 +600,7 @@ class Inferer(ModelFramework):
             self.window_inference_size = int(
                 self.window_size_choice.currentText()
             )
+            # self.window_overlap_percentage = self.window_overlap.value()
 
             self.worker = InferenceWorker(
                 device=device,
@@ -587,6 +613,7 @@ class Inferer(ModelFramework):
                 instance=self.instance_params,
                 use_window=self.use_window_inference,
                 window_infer_size=self.window_inference_size,
+                # window_overlap_percentage=self.window_overlap_percentage,
                 keep_on_cpu=self.keep_on_cpu,
                 stats_csv=self.stats_to_csv,
             )
