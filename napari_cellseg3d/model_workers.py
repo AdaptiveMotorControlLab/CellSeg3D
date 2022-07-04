@@ -301,8 +301,6 @@ class InferenceWorker(GeneratorWorker):
                 f"Probability threshold is {self.instance_params['threshold']:.2f}\n"
                 f"Objects smaller than {self.instance_params['size_small']} pixels will be removed\n"
             )
-            # self.log(f"")
-            # self.log("\n")
         self.log("-" * 20)
 
     def load_folder(self):
@@ -313,11 +311,7 @@ class InferenceWorker(GeneratorWorker):
         data_check = LoadImaged(keys=["image"])(images_dict[0])
 
         check = data_check["image"].shape
-        # TODO remove
-        # z_aniso = 5 / 1.5
-        # if zoom is not None :
-        #     pad = utils.get_padding_dim(check, anisotropy_factor=zoom)
-        # else:
+
         self.log("\nChecking dimensions...")
         pad = utils.get_padding_dim(check)
 
@@ -1027,9 +1021,25 @@ class TrainingWorker(GeneratorWorker):
                     out_channels=1,
                     dropout_prob=0.3,
                 )
+            elif model_name == "SwinUNetR":
+                if self.sampling:
+                    size = self.sample_size
+                else:
+                    size = check
+                print(f"Size of image : {size}")
+                model = model_class.get_net()(
+                    img_size=utils.get_padding_dim(size),
+                    in_channels=1,
+                    out_channels=1,
+                    feature_size=48,
+                    use_checkpoint=True,
+                )
             else:
                 model = model_class.get_net()  # get an instance of the model
             model = model.to(self.device)
+
+
+
 
             epoch_loss_values = []
             val_metric_values = []
