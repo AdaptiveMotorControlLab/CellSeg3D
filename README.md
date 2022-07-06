@@ -27,6 +27,13 @@ You can install `napari-cellseg3d` via [pip]:
 
     pip install napari-cellseg3d
 
+OR directly via [napari-hub]:
+
+- Install napari from pip with `pip install "napari[all]"`,
+then from the “Plugins” menu within the napari application, select “Install/Uninstall Package(s)...”
+- Copy `napari-cellseg3d` and paste it where it says “Install by name/url…”
+- Click “Install”
+
 ## Documentation
 
 Available at https://AdaptiveMotorControlLab.github.io/CellSeg3d
@@ -87,6 +94,7 @@ Distributed under the terms of the [MIT] license.
 
 "napari-cellseg3d" is free and open source software.
 
+[napari-hub]: https://www.napari-hub.org/plugins/napari-cellseg3d
 
 [file an issue]: https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues
 [napari]: https://github.com/napari/napari
