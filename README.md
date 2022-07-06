@@ -66,7 +66,7 @@ If you encounter any problems, please [file an issue] along with a detailed desc
 To run tests locally:
 
 - Locally : run ``pytest`` in the plugin folder
-- Locally with coverage : In the plugin folder, run ``coverage run --source=src -m pytest`` then ``coverage.xml`` to generate a .xml coverage file.
+- Locally with coverage : In the plugin folder, run ``coverage run --source=napari_cellseg3d -m pytest`` then ``coverage xml`` to generate a .xml coverage file.
 - With tox : run ``tox`` in the plugin folder (will simulate tests with several python and OS configs, requires substantial storage space)
 
 ## Contributing

@@ -22,6 +22,6 @@ def test_launch_review(make_napari_viewer):
         widget.run_review()
         widget._viewer.close()
 
-        assert widget._viewer is None
+        assert widget._viewer is not None
 
 
