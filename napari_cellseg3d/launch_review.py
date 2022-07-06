@@ -2,10 +2,12 @@ import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import napari
 import numpy as np
 from magicgui import magicgui
-from matplotlib.backends.backend_qt5agg import \
-    FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvasQTAgg as FigureCanvas,
+)
 from matplotlib.figure import Figure
 from monai.transforms import Zoom
 from qtpy.QtWidgets import QSizePolicy
@@ -17,7 +19,6 @@ from napari_cellseg3d.plugin_dock import Datamanager
 
 
 def launch_review(
-    viewer,
     original,
     base,
     raw,
@@ -48,7 +49,6 @@ def launch_review(
       and determine whether it should be labeled or not.
 
     Args:
-        viewer (napari.viewer.Viewer): The viewer the widgets are to be displayed in
 
         original (dask.array.Array): The original images/volumes that have been labeled
 
@@ -68,12 +68,13 @@ def launch_review(
 
         zoom_factor (array(int)): zoom factors for each axis
 
-
+    Returns : list of all docked widgets
     """
     images_original = original
     base_label = base
 
-    view1 = viewer
+    view1 = napari.Viewer()
+    viewer = view1 #TODO fix duplicate name
 
     view1.scale_bar.visible = True
 
@@ -144,10 +145,6 @@ def launch_review(
     #     return labeled_c, labeled_sorted, nums
     #
     # worker = create_label()
-
-    layer = view1.layers[0]
-    layer1 = view1.layers[1]
-
     # if not as_folder:
     #     r_path = os.path.dirname(r_path)
 
@@ -324,3 +321,5 @@ def launch_review(
             -inferior_bound[2] : 100 - superior_bound[2],
         ] = crop_temp
         return cropped_volume
+
+    return view1, [file_widget, canvas, dmg]

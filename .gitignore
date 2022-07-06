@@ -9,6 +9,7 @@ __pycache__/
 # unwanted results files
 *.tif
 napari_cellseg3d/_tests/res/*.csv
+*.pth
 
 # Distribution / packaging
 .Python

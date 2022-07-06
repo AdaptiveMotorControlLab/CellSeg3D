@@ -216,21 +216,6 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
     return padding
 
 
-def anisotropy_zoom_factor(resolutions):
-    """Computes a zoom factor to correct anisotropy, based on resolutions
-
-        Args:
-            resolutions: array for resolution (float) in microns for each axis
-
-    ith    Returns: an array with the corresponding zoom factors for each axis (all values divided by min)
-
-    """
-
-    base = min(resolutions)
-    zoom_factors = [base / res for res in resolutions]
-    return zoom_factors
-
-
 def denormalize_y(image):
     """De-normalizes the values of an image array to be between [0;255] rather than [0;1]
 

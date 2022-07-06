@@ -41,7 +41,7 @@ ABS_AL = Qt.AlignmentFlag.AlignAbsolute
 BOTT_AL = Qt.AlignmentFlag.AlignBottom
 """Alias for Qt.AlignmentFlag.AlignBottom, to use in addWidget"""
 ###############
-
+# colors
 dark_red = "#72071d"  # crimson red
 default_cyan = "#8dd3c7"  # turquoise cyan (default matplotlib line color under dark background context)
 napari_grey = "#262930"  # napari background color (grey)
@@ -95,7 +95,7 @@ def open_file_dialog(
         return filenames
 
 
-def make_label(name, parent=None):
+def make_label(name, parent=None):  # TODO update to child class
     """Creates a QLabel
 
     Args:
@@ -113,7 +113,7 @@ def make_label(name, parent=None):
 
 def make_scrollable(
     contained_layout, containing_widget, min_wh=None, max_wh=None, base_wh=None
-):
+):  # TODO convert to child class
     """Creates a QScrollArea and sets it up, then adds the contained_widget to it,
     and finally adds the scroll area in a layout and sets it to the contaning_widget
 
@@ -163,7 +163,7 @@ def make_n_spinboxes(
     parent=None,
     double=False,
     fixed=True,
-) -> Union[list, QWidget]:
+) -> Union[list, QWidget]:  # TODO: child class if possible ?
     """
 
     Args:
@@ -222,7 +222,7 @@ def add_to_group(title, widget, layout, L=7, T=20, R=7, B=11):
     layout.addWidget(group)
 
 
-def make_group(title, L=7, T=20, R=7, B=11, parent=None):
+def make_group(title, L=7, T=20, R=7, B=11, parent=None):  # TODO : child class
     """Creates a group widget and layout, with a header (`title`) and content margins for top/left/right/bottom `L, T, R, B` (in pixels)
     Group widget and layout returned will have a Fixed size policy.
 
@@ -246,7 +246,9 @@ def make_group(title, L=7, T=20, R=7, B=11, parent=None):
     return group, layout
 
 
-def make_container(L=0, T=0, R=1, B=11, vertical=True, parent=None):
+def make_container(
+    L=0, T=0, R=1, B=11, vertical=True, parent=None
+):  # TODO child class?
     """Creates a QWidget and a layout for the purpose of containing other modules, with a Fixed layout.
 
     Args:
@@ -276,7 +278,7 @@ def make_container(L=0, T=0, R=1, B=11, vertical=True, parent=None):
     return container_widget, container_layout
 
 
-def make_button(
+def make_button(  # TODO child class
     title: str = None,
     func: callable = None,
     parent: QWidget = None,
@@ -339,7 +341,7 @@ class DropdownMenu(QComboBox):
             self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
 
-def make_combobox(
+def make_combobox(  # TODO child class
     entries=None,
     parent: QWidget = None,
     label: str = None,
@@ -405,7 +407,7 @@ class CheckBox(QCheckBox):
             self.toggled.connect(func)
 
 
-def make_checkbox(
+def make_checkbox(  # TODO update calls to class
     title: str = None,
     func: callable = None,
     parent: QWidget = None,
@@ -508,9 +510,9 @@ class AnisotropyWidgets(QWidget):
         self.box_widgets = make_n_spinboxes(
             n=3, min=1.0, max=1000, default=1, step=0.5, double=True
         )
-        self.box_widgets[0].setValue(default_x)  # TODO change default
-        self.box_widgets[1].setValue(default_y)  # TODO change default
-        self.box_widgets[2].setValue(default_z)  # TODO change default
+        self.box_widgets[0].setValue(default_x)
+        self.box_widgets[1].setValue(default_y)
+        self.box_widgets[2].setValue(default_z)
 
         for w in self.box_widgets:
             w.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -547,9 +549,48 @@ class AnisotropyWidgets(QWidget):
         add_widgets(self._layout, [self.checkbox, self.container])
         self.setLayout(self._layout)
 
-    def get_anisotropy_factors(self):
-        """Returns : the resolution in microns for each of the three dimensions"""
-        return [w.value() for w in self.box_widgets]
+    def get_anisotropy_resolution_xyz(self, as_factors=True):
+        """
+        Args :
+            as_factors: if True, returns zoom factors, otherwise returns the input resolution
+
+        Returns : the resolution in microns for each of the three dimensions. ZYX order suitable for napari scale"""
+
+        resolution = [w.value() for w in self.box_widgets]
+        if as_factors:
+            return self.anisotropy_zoom_factor(resolution)
+
+        return resolution
+
+    def get_anisotropy_resolution_zyx(self, as_factors=True):
+        """
+        Args :
+            as_factors: if True, returns zoom factors, otherwise returns the input resolution
+
+        Returns : the resolution in microns for each of the three dimensions. XYZ order suitable for MONAI"""
+        resolution = [w.value() for w in self.box_widgets]
+        if as_factors:
+            resolution = self.anisotropy_zoom_factor(resolution)
+
+        return [resolution[2], resolution[1], resolution[0]]
+
+    def anisotropy_zoom_factor(self, aniso_res):
+        """Computes a zoom factor to correct anisotropy, based on anisotropy resolutions
+
+            Args:
+                resolutions: array for resolution (float) in microns for each axis
+
+        Returns: an array with the corresponding zoom factors for each axis (all values divided by min)
+
+        """
+
+        base = min(aniso_res)
+        zoom_factors = [base / res for res in aniso_res]
+        return zoom_factors
+
+    def is_enabled(self):
+        """Returns : whether anisotropy correction has been enabled or not"""
+        return self.checkbox.isChecked()
 
 
 def open_url(url):
