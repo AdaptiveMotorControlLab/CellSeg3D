@@ -68,8 +68,18 @@ make sure to mention this.
 If you know of researchers, groups or labs using your plugin, or if it has been cited
 anywhere, feel free to also include this information here.
 -->
-<!--
 ## Quickstart
+
+Install from pip with `pip install napari-cellseg3d`
+
+OR
+
+- Install napari from pip with `pip install "napari[all]"`,
+then from the “Plugins” menu within the napari application, select “Install/Uninstall Package(s)...”
+- Copy `napari-cellseg3d` and paste it where it says “Install by name/url…”
+- Click “Install”
+<!--
+
 
 This section should go through step-by-step examples of how your plugin should be used.
 Where your plugin provides multiple dock widgets or functions, you should split these
