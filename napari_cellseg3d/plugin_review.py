@@ -5,6 +5,7 @@ import napari
 import numpy as np
 import pims
 import skimage.io as io
+
 # Qt
 from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QSizePolicy
@@ -16,6 +17,7 @@ from napari_cellseg3d.launch_review import launch_review
 from napari_cellseg3d.plugin_base import BasePluginSingleImage
 
 warnings.formatwarning = utils.format_Warning
+
 
 class Reviewer(BasePluginSingleImage):
     """A plugin for selecting volumes and labels file and launching the review process.
@@ -68,7 +70,6 @@ class Reviewer(BasePluginSingleImage):
             "Ignore any pre-existing csv with the specified name and create a new one"
         )
         ###########################
-
 
         self.build()
 
@@ -205,9 +206,8 @@ class Reviewer(BasePluginSingleImage):
             # TODO : might not work, test with predi labels later
             labels_raw = None
 
-
         viewer = self._viewer
-        print("New review session\n"+"*"*20)
+        print("New review session\n" + "*" * 20)
         self.docked_widgets = launch_review(
             viewer,
             images,
@@ -225,7 +225,3 @@ class Reviewer(BasePluginSingleImage):
     def reset(self):
         self._viewer.layers.clear()
         self.remove_docked_widgets()
-
-
-
-

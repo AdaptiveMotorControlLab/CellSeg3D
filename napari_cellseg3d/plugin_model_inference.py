@@ -4,6 +4,7 @@ import warnings
 import napari
 import numpy as np
 import pandas as pd
+
 # Qt
 from qtpy.QtWidgets import QSizePolicy
 
@@ -103,10 +104,13 @@ class Inferer(ModelFramework):
         self.model_choice.setCurrentIndex(0)
 
         self.anisotropy_wdgt = ui.AnisotropyWidgets(
-            self, default_x=1.5, default_y=1.5, default_z=5 #TODO change default
+            self,
+            default_x=1.5,
+            default_y=1.5,
+            default_z=5,  # TODO change default
         )
 
-        self.aniso_resolutions = [1,1,1]
+        self.aniso_resolutions = [1, 1, 1]
 
         # ui.add_blank(self.aniso_container, aniso_layout)
 
@@ -535,9 +539,13 @@ class Inferer(ModelFramework):
 
             if self.anisotropy_wdgt.is_enabled():
                 self.aniso_resolutions = (
-                    self.anisotropy_wdgt.get_anisotropy_resolution_xyz(as_factors=False)
+                    self.anisotropy_wdgt.get_anisotropy_resolution_xyz(
+                        as_factors=False
+                    )
                 )
-                self.zoom = self.anisotropy_wdgt.get_anisotropy_resolution_xyz()
+                self.zoom = (
+                    self.anisotropy_wdgt.get_anisotropy_resolution_xyz()
+                )
             else:
                 self.zoom = [1, 1, 1]
 

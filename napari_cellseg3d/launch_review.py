@@ -5,8 +5,9 @@ import matplotlib.pyplot as plt
 import napari
 import numpy as np
 from magicgui import magicgui
-from matplotlib.backends.backend_qt5agg import \
-    FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvasQTAgg as FigureCanvas,
+)
 from matplotlib.figure import Figure
 from monai.transforms import Zoom
 from qtpy.QtWidgets import QSizePolicy
@@ -322,4 +323,4 @@ def launch_review(
         ] = crop_temp
         return cropped_volume
 
-    return [file_widget,canvas, dmg]
+    return [file_widget, canvas, dmg]

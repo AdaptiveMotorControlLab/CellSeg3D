@@ -95,7 +95,7 @@ def open_file_dialog(
         return filenames
 
 
-def make_label(name, parent=None): # TODO update to child class
+def make_label(name, parent=None):  # TODO update to child class
     """Creates a QLabel
 
     Args:
@@ -113,7 +113,7 @@ def make_label(name, parent=None): # TODO update to child class
 
 def make_scrollable(
     contained_layout, containing_widget, min_wh=None, max_wh=None, base_wh=None
-): # TODO convert to child class
+):  # TODO convert to child class
     """Creates a QScrollArea and sets it up, then adds the contained_widget to it,
     and finally adds the scroll area in a layout and sets it to the contaning_widget
 
@@ -163,7 +163,7 @@ def make_n_spinboxes(
     parent=None,
     double=False,
     fixed=True,
-) -> Union[list, QWidget]: #TODO: child class if possible ?
+) -> Union[list, QWidget]:  # TODO: child class if possible ?
     """
 
     Args:
@@ -222,7 +222,7 @@ def add_to_group(title, widget, layout, L=7, T=20, R=7, B=11):
     layout.addWidget(group)
 
 
-def make_group(title, L=7, T=20, R=7, B=11, parent=None): #TODO : child class
+def make_group(title, L=7, T=20, R=7, B=11, parent=None):  # TODO : child class
     """Creates a group widget and layout, with a header (`title`) and content margins for top/left/right/bottom `L, T, R, B` (in pixels)
     Group widget and layout returned will have a Fixed size policy.
 
@@ -246,7 +246,9 @@ def make_group(title, L=7, T=20, R=7, B=11, parent=None): #TODO : child class
     return group, layout
 
 
-def make_container(L=0, T=0, R=1, B=11, vertical=True, parent=None): # TODO child class?
+def make_container(
+    L=0, T=0, R=1, B=11, vertical=True, parent=None
+):  # TODO child class?
     """Creates a QWidget and a layout for the purpose of containing other modules, with a Fixed layout.
 
     Args:
@@ -276,7 +278,7 @@ def make_container(L=0, T=0, R=1, B=11, vertical=True, parent=None): # TODO chil
     return container_widget, container_layout
 
 
-def make_button( # TODO child class
+def make_button(  # TODO child class
     title: str = None,
     func: callable = None,
     parent: QWidget = None,
@@ -339,7 +341,7 @@ class DropdownMenu(QComboBox):
             self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
 
-def make_combobox( #TODO child class
+def make_combobox(  # TODO child class
     entries=None,
     parent: QWidget = None,
     label: str = None,
@@ -405,7 +407,7 @@ class CheckBox(QCheckBox):
             self.toggled.connect(func)
 
 
-def make_checkbox( # TODO update calls to class
+def make_checkbox(  # TODO update calls to class
     title: str = None,
     func: callable = None,
     parent: QWidget = None,

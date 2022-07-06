@@ -6,6 +6,7 @@ import numpy as np
 from magicgui import magicgui
 from magicgui.widgets import Container
 from magicgui.widgets import Slider
+
 # Qt
 from qtpy.QtWidgets import QSizePolicy
 from tifffile import imwrite
@@ -64,7 +65,7 @@ class Cropping(BasePluginSingleImage):
         self._crop_size_y = DEFAULT_CROP_SIZE
         self._crop_size_z = DEFAULT_CROP_SIZE
 
-        self.aniso_factors = [1,1,1]
+        self.aniso_factors = [1, 1, 1]
 
         self.image = None
         self.image_layer = None
@@ -225,7 +226,9 @@ class Cropping(BasePluginSingleImage):
         self.crop_labels = self.crop_label_choice.isChecked()
 
         if self.aniso_widgets.is_enabled():
-            self.aniso_factors = self.aniso_widgets.get_anisotropy_resolution_zyx()
+            self.aniso_factors = (
+                self.aniso_widgets.get_anisotropy_resolution_zyx()
+            )
 
         if not self.check_ready():
             return
@@ -245,7 +248,9 @@ class Cropping(BasePluginSingleImage):
             )
 
             if len(self.label.shape) > 3:
-                self.label = np.squeeze(self.label) # if channel/batch remnants from MONAI
+                self.label = np.squeeze(
+                    self.label
+                )  # if channel/batch remnants from MONAI
 
         vw = self._viewer
 
@@ -258,11 +263,13 @@ class Cropping(BasePluginSingleImage):
             colormap="inferno",
             contrast_limits=[200, 1000],
             opacity=0.7,
-            scale=self.aniso_factors
+            scale=self.aniso_factors,
         )
 
         if self.crop_labels:
-            self.label_layer = vw.add_labels(self.label, scale=self.aniso_factors, visible=False)
+            self.label_layer = vw.add_labels(
+                self.label, scale=self.aniso_factors, visible=False
+            )
 
         @magicgui(call_button="Quicksave")
         def save_widget():
@@ -330,7 +337,13 @@ class Cropping(BasePluginSingleImage):
                 scale=self.label_layer.scale,
             )
 
-        def set_slice(axis, value, highres_crop_layer, labels_crop_layer=None, crop_lbls=False):
+        def set_slice(
+            axis,
+            value,
+            highres_crop_layer,
+            labels_crop_layer=None,
+            crop_lbls=False,
+        ):
             """ "Update cropped volume position"""
             idx = int(value)
             scale = np.asarray(highres_crop_layer.scale)
@@ -371,7 +384,11 @@ class Cropping(BasePluginSingleImage):
         for axis, slider in enumerate(sliders):
             slider.changed.connect(
                 lambda event, axis=axis: set_slice(
-                    axis, event, self.highres_crop_layer, self.labels_crop_layer, self.crop_labels,
+                    axis,
+                    event,
+                    self.highres_crop_layer,
+                    self.labels_crop_layer,
+                    self.crop_labels,
                 )
             )
         container_widget = Container(layout="vertical")

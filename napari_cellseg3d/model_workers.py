@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+
 # MONAI
 from monai.data import CacheDataset
 from monai.data import DataLoader
@@ -29,14 +30,17 @@ from monai.transforms import RandSpatialCropSamplesd
 from monai.transforms import SpatialPadd
 from monai.transforms import Zoom
 from monai.utils import set_determinism
+
 # threads
 from napari.qt.threading import GeneratorWorker
 from napari.qt.threading import WorkerBaseSignals
+
 # Qt
 from qtpy.QtCore import Signal
 from tifffile import imwrite
 
 from napari_cellseg3d import utils
+
 # local
 from napari_cellseg3d.model_instance_seg import binary_connected
 from napari_cellseg3d.model_instance_seg import binary_watershed

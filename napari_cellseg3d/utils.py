@@ -215,6 +215,7 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
     print(f"Padding sizes are {padding}")
     return padding
 
+
 def denormalize_y(image):
     """De-normalizes the values of an image array to be between [0;255] rather than [0;1]
 
@@ -355,6 +356,7 @@ def check(project_path, ext):
     check_csv(project_path, ext)
     check_zarr(project_path, ext)
     check_annotations_dir(project_path)
+
 
 def parse_default_path(possible_paths):
     """Returns a default path based on a vector of paths, some of which might be empty.

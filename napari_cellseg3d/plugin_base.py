@@ -137,7 +137,7 @@ class BasePluginSingleImage(QTabWidget):
         self.remove_docked_widgets()
 
         if self.parent is not None:
-            self.parent.remove_from_viewer() # TODO keep this way ?
+            self.parent.remove_from_viewer()  # TODO keep this way ?
             return
         self._viewer.window.remove_dock_widget(self)
 
@@ -153,7 +153,6 @@ class BasePluginSingleImage(QTabWidget):
             return True
         except LookupError:
             return False
-
 
 
 class BasePluginFolder(QTabWidget):
