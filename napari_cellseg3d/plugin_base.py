@@ -133,17 +133,27 @@ class BasePluginSingleImage(QTabWidget):
     def remove_from_viewer(self):
         """Removes the widget from the napari window.
         Can be re-implemented in children classes if needed"""
-        if len(self.docked_widgets) != 0:
-            [
-                self._viewer.window.remove_dock_widget(w)
-                for w in self.docked_widgets
-                if w is not None
-            ]
+
+        self.remove_docked_widgets()
 
         if self.parent is not None:
-            self.parent.remove_from_viewer()
+            self.parent.remove_from_viewer() # TODO keep this way ?
             return
         self._viewer.window.remove_dock_widget(self)
+
+    def remove_docked_widgets(self):
+        """Removes all docked widgets from napari window"""
+        try:
+            if len(self.docked_widgets) != 0:
+                [
+                    self._viewer.window.remove_dock_widget(w)
+                    for w in self.docked_widgets
+                    if w is not None
+                ]
+            return True
+        except LookupError:
+            return False
+
 
 
 class BasePluginFolder(QTabWidget):

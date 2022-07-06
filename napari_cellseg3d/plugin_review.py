@@ -17,10 +17,6 @@ from napari_cellseg3d.plugin_base import BasePluginSingleImage
 
 warnings.formatwarning = utils.format_Warning
 
-
-global_launched_before = False
-
-
 class Reviewer(BasePluginSingleImage):
     """A plugin for selecting volumes and labels file and launching the review process.
     Inherits from : :doc:`plugin_base`"""
@@ -73,6 +69,7 @@ class Reviewer(BasePluginSingleImage):
         )
         ###########################
 
+
         self.build()
 
     def build(self):
@@ -81,15 +78,6 @@ class Reviewer(BasePluginSingleImage):
         self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.MinimumExpanding)
 
         tab, layout = ui.make_container(0, 0, 1, 1)
-
-        global global_launched_before
-        if global_launched_before:
-            layout.addWidget(self.warn_label)
-            warnings.warn(
-                "You already have a review session running.\n"
-                "Launching another will close the current one,\n"
-                " make sure to save your work beforehand"
-            )
 
         # ui.add_blank(self, layout)
         ###########################
@@ -172,14 +160,12 @@ class Reviewer(BasePluginSingleImage):
             napari.viewer.Viewer: self.viewer
         """
 
+        self.reset()
+
         self.filetype = self.filetype_choice.currentText()
         self.as_folder = self.file_handling_box.isChecked()
-        if self.anisotropy_widgets.checkbox.isChecked():
-            zoom = utils.anisotropy_zoom_factor(
-                self.anisotropy_widgets.get_anisotropy_factors()
-            )
-            # reordering
-            zoom = [zoom[2], zoom[1], zoom[0]]
+        if self.anisotropy_widgets.is_enabled():
+            zoom = self.anisotropy_widgets.get_anisotropy_resolution_zyx()
         else:
             zoom = [1, 1, 1]
 
@@ -219,56 +205,27 @@ class Reviewer(BasePluginSingleImage):
             # TODO : might not work, test with predi labels later
             labels_raw = None
 
-        global global_launched_before
-        if global_launched_before:
-            new_viewer = napari.Viewer()
-            view1 = launch_review(
-                new_viewer,
-                images,
-                labels,
-                labels_raw,
-                self.label_path,
-                self.textbox.text(),
-                self.checkBox.isChecked(),
-                self.filetype,
-                self.as_folder,
-                zoom,
-            )
-            warnings.warn(
-                "Opening several loader sessions in one window is not supported; opening in new window"
-            )
-            self._viewer.close()
-        else:
-            viewer = self._viewer
-            print("new sess")
-            view1 = launch_review(
-                viewer,
-                images,
-                labels,
-                labels_raw,
-                self.label_path,
-                self.textbox.text(),
-                self.checkBox.isChecked(),
-                self.filetype,
-                self.as_folder,
-                zoom,
-            )
-            self.remove_from_viewer()
 
-            global_launched_before = True
+        viewer = self._viewer
+        print("New review session\n"+"*"*20)
+        self.docked_widgets = launch_review(
+            viewer,
+            images,
+            labels,
+            labels_raw,
+            self.label_path,
+            self.textbox.text(),
+            self.checkBox.isChecked(),
+            self.filetype,
+            self.as_folder,
+            zoom,
+        )
+        self._viewer.close()
 
-        return view1
+    def reset(self):
+        self._viewer.layers.clear()
+        self.remove_docked_widgets()
 
-    def remove_from_viewer(self):
-        """Close widget and remove it from window.
-        Sets the check for an active session to false, so that if the user closes manually and doesn't launch the review,
-        the active session warning does not display and a new viewer is not opened when launching for the first time.
-        """
-        global global_launched_before  # if user closes window rather than launching review, does not count as active session
-        if global_launched_before:
-            global_launched_before = False
-        # print("close req")
-        try:
-            self._viewer.window.remove_dock_widget(self)
-        except LookupError:
-            return
+
+
+

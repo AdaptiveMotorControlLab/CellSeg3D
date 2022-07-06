@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import napari
 import numpy as np
 from magicgui import magicgui
 from matplotlib.backends.backend_qt5agg import \
@@ -68,12 +69,12 @@ def launch_review(
 
         zoom_factor (array(int)): zoom factors for each axis
 
-
+    Returns : list of all docked widgets
     """
     images_original = original
     base_label = base
 
-    view1 = viewer
+    view1 = napari.Viewer()
 
     view1.scale_bar.visible = True
 
@@ -144,10 +145,6 @@ def launch_review(
     #     return labeled_c, labeled_sorted, nums
     #
     # worker = create_label()
-
-    layer = view1.layers[0]
-    layer1 = view1.layers[1]
-
     # if not as_folder:
     #     r_path = os.path.dirname(r_path)
 
@@ -324,3 +321,5 @@ def launch_review(
             -inferior_bound[2] : 100 - superior_bound[2],
         ] = crop_temp
         return cropped_volume
+
+    return [file_widget,canvas, dmg]

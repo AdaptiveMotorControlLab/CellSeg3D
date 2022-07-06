@@ -53,6 +53,8 @@ class Cropping(BasePluginSingleImage):
             for axis in "xyz"
         ]
 
+        self.aniso_widgets = ui.AnisotropyWidgets(self)
+        ###########
         for box in self.box_widgets:
             box.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self._x = 0
@@ -62,10 +64,15 @@ class Cropping(BasePluginSingleImage):
         self._crop_size_y = DEFAULT_CROP_SIZE
         self._crop_size_z = DEFAULT_CROP_SIZE
 
+        self.aniso_factors = [1,1,1]
+
         self.image = None
         self.image_layer = None
         self.label = None
         self.label_layer = None
+
+        self.highres_crop_layer = None
+        self.labels_crop_layer = None
 
         self.crop_labels = False
 
@@ -94,6 +101,7 @@ class Cropping(BasePluginSingleImage):
                 ui.combine_blocks(self.btn_label, self.lbl_label),
                 self.file_handling_box,
                 self.filetype_choice,
+                self.aniso_widgets,
             ],
         )
 
@@ -104,9 +112,9 @@ class Cropping(BasePluginSingleImage):
 
         data_group_w.setLayout(data_group_l)
         layout.addWidget(data_group_w)
-
+        ######################
         ui.add_blank(self, layout)
-
+        ######################
         dim_group_w, dim_group_l = ui.make_group("Dimensions")
         [
             dim_group_l.addWidget(widget, alignment=ui.LEFT_AL)
@@ -200,6 +208,13 @@ class Cropping(BasePluginSingleImage):
             return False
         return True
 
+    def reset(self):
+        """Resets all layers and docked widgets"""
+
+        self._viewer.layers.clear()
+
+        self.remove_docked_widgets()
+
     def start(self):
         """Launches cropping process by loading the files from the chosen folders,
         and adds control widgets to the napari Viewer for moving the cropped volume.
@@ -209,8 +224,13 @@ class Cropping(BasePluginSingleImage):
         self.filetype = self.filetype_choice.currentText()
         self.crop_labels = self.crop_label_choice.isChecked()
 
+        if self.aniso_widgets.is_enabled():
+            self.aniso_factors = self.aniso_widgets.get_anisotropy_resolution_zyx()
+
         if not self.check_ready():
             return
+
+        self.reset()
 
         self.image = utils.load_images(
             self.image_path, self.filetype, self.as_folder
@@ -225,11 +245,12 @@ class Cropping(BasePluginSingleImage):
             )
 
             if len(self.label.shape) > 3:
-                self.label = np.squeeze(self.label)
+                self.label = np.squeeze(self.label) # if channel/batch remnants from MONAI
 
         vw = self._viewer
 
         vw.dims.ndisplay = 3
+        vw.scale_bar.visible = True
 
         # add image and labels
         self.image_layer = vw.add_image(
@@ -237,10 +258,11 @@ class Cropping(BasePluginSingleImage):
             colormap="inferno",
             contrast_limits=[200, 1000],
             opacity=0.7,
+            scale=self.aniso_factors
         )
 
         if self.crop_labels:
-            self.label_layer = vw.add_labels(self.label, visible=False)
+            self.label_layer = vw.add_labels(self.label, scale=self.aniso_factors, visible=False)
 
         @magicgui(call_button="Quicksave")
         def save_widget():
@@ -287,12 +309,12 @@ class Cropping(BasePluginSingleImage):
 
         stepsizes = ends // 100
 
-        print(crop_sizes)
+        # print(crop_sizes)
 
-        print(ends)
-        print(stepsizes)
+        # print(ends)
+        # print(stepsizes)
 
-        highres_crop_layer = vw.add_image(
+        self.highres_crop_layer = vw.add_image(
             image_stack[:cropx, :cropy, :cropz],
             name="cropped",
             blending="additive",
@@ -302,14 +324,14 @@ class Cropping(BasePluginSingleImage):
 
         if self.crop_labels:
             label_stack = self.label
-            labels_crop_layer = vw.add_labels(
+            self.labels_crop_layer = vw.add_labels(
                 self.label[:cropx, :cropy, :cropz],
                 name="cropped_labels",
                 scale=self.label_layer.scale,
             )
 
-        def set_slice(axis, value, crp_lbl):
-            """ "Update cropped volume posistion"""
+        def set_slice(axis, value, highres_crop_layer, labels_crop_layer=None, crop_lbls=False):
+            """ "Update cropped volume position"""
             idx = int(value)
             scale = np.asarray(highres_crop_layer.scale)
             translate = np.asarray(highres_crop_layer.translate)
@@ -328,16 +350,16 @@ class Cropping(BasePluginSingleImage):
             highres_crop_layer.translate = scale * izyx
             highres_crop_layer.refresh()
 
-            if crp_lbl:
+            if crop_lbls and labels_crop_layer is not None:
                 labels_crop_layer.data = label_stack[
                     i : i + cropx, j : j + cropy, k : k + cropz
                 ]
                 labels_crop_layer.translate = scale * izyx
                 labels_crop_layer.refresh()
 
-            self._x = k
+            self._x = i
             self._y = j
-            self._z = i
+            self._z = k
 
             # spinbox = SpinBox(name="crop_dims", min=1, value=self._crop_size, max=max(image_stack.shape), step=1)
             # spinbox.changed.connect(lambda event : change_size(event))
@@ -349,7 +371,7 @@ class Cropping(BasePluginSingleImage):
         for axis, slider in enumerate(sliders):
             slider.changed.connect(
                 lambda event, axis=axis: set_slice(
-                    axis, event, self.crop_labels
+                    axis, event, self.highres_crop_layer, self.labels_crop_layer, self.crop_labels,
                 )
             )
         container_widget = Container(layout="vertical")

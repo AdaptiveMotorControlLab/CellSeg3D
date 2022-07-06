@@ -215,22 +215,6 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
     print(f"Padding sizes are {padding}")
     return padding
 
-
-def anisotropy_zoom_factor(resolutions):
-    """Computes a zoom factor to correct anisotropy, based on resolutions
-
-        Args:
-            resolutions: array for resolution (float) in microns for each axis
-
-    ith    Returns: an array with the corresponding zoom factors for each axis (all values divided by min)
-
-    """
-
-    base = min(resolutions)
-    zoom_factors = [base / res for res in resolutions]
-    return zoom_factors
-
-
 def denormalize_y(image):
     """De-normalizes the values of an image array to be between [0;255] rather than [0;1]
 
@@ -371,7 +355,6 @@ def check(project_path, ext):
     check_csv(project_path, ext)
     check_zarr(project_path, ext)
     check_annotations_dir(project_path)
-
 
 def parse_default_path(possible_paths):
     """Returns a default path based on a vector of paths, some of which might be empty.
