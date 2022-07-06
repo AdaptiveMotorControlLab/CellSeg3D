@@ -19,7 +19,6 @@ from napari_cellseg3d.plugin_dock import Datamanager
 
 
 def launch_review(
-    viewer,
     original,
     base,
     raw,
@@ -50,7 +49,6 @@ def launch_review(
       and determine whether it should be labeled or not.
 
     Args:
-        viewer (napari.viewer.Viewer): The viewer the widgets are to be displayed in
 
         original (dask.array.Array): The original images/volumes that have been labeled
 
@@ -76,6 +74,7 @@ def launch_review(
     base_label = base
 
     view1 = napari.Viewer()
+    viewer = view1 #TODO fix duplicate name
 
     view1.scale_bar.visible = True
 
@@ -323,4 +322,4 @@ def launch_review(
         ] = crop_temp
         return cropped_volume
 
-    return [file_widget, canvas, dmg]
+    return view1, [file_widget, canvas, dmg]

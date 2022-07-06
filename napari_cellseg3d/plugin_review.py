@@ -208,8 +208,8 @@ class Reviewer(BasePluginSingleImage):
 
         viewer = self._viewer
         print("New review session\n" + "*" * 20)
-        self.docked_widgets = launch_review(
-            viewer,
+        self._viewer.close()
+        self._viewer, self.docked_widgets = launch_review(
             images,
             labels,
             labels_raw,
@@ -220,7 +220,8 @@ class Reviewer(BasePluginSingleImage):
             self.as_folder,
             zoom,
         )
-        self._viewer.close()
+
+
 
     def reset(self):
         self._viewer.layers.clear()

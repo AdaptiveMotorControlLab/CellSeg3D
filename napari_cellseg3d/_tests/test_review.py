@@ -20,7 +20,8 @@ def test_launch_review(make_napari_viewer):
         print(widget.as_folder)
         print(widget.filetype)
         widget.run_review()
+        widget._viewer.close()
 
-        assert True # Just checking for excpetions I guess. TODO *sigh* really..?
+        assert widget._viewer is None
 
 
