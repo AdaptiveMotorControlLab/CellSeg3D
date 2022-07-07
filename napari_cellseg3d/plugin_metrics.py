@@ -40,13 +40,11 @@ class MetricsUtils(BasePluginFolder):
 
         ######################################
         # interface
-        self.btn_compute_dice = ui.make_button(
-            "Compute Dice", self.compute_dice
-        )
+        self.btn_compute_dice = ui.Button("Compute Dice", self.compute_dice)
 
         self.rotate_choice = ui.make_checkbox("Find best orientation")
 
-        self.btn_reset_plot = ui.make_button("Clear plots", self.remove_plots)
+        self.btn_reset_plot = ui.Button("Clear plots", self.remove_plots)
 
         self.lbl_threshold_box = ui.make_label("Score threshold", self)
         self.threshold_box = ui.make_n_spinboxes(

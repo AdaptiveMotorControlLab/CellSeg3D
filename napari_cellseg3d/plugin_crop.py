@@ -40,7 +40,7 @@ class Cropping(BasePluginSingleImage):
 
         super().__init__(viewer, parent)
 
-        self.btn_start = ui.make_button("Start", self.start, self)
+        self.btn_start = ui.Button("Start", self.start, self)
 
         self.crop_label_choice = ui.make_checkbox(
             "Crop labels simultaneously", self.toggle_label_path

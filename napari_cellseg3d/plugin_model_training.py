@@ -186,16 +186,17 @@ class Trainer(ModelFramework):
 
         self.zip_choice = ui.make_checkbox("Compress results")
 
-        self.validation_percent_choice = ui.make_combobox(["80%", "90%"])
+        self.validation_percent_choice = ui.DropdownMenu(["80%", "90%"])
 
         self.epoch_choice = ui.make_n_spinboxes(
             min=2, max=1000, default=self.max_epochs
         )
         self.lbl_epoch_choice = ui.make_label("Number of epochs : ", self)
 
-        self.loss_choice, self.lbl_loss_choice = ui.make_combobox(
+        self.loss_choice = ui.DropdownMenu(
             sorted(self.loss_dict.keys()), label="Loss function"
         )
+        self.lbl_loss_choice = self.loss_choice.label
         self.loss_choice.setCurrentIndex(loss_index)
 
         self.sample_choice = ui.make_n_spinboxes(
@@ -227,10 +228,11 @@ class Trainer(ModelFramework):
             "1e-6",
         ]
 
-        (
-            self.learning_rate_choice,
-            self.lbl_learning_rate_choice,
-        ) = ui.make_combobox(learning_rate_vals, label="Learning rate")
+        self.learning_rate_choice = ui.DropdownMenu(
+            learning_rate_vals, label="Learning rate"
+        )
+        self.lbl_learning_rate_choice = self.learning_rate_choice.label
+
         self.learning_rate_choice.setCurrentIndex(1)
 
         self.augment_choice = ui.make_checkbox("Augment data")
@@ -275,7 +277,7 @@ class Trainer(ModelFramework):
         self.progress.setVisible(False)
         """Dock widget containing the progress bar"""
 
-        self.btn_start = ui.make_button("Start training", self.start)
+        self.btn_start = ui.Button("Start training", self.start)
 
         self.btn_model_path.setVisible(False)
         self.lbl_model_path.setVisible(False)

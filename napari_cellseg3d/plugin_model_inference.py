@@ -130,11 +130,13 @@ class Inferer(ModelFramework):
 
         self.window_infer_box = ui.make_checkbox("Use window inference")
         self.window_infer_box.clicked.connect(self.toggle_display_window_size)
+
         sizes_window = ["8", "16", "32", "64", "128", "256", "512"]
-        (
-            self.window_size_choice,
-            self.lbl_window_size_choice,
-        ) = ui.make_combobox(sizes_window, label="Window size")
+        self.window_size_choice = ui.DropdownMenu(
+            sizes_window, label="Window size"
+        )
+        self.lbl_window_size_choice = self.window_size_choice.label
+
         self.keep_data_on_cpu_box = ui.make_checkbox("Keep data on CPU")
 
         self.window_infer_params = ui.combine_blocks(
@@ -150,7 +152,7 @@ class Inferer(ModelFramework):
             "Run instance segmentation", func=self.toggle_display_instance
         )
 
-        self.instance_method_choice = ui.make_combobox(
+        self.instance_method_choice = ui.DropdownMenu(
             ["Connected components", "Watershed"]
         )
 
@@ -189,14 +191,12 @@ class Inferer(ModelFramework):
         ##################
         ##################
 
-        self.btn_start = ui.make_button("Start inference", self.start)
+        self.btn_start = ui.Button("Start inference", self.start)
         self.btn_close = self.make_close_button()
 
         # hide unused widgets from parent class
-        self.btn_label_files.setVisible(False)
-        self.lbl_label_files.setVisible(False)
-        self.btn_model_path.setVisible(False)
-        self.lbl_model_path.setVisible(False)
+        self.label_filewidget.setVisible(False)
+        self.model_filewidget.setVisible(False)
 
         ##################
         ##################

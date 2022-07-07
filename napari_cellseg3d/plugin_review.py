@@ -46,9 +46,7 @@ class Reviewer(BasePluginSingleImage):
 
         self.checkBox = ui.make_checkbox("Create new dataset ?")
 
-        self.btn_start = ui.make_button(
-            "Start reviewing", self.run_review, self
-        )
+        self.btn_start = ui.Button("Start reviewing", self.run_review, self)
 
         self.lbl_mod = ui.make_label("Name", self)
 
@@ -166,7 +164,9 @@ class Reviewer(BasePluginSingleImage):
         self.filetype = self.filetype_choice.currentText()
         self.as_folder = self.file_handling_box.isChecked()
         if self.anisotropy_widgets.is_enabled():
-            zoom = self.anisotropy_widgets.get_anisotropy_resolution_zyx()
+            zoom = self.anisotropy_widgets.get_anisotropy_resolution_zyx(
+                as_factors=True
+            )
         else:
             zoom = [1, 1, 1]
 
@@ -206,9 +206,8 @@ class Reviewer(BasePluginSingleImage):
             # TODO : might not work, test with predi labels later
             labels_raw = None
 
-        viewer = self._viewer
         print("New review session\n" + "*" * 20)
-        self._viewer.close()
+        previous_viewer = self._viewer
         self._viewer, self.docked_widgets = launch_review(
             images,
             labels,
@@ -220,8 +219,7 @@ class Reviewer(BasePluginSingleImage):
             self.as_folder,
             zoom,
         )
-
-
+        previous_viewer.close()
 
     def reset(self):
         self._viewer.layers.clear()
