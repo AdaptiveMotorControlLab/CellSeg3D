@@ -132,8 +132,8 @@ class Reviewer(BasePluginSingleImage):
 
         ui.add_widgets(layout, [self.btn_start, self.btn_close])
 
-        ui.make_scrollable(
-            contained_layout=layout, containing_widget=tab, min_wh=[190, 300]
+        ui.ScrollArea.make_scrollable(
+            contained_layout=layout, parent=tab, min_wh=[190, 300]
         )
 
         self.addTab(tab, "Review")

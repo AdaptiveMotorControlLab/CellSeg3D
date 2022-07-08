@@ -54,14 +54,14 @@ class ConvertUtils(BasePluginFolder):
         self.btn_remove_small_layer = ui.Button(
             "Remove small in layer", func=self.layer_remove_small
         )
-        self.small_object_thresh_choice = ui.make_n_spinboxes(
+        self.small_object_thresh_choice = ui.IntIncrementCounter(
             min=1, max=1000, default=15
         )
 
         # convert anisotropy
-        self.anisotropy_converter = ui.AnisotropyWidgets(self)
-        self.anisotropy_converter.checkbox.toggle()
-        self.anisotropy_converter.checkbox.setVisible(False)
+        self.anisotropy_converter = ui.AnisotropyWidgets(
+            parent=self, always_visible=True
+        )
         self.btn_aniso_folder = ui.Button(
             "Correct anisotropy in folder", self.folder_anisotropy, self
         )
@@ -74,6 +74,10 @@ class ConvertUtils(BasePluginFolder):
 
         self.btn_image_files.setVisible(False)
         self.lbl_image_files.setVisible(False)
+
+        # self.results_filewidget.set_required(True)
+        self.label_filewidget.set_required(False)
+        # TODO improve not ready check for labels since optional until using folder conversion
         ###############################
         # tooltips
         self.btn_convert_folder_semantic.setToolTip(
@@ -241,7 +245,9 @@ class ConvertUtils(BasePluginFolder):
             ],
         )
 
-        ui.make_scrollable(layout, self, min_wh=[230, 400], base_wh=[230, 450])
+        ui.ScrollArea.make_scrollable(
+            layout, self, min_wh=[230, 400], base_wh=[230, 450]
+        )
 
     def folder_to_semantic(self):
         """Converts folder of labels to semantic labels"""

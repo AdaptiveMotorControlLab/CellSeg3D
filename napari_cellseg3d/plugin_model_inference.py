@@ -89,7 +89,7 @@ class Inferer(ModelFramework):
             "View results in napari", self.toggle_display_number
         )
 
-        self.display_number_choice = ui.make_n_spinboxes(min=1, default=5)
+        self.display_number_choice = ui.IntIncrementCounter(min=1, default=5)
         self.lbl_display_number = ui.make_label("How many ? (max. 10)", self)
 
         self.show_original_checkbox = ui.make_checkbox("Show originals")
@@ -97,7 +97,7 @@ class Inferer(ModelFramework):
         ######################
         ######################
         # TODO : better way to handle SegResNet size reqs ?
-        self.segres_size = ui.make_n_spinboxes(min=1, max=1024, default=128)
+        self.segres_size = ui.IntIncrementCounter(min=1, max=1024, default=128)
         self.model_choice.currentIndexChanged.connect(
             self.toggle_display_segres_size
         )
@@ -120,8 +120,8 @@ class Inferer(ModelFramework):
             "Perform thresholding", self.toggle_display_thresh
         )
 
-        self.thresholding_count = ui.make_n_spinboxes(
-            max=1, default=0.7, step=0.05, double=True
+        self.thresholding_count = ui.DoubleIncrementCounter(
+            max=1, default=0.7, step=0.05
         )
 
         self.thresholding_container, self.thresh_layout = ui.make_container(
@@ -156,8 +156,8 @@ class Inferer(ModelFramework):
             ["Connected components", "Watershed"]
         )
 
-        self.instance_prob_thresh = ui.make_n_spinboxes(
-            n=1, max=0.99, default=0.7, step=0.05, double=True
+        self.instance_prob_thresh = ui.DoubleIncrementCounter(
+            max=0.99, default=0.7, step=0.05
         )
         self.instance_prob_thresh_lbl = ui.make_label(
             "Probability threshold :", self
@@ -168,8 +168,8 @@ class Inferer(ModelFramework):
             horizontal=False,
         )
 
-        self.instance_small_object_thresh = ui.make_n_spinboxes(
-            n=1, max=100, default=10, step=5
+        self.instance_small_object_thresh = ui.IntIncrementCounter(
+            max=100, default=10, step=5
         )
         self.instance_small_object_thresh_lbl = ui.make_label(
             "Small object removal threshold :", self
@@ -475,8 +475,8 @@ class Inferer(ModelFramework):
         ############
         ######
         # end of tabs, combine into scrollable
-        ui.make_scrollable(
-            containing_widget=tab,
+        ui.ScrollArea.make_scrollable(
+            parent=tab,
             contained_layout=tab_layout,
             min_wh=[200, 100],
         )

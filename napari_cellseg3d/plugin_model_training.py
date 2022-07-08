@@ -188,7 +188,7 @@ class Trainer(ModelFramework):
 
         self.validation_percent_choice = ui.DropdownMenu(["80%", "90%"])
 
-        self.epoch_choice = ui.make_n_spinboxes(
+        self.epoch_choice = ui.IntIncrementCounter(
             min=2, max=1000, default=self.max_epochs
         )
         self.lbl_epoch_choice = ui.make_label("Number of epochs : ", self)
@@ -199,7 +199,7 @@ class Trainer(ModelFramework):
         self.lbl_loss_choice = self.loss_choice.label
         self.loss_choice.setCurrentIndex(loss_index)
 
-        self.sample_choice = ui.make_n_spinboxes(
+        self.sample_choice = ui.IntIncrementCounter(
             min=2, max=50, default=self.num_samples
         )
         self.lbl_sample_choice = ui.make_label(
@@ -208,12 +208,12 @@ class Trainer(ModelFramework):
         self.sample_choice.setVisible(False)
         self.lbl_sample_choice.setVisible(False)
 
-        self.batch_choice = ui.make_n_spinboxes(
+        self.batch_choice = ui.IntIncrementCounter(
             min=1, max=10, default=self.batch_size
         )
         self.lbl_batch_choice = ui.make_label("Batch size : ", self)
 
-        self.val_interval_choice = ui.make_n_spinboxes(
+        self.val_interval_choice = ui.IntIncrementCounter(
             default=self.val_interval
         )
         self.lbl_val_interv_choice = ui.make_label(
@@ -242,7 +242,7 @@ class Trainer(ModelFramework):
         ]
         """Close buttons list for each tab"""
 
-        self.patch_size_widgets = ui.make_n_spinboxes(
+        self.patch_size_widgets = ui.IntIncrementCounter.make_n(
             3, 10, 1024, DEFAULT_PATCH_SIZE
         )
 
@@ -268,7 +268,7 @@ class Trainer(ModelFramework):
         self.use_deterministic_choice = ui.make_checkbox(
             "Deterministic training", func=self.toggle_deterministic_param
         )
-        self.box_seed = ui.make_n_spinboxes(max=10000000, default=23498)
+        self.box_seed = ui.IntIncrementCounter(max=10000000, default=23498)
         self.lbl_seed = ui.make_label("Seed", self)
         self.container_seed = ui.combine_blocks(
             self.box_seed, self.lbl_seed, horizontal=False
@@ -692,21 +692,21 @@ class Trainer(ModelFramework):
         ######
         # end of tab layouts
 
-        ui.make_scrollable(
+        ui.ScrollArea.make_scrollable(
             contained_layout=data_tab_layout,
-            containing_widget=data_tab,
+            parent=data_tab,
             min_wh=[200, 300],
         )  # , max_wh=[200,1000])
 
-        ui.make_scrollable(
+        ui.ScrollArea.make_scrollable(
             contained_layout=augment_tab_l,
-            containing_widget=augment_tab_w,
+            parent=augment_tab_w,
             min_wh=[200, 300],
         )
 
-        ui.make_scrollable(
+        ui.ScrollArea.make_scrollable(
             contained_layout=train_tab_layout,
-            containing_widget=train_tab,
+            parent=train_tab,
             min_wh=[200, 300],
         )
         self.addTab(data_tab, "Data")
