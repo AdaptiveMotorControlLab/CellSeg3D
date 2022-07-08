@@ -281,8 +281,8 @@ def launch_review(
 
     def crop_volume_around_point(points, layer, zoom_factor):
         if zoom_factor != [1, 1, 1]:
-            vol = np.array(layer.data, dtype=np.int16)
-            volume = utils.resize(vol)
+            data = np.array(layer.data, dtype=np.int16)
+            volume = utils.resize(data, zoom_factor)
             # image = ndimage.zoom(layer.data, zoom_factor, mode="nearest") # cleaner but much slower...
         else:
             volume = layer.data

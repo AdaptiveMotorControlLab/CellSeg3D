@@ -186,7 +186,9 @@ class Trainer(ModelFramework):
 
         self.zip_choice = ui.make_checkbox("Compress results")
 
-        self.validation_percent_choice = ui.DropdownMenu(["80%", "90%"])
+        self.validation_percent_choice = ui.IntIncrementCounter(
+            10, 90, default=80, step=1, parent=self
+        )
 
         self.epoch_choice = ui.IntIncrementCounter(
             min=2, max=1000, default=self.max_epochs
@@ -479,7 +481,7 @@ class Trainer(ModelFramework):
         ui.add_blank(self, data_tab_layout)
         ################
         ui.add_to_group(
-            "Validation %",
+            "Validation (%)",
             self.validation_percent_choice,
             data_tab_layout,
         )
@@ -791,11 +793,8 @@ class Trainer(ModelFramework):
                 raise err
             self.max_epochs = self.epoch_choice.value()
 
-            validation_percent_dict = {"80%": 0.8, "90%": 0.9}
+            validation_percent = self.validation_percent_choice.value() / 100
 
-            validation_percent = validation_percent_dict[
-                self.validation_percent_choice.currentText()
-            ]
             print(f"val % : {validation_percent}")
 
             self.learning_rate = float(self.learning_rate_choice.currentText())

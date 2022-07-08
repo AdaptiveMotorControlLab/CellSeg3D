@@ -77,7 +77,7 @@ class ModelFramework(BasePluginFolder):
 
         # TODO : implement custom model
         self.model_filewidget = ui.FilePathWidget(
-            "Model directory", self.load_model_path, self
+            "Model path", self.load_model_path, self
         )
         self.btn_model_path = self.model_filewidget.get_button()
         self.lbl_model_path = self.model_filewidget.get_text_field()
@@ -88,7 +88,7 @@ class ModelFramework(BasePluginFolder):
         self.lbl_model_choice = self.model_choice.label
 
         self.weights_filewidget = ui.FilePathWidget(
-            "Weights directory", self.load_weights_path, self
+            "Weights path", self.load_weights_path, self
         )
         self.btn_weights_path = self.weights_filewidget.get_button()
         self.lbl_weights_path = self.weights_filewidget.get_text_field()
