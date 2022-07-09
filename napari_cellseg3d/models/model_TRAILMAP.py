@@ -6,8 +6,7 @@ from napari_cellseg3d.models.unet.model import UNet3D
 
 def get_weights_file():
     # original model from Liqun Luo lab, transfered to pytorch
-    target_dir = utils.download_model("TRAILMAP")
-    return os.path.join(target_dir, "TRAILMAP_PyTorch.pth")
+    return "TRAILMAP_PyTorch.pth"
 
 
 def get_net():

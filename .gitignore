@@ -10,6 +10,7 @@ __pycache__/
 *.tif
 napari_cellseg3d/_tests/res/*.csv
 *.pth
+*.db
 
 # Distribution / packaging
 .Python

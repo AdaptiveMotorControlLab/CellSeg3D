@@ -8,8 +8,7 @@ from napari_cellseg3d import utils
 
 def get_weights_file():
     # model additionally trained on Mathis/Wyss mesoSPIM data
-    target_dir = utils.download_model("TRAILMAP_MS")
-    return os.path.join(target_dir, "TRAILMAP_MS_best_metric_epoch_26.pth")
+    return "TRAILMAP_MS_best_metric_epoch_26.pth"
 
 
 def get_net():

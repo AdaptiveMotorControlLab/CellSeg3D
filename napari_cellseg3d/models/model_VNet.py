@@ -11,8 +11,7 @@ def get_net():
 
 
 def get_weights_file():
-    target_dir = utils.download_model("VNet")
-    return os.path.join(target_dir, "VNet_40e.pth")
+    return "VNet_40e.pth"
 
 
 def get_output(model, input):

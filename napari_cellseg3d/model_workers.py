@@ -1,9 +1,13 @@
 import os
 import platform
 from pathlib import Path
+import importlib.util
+from typing import Optional
 
 import numpy as np
+from tifffile import imwrite
 import torch
+from tqdm import tqdm
 
 # MONAI
 from monai.data import CacheDataset
@@ -37,9 +41,10 @@ from napari.qt.threading import WorkerBaseSignals
 
 # Qt
 from qtpy.QtCore import Signal
-from tifffile import imwrite
+
 
 from napari_cellseg3d import utils
+from napari_cellseg3d import log_utility
 
 # local
 from napari_cellseg3d.model_instance_seg import binary_connected
@@ -57,8 +62,60 @@ a custom worker function."""
 # https://napari-staging-site.github.io/guides/stable/threading.html
 
 WEIGHTS_DIR = os.path.dirname(os.path.realpath(__file__)) + str(
-    Path("/models/saved_weights")
+    Path("/models/pretrained")
 )
+
+class WeightsDownloader:
+
+    def __init__(self, log_widget: Optional[log_utility.Log]= None):
+        self.log_widget = log_widget
+
+    def download_weights(self,model_name: str):
+        """
+            Downloads a specific pretrained model.
+            This code is adapted from DeepLabCut with permission from MWMathis.
+
+            Args:
+                model_name (str): name of the model to download
+            """
+        import json
+        import tarfile
+        import urllib.request
+
+        def show_progress(count, block_size, total_size):
+            pbar.update(block_size)
+
+        cellseg3d_path = os.path.split(
+            importlib.util.find_spec("napari_cellseg3d").origin
+        )[0]
+        pretrained_folder_path = os.path.join(
+            cellseg3d_path, "models", "pretrained"
+        )
+        json_path = os.path.join(
+            pretrained_folder_path, "pretrained_model_urls.json"
+        )
+        with open(json_path) as f:
+            neturls = json.load(f)
+        if model_name in neturls.keys():
+            url = neturls[model_name]
+            response = urllib.request.urlopen(url)
+
+            start_message = f"Downloading the model from the M.W. Mathis Lab server {url}...."
+            total_size = int(response.getheader("Content-Length"))
+            if self.log_widget is None:
+                print(start_message)
+                pbar = tqdm(unit="B", total=total_size, position=0)
+            else:
+                self.log_widget.print_and_log(start_message)
+                pbar = tqdm(unit="B", total=total_size, position=0, file=self.log_widget)
+
+            filename, _ = urllib.request.urlretrieve(url, reporthook=show_progress)
+            with tarfile.open(filename, mode="r:gz") as tar:
+                tar.extractall(pretrained_folder_path)
+        else:
+            raise ValueError(
+                f"Unknown model. `modelname` should be one of {', '.join(neturls)}"
+            )
 
 
 class LogSignal(WorkerBaseSignals):
@@ -142,8 +199,11 @@ class InferenceWorker(GeneratorWorker):
         self.window_infer_size = window_infer_size
         self.keep_on_cpu = keep_on_cpu
         self.stats_to_csv = stats_csv
-
         """These attributes are all arguments of :py:func:~inference, please see that for reference"""
+
+        self.downloader = WeightsDownloader()
+        """Download utility"""
+
 
     @staticmethod
     def create_inference_dict(images_filepaths):
@@ -153,6 +213,9 @@ class InferenceWorker(GeneratorWorker):
             dict: list of image paths from loaded folder"""
         data_dicts = [{"image": image_name} for image_name in images_filepaths]
         return data_dicts
+
+    def set_download_log(self, widget):
+        self.downloader.log_widget = widget
 
     def log(self, text):
         """Sends a signal that ``text`` should be logged
@@ -233,8 +296,8 @@ class InferenceWorker(GeneratorWorker):
         """
         sys = platform.system()
         print(f"OS is {sys}")
-        if sys == "Darwin":  # required for macOS ?
-            torch.set_num_threads(1)
+        if sys == "Darwin":
+            torch.set_num_threads(1) # required for threading on macOS ?
             self.log("Number of threads has been set to 1 for macOS")
 
         images_dict = self.create_inference_dict(self.images_filepaths)
@@ -260,7 +323,7 @@ class InferenceWorker(GeneratorWorker):
         model = self.model_dict["class"].get_net()
         if self.model_dict["name"] == "SegResNet":
             model = self.model_dict["class"].get_net()(
-                input_image_size=[dims, dims, dims],  # TODO FIX !
+                input_image_size=[dims, dims, dims],  # TODO FIX ! find a better way & remove model-specific code
                 out_channels=1,
                 # dropout_prob=0.3,
             )
@@ -304,12 +367,13 @@ class InferenceWorker(GeneratorWorker):
         # print(weights)
         self.log(
             "\nLoading weights..."
-        )  # TODO add try/except for invalid weights
+        )  # TODO add try/except for invalid weights for proper reset
 
         if self.weights_dict["custom"]:
             weights = self.weights_dict["path"]
         else:
-            weights = os.path.join(WEIGHTS_DIR, self.weights_dict["path"])
+            self.downloader.download_weights(self.model_dict["name"])
+            weights = os.path.join(WEIGHTS_DIR, self.model_dict["class"].get_weights_file())
 
         model.load_state_dict(
             torch.load(
@@ -544,8 +608,6 @@ class TrainingWorker(GeneratorWorker):
 
 
         """
-
-        print("init")
         super().__init__(self.train)
         self._signals = LogSignal()
         self.log_signal = self._signals.log_signal
@@ -571,7 +633,11 @@ class TrainingWorker(GeneratorWorker):
 
         self.train_files = []
         self.val_files = []
-        print("end init")
+
+        self.downloader = WeightsDownloader()
+
+    def set_download_log(self, widget):
+        self.downloader.log_widget = widget
 
     def log(self, text):
         """Sends a signal that ``text`` should be logged
@@ -838,6 +904,7 @@ class TrainingWorker(GeneratorWorker):
         if self.weights_path is not None:
             if self.weights_path == "use_pretrained":
                 weights_file = model_class.get_weights_file()
+                self.downloader.download_weights(model_name)
                 weights = os.path.join(WEIGHTS_DIR, weights_file)
                 self.weights_path = weights
             else:

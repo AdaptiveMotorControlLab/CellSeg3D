@@ -851,6 +851,7 @@ class Trainer(ModelFramework):
                 do_augmentation=self.augment_choice.isChecked(),
                 deterministic=seed_dict,
             )
+            self.worker.set_download_log(self.log)
 
             [btn.setVisible(False) for btn in self.close_buttons]
 
@@ -988,6 +989,11 @@ class Trainer(ModelFramework):
     def make_csv(self):
 
         size_column = range(1, self.max_epochs + 1)
+
+        if len(self.loss_values) == 0 or self.loss_values is None:
+            warnings.warn("No loss values to add to csv !")
+            return
+        
         self.df = pd.DataFrame(
             {
                 "epoch": size_column,
