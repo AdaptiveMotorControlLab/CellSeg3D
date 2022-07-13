@@ -334,7 +334,9 @@ class FilePathWidget(
         """If set to True, will be colored red if incorrectly set"""
         if is_required:
             self.text_field.textChanged.connect(self.check_ready)
-            self.check_ready()
+        else:
+            self.text_field.textChanged.disconnect(self.check_ready)
+        self.check_ready()
 
     def update_field_color(self, color: str):
         """Updates the background of the text field"""

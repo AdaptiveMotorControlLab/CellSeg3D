@@ -191,7 +191,11 @@ class Inferer(ModelFramework):
         ##################
         ##################
 
-        self.btn_start = ui.Button("Start inference", self.start)
+        self.btn_start = ui.Button("Start inference on folder", self.start)
+        self.btn_start_layer = ui.Button(
+            "Start inference on selected layer",
+            lambda: self.start(on_layer=True),
+        )
         self.btn_close = self.make_close_button()
 
         # hide unused widgets from parent class
@@ -255,6 +259,9 @@ class Inferer(ModelFramework):
             self.images_filepaths != [""]
             and self.images_filepaths != []
             and self.results_path != ""
+        ) or (
+            self.results_path != ""
+            and self._viewer.layers.selection.active is not None
         ):
             return True
         else:
@@ -353,6 +360,8 @@ class Inferer(ModelFramework):
                 ),  # out folder
             ],
         )
+        self.image_filewidget.set_required(False)
+        self.image_filewidget.update_field_color("black")
 
         io_group.setLayout(io_layout)
         tab_layout.addWidget(io_group)
@@ -468,6 +477,7 @@ class Inferer(ModelFramework):
             tab_layout,
             [
                 self.btn_start,
+                self.btn_start_layer,
                 self.btn_close,
             ],
         )
@@ -485,7 +495,7 @@ class Inferer(ModelFramework):
         self.setMinimumSize(180, 100)
         # self.setBaseSize(210, 400)
 
-    def start(self):
+    def start(self, on_layer=False):
         """Start the inference process, enables :py:attr:`~self.worker` and does the following:
 
         * Checks if the output and input folders are correctly set
@@ -503,6 +513,9 @@ class Inferer(ModelFramework):
         * If the option has been selected, display the results in napari, up to the maximum number selected
 
         * Runs instance segmentation, thresholding, and stats computing if requested
+
+        Args:
+            on_layer: if True, will start inference on a selected layer
         """
 
         if not self.check_ready():
@@ -515,6 +528,7 @@ class Inferer(ModelFramework):
                 pass
             else:
                 self.worker.start()
+                self.btn_start_layer.setVisible(False)
                 self.btn_start.setText("Running... Click to stop")
         else:
             self.log.print_and_log("Starting...")
@@ -576,21 +590,37 @@ class Inferer(ModelFramework):
             self.window_inference_size = int(
                 self.window_size_choice.currentText()
             )
-
-            self.worker = InferenceWorker(
-                device=device,
-                model_dict=model_dict,
-                weights_dict=weights_dict,
-                images_filepaths=self.images_filepaths,
-                results_path=self.results_path,
-                filetype=self.filetype_choice.currentText(),
-                transforms=self.transforms,
-                instance=self.instance_params,
-                use_window=self.use_window_inference,
-                window_infer_size=self.window_inference_size,
-                keep_on_cpu=self.keep_on_cpu,
-                stats_csv=self.stats_to_csv,
-            )
+            if not on_layer:
+                self.worker = InferenceWorker(
+                    device=device,
+                    model_dict=model_dict,
+                    weights_dict=weights_dict,
+                    images_filepaths=self.images_filepaths,
+                    results_path=self.results_path,
+                    filetype=self.filetype_choice.currentText(),
+                    transforms=self.transforms,
+                    instance=self.instance_params,
+                    use_window=self.use_window_inference,
+                    window_infer_size=self.window_inference_size,
+                    keep_on_cpu=self.keep_on_cpu,
+                    stats_csv=self.stats_to_csv,
+                )
+            elif on_layer:
+                layer = self._viewer.layers.selection.active
+                self.worker = InferenceWorker(
+                    device=device,
+                    model_dict=model_dict,
+                    weights_dict=weights_dict,
+                    results_path=self.results_path,
+                    filetype=self.filetype_choice.currentText(),
+                    transforms=self.transforms,
+                    instance=self.instance_params,
+                    use_window=self.use_window_inference,
+                    window_infer_size=self.window_inference_size,
+                    keep_on_cpu=self.keep_on_cpu,
+                    stats_csv=self.stats_to_csv,
+                    layer=layer,
+                )
 
             yield_connect_show_res = lambda data: self.on_yield(
                 data,
