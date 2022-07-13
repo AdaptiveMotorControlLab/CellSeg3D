@@ -15,6 +15,14 @@
 import os
 import sys
 
+# See http://blog.rtwilson.com/how-to-make-your-sphinx-documentation-compile-with-readthedocs-when-youre-using-numpy-and-scipy/
+import unittest.mock as mock
+
+MOCK_MODULES = ['numpy', 'napari-cellseg3d']
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
+
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
