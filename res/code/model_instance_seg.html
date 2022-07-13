@@ -3,17 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>model_instance_seg.py &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>model_instance_seg.py &mdash; napari-cellseg3d  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -36,25 +38,25 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Main modules guides:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Main modules guides:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/review_module_guide.html">Review module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/inference_module_guide.html">Inference module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/training_module_guide.html">Training module guide</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Utilities :</span></p>
+<p class="caption" role="heading"><span class="caption-text">Utilities :</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/metrics_module_guide.html">Metrics utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/convert_module_guide.html">Label conversion utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/cropping_module_guide.html">Cropping utility guide</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Advanced guides and walk-through:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/detailed_walkthrough.html">Detailed walkthrough</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Source files:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="interface.html">interface.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin_base.html">plugin_base.py</a></li>
@@ -108,14 +110,14 @@
            <div itemprop="articleBody">
              
   <div class="section" id="model-instance-seg-py">
-<h1>model_instance_seg.py<a class="headerlink" href="#model-instance-seg-py" title="Permalink to this headline">¶</a></h1>
+<h1>model_instance_seg.py<a class="headerlink" href="#model-instance-seg-py" title="Permalink to this heading"></a></h1>
 <div class="section" id="functions">
-<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h2>
 <div class="section" id="binary-connected">
-<h3>binary_connected<a class="headerlink" href="#binary-connected" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
-<dt id="napari_cellseg3d.model_instance_seg.binary_connected">
-<code class="sig-prename descclassname">napari_cellseg3d.model_instance_seg.</code><code class="sig-name descname">binary_connected</code><span class="sig-paren">(</span><em class="sig-param">volume</em>, <em class="sig-param">thres=0.5</em>, <em class="sig-param">thres_small=3</em>, <em class="sig-param">scale_factors=(1.0</em>, <em class="sig-param">1.0</em>, <em class="sig-param">1.0)</em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.model_instance_seg.binary_connected" title="Permalink to this definition">¶</a></dt>
+<h3>binary_connected<a class="headerlink" href="#binary-connected" title="Permalink to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="napari_cellseg3d.model_instance_seg.binary_connected">
+<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.model_instance_seg.</span></span><span class="sig-name descname"><span class="pre">binary_connected</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thres</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thres_small</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_factors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">1.0,</span> <span class="pre">1.0)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.model_instance_seg.binary_connected" title="Permalink to this definition"></a></dt>
 <dd><p>Convert binary foreground probability maps to instance masks via
 connected-component labeling.</p>
 <dl class="field-list simple">
@@ -132,10 +134,10 @@ connected-component labeling.</p>
 
 </div>
 <div class="section" id="binary-watershed">
-<h3>binary_watershed<a class="headerlink" href="#binary-watershed" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
-<dt id="napari_cellseg3d.model_instance_seg.binary_watershed">
-<code class="sig-prename descclassname">napari_cellseg3d.model_instance_seg.</code><code class="sig-name descname">binary_watershed</code><span class="sig-paren">(</span><em class="sig-param">volume</em>, <em class="sig-param">thres_seeding=0.9</em>, <em class="sig-param">thres_small=10</em>, <em class="sig-param">thres_objects=0.3</em>, <em class="sig-param">scale_factors=(1.0</em>, <em class="sig-param">1.0</em>, <em class="sig-param">1.0)</em>, <em class="sig-param">rem_seed_thres=3</em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.model_instance_seg.binary_watershed" title="Permalink to this definition">¶</a></dt>
+<h3>binary_watershed<a class="headerlink" href="#binary-watershed" title="Permalink to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="napari_cellseg3d.model_instance_seg.binary_watershed">
+<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.model_instance_seg.</span></span><span class="sig-name descname"><span class="pre">binary_watershed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thres_seeding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thres_small</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thres_objects</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_factors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">1.0,</span> <span class="pre">1.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rem_seed_thres</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.model_instance_seg.binary_watershed" title="Permalink to this definition"></a></dt>
 <dd><p>Convert binary foreground probability maps to instance masks via
 watershed segmentation algorithm.</p>
 <div class="admonition note">
@@ -159,10 +161,10 @@ function that converts the input image into <code class="docutils literal notran
 
 </div>
 <div class="section" id="volume-stats">
-<h3>volume_stats<a class="headerlink" href="#volume-stats" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
-<dt id="napari_cellseg3d.model_instance_seg.volume_stats">
-<code class="sig-prename descclassname">napari_cellseg3d.model_instance_seg.</code><code class="sig-name descname">volume_stats</code><span class="sig-paren">(</span><em class="sig-param">volume_image</em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.model_instance_seg.volume_stats" title="Permalink to this definition">¶</a></dt>
+<h3>volume_stats<a class="headerlink" href="#volume-stats" title="Permalink to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="napari_cellseg3d.model_instance_seg.volume_stats">
+<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.model_instance_seg.</span></span><span class="sig-name descname"><span class="pre">volume_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume_image</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.model_instance_seg.volume_stats" title="Permalink to this definition"></a></dt>
 <dd><p>Computes various statistics from instance labels and returns them in a dict.
 Currently provided :</p>
 <blockquote>
@@ -192,10 +194,10 @@ Currently provided :</p>
 
 </div>
 <div class="section" id="clear-small-objects">
-<h3>clear_small_objects<a class="headerlink" href="#clear-small-objects" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
-<dt id="napari_cellseg3d.model_instance_seg.clear_small_objects">
-<code class="sig-prename descclassname">napari_cellseg3d.model_instance_seg.</code><code class="sig-name descname">clear_small_objects</code><span class="sig-paren">(</span><em class="sig-param">image</em>, <em class="sig-param">threshold</em>, <em class="sig-param">is_file_path=False</em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.model_instance_seg.clear_small_objects" title="Permalink to this definition">¶</a></dt>
+<h3>clear_small_objects<a class="headerlink" href="#clear-small-objects" title="Permalink to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="napari_cellseg3d.model_instance_seg.clear_small_objects">
+<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.model_instance_seg.</span></span><span class="sig-name descname"><span class="pre">clear_small_objects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_file_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.model_instance_seg.clear_small_objects" title="Permalink to this definition"></a></dt>
 <dd><p>Calls skimage.remove_small_objects to remove small fragments that might be artifacts.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -216,10 +218,10 @@ Currently provided :</p>
 
 </div>
 <div class="section" id="to-instance">
-<h3>to_instance<a class="headerlink" href="#to-instance" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
-<dt id="napari_cellseg3d.model_instance_seg.to_instance">
-<code class="sig-prename descclassname">napari_cellseg3d.model_instance_seg.</code><code class="sig-name descname">to_instance</code><span class="sig-paren">(</span><em class="sig-param">image</em>, <em class="sig-param">is_file_path=False</em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.model_instance_seg.to_instance" title="Permalink to this definition">¶</a></dt>
+<h3>to_instance<a class="headerlink" href="#to-instance" title="Permalink to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="napari_cellseg3d.model_instance_seg.to_instance">
+<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.model_instance_seg.</span></span><span class="sig-name descname"><span class="pre">to_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_file_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.model_instance_seg.to_instance" title="Permalink to this definition"></a></dt>
 <dd><p>Converts a <strong>ground-truth</strong> label to instance (unique id per object) labels. Does not remove small objects.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -234,10 +236,10 @@ Currently provided :</p>
 
 </div>
 <div class="section" id="to-semantic">
-<h3>to_semantic<a class="headerlink" href="#to-semantic" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
-<dt id="napari_cellseg3d.model_instance_seg.to_semantic">
-<code class="sig-prename descclassname">napari_cellseg3d.model_instance_seg.</code><code class="sig-name descname">to_semantic</code><span class="sig-paren">(</span><em class="sig-param">image</em>, <em class="sig-param">is_file_path=False</em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.model_instance_seg.to_semantic" title="Permalink to this definition">¶</a></dt>
+<h3>to_semantic<a class="headerlink" href="#to-semantic" title="Permalink to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="napari_cellseg3d.model_instance_seg.to_semantic">
+<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.model_instance_seg.</span></span><span class="sig-name descname"><span class="pre">to_semantic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_file_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.model_instance_seg.to_semantic" title="Permalink to this definition"></a></dt>
 <dd><p>Converts a <strong>ground-truth</strong> label to semantic (binary 0/1) labels.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
