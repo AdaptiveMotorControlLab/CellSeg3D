@@ -19,8 +19,10 @@ from monai.data import pad_list_data_collate
 from monai.data import PatchDataset
 from monai.inferers import sliding_window_inference
 from monai.metrics import DiceMetric
+from monai.transforms import AddChannel
 from monai.transforms import AsDiscrete
 from monai.transforms import Compose
+from monai.transforms import EnsureChannelFirst
 from monai.transforms import EnsureChannelFirstd
 from monai.transforms import EnsureType
 from monai.transforms import EnsureTyped
@@ -32,7 +34,9 @@ from monai.transforms import RandFlipd
 from monai.transforms import RandRotate90d
 from monai.transforms import RandShiftIntensityd
 from monai.transforms import RandSpatialCropSamplesd
+from monai.transforms import SpatialPad
 from monai.transforms import SpatialPadd
+from monai.transforms import ToTensor
 from monai.transforms import Zoom
 from monai.utils import set_determinism
 
@@ -172,7 +176,6 @@ class InferenceWorker(GeneratorWorker):
         device,
         model_dict,
         weights_dict,
-        images_filepaths,
         results_path,
         filetype,
         transforms,
@@ -181,6 +184,8 @@ class InferenceWorker(GeneratorWorker):
         window_infer_size,
         keep_on_cpu,
         stats_csv,
+        images_filepaths=None,
+        layer=None,  # FIXME
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~inference` function.
 
@@ -190,8 +195,6 @@ class InferenceWorker(GeneratorWorker):
             * model_dict: the :py:attr:`~self.models_dict` dictionary to obtain the model name, class and instance
 
             * weights_dict: dict with "custom" : bool to use custom weights or not; "path" : the path to weights if custom or name of the file if not custom
-
-            * images_filepaths: the paths to the images of the dataset
 
             * results_path: the path to save the results to
 
@@ -209,6 +212,9 @@ class InferenceWorker(GeneratorWorker):
 
             * stats_csv: compute stats on cells and save them to a csv file
 
+            * images_filepaths: the paths to the images of the dataset
+
+            * layer: the layer to run inference on
         Note: See :py:func:`~self.inference`
         """
 
@@ -221,7 +227,6 @@ class InferenceWorker(GeneratorWorker):
         self.device = device
         self.model_dict = model_dict
         self.weights_dict = weights_dict
-        self.images_filepaths = images_filepaths
         self.results_path = results_path
         self.filetype = filetype
         self.transforms = transforms
@@ -230,6 +235,13 @@ class InferenceWorker(GeneratorWorker):
         self.window_infer_size = window_infer_size
         self.keep_on_cpu = keep_on_cpu
         self.stats_to_csv = stats_csv
+
+        ############################################
+        ############################################
+        self.layer = layer
+        self.images_filepaths = images_filepaths
+
+
         """These attributes are all arguments of :py:func:~inference, please see that for reference"""
 
         self.downloader = WeightsDownloader()
@@ -294,6 +306,503 @@ class InferenceWorker(GeneratorWorker):
             # self.log(f"")
         self.log("-" * 20)
 
+    def load_folder(self):
+
+        images_dict = self.create_inference_dict(self.images_filepaths)
+
+        # TODO : better solution than loading first image always ?
+        data_check = LoadImaged(keys=["image"])(images_dict[0])
+        # print(data)
+        check = data_check["image"].shape
+        # print(check)
+        # TODO remove
+        # z_aniso = 5 / 1.5
+        # if zoom is not None :
+        #     pad = utils.get_padding_dim(check, anisotropy_factor=zoom)
+        # else:
+        self.log("\nChecking dimensions...")
+        pad = utils.get_padding_dim(check)
+
+        load_transforms = Compose(
+            [
+                LoadImaged(keys=["image"]),
+                # AddChanneld(keys=["image"]), #already done
+                EnsureChannelFirstd(keys=["image"]),
+                # Orientationd(keys=["image"], axcodes="PLI"),
+                # anisotropic_transform,
+                SpatialPadd(keys=["image"], spatial_size=pad),
+                EnsureTyped(keys=["image"]),
+            ]
+        )
+
+        self.log("\nLoading dataset...")
+        inference_ds = Dataset(data=images_dict, transform=load_transforms)
+        inference_loader = DataLoader(
+            inference_ds, batch_size=1, num_workers=2
+        )
+        self.log("Done")
+        return inference_loader
+
+    def load_layer(self):
+
+        volume = np.array(self.layer.data, dtype=np.int16)
+        print("Loading layer")
+        print(volume.shape)
+
+        dims_check = volume.shape
+        self.log("\nChecking dimensions...")
+        pad = utils.get_padding_dim(dims_check)
+        print(f"padding: {pad}")
+        load_transforms = Compose(
+            [
+                AddChannel(),
+                AddChannel(),
+                ToTensor(),
+                EnsureType(),
+                # EnsureChannelFirst(),
+                # Orientationd(keys=["image"], axcodes="PLI"),
+                # anisotropic_transform,
+                SpatialPad(spatial_size=pad),
+            ]
+        )
+
+        self.log("\nLoading dataset...")
+        inference_ds = Dataset(data=volume, transform=load_transforms)
+        inference_loader = DataLoader(
+            inference_ds, batch_size=1, num_workers=2
+        )
+        self.log("Done")
+        return inference_loader
+
+    def model_output(self, inputs, model, post_process_transforms):
+
+        inputs = inputs.to("cpu")
+
+        model_output = lambda inputs: post_process_transforms(
+            self.model_dict["class"].get_output(model, inputs)
+        )
+
+        if self.keep_on_cpu:
+            dataset_device = "cpu"
+        else:
+            dataset_device = self.device
+
+        if self.use_window:
+            window_size = self.window_infer_size
+        else:
+            window_size = None
+
+        outputs = sliding_window_inference(
+            inputs,
+            roi_size=window_size,
+            sw_batch_size=1,
+            predictor=model_output,
+            sw_device=self.device,
+            device=dataset_device,
+        )
+
+        out = outputs.detach().cpu()
+        return out
+
+    def aniso_transform(self, image):
+        zoom = self.transforms["zoom"][1]
+        anisotropic_transform = Zoom(
+            zoom=zoom,
+            keep_size=False,
+            padding_mode="empty",
+        )
+        return anisotropic_transform(image[0])
+
+    def instance_seg(self, to_instance, image_id=None, original_filename=""):
+
+        if image_id is not None:
+            self.log(f"\nRunning instance segmentation for image n°{image_id}")
+
+        threshold = self.instance_params["threshold"]
+        size_small = self.instance_params["size_small"]
+        method_name = self.instance_params["method"]
+
+        if method_name == "Watershed":
+
+            def method(image):
+                return binary_watershed(image, threshold, size_small)
+
+        elif method_name == "Connected components":
+
+            def method(image):
+                return binary_connected(image, threshold, size_small)
+
+        else:
+            raise NotImplementedError(
+                "Selected instance segmentation method is not defined"
+            )
+
+        instance_labels = method(to_instance)
+
+        instance_filepath = (
+            self.results_path
+            + "/"
+            + f"Instance_seg_labels_{image_id}_"
+            + original_filename
+            + "_"
+            + self.model_dict["name"]
+            + f"_{utils.get_date_time()}_"
+            + self.filetype
+        )
+
+        imwrite(instance_filepath, instance_labels)
+        self.log(
+            f"Instance segmentation results for image n°{image_id} have been saved as:"
+        )
+        self.log(os.path.split(instance_filepath)[1])
+
+        # print(self.stats_to_csv)
+        if self.stats_to_csv:
+            data_dict = volume_stats(
+                instance_labels
+            )  # TODO test with area mesh function
+            return data_dict
+        return None
+
+    def inference_on_list(self, inf_data, i, model, post_process_transforms):
+
+        self.log("-" * 10)
+        self.log(f"Inference started on image n°{i + 1}...")
+
+        inputs = inf_data["image"]
+        # print(inputs.shape)
+        inputs = inputs.to("cpu")
+
+        model_output = lambda inputs: post_process_transforms(
+            self.model_dict["class"].get_output(model, inputs)
+        )
+
+        if self.keep_on_cpu:
+            dataset_device = "cpu"
+        else:
+            dataset_device = self.device
+
+        if self.use_window:
+            window_size = self.window_infer_size
+        else:
+            window_size = None
+
+        outputs = sliding_window_inference(
+            inputs,
+            roi_size=window_size,
+            sw_batch_size=1,
+            predictor=model_output,
+            sw_device=self.device,
+            device=dataset_device,
+        )
+
+        out = outputs.detach().cpu()
+        ###################
+        ###################
+        ###################
+        # del outputs # TODO fix memory ?
+        # outputs = None
+
+        ##################
+        ##################
+        ##################
+        out = self.aniso_transform(out)
+        # if self.transforms["zoom"][0]:
+        #     zoom = self.transforms["zoom"][1]
+        #     anisotropic_transform = Zoom(
+        #         zoom=zoom,
+        #         keep_size=False,
+        #         padding_mode="empty",
+        #     )
+        #     out = anisotropic_transform(out[0])
+        ##################
+        ##################
+        ##################
+        out = post_process_transforms(out)
+        out = np.array(out).astype(np.float32)
+        out = np.squeeze(out)
+        to_instance = out  # avoid post processing since thresholding is done there anyway
+
+        # batch_len = out.shape[1]
+        # print("trying to check len")
+        # print(batch_len)
+        # if batch_len != 1 :
+        #     sum  = np.sum(out, axis=1)
+        #     print(sum.shape)
+        #     out = sum
+        #     print(out.shape)
+
+        image_id = i + 1
+        time = utils.get_date_time()
+        # print(time)
+
+        original_filename = os.path.basename(self.images_filepaths[i]).split(
+            "."
+        )[0]
+
+        # File output save name : original-name_model_date+time_number.filetype
+        file_path = (
+            self.results_path
+            + "/"
+            + f"Prediction_{image_id}_"
+            + original_filename
+            + "_"
+            + self.model_dict["name"]
+            + f"_{time}_"
+            + self.filetype
+        )
+
+        # print(filename)
+        imwrite(file_path, out)
+
+        self.log(f"\nFile n°{image_id} saved as :")
+        filename = os.path.split(file_path)[1]
+        self.log(filename)
+
+        #################
+        #################
+        #################
+        if self.instance_params["do_instance"]:
+            data_dict = self.instance_seg(
+                to_instance, image_id, original_filename
+            )
+        #     self.log(
+        #         f"\nRunning instance segmentation for image n°{image_id}"
+        #     )
+        #
+        #     threshold = self.instance_params["threshold"]
+        #     size_small = self.instance_params["size_small"]
+        #     method_name = self.instance_params["method"]
+        #
+        #     if method_name == "Watershed":
+        #
+        #         def method(image):
+        #             return binary_watershed(image, threshold, size_small)
+        #
+        #     elif method_name == "Connected components":
+        #
+        #         def method(image):
+        #             return binary_connected(image, threshold, size_small)
+        #
+        #     else:
+        #         raise NotImplementedError(
+        #             "Selected instance segmentation method is not defined"
+        #         )
+        #
+        #     instance_labels = method(to_instance)
+        #
+        #     instance_filepath = (
+        #         self.results_path
+        #         + "/"
+        #         + f"Instance_seg_labels_{image_id}_"
+        #         + original_filename
+        #         + "_"
+        #         + self.model_dict["name"]
+        #         + f"_{time}_"
+        #         + self.filetype
+        #     )
+        #
+        #     imwrite(instance_filepath, instance_labels)
+        #     self.log(
+        #         f"Instance segmentation results for image n°{image_id} have been saved as:"
+        #     )
+        #     self.log(os.path.split(instance_filepath)[1])
+        #
+        #     # print(self.stats_to_csv)
+        #     if self.stats_to_csv:
+        #         data_dict = volume_stats(
+        #             instance_labels
+        #         )  # TODO test with area mesh function
+        #
+        #     else:
+        #         data_dict = None
+        #         ##################
+        #         ##################
+        #         ##################
+
+        else:
+            instance_labels = None
+            data_dict = None
+
+        original = np.array(inf_data["image"]).astype(np.float32)
+
+        # logging(f"Inference completed on image {i+1}")
+        result = {
+            "image_id": i + 1,
+            "original": original,
+            "instance_labels": instance_labels,
+            "object stats": data_dict,
+            "result": out,
+            "model_name": self.model_dict["name"],
+        }
+        # print(result)
+        return result
+
+    def inference_on_array(self, image, model, post_process_transforms):
+
+        self.log("-" * 10)
+        self.log(f"Inference started on layer...")
+
+        # print(inputs.shape)
+
+        image = ToTensor()(image)
+        image = AddChannel()(image)
+        image = AddChannel()(image)
+        inputs = image.to("cpu")
+
+        model_output = lambda inputs: post_process_transforms(
+            self.model_dict["class"].get_output(model, inputs)
+        )
+
+        if self.keep_on_cpu:
+            dataset_device = "cpu"
+        else:
+            dataset_device = self.device
+
+        if self.use_window:
+            window_size = self.window_infer_size
+        else:
+            window_size = None
+
+        outputs = sliding_window_inference(
+            inputs,
+            roi_size=window_size,
+            sw_batch_size=1,
+            predictor=model_output,
+            sw_device=self.device,
+            device=dataset_device,
+        )
+
+        out = outputs.detach().cpu()
+        ###################
+        ###################
+        ###################
+        # del outputs # TODO fix memory ?
+        # outputs = None
+
+        ##################
+        ##################
+        ##################
+        out = self.aniso_transform(out)
+        # if self.transforms["zoom"][0]:
+        #     zoom = self.transforms["zoom"][1]
+        #     anisotropic_transform = Zoom(
+        #         zoom=zoom,
+        #         keep_size=False,
+        #         padding_mode="empty",
+        #     )
+        #     out = anisotropic_transform(out[0])
+        ##################
+        ##################
+        ##################
+        out = post_process_transforms(out)
+        out = np.array(out).astype(np.float32)
+        out = np.squeeze(out)
+        to_instance = out  # avoid post processing since thresholding is done there anyway
+
+        # batch_len = out.shape[1]
+        # print("trying to check len")
+        # print(batch_len)
+        # if batch_len != 1 :
+        #     sum  = np.sum(out, axis=1)
+        #     print(sum.shape)
+        #     out = sum
+        #     print(out.shape)
+
+        time = utils.get_date_time()
+        # print(time)
+        # File output save name : original-name_model_date+time_number.filetype
+        file_path = os.path.join(
+            self.results_path,
+            f"Prediction_"
+            + "_"
+            + self.model_dict["name"]
+            + f"_{time}_"
+            + self.filetype,
+        )
+
+        # print(filename)
+        imwrite(file_path, out)
+
+        self.log(f"\nLayer prediction saved as :")
+        filename = os.path.split(file_path)[1]
+        self.log(filename)
+
+        #################
+        #################
+        #################
+        if self.instance_params["do_instance"]:
+            data_dict = self.instance_seg(to_instance)
+        #     self.log(
+        #         f"\nRunning instance segmentation for image n°{image_id}"
+        #     )
+        #
+        #     threshold = self.instance_params["threshold"]
+        #     size_small = self.instance_params["size_small"]
+        #     method_name = self.instance_params["method"]
+        #
+        #     if method_name == "Watershed":
+        #
+        #         def method(image):
+        #             return binary_watershed(image, threshold, size_small)
+        #
+        #     elif method_name == "Connected components":
+        #
+        #         def method(image):
+        #             return binary_connected(image, threshold, size_small)
+        #
+        #     else:
+        #         raise NotImplementedError(
+        #             "Selected instance segmentation method is not defined"
+        #         )
+        #
+        #     instance_labels = method(to_instance)
+        #
+        #     instance_filepath = (
+        #         self.results_path
+        #         + "/"
+        #         + f"Instance_seg_labels_{image_id}_"
+        #         + original_filename
+        #         + "_"
+        #         + self.model_dict["name"]
+        #         + f"_{time}_"
+        #         + self.filetype
+        #     )
+        #
+        #     imwrite(instance_filepath, instance_labels)
+        #     self.log(
+        #         f"Instance segmentation results for image n°{image_id} have been saved as:"
+        #     )
+        #     self.log(os.path.split(instance_filepath)[1])
+        #
+        #     # print(self.stats_to_csv)
+        #     if self.stats_to_csv:
+        #         data_dict = volume_stats(
+        #             instance_labels
+        #         )  # TODO test with area mesh function
+        #
+        #     else:
+        #         data_dict = None
+        #         ##################
+        #         ##################
+        #         ##################
+
+        else:
+            instance_labels = None
+            data_dict = None
+
+        # logging(f"Inference completed on image {i+1}")
+        result = {
+            "image_id": 0,
+            "original": None,
+            "instance_labels": instance_labels,
+            "object stats": data_dict,
+            "result": out,
+            "model_name": self.model_dict["name"],
+        }
+        # print(result)
+        return result
+
     def inference(self):
         """
         Requires:
@@ -334,23 +843,23 @@ class InferenceWorker(GeneratorWorker):
             torch.set_num_threads(1)  # required for threading on macOS ?
             self.log("Number of threads has been set to 1 for macOS")
 
-        images_dict = self.create_inference_dict(self.images_filepaths)
+        # images_dict = self.create_inference_dict(self.images_filepaths)
 
         # if self.device =="cuda": # TODO : fix mem alloc, this does not work it seems
         # torch.backends.cudnn.benchmark = False
 
         # TODO : better solution than loading first image always ?
-        data_check = LoadImaged(keys=["image"])(images_dict[0])
+        # data_check = LoadImaged(keys=["image"])(images_dict[0])
         # print(data)
-        check = data_check["image"].shape
+        # check = data_check["image"].shape
         # print(check)
         # TODO remove
         # z_aniso = 5 / 1.5
         # if zoom is not None :
         #     pad = utils.get_padding_dim(check, anisotropy_factor=zoom)
         # else:
-        self.log("\nChecking dimensions...")
-        pad = utils.get_padding_dim(check)
+        # self.log("\nChecking dimensions...")
+        # pad = utils.get_padding_dim(check)
         # print(pad)
         dims = self.model_dict["segres_size"]
 
@@ -358,6 +867,7 @@ class InferenceWorker(GeneratorWorker):
         if self.model_dict["name"] == "SegResNet":
             model = self.model_dict["class"].get_net()(
                 input_image_size=[
+
                     dims,
                     dims,
                     dims,
@@ -373,17 +883,17 @@ class InferenceWorker(GeneratorWorker):
         # print("FILEPATHS PRINT")
         # print(self.images_filepaths)
 
-        load_transforms = Compose(
-            [
-                LoadImaged(keys=["image"]),
-                # AddChanneld(keys=["image"]), #already done
-                EnsureChannelFirstd(keys=["image"]),
-                # Orientationd(keys=["image"], axcodes="PLI"),
-                # anisotropic_transform,
-                SpatialPadd(keys=["image"], spatial_size=pad),
-                EnsureTyped(keys=["image"]),
-            ]
-        )
+        # load_transforms = Compose(
+        #     [
+        #         LoadImaged(keys=["image"]),
+        #         # AddChanneld(keys=["image"]), #already done
+        #         EnsureChannelFirstd(keys=["image"]),
+        #         # Orientationd(keys=["image"], axcodes="PLI"),
+        #         # anisotropic_transform,
+        #         SpatialPadd(keys=["image"], spatial_size=pad),
+        #         EnsureTyped(keys=["image"]),
+        #     ]
+        # )
 
         if not self.transforms["thresh"][0]:
             post_process_transforms = EnsureType()
@@ -395,12 +905,12 @@ class InferenceWorker(GeneratorWorker):
 
         # LabelFilter(applied_labels=[0]),
 
-        self.log("\nLoading dataset...")
-        inference_ds = Dataset(data=images_dict, transform=load_transforms)
-        inference_loader = DataLoader(
-            inference_ds, batch_size=1, num_workers=2
-        )
-        self.log("Done")
+        # self.log("\nLoading dataset...")
+        # inference_ds = Dataset(data=images_dict, transform=load_transforms)
+        # inference_loader = DataLoader(
+        #     inference_ds, batch_size=1, num_workers=2
+        # )
+        # self.log("Done")
         # print(f"wh dir : {WEIGHTS_DIR}")
         # print(weights)
         self.log(
@@ -426,168 +936,225 @@ class InferenceWorker(GeneratorWorker):
         )
         self.log("Done")
 
+        is_folder = self.images_filepaths is not None
+        is_layer = self.layer is not None
+
+        if is_layer and is_folder:
+            raise ValueError(
+                "Both a layer and a folder have been specified, please specifiy only one of the two. Aborting."
+            )
+        elif is_folder:
+            inference_loader = self.load_folder()
+        elif is_layer:
+            inference_loader = self.load_layer()
+            ##################
+            ##################
+            # DEBUG
+            from monai.utils import first
+
+            check_data = first(inference_loader)
+            image = check_data[0][0]
+            print(image.shape)
+            ##################
+            ##################
+        else:
+            raise ValueError("No data has been provided. Aborting.")
+
         model.eval()
         with torch.no_grad():
-            for i, inf_data in enumerate(inference_loader):
-
-                self.log("-" * 10)
-                self.log(f"Inference started on image n°{i + 1}...")
-
-                inputs = inf_data["image"]
-                # print(inputs.shape)
-
-                inputs = inputs.to("cpu")
-
-                model_output = lambda inputs: post_process_transforms(
-                    self.model_dict["class"].get_output(model, inputs)
+            ################################
+            ################################
+            ################################
+            if is_folder:
+                for i, inf_data in enumerate(inference_loader):
+                    yield self.inference_on_list(
+                        inf_data,i, model, post_process_transforms
+                    )
+            elif is_layer:
+                image = self.layer.data
+                print(image.shape)
+                yield self.inference_on_array(
+                    image, model, post_process_transforms
                 )
-
-                if self.keep_on_cpu:
-                    dataset_device = "cpu"
-                else:
-                    dataset_device = self.device
-
-                if self.use_window:
-                    window_size = self.window_infer_size
-                else:
-                    window_size = None
-
-                outputs = sliding_window_inference(
-                    inputs,
-                    roi_size=window_size,
-                    sw_batch_size=1,
-                    predictor=model_output,
-                    sw_device=self.device,
-                    device=dataset_device,
-                )
-
-                out = outputs.detach().cpu()
-                # del outputs # TODO fix memory ?
-                # outputs = None
-
-                if self.transforms["zoom"][0]:
-                    zoom = self.transforms["zoom"][1]
-                    anisotropic_transform = Zoom(
-                        zoom=zoom,
-                        keep_size=False,
-                        padding_mode="empty",
-                    )
-                    out = anisotropic_transform(out[0])
-
-                out = post_process_transforms(out)
-                out = np.array(out).astype(np.float32)
-                out = np.squeeze(out)
-                to_instance = out  # avoid post processing since thresholding is done there anyway
-
-                # batch_len = out.shape[1]
-                # print("trying to check len")
-                # print(batch_len)
-                # if batch_len != 1 :
-                #     sum  = np.sum(out, axis=1)
-                #     print(sum.shape)
-                #     out = sum
-                #     print(out.shape)
-
-                image_id = i + 1
-                time = utils.get_date_time()
-                # print(time)
-
-                original_filename = os.path.basename(
-                    self.images_filepaths[i]
-                ).split(".")[0]
-
-                # File output save name : original-name_model_date+time_number.filetype
-                file_path = (
-                    self.results_path
-                    + "/"
-                    + f"Prediction_{image_id}_"
-                    + original_filename
-                    + "_"
-                    + self.model_dict["name"]
-                    + f"_{time}_"
-                    + self.filetype
-                )
-
-                # print(filename)
-                imwrite(file_path, out)
-
-                self.log(f"\nFile n°{image_id} saved as :")
-                filename = os.path.split(file_path)[1]
-                self.log(filename)
-
-                if self.instance_params["do_instance"]:
-                    self.log(
-                        f"\nRunning instance segmentation for image n°{image_id}"
-                    )
-
-                    threshold = self.instance_params["threshold"]
-                    size_small = self.instance_params["size_small"]
-                    method_name = self.instance_params["method"]
-
-                    if method_name == "Watershed":
-
-                        def method(image):
-                            return binary_watershed(
-                                image, threshold, size_small
-                            )
-
-                    elif method_name == "Connected components":
-
-                        def method(image):
-                            return binary_connected(
-                                image, threshold, size_small
-                            )
-
-                    else:
-                        raise NotImplementedError(
-                            "Selected instance segmentation method is not defined"
-                        )
-
-                    instance_labels = method(to_instance)
-
-                    instance_filepath = (
-                        self.results_path
-                        + "/"
-                        + f"Instance_seg_labels_{image_id}_"
-                        + original_filename
-                        + "_"
-                        + self.model_dict["name"]
-                        + f"_{time}_"
-                        + self.filetype
-                    )
-
-                    imwrite(instance_filepath, instance_labels)
-                    self.log(
-                        f"Instance segmentation results for image n°{image_id} have been saved as:"
-                    )
-                    self.log(os.path.split(instance_filepath)[1])
-
-                    # print(self.stats_to_csv)
-                    if self.stats_to_csv:
-                        data_dict = volume_stats(
-                            instance_labels
-                        )  # TODO test with area mesh function
-                    else:
-                        data_dict = None
-
-                else:
-                    instance_labels = None
-                    data_dict = None
-
-                original = np.array(inf_data["image"]).astype(np.float32)
-
-                # logging(f"Inference completed on image {i+1}")
-                result = {
-                    "image_id": i + 1,
-                    "original": original,
-                    "instance_labels": instance_labels,
-                    "object stats": data_dict,
-                    "result": out,
-                    "model_name": self.model_dict["name"],
-                }
-                # print(result)
-                yield result
-
+            # for i, inf_data in enumerate(inference_loader):
+            #
+            #     self.log("-" * 10)
+            #     self.log(f"Inference started on image n°{i + 1}...")
+            #
+            #     inputs = inf_data["image"]
+            #     # print(inputs.shape)
+            #     ###################
+            #     ###################
+            #     ###################
+            #     inputs = inputs.to("cpu")
+            #
+            #     model_output = lambda inputs: post_process_transforms(
+            #         self.model_dict["class"].get_output(model, inputs)
+            #     )
+            #
+            #     if self.keep_on_cpu:
+            #         dataset_device = "cpu"
+            #     else:
+            #         dataset_device = self.device
+            #
+            #     if self.use_window:
+            #         window_size = self.window_infer_size
+            #     else:
+            #         window_size = None
+            #
+            #     outputs = sliding_window_inference(
+            #         inputs,
+            #         roi_size=window_size,
+            #         sw_batch_size=1,
+            #         predictor=model_output,
+            #         sw_device=self.device,
+            #         device=dataset_device,
+            #     )
+            #
+            #     out = outputs.detach().cpu()
+            #     ###################
+            #     ###################
+            #     ###################
+            #     # del outputs # TODO fix memory ?
+            #     # outputs = None
+            #
+            #     ##################
+            #     ##################
+            #     ##################
+            #     if self.transforms["zoom"][0]:
+            #         zoom = self.transforms["zoom"][1]
+            #         anisotropic_transform = Zoom(
+            #             zoom=zoom,
+            #             keep_size=False,
+            #             padding_mode="empty",
+            #         )
+            #         out = anisotropic_transform(out[0])
+            #     ##################
+            #     ##################
+            #     ##################
+            #     out = post_process_transforms(out)
+            #     out = np.array(out).astype(np.float32)
+            #     out = np.squeeze(out)
+            #     to_instance = out  # avoid post processing since thresholding is done there anyway
+            #
+            #     # batch_len = out.shape[1]
+            #     # print("trying to check len")
+            #     # print(batch_len)
+            #     # if batch_len != 1 :
+            #     #     sum  = np.sum(out, axis=1)
+            #     #     print(sum.shape)
+            #     #     out = sum
+            #     #     print(out.shape)
+            #
+            #     image_id = i + 1
+            #     time = utils.get_date_time()
+            #     # print(time)
+            #
+            #     original_filename = os.path.basename(
+            #         self.images_filepaths[i]
+            #     ).split(".")[0]
+            #
+            #     # File output save name : original-name_model_date+time_number.filetype
+            #     file_path = (
+            #         self.results_path
+            #         + "/"
+            #         + f"Prediction_{image_id}_"
+            #         + original_filename
+            #         + "_"
+            #         + self.model_dict["name"]
+            #         + f"_{time}_"
+            #         + self.filetype
+            #     )
+            #
+            #     # print(filename)
+            #     imwrite(file_path, out)
+            #
+            #     self.log(f"\nFile n°{image_id} saved as :")
+            #     filename = os.path.split(file_path)[1]
+            #     self.log(filename)
+            #
+            #     #################
+            #     #################
+            #     #################
+            #     if self.instance_params["do_instance"]:
+            #         self.log(
+            #             f"\nRunning instance segmentation for image n°{image_id}"
+            #         )
+            #
+            #         threshold = self.instance_params["threshold"]
+            #         size_small = self.instance_params["size_small"]
+            #         method_name = self.instance_params["method"]
+            #
+            #         if method_name == "Watershed":
+            #
+            #             def method(image):
+            #                 return binary_watershed(
+            #                     image, threshold, size_small
+            #                 )
+            #
+            #         elif method_name == "Connected components":
+            #
+            #             def method(image):
+            #                 return binary_connected(
+            #                     image, threshold, size_small
+            #                 )
+            #
+            #         else:
+            #             raise NotImplementedError(
+            #                 "Selected instance segmentation method is not defined"
+            #             )
+            #
+            #         instance_labels = method(to_instance)
+            #
+            #         instance_filepath = (
+            #             self.results_path
+            #             + "/"
+            #             + f"Instance_seg_labels_{image_id}_"
+            #             + original_filename
+            #             + "_"
+            #             + self.model_dict["name"]
+            #             + f"_{time}_"
+            #             + self.filetype
+            #         )
+            #
+            #         imwrite(instance_filepath, instance_labels)
+            #         self.log(
+            #             f"Instance segmentation results for image n°{image_id} have been saved as:"
+            #         )
+            #         self.log(os.path.split(instance_filepath)[1])
+            #
+            #         # print(self.stats_to_csv)
+            #         if self.stats_to_csv:
+            #             data_dict = volume_stats(
+            #                 instance_labels
+            #             )  # TODO test with area mesh function
+            #
+            #         else:
+            #             data_dict = None
+            #             ##################
+            #             ##################
+            #             ##################
+            #
+            #     else:
+            #         instance_labels = None
+            #         data_dict = None
+            #
+            #     original = np.array(inf_data["image"]).astype(np.float32)
+            #
+            #     # logging(f"Inference completed on image {i+1}")
+            #     result = {
+            #         "image_id": i + 1,
+            #         "original": original,
+            #         "instance_labels": instance_labels,
+            #         "object stats": data_dict,
+            #         "result": out,
+            #         "model_name": self.model_dict["name"],
+            #     }
+            #     # print(result)
+            #     yield result
+            #     ######################################
+            #     ######################################
+            #     ######################################
         model.to("cpu")
 
 
