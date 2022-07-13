@@ -1,4 +1,4 @@
-import napari_cellseg3d
+import napari-cellseg3d
 
 # -*- coding: utf-8 -*-
 #
