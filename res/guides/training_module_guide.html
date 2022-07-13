@@ -103,6 +103,11 @@
 <span id="id1"></span><h1>Training module guide<a class="headerlink" href="#training-module-guide" title="Permalink to this headline">¶</a></h1>
 <p>This module allows you to train pre-defined Pytorch models for cell segmentation.
 Pre-defined models are stored in napari-cellseg-3d/models.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Currently, only inference on <strong>3D volumes is supported</strong>. Your image and label folders should both contain a set of
+<strong>3D image files</strong>, currently either <strong>.tif</strong> or <strong>.tiff</strong>. Loading a folder of 2D images as a stack is not supported as of yet.</p>
+</div>
 <p>Currently, the following pre-defined models are available :</p>
 <table class="docutils align-default">
 <colgroup>
@@ -141,8 +146,8 @@ Pre-defined models are stored in napari-cellseg-3d/models.</p>
 <li><p>The first one, <strong>Data</strong>, will let you set :</p></li>
 </ol>
 <ul class="simple">
-<li><p>The path to the images folder</p></li>
-<li><p>The path to the labels folder</p></li>
+<li><p>The path to the images folder (3D image files)</p></li>
+<li><p>The path to the labels folder (3D image files)</p></li>
 <li><p>The path to the results folder</p></li>
 <li><p>Whether to copy results to a zip file (for easier transferability)</p></li>
 <li><p>Whether to use pre-trained weights that are provided; if you choose to do so, the model will be initialized with the specified weights, possibly improving performance (transfer learning).
