@@ -11,7 +11,7 @@ twine
 numpy
 napari>=0.4.14
 QtPy
-opencv-python>=4.5.5
+opencv-python-headless
 dask-image>=0.6.0
 scikit-image>=0.19.2
 matplotlib>=3.4.1
