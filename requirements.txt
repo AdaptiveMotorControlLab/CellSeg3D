@@ -23,4 +23,4 @@ nibabel
 pillow
 itk>=5.2.0
 vispy>=0.9.6
--e .
+napari-cellseg3d
