@@ -1,7 +1,8 @@
 import os
 
 import napari
-from tifffile import imwrite
+import numpy as np
+from tifffile import imwrite, imread
 
 import napari_cellseg3d.interface as ui
 from napari_cellseg3d import utils
@@ -33,27 +34,39 @@ class ConvertUtils(BasePluginFolder):
         ########################
         # interface
 
-        self.btn_convert_folder_semantic = ui.make_button(
+        # label conversion
+        self.btn_convert_folder_semantic = ui.Button(
             "Convert to semantic labels", func=self.folder_to_semantic
         )
-        self.btn_convert_layer_semantic = ui.make_button(
+        self.btn_convert_layer_semantic = ui.Button(
             "Convert to semantic labels", func=self.layer_to_semantic
         )
-        self.btn_convert_folder_instance = ui.make_button(
+        self.btn_convert_folder_instance = ui.Button(
             "Convert to instance labels", func=self.folder_to_instance
         )
-        self.btn_convert_layer_instance = ui.make_button(
+        self.btn_convert_layer_instance = ui.Button(
             "Convert to instance labels", func=self.layer_to_instance
         )
-
-        self.btn_remove_small_folder = ui.make_button(
-            "Remove in folder", func=self.folder_remove_small
+        # remove small
+        self.btn_remove_small_folder = ui.Button(
+            "Remove small in folder", func=self.folder_remove_small
         )
-        self.btn_remove_small_layer = ui.make_button(
-            "Remove in layer", func=self.layer_remove_small
+        self.btn_remove_small_layer = ui.Button(
+            "Remove small in layer", func=self.layer_remove_small
         )
-        self.small_object_thresh_choice = ui.make_n_spinboxes(
+        self.small_object_thresh_choice = ui.IntIncrementCounter(
             min=1, max=1000, default=15
+        )
+
+        # convert anisotropy
+        self.anisotropy_converter = ui.AnisotropyWidgets(
+            parent=self, always_visible=True
+        )
+        self.btn_aniso_folder = ui.Button(
+            "Correct anisotropy in folder", self.folder_anisotropy, self
+        )
+        self.btn_aniso_layer = ui.Button(
+            "Correct anisotropy in layer", self.layer_anisotropy, self
         )
 
         self.lbl_error = ui.make_label("", self)
@@ -61,6 +74,10 @@ class ConvertUtils(BasePluginFolder):
 
         self.btn_image_files.setVisible(False)
         self.lbl_image_files.setVisible(False)
+
+        # self.results_filewidget.set_required(True)
+        self.label_filewidget.set_required(False)
+        # TODO improve not ready check for labels since optional until using folder conversion
         ###############################
         # tooltips
         self.btn_convert_folder_semantic.setToolTip(
@@ -84,6 +101,14 @@ class ConvertUtils(BasePluginFolder):
         )
         self.small_object_thresh_choice.setToolTip(
             "All objects in the image smaller in volume than this number of pixels will be removed"
+        )
+        self.btn_aniso_layer.setToolTip(
+            "Resize the selected layer to be isotropic, based on the chosen resolutions above."
+            "\nDOES NOT WORK WITH INSTANCE LABELS, CONVERT TO SEMANTIC FIRST"
+        )
+        self.btn_aniso_folder.setToolTip(
+            "Resize the images in the selected folder to be isotropic, based on the chosen resolutions above."
+            "\nDOES NOT WORK WITH INSTANCE LABELS, CONVERT TO SEMANTIC FIRST"
         )
         ###############################
 
@@ -126,7 +151,62 @@ class ConvertUtils(BasePluginFolder):
         )
         ###############################
         ui.add_blank(layout=layout, widget=self)
+        ###############################
+        aniso_group_w, aniso_group_l = ui.make_group(
+            "Correct anisotropy", l, t, r, b, parent=None
+        )
+
+        ui.add_widgets(
+            aniso_group_l,
+            [
+                self.anisotropy_converter,
+            ],
+            ui.LEFT_AL,
+        )
+
+        aniso_group_w.setLayout(aniso_group_l)
+        layout.addWidget(aniso_group_w)
+
+        ###############################
+        ui.add_blank(layout=layout, widget=self)
         #############################################################
+        small_group_w, small_group_l = ui.make_group(
+            "Remove small objects", l, t, r, b, parent=None
+        )
+
+        ui.add_widgets(
+            small_group_l,
+            [
+                self.small_object_thresh_choice,
+            ],
+            ui.HCENTER_AL,
+        )
+
+        small_group_w.setLayout(small_group_l)
+        layout.addWidget(small_group_w)
+        #########################################
+        ui.add_blank(layout=layout, widget=self)
+        #############################################################
+        layer_group_w, layer_group_l = ui.make_group(
+            "Convert selected layer", l, t, r, b, parent=None
+        )
+
+        ui.add_widgets(
+            layer_group_l,
+            [
+                self.btn_convert_layer_instance,
+                self.btn_convert_layer_semantic,
+                self.btn_remove_small_layer,
+                self.btn_aniso_layer,
+            ],
+            ui.HCENTER_AL,
+        )
+
+        layer_group_w.setLayout(layer_group_l)
+        layout.addWidget(layer_group_w)
+        ###############################
+        ui.add_blank(layout=layout, widget=self)
+        ###############################
         folder_group_w, folder_group_l = ui.make_group(
             "Convert folder", l, t, r, b, parent=None
         )
@@ -144,6 +224,8 @@ class ConvertUtils(BasePluginFolder):
             [
                 self.btn_convert_folder_instance,
                 self.btn_convert_folder_semantic,
+                self.btn_remove_small_folder,
+                self.btn_aniso_folder,
             ],
             ui.HCENTER_AL,
         )
@@ -152,39 +234,6 @@ class ConvertUtils(BasePluginFolder):
         layout.addWidget(folder_group_w)
         ###############################
         ui.add_blank(layout=layout, widget=self)
-        #############################################################
-        layer_group_w, layer_group_l = ui.make_group(
-            "Convert selected layer", l, t, r, b, parent=None
-        )
-
-        ui.add_widgets(
-            layer_group_l,
-            [self.btn_convert_layer_instance, self.btn_convert_layer_semantic],
-            ui.HCENTER_AL,
-        )
-
-        layer_group_w.setLayout(layer_group_l)
-        layout.addWidget(layer_group_w)
-        ###############################
-        ui.add_blank(layout=layout, widget=self)
-        #############################################################
-        small_group_w, small_group_l = ui.make_group(
-            "Remove small objects", l, t, r, b, parent=None
-        )
-
-        ui.add_widgets(
-            small_group_l,
-            [
-                self.small_object_thresh_choice,
-                self.btn_remove_small_layer,
-                self.btn_remove_small_folder,
-            ],
-            ui.HCENTER_AL,
-        )
-
-        small_group_w.setLayout(small_group_l)
-        layout.addWidget(small_group_w)
-        #############################################################
 
         ui.add_widgets(
             layout,
@@ -196,28 +245,23 @@ class ConvertUtils(BasePluginFolder):
             ],
         )
 
-        ui.make_scrollable(layout, self, min_wh=[230, 400], base_wh=[230, 450])
+        ui.ScrollArea.make_scrollable(
+            layout, self, min_wh=[230, 400], base_wh=[230, 450]
+        )
 
     def folder_to_semantic(self):
         """Converts folder of labels to semantic labels"""
         if not self.check_ready_folder():
             return
 
-        results_folder = (
-            self.results_path
-            + f"/converted_to_semantic_labels_{utils.get_date_time()}"
-        )
+        folder_name = f"converted_to_semantic_labels_{utils.get_date_time()}"
 
-        os.makedirs(results_folder, exist_ok=False)
+        images = [
+            to_semantic(file, is_file_path=True)
+            for file in self.labels_filepaths
+        ]
 
-        for file in self.labels_filepaths:
-
-            image = to_semantic(file, is_file_path=True)
-
-            imwrite(
-                results_folder + "/" + os.path.basename(file),
-                image,
-            )
+        self.save_folder(folder_name, images)
 
     def layer_to_semantic(self):
         """Converts selected layer to semantic labels"""
@@ -228,13 +272,11 @@ class ConvertUtils(BasePluginFolder):
         name = self._viewer.layers.selection.active.name
         semantic_labels = to_semantic(im)
 
-        if self.results_path != "":
-            imwrite(
-                self.results_path
-                + f"/{name}_semantic_{utils.get_time_filepath()}"
-                + self.filetype_choice.currentText(),
-                semantic_labels,
-            )
+        self.save_layer(
+            f"{name}_semantic_{utils.get_time_filepath()}"
+            + self.filetype_choice.currentText(),
+            semantic_labels,
+        )
 
         self._viewer.add_labels(semantic_labels, name=f"converted_semantic")
 
@@ -243,21 +285,14 @@ class ConvertUtils(BasePluginFolder):
         if not self.check_ready_folder():
             return
 
-        results_folder = (
-            self.results_path
-            + f"/converted_to_instance_labels_{utils.get_date_time()}"
+        images = [
+            to_instance(file, is_file_path=True)
+            for file in self.labels_filepaths
+        ]
+
+        self.save_folder(
+            f"converted_to_instance_labels_{utils.get_date_time()}", images
         )
-
-        os.makedirs(results_folder, exist_ok=False)
-
-        for file in self.labels_filepaths:
-
-            image = to_instance(file, is_file_path=True)
-
-            imwrite(
-                results_folder + "/" + os.path.basename(file),
-                image,
-            )
 
     def layer_to_instance(self):
         """Converts the selected layer to instance labels"""
@@ -268,13 +303,11 @@ class ConvertUtils(BasePluginFolder):
         name = self._viewer.layers.selection.active.name
         instance_labels = to_instance(im)
 
-        if self.results_path != "":
-            imwrite(
-                self.results_path
-                + f"/{name}_instance_{utils.get_time_filepath()}"
-                + self.filetype_choice.currentText(),
-                instance_labels,
-            )
+        self.save_layer(
+            f"{name}_instance_{utils.get_time_filepath()}"
+            + self.filetype_choice.currentText(),
+            instance_labels,
+        )
 
         self._viewer.add_labels(instance_labels, name=f"converted_instance")
 
@@ -290,39 +323,65 @@ class ConvertUtils(BasePluginFolder):
             im, self.small_object_thresh_choice.value()
         )
 
-        if self.results_path != "":
-            imwrite(
-                self.results_path
-                + f"/{name}_cleared_{utils.get_time_filepath()}"
-                + self.filetype_choice.currentText(),
-                cleared_labels,
-            )
+        self.save_layer(
+            f"{name}_cleared_{utils.get_time_filepath()}"
+            + self.filetype_choice.currentText(),
+            cleared_labels,
+        )
 
-        self._viewer.add_labels(cleared_labels, name=f"small_cleared")
+        self._viewer.add_image(cleared_labels, name=f"small_cleared")
 
     def folder_remove_small(self):
         """Removes small objects in folder of labels"""
         if not self.check_ready_folder():
             return
-        results_folder = (
-            self.results_path + f"/small_cleared_{utils.get_date_time()}"
-        )
 
-        os.makedirs(results_folder, exist_ok=False)
-
-        for file in self.labels_filepaths:
-            res = clear_small_objects(
+        images = [
+            clear_small_objects(
                 file,
                 self.small_object_thresh_choice.value(),
                 is_file_path=True,
             )
+            for file in self.labels_filepaths
+        ]
 
-            imwrite(
-                results_folder + "/" + os.path.basename(file),
-                res,
-            )
+        self.save_folder(f"small_cleared_{utils.get_date_time()}", images)
 
-    def check_ready_folder(self):
+    def layer_anisotropy(self):
+        """Corrects anisotropy in the currently selected image"""
+        if not self.check_ready_layer():
+            return
+
+        name = self._viewer.layers.selection.active.name
+        zoom_factor = self.anisotropy_converter.get_anisotropy_resolution_zyx()
+
+        vol = np.array(
+            self._viewer.layers.selection.active.data, dtype=np.int16
+        )
+        isotropic_image = utils.resize(vol, zoom_factor)
+
+        self.save_layer(
+            f"{name}_isotropic_{utils.get_time_filepath()}"
+            + self.filetype_choice.currentText(),
+            isotropic_image,
+        )
+
+        self._viewer.add_image(isotropic_image, name=f"isotropic")
+
+    def folder_anisotropy(self):
+        """Removes anisotropy in folder of images or labels"""
+        if not self.check_ready_folder():
+            return
+
+        zoom_factor = self.anisotropy_converter.get_anisotropy_resolution_zyx()
+        images = [
+            utils.resize(imread(file), zoom_factor)
+            for file in self.labels_filepaths
+        ]
+
+        self.save_folder(f"isotropic_{utils.get_date_time()}", images)
+
+    def check_ready_folder(self):  # TODO add color change
         """Check if results and source folders are correctly set"""
         if self.results_path == "":
             err = "ERROR : please set results folder"
@@ -340,7 +399,7 @@ class ConvertUtils(BasePluginFolder):
         self.lbl_error.setVisible(True)
         return False
 
-    def check_ready_layer(self):
+    def check_ready_layer(self):  # TODO add color change
         """Check if results and layer are selected"""
         if self.results_path == "":
             err = "ERROR : please set results folder"
@@ -356,3 +415,33 @@ class ConvertUtils(BasePluginFolder):
             return False
         self.lbl_error.setVisible(False)
         return True
+
+    def save_layer(self, file_name, image):
+
+        path = os.path.join(self.results_path, file_name)
+        print(self.results_path)
+        print(path)
+
+        if self.results_path != "":
+            imwrite(
+                path,
+                image,
+            )
+
+    def save_folder(self, folder_name, images):
+
+        results_folder = os.path.join(
+            self.results_path,
+            folder_name,
+        )
+
+        os.makedirs(results_folder, exist_ok=False)
+
+        for file, image in zip(self.labels_filepaths, images):
+
+            path = os.path.join(results_folder, os.path.basename(file))
+
+            imwrite(
+                path,
+                image,
+            )
