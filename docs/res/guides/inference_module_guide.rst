@@ -3,8 +3,12 @@
 Inference module guide
 =================================
 
-This module allows you to use  pre-trained segmentation algorithms (written in Pytorch) on volumes
+This module allows you to use  pre-trained segmentation algorithms (written in Pytorch) on 3D volumes
 to automatically label cells.
+
+.. important::
+    Currently, only inference on **3D volumes is supported**. Your image and label folders should both contain a set of
+    **3D image files**, currently either **.tif** or **.tiff**. Loading a folder of 2D images as a stack is not supported as of yet.
 
 Currently, the following pre-trained models are available :
 
@@ -31,7 +35,7 @@ Interface and functionalities
 
 * **Loading data** :
 
-  | When launching the module, you will be asked to provide an **image folder** containing all the volumes you'd like to be labeled.
+  | When launching the module, you will be asked to provide an **image folder** containing all the 3D volumes you'd like to be labeled.
   | All images with the chosen extension (**.tif** or **.tiff** currently supported) in this folder will be labeled.
   | You can then choose an **output folder**, where all the results will be saved.
 
