@@ -1,5 +1,3 @@
-import napari-cellseg3d
-
 # -*- coding: utf-8 -*-
 #
 # napari-cellseg3d documentation build configuration file, created by
