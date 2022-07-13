@@ -8,6 +8,7 @@ __pycache__/
 
 # unwanted results files
 *.tif
+*.tiff
 napari_cellseg3d/_tests/res/*.csv
 *.pth
 *.db
