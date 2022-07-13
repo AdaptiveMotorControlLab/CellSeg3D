@@ -26,7 +26,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html"><img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+            <a href="../../index.html" class="icon icon-home"> napari-cellseg3d
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -57,22 +57,15 @@
 <p class="caption"><span class="caption-text">Source files:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">interface.py</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#classes">Classes</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#button">Button</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#dropdownmenu">DropdownMenu</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#checkbox">CheckBox</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#anisotropywidgets">AnisotropyWidgets</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#filepathwidget">FilePathWidget</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#scrollarea">ScrollArea</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#doubleincrementcounter">DoubleIncrementCounter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#intincrementcounter">IntIncrementCounter</a></li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="#functions">Functions</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#open-url">open_url</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#make-scrollable">make_scrollable</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#make-group">make_group</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#add-to-group">add_to_group</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#make-container">make_container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#make-button">make_button</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#make-combobox">make_combobox</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#make-checkbox">make_checkbox</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#combine-blocks">combine_blocks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#add-blank">add_blank</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#toggle-visibility">toggle_visibility</a></li>
@@ -122,37 +115,13 @@
              
   <div class="section" id="interface-py">
 <h1>interface.py<a class="headerlink" href="#interface-py" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="classes">
-<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="button">
-<h3>Button<a class="headerlink" href="#button" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="dropdownmenu">
-<h3>DropdownMenu<a class="headerlink" href="#dropdownmenu" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="checkbox">
-<h3>CheckBox<a class="headerlink" href="#checkbox" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="anisotropywidgets">
-<h3>AnisotropyWidgets<a class="headerlink" href="#anisotropywidgets" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="filepathwidget">
-<h3>FilePathWidget<a class="headerlink" href="#filepathwidget" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="scrollarea">
-<h3>ScrollArea<a class="headerlink" href="#scrollarea" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="doubleincrementcounter">
-<h3>DoubleIncrementCounter<a class="headerlink" href="#doubleincrementcounter" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="intincrementcounter">
-<h3>IntIncrementCounter<a class="headerlink" href="#intincrementcounter" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
 <div class="section" id="functions">
 <h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="open-url">
 <h3>open_url<a class="headerlink" href="#open-url" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="make-scrollable">
+<h3>make_scrollable<a class="headerlink" href="#make-scrollable" title="Permalink to this headline">¶</a></h3>
 </div>
 <div class="section" id="make-group">
 <h3>make_group<a class="headerlink" href="#make-group" title="Permalink to this headline">¶</a></h3>
@@ -162,6 +131,15 @@
 </div>
 <div class="section" id="make-container">
 <h3>make_container<a class="headerlink" href="#make-container" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="make-button">
+<h3>make_button<a class="headerlink" href="#make-button" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="make-combobox">
+<h3>make_combobox<a class="headerlink" href="#make-combobox" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="make-checkbox">
+<h3>make_checkbox<a class="headerlink" href="#make-checkbox" title="Permalink to this headline">¶</a></h3>
 </div>
 <div class="section" id="combine-blocks">
 <h3>combine_blocks<a class="headerlink" href="#combine-blocks" title="Permalink to this headline">¶</a></h3>

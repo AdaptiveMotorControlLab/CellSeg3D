@@ -19,12 +19,6 @@ Launching the review process
 .. note::
     Only single 3D **.tif** files or 2D stacks of several **.png** or **.tif** in a folder are currently supported.
 
-* Anisotropic data :
-    This will scale the images to visually remove the anisotropy, so as to make review easier.
-
-.. important::
-    Results will still be saved as anisotropic images. If you wish to resize your images, see the :doc:`convert_module_guide`
-
 * CSV file name :
     You can then provide a model name, which will be used to name the csv file recording the status of each slice.
 
