@@ -40,7 +40,7 @@ class Cropping(BasePluginSingleImage):
 
         super().__init__(viewer, parent)
 
-        self.btn_start = ui.Button("Start", self.start, self)
+        self.btn_start = ui.make_button("Start", self.start, self)
 
         self.crop_label_choice = ui.make_checkbox(
             "Crop labels simultaneously", self.toggle_label_path
@@ -48,9 +48,7 @@ class Cropping(BasePluginSingleImage):
         self.lbl_label.setVisible(False)
         self.btn_label.setVisible(False)
 
-        self.box_widgets = ui.IntIncrementCounter.make_n(
-            3, 1, 1000, DEFAULT_CROP_SIZE
-        )
+        self.box_widgets = ui.make_n_spinboxes(3, 1, 1000, DEFAULT_CROP_SIZE)
         self.box_lbl = [
             ui.make_label("Size in " + axis + " of cropped volume :", self)
             for axis in "xyz"
@@ -139,7 +137,7 @@ class Cropping(BasePluginSingleImage):
             ],
         )
 
-        ui.ScrollArea.make_scrollable(layout, self, min_wh=[180, 100])
+        ui.make_scrollable(layout, self, min_wh=[180, 100])
 
     def quicksave(self):
         """Quicksaves the cropped volume in the folder from which they originate, with their original file extension.

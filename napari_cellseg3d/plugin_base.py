@@ -2,6 +2,7 @@ import glob
 import os
 
 import napari
+from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QTabWidget
 
@@ -51,21 +52,17 @@ class BasePluginSingleImage(QTabWidget):
 
         self._default_path = [self.image_path, self.label_path]
 
-        self.image_filewidget = ui.FilePathWidget(
-            "Image path", self.show_dialog_images, self
-        )
-        self.btn_image = self.image_filewidget.get_button()
+        self.btn_image = ui.make_button("Open", self.show_dialog_images, self)
         """Button to load image folder"""
-        self.lbl_image = self.image_filewidget.get_text_field()
+        self.lbl_image = QLineEdit("Image path", self)
+        self.lbl_image.setReadOnly(True)
 
-        self.label_filewidget = ui.FilePathWidget(
-            "Label path", self.show_dialog_labels, self
-        )
-        self.lbl_label = self.label_filewidget.get_text_field()
-        self.btn_label = self.label_filewidget.get_button()
+        self.lbl_label = QLineEdit("Label path", self)
         """Button to load label folder"""
+        self.lbl_label.setReadOnly(True)
+        self.btn_label = ui.make_button("Open", self.show_dialog_labels, self)
 
-        self.filetype_choice = ui.DropdownMenu([".png", ".tif"])
+        self.filetype_choice = ui.make_combobox([".png", ".tif"])
 
         self.file_handling_box = ui.make_checkbox(
             "Load as folder ?", self.show_filetype_choice
@@ -76,7 +73,7 @@ class BasePluginSingleImage(QTabWidget):
             QSizePolicy.Fixed, QSizePolicy.Fixed
         )
 
-        self.btn_close = ui.Button("Close", self.remove_from_viewer, self)
+        self.btn_close = ui.make_button("Close", self.remove_from_viewer, self)
 
         # self.lbl_ft = QLabel("Filetype :", self)
         # self.lbl_ft2 = QLabel("(Folders of .png or single .tif files)", self)
@@ -195,46 +192,45 @@ class BasePluginFolder(QTabWidget):
 
         #######################################################
         # interface
-        self.image_filewidget = ui.FilePathWidget(
-            "Images directory", self.load_image_dataset, self
+        self.btn_image_files = ui.make_button(
+            "Open", self.load_image_dataset, self
         )
-        self.btn_image_files = self.image_filewidget.get_button()
-        self.lbl_image_files = self.image_filewidget.get_text_field()
+        self.lbl_image_files = QLineEdit("Images directory", self)
+        self.lbl_image_files.setReadOnly(True)
 
-        self.label_filewidget = ui.FilePathWidget(
-            "Labels directory", self.load_label_dataset, self
+        self.btn_label_files = ui.make_button(
+            "Open", self.load_label_dataset, self
         )
-        self.btn_label_files = self.label_filewidget.get_button()
-        self.lbl_label_files = self.label_filewidget.get_text_field()
+        self.lbl_label_files = QLineEdit("Labels directory", self)
+        self.lbl_label_files.setReadOnly(True)
 
-        self.filetype_choice = ui.DropdownMenu(
+        self.filetype_choice, self.lbl_filetype = ui.make_combobox(
             [".tif", ".tiff"], label="File format"
         )
-        self.lbl_filetype = self.filetype_choice.label
         """Allows to choose which file will be loaded from folder"""
 
-        self.results_filewidget = ui.FilePathWidget(
-            "Results directory", self.load_results_path, self
+        self.btn_result_path = ui.make_button(
+            "Open", self.load_results_path, self
         )
-        self.btn_result_path = self.results_filewidget.get_button()
-        self.lbl_result_path = self.results_filewidget.get_text_field()
+        self.lbl_result_path = QLineEdit("Results directory", self)
+        self.lbl_result_path.setReadOnly(True)
         #######################################################
 
     def make_close_button(self):
-        btn = ui.Button("Close", self.remove_from_viewer)
+        btn = ui.make_button("Close", self.remove_from_viewer)
         btn.setToolTip(
             "Close the window and all docked widgets. Make sure to save your work !"
         )
         return btn
 
     def make_prev_button(self):
-        btn = ui.Button(
+        btn = ui.make_button(
             "Previous", lambda: self.setCurrentIndex(self.currentIndex() - 1)
         )
         return btn
 
     def make_next_button(self):
-        btn = ui.Button(
+        btn = ui.make_button(
             "Next", lambda: self.setCurrentIndex(self.currentIndex() + 1)
         )
         return btn

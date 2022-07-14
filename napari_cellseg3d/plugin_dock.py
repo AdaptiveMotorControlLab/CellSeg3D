@@ -44,7 +44,7 @@ class Datamanager(QWidget):
         """napari.viewer.Viewer: viewer in which the widget is displayed"""
 
         # add some buttons
-        self.button = ui.Button(
+        self.button = ui.make_button(
             "1", self.button_func, parent=self, fixed=False
         )
         self.time_label = ui.make_label("", self)
@@ -189,12 +189,6 @@ class Datamanager(QWidget):
 
         return df, csv_path
 
-    def update_button(self):
-        if len(self.df) > 1:
-            self.button.setText(
-                self.df.at[self.df.index[self.slice_num], "train"]
-            )  # puts  button values at value of 1st csv item
-
     def update(self, slice_num):
         """Updates the Datamanager with the index of the current slice, and updates
         the text with the status contained in the csv (e.g. checked/not checked).
@@ -207,12 +201,10 @@ class Datamanager(QWidget):
 
         print(f"New slice review started at {utils.get_time()}")
         # print(self.df)
-
-        try:
-            self.update_button()
-        except IndexError:
-            self.slice_num -= 1
-            self.update_button()
+        if len(self.df) > 1:
+            self.button.setText(
+                self.df.at[self.df.index[self.slice_num], "train"]
+            )  # puts  button values at value of 1st csv item
 
         self.time = datetime.now()
 

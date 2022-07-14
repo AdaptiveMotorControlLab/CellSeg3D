@@ -40,20 +40,17 @@ class MetricsUtils(BasePluginFolder):
 
         ######################################
         # interface
-
-        # set new descriptions for Filewidgets
-        self.image_filewidget.set_description("Ground truth")
-        self.label_filewidget.set_description("Prediction")
-
-        self.btn_compute_dice = ui.Button("Compute Dice", self.compute_dice)
+        self.btn_compute_dice = ui.make_button(
+            "Compute Dice", self.compute_dice
+        )
 
         self.rotate_choice = ui.make_checkbox("Find best orientation")
 
-        self.btn_reset_plot = ui.Button("Clear plots", self.remove_plots)
+        self.btn_reset_plot = ui.make_button("Clear plots", self.remove_plots)
 
         self.lbl_threshold_box = ui.make_label("Score threshold", self)
-        self.threshold_box = ui.DoubleIncrementCounter(
-            min=0.1, max=1, default=DEFAULT_THRESHOLD, step=0.1
+        self.threshold_box = ui.make_n_spinboxes(
+            min=0.1, max=1, default=DEFAULT_THRESHOLD, step=0.1, double=True
         )
 
         self.btn_result_path.setVisible(False)
@@ -95,6 +92,10 @@ class MetricsUtils(BasePluginFolder):
             ],
         )
 
+        self.lbl_image_files.setText("Ground truth")
+
+        self.lbl_label_files.setText("Prediction")
+
         metrics_group_w.setLayout(metrics_group_l)
         ############################
         ui.add_blank(self, self.layout)
@@ -124,7 +125,7 @@ class MetricsUtils(BasePluginFolder):
 
         self.btn_reset_plot.setVisible(False)
 
-        ui.ScrollArea.make_scrollable(self.layout, self)
+        ui.make_scrollable(self.layout, self)
 
     def plot_dice(self, dice_coeffs, threshold=DEFAULT_THRESHOLD):
         """Plots the dice loss for each pair of labels on viewer"""

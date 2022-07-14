@@ -8,10 +8,8 @@ __pycache__/
 
 # unwanted results files
 *.tif
-*.tiff
 napari_cellseg3d/_tests/res/*.csv
 *.pth
-*.db
 
 # Distribution / packaging
 .Python
@@ -99,4 +97,4 @@ venv/
 /napari_cellseg3d/models/saved_weights/
 /docs/res/logo/old_logo/
 /reqs/
-
+*.db

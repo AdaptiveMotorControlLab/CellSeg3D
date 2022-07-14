@@ -30,7 +30,9 @@ class Helper(QWidget):
         url = str(path) + "/res/logo_alpha.png"
         image = QPixmap(url)
 
-        self.logo_label = ui.Button(func=lambda: ui.open_url(self.repo_url))
+        self.logo_label = ui.make_button(
+            func=lambda: ui.open_url(self.repo_url)
+        )
         self.logo_label.setIcon(QIcon(image))
         self.logo_label.setMinimumSize(200, 200)
         self.logo_label.setIconSize(QSize(200, 200))
@@ -43,17 +45,21 @@ class Helper(QWidget):
             f"You are using napari-cellseg3d v.{'0.0.1rc2'}\n\n"
             f"Plugin for cell segmentation developed\n"
             f"by the Mathis Lab of Adaptive Motor Control\n\n"
-            f"Code by :\nCyril Achard\nMaxime Vidal\nJessy Lauer\nMackenzie Mathis\n"
+            f"Code by Cyril Achard and Maxime Vidal and Mackenzie Mathis\n"
             f"\nReleased under the MIT license",
             self,
         )
 
-        self.btn1 = ui.Button("Help...", lambda: ui.open_url(self.help_url))
+        self.btn1 = ui.make_button(
+            "Help...", lambda: ui.open_url(self.help_url)
+        )
         self.btn1.setToolTip("Go to documentation")
 
-        self.btn2 = ui.Button("About...", lambda: ui.open_url(self.about_url))
+        self.btn2 = ui.make_button(
+            "About...", lambda: ui.open_url(self.about_url)
+        )
 
-        self.btnc = ui.Button("Close", self.remove_from_viewer)
+        self.btnc = ui.make_button("Close", self.remove_from_viewer)
 
         self.build()
 

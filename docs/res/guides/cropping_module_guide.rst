@@ -25,12 +25,6 @@ Folders can be stacks of either .png or .tif files, ideally numbered with the in
 You can then choose the size of the cropped volume, which will be constant throughout the process; make sure it is correct beforehand.
 Setting a larger size than the size of the image will cause issues.
 
-You can also opt to correct the anisotropy if your image is anisotropic :
-simply set the resolution to the one of your microscope.
-
-.. important::
-    This will simply scale the image in the viewer, but saved images will **still be anisotropic.** To resize your image, see :doc:`convert_module_guide`
-
 Once you are ready, you can press **Start** to start the review process.
 
 

@@ -9,6 +9,7 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
+from monai.transforms import Zoom
 from qtpy.QtWidgets import QSizePolicy
 from scipy import ndimage
 from tifffile import imwrite
@@ -72,21 +73,22 @@ def launch_review(
     images_original = original
     base_label = base
 
-    viewer = napari.Viewer()
+    view1 = napari.Viewer()
+    viewer = view1 #TODO fix duplicate name
 
-    viewer.scale_bar.visible = True
+    view1.scale_bar.visible = True
 
-    viewer.add_image(
+    view1.add_image(
         images_original,
         name="volume",
         colormap="inferno",
         contrast_limits=[200, 1000],
         scale=zoom_factor,
     )  # anything bigger than 255 will get mapped to 255... they did it like this because it must have rgb images
-    viewer.add_labels(base_label, name="labels", seed=0.6, scale=zoom_factor)
+    view1.add_labels(base_label, name="labels", seed=0.6, scale=zoom_factor)
 
     if raw is not None:  # raw labels is from the prediction
-        viewer.add_image(
+        view1.add_image(
             ndimage.gaussian_filter(raw, sigma=3),
             colormap="magenta",
             name="low_confident",
@@ -116,7 +118,7 @@ def launch_review(
 
     # def show_so_layer(args):
     #     labeled_c, labeled_sorted, nums = args
-    #     so_layer = viewer.add_image(labeled_c, colormap='cyan', name='small_object', blending='additive')
+    #     so_layer = view1.add_image(labeled_c, colormap='cyan', name='small_object', blending='additive')
     #
     #     object_slider = QSlider(Qt.Horizontal)
     #     object_slider.setMinimum(0)
@@ -131,7 +133,7 @@ def launch_review(
     #
     #     slider_widget = utils.combine_blocks(lbl, object_slider)
     #
-    #     viewer.window.add_dock_widget(slider_widget, name='object_size_slider', area='left')
+    #     view1.window.add_dock_widget(slider_widget, name='object_size_slider', area='left')
     #
     #     def calc_object_callback(t_layer, value, labeled_array, nums):
     #         t_layer.data = label_ct(labeled_array, nums, value)
@@ -184,14 +186,14 @@ def launch_review(
 
     # gui = file_widget.show(run=True)  # dirpicker.show(run=True)
 
-    viewer.window.add_dock_widget(file_widget, name=" ", area="bottom")
+    view1.window.add_dock_widget(file_widget, name=" ", area="bottom")
 
     # @magicgui(call_button="Save")
 
     # gui2 = saver.show(run=True)  # saver.show(run=True)
-    # viewer.window.add_dock_widget(gui2, name=" ", area="bottom")
+    # view1.window.add_dock_widget(gui2, name=" ", area="bottom")
 
-    # viewer.window._qt_window.tabifyDockWidget(gui, gui2) #not with FunctionGui ?
+    # view1.window._qt_window.tabifyDockWidget(gui, gui2) #not with FunctionGui ?
 
     # draw canvas
 
@@ -222,7 +224,7 @@ def launch_review(
 
     canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
 
-    viewer.window.add_dock_widget(canvas, name=" ", area="right")
+    view1.window.add_dock_widget(canvas, name=" ", area="right")
 
     @viewer.mouse_drag_callbacks.append
     def update_canvas_canvas(viewer, event):
@@ -230,7 +232,7 @@ def launch_review(
         if "shift" in event.modifiers:
             try:
                 cursor_position = np.round(viewer.cursor.position).astype(int)
-                print(f"plot @ {cursor_position}")
+                print(cursor_position)
 
                 cropped_volume = crop_volume_around_point(
                     [
@@ -239,13 +241,7 @@ def launch_review(
                         cursor_position[2],
                     ],
                     viewer.layers["volume"],
-                    zoom_factor,
                 )
-
-                ##########
-                ##########
-                # DEBUG
-                # viewer.add_image(cropped_volume, name="DEBUG_crop_plot")
 
                 xy_axes.imshow(
                     cropped_volume[50], cmap="inferno", vmin=200, vmax=2000
@@ -267,9 +263,9 @@ def launch_review(
                 print(e)
 
     # Qt widget defined in docker.py
-    dmg = Datamanager(parent=viewer)
+    dmg = Datamanager(parent=view1)
     dmg.prepare(r_path, filetype, model_type, checkbox, as_folder)
-    viewer.window.add_dock_widget(dmg, name=" ", area="left")
+    view1.window.add_dock_widget(dmg, name=" ", area="left")
 
     def update_button(axis_event):
 
@@ -277,13 +273,19 @@ def launch_review(
         print(f"slice num is {slice_num}")
         dmg.update(slice_num)
 
-    viewer.dims.events.current_step.connect(update_button)
+    view1.dims.events.current_step.connect(update_button)
 
-    def crop_volume_around_point(points, layer, zoom_factor):
+    def crop_volume_around_point(points, layer):
+
         if zoom_factor != [1, 1, 1]:
-            data = np.array(layer.data, dtype=np.int16)
-            volume = utils.resize(data, zoom_factor)
-            # image = ndimage.zoom(layer.data, zoom_factor, mode="nearest") # cleaner but much slower...
+            vol = np.array(layer.data, dtype=np.int16)
+            volume = Zoom(
+                zoom_factor,
+                keep_size=False,
+                padding_mode="empty",
+            )(np.expand_dims(vol, axis=0))
+            volume = volume[0]
+        # image = ndimage.zoom(layer.data, zoom_factor, mode="nearest") # cleaner but much slower...
         else:
             volume = layer.data
 
@@ -310,7 +312,7 @@ def launch_review(
         if as_folder:
             crop_temp = volume[crop_slice].persist().compute()
         else:
-            crop_temp = volume[crop_slice]
+            crop_temp = layer.data[crop_slice]
 
         cropped_volume = np.zeros((100, 100, 100), np.int16)
         cropped_volume[
@@ -320,4 +322,4 @@ def launch_review(
         ] = crop_temp
         return cropped_volume
 
-    return viewer, [file_widget, canvas, dmg]
+    return view1, [file_widget, canvas, dmg]

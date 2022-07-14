@@ -5,6 +5,7 @@ import napari
 import torch
 
 # Qt
+from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QProgressBar
 from qtpy.QtWidgets import QSizePolicy
 
@@ -76,22 +77,21 @@ class ModelFramework(BasePluginFolder):
         # interface
 
         # TODO : implement custom model
-        self.model_filewidget = ui.FilePathWidget(
-            "Model path", self.load_model_path, self
+        self.btn_model_path = ui.make_button(
+            "Open", self.load_model_path, self
         )
-        self.btn_model_path = self.model_filewidget.get_button()
-        self.lbl_model_path = self.model_filewidget.get_text_field()
+        self.lbl_model_path = QLineEdit("Model directory", self)
+        self.lbl_model_path.setReadOnly(True)
 
-        self.model_choice = ui.DropdownMenu(
+        self.model_choice, self.lbl_model_choice = ui.make_combobox(
             sorted(self.models_dict.keys()), label="Model name"
         )
-        self.lbl_model_choice = self.model_choice.label
 
-        self.weights_filewidget = ui.FilePathWidget(
-            "Weights path", self.load_weights_path, self
+        self.btn_weights_path = ui.make_button(
+            "Open", self.load_weights_path, self
         )
-        self.btn_weights_path = self.weights_filewidget.get_button()
-        self.lbl_weights_path = self.weights_filewidget.get_text_field()
+        self.lbl_weights_path = QLineEdit("Weights directory", self)
+        self.lbl_weights_path.setReadOnly(True)
 
         self.weights_path_container = ui.combine_blocks(
             self.btn_weights_path, self.lbl_weights_path, b=0
@@ -121,7 +121,7 @@ class ModelFramework(BasePluginFolder):
         self.log.setVisible(False)
         """Read-only display for process-related info. Use only for info destined to user."""
 
-        self.btn_save_log = ui.Button(
+        self.btn_save_log = ui.make_button(
             "Save log in results folder",
             func=self.save_log,
             parent=self.container_report,
@@ -187,7 +187,7 @@ class ModelFramework(BasePluginFolder):
         #     )
         #     self.progress = QProgressBar(self.container_report)
         #     self.log = QTextEdit(self.container_report)
-        #     self.btn_save_log = ui.Button(
+        #     self.btn_save_log = ui.make_button(
         #         "Save log in results folder", parent=self.container_report
         #     )
         #     self.btn_save_log.clicked.connect(self.save_log)

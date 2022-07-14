@@ -9,7 +9,7 @@ sphinx-rtd-theme
 tox
 twine
 numpy
-napari[all]>=0.4.14
+napari>=0.4.14
 QtPy
 opencv-python>=4.5.5
 dask-image>=0.6.0

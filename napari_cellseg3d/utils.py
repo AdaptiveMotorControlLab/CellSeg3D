@@ -101,17 +101,6 @@ def dice_coeff(y_true, y_pred):
     return score
 
 
-def resize(image, zoom_factors):
-    from monai.transforms import Zoom
-
-    isotropic_image = Zoom(
-        zoom_factors,
-        keep_size=False,
-        padding_mode="empty",
-    )(np.expand_dims(image, axis=0))
-    return isotropic_image[0]
-
-
 def align_array_sizes(array_shape, target_shape):
 
     index_differences = []
