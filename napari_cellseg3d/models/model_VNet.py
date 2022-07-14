@@ -1,9 +1,6 @@
-import os
-
 from monai.inferers import sliding_window_inference
 from monai.networks.nets import VNet
 
-from napari_cellseg3d import utils
 
 
 def get_net():

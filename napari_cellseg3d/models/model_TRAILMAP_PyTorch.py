@@ -1,18 +1,15 @@
-import os
-
 import torch
 from torch import nn
 
-from napari_cellseg3d import utils
 
 
 def get_weights_file():
     # model additionally trained on Mathis/Wyss mesoSPIM data
-    return "TRAILMAP_MS_best_metric_epoch_26.pth"
-
+    return "TRAILMAP_PyTorch.pth"
+    # FIXME currently incorrect, find good weights from TRAILMAP_test and upload them
 
 def get_net():
-    return TRAILMAP_MS(1, 1)
+    return TRAILMAP_PyTorch(1, 1)
 
 
 def get_output(model, input):
@@ -26,7 +23,7 @@ def get_validation(model, val_inputs):
     return model(val_inputs)
 
 
-class TRAILMAP_MS(nn.Module):
+class TRAILMAP_PyTorch(nn.Module):
     def __init__(self, in_ch, out_ch):
         super().__init__()
         self.conv0 = self.encoderBlock(in_ch, 32, 3)  # input
@@ -123,3 +120,4 @@ class TRAILMAP_MS(nn.Module):
             # nn.BatchNorm3d(out_ch),
         )
         return out
+

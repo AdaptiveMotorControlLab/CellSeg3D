@@ -56,18 +56,20 @@ class Log(QTextEdit):
         finally:
             self.lock.release()
 
-    def print_and_log(self, text):
+    def print_and_log(self, text, printing=True):
         """Utility used to both print to terminal and log text to a QTextEdit
          item in a thread-safe manner. Use only for important user info.
 
         Args:
             text (str): Text to be printed and logged
+            printing (bool): Whether to print the message as well or not using print(). Defaults to True.
 
         """
         self.lock.acquire()
         try:
-            print(text)
-            # causes issue if you clik on terminal (tied to CMD QuickEdit mode)
+            if printing:
+                print(text)
+            # causes issue if you clik on terminal (tied to CMD QuickEdit mode on Windows)
             self.moveCursor(QTextCursor.End)
             self.insertPlainText(f"\n{text}")
             self.verticalScrollBar().setValue(

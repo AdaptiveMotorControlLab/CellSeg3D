@@ -114,7 +114,7 @@ class WeightsDownloader:
                 tar.extractall(pretrained_folder_path)
         else:
             raise ValueError(
-                f"Unknown model. `modelname` should be one of {', '.join(neturls)}"
+                f"Unknown model: {model_name}. Should be one of {', '.join(neturls)}"
             )
 
 
@@ -695,7 +695,7 @@ class TrainingWorker(GeneratorWorker):
         self.log("-" * 20)
 
     def train(self):
-        """Trains the Pytorch model for the given number of epochs, with the selected model and data,
+        """Trains the PyTorch model for the given number of epochs, with the selected model and data,
         using the chosen batch size, validation interval, loss function, and number of samples.
         Will perform validation once every :py:obj:`val_interval` and save results if the mean dice is better
 

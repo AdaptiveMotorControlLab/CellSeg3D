@@ -1,12 +1,9 @@
-import os
-
-from napari_cellseg3d import utils
 from napari_cellseg3d.models.unet.model import UNet3D
 
 
 def get_weights_file():
-    # original model from Liqun Luo lab, transfered to pytorch
-    return "TRAILMAP_PyTorch.pth"
+    # original model from Liqun Luo lab, transferred to pytorch
+    return "TRAILMAP_MS_best_metric_epoch_26.pth"
 
 
 def get_net():

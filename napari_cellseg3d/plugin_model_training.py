@@ -35,7 +35,7 @@ DEFAULT_PATCH_SIZE = 60
 
 
 class Trainer(ModelFramework):
-    """A plugin to train pre-defined Pytorch models for one-channel segmentation directly in napari.
+    """A plugin to train pre-defined PyTorch models for one-channel segmentation directly in napari.
     Features parameter selection for training, dynamic loss plotting and automatic saving of the best weights during
     training through validation."""
 
