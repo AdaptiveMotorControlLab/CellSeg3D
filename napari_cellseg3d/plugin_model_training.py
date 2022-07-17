@@ -35,7 +35,7 @@ DEFAULT_PATCH_SIZE = 60
 
 
 class Trainer(ModelFramework):
-    """A plugin to train pre-defined Pytorch models for one-channel segmentation directly in napari.
+    """A plugin to train pre-defined PyTorch models for one-channel segmentation directly in napari.
     Features parameter selection for training, dynamic loss plotting and automatic saving of the best weights during
     training through validation."""
 
@@ -852,6 +852,7 @@ class Trainer(ModelFramework):
                 do_augmentation=self.augment_choice.isChecked(),
                 deterministic=seed_dict,
             )
+            self.worker.set_download_log(self.log)
 
             [btn.setVisible(False) for btn in self.close_buttons]
 
@@ -989,6 +990,11 @@ class Trainer(ModelFramework):
     def make_csv(self):
 
         size_column = range(1, self.max_epochs + 1)
+
+        if len(self.loss_values) == 0 or self.loss_values is None:
+            warnings.warn("No loss values to add to csv !")
+            return
+        
         self.df = pd.DataFrame(
             {
                 "epoch": size_column,

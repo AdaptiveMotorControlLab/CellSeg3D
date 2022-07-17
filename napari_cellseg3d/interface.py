@@ -2,6 +2,7 @@ from typing import Optional
 from typing import Union
 from typing import List
 
+
 from qtpy.QtCore import Qt
 from qtpy.QtCore import QUrl
 from qtpy.QtGui import QDesktopServices

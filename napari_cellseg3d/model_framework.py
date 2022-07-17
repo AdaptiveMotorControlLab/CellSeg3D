@@ -15,7 +15,7 @@ from napari_cellseg3d.log_utility import Log
 from napari_cellseg3d.models import model_SegResNet as SegResNet
 from napari_cellseg3d.models import model_TRAILMAP as TRAILMAP
 from napari_cellseg3d.models import model_VNet as VNet
-from napari_cellseg3d.models import TRAILMAP_MS as TMAP
+from napari_cellseg3d.models import model_TRAILMAP_MS as TRAILMAP_MS
 from napari_cellseg3d.plugin_base import BasePluginFolder
 
 warnings.formatwarning = utils.format_Warning
@@ -62,8 +62,8 @@ class ModelFramework(BasePluginFolder):
         self.models_dict = {
             "VNet": VNet,
             "SegResNet": SegResNet,
-            "TRAILMAP pre-trained": TRAILMAP,
-            "TRAILMAP_MS": TMAP,
+            "TRAILMAP": TRAILMAP,
+            "TRAILMAP_MS": TRAILMAP_MS,
         }
         """dict: dictionary of available models, with string for widget display as key
 
