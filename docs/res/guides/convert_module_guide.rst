@@ -17,6 +17,12 @@ You can :
 * Remove small objects :
     You can specify a size threshold in pixels; all objects smaller than this size will be removed in the image.
 
+* Resize anisotropic images :
+    Specifiy the resolution of your microscope to remove anisotropy from images.
+
+.. important:: Does not work for instance labels currently.
+
+
 .. figure:: ../images/converted_labels.png
    :scale: 30 %
    :align: center

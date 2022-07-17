@@ -1,5 +1,6 @@
 from typing import Optional
 from typing import Union
+from typing import List
 
 from qtpy.QtCore import Qt
 from qtpy.QtCore import QUrl
@@ -13,6 +14,7 @@ from qtpy.QtWidgets import QGroupBox
 from qtpy.QtWidgets import QHBoxLayout
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLayout
+from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QScrollArea
 from qtpy.QtWidgets import QSizePolicy
@@ -45,6 +47,515 @@ BOTT_AL = Qt.AlignmentFlag.AlignBottom
 dark_red = "#72071d"  # crimson red
 default_cyan = "#8dd3c7"  # turquoise cyan (default matplotlib line color under dark background context)
 napari_grey = "#262930"  # napari background color (grey)
+###############
+
+
+def toggle_visibility(checkbox, widget):
+    """Toggles the visibility of a widget based on the status of a checkbox.
+
+    Args:
+        checkbox: The QCheckbox that determines whether to show or not
+        widget: The widget to hide or show
+    """
+    widget.setVisible(checkbox.isChecked())
+
+
+class Button(QPushButton):
+    """Class for a button with a title and connected to a function when clicked. Inherits from QPushButton.
+
+    Args:
+        title (str-like): title of the button. Defaults to None, if None no title is set
+        func (callable): function to execute when button is clicked. Defaults to None, no binding is made if None
+        parent (QWidget): parent QWidget to add button to. Defaults to None, no parent is set if None
+        fixed (bool): if True, will set the size policy of the button to Fixed in h and w. Defaults to True.
+
+    """
+
+    def __init__(
+        self,
+        title: str = None,
+        func: callable = None,
+        parent: Optional[QWidget] = None,
+        fixed: Optional[bool] = True,
+    ):
+        super().__init__(parent)
+        if title is not None:
+            self.setText(title)
+
+        if func is not None:
+            self.clicked.connect(func)
+
+        if fixed:
+            self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+    def visibility_condition(self, checkbox):
+        toggle_visibility(checkbox, self)
+
+
+class DropdownMenu(QComboBox):
+    """Creates a dropdown menu with a title and adds specified entries to it"""
+
+    def __init__(
+        self,
+        entries: Optional[list] = None,
+        parent: Optional[QWidget] = None,
+        label: Optional[str] = None,
+        fixed: Optional[bool] = True,
+    ):
+        """Args:
+        entries (array(str)): Entries to add to the dropdown menu. Defaults to None, no entries if None
+        parent (QWidget): parent QWidget to add dropdown menu to. Defaults to None, no parent is set if None
+        label (str) : if not None, creates a QLabel with the contents of 'label', and returns the label as well
+        fixed (bool): if True, will set the size policy of the dropdown menu to Fixed in h and w. Defaults to True.
+        """
+        super().__init__(parent)
+        self.label = None
+        if entries is not None:
+            self.addItems(entries)
+        if label is not None:
+            self.label = QLabel(label)
+        if fixed:
+            self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+
+class CheckBox(QCheckBox):
+    """Shortcut class for creating QCheckBox with a title and a function"""
+
+    def __init__(
+        self,
+        title: Optional[str] = None,
+        func: Optional[callable] = None,
+        parent: Optional[QWidget] = None,
+        fixed: Optional[bool] = True,
+    ):
+        """
+        Args:
+            title (str-like): title of the checkbox. Defaults to None, if None no title is set
+            func (callable): function to execute when checkbox is toggled. Defaults to None, no binding is made if None
+            parent (QWidget): parent QWidget to add checkbox to. Defaults to None, no parent is set if None
+            fixed (bool): if True, will set the size policy of the checkbox to Fixed in h and w. Defaults to True.
+        """
+        super().__init__(title, parent)
+        if fixed:
+            self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        if func is not None:
+            self.toggled.connect(func)
+
+
+class AnisotropyWidgets(QWidget):
+    """Class that creates widgets for anisotropy handling. Includes :
+    - A checkbox to hides or shows the controls
+    - Three spinboxes to enter resolution for each dimension"""
+
+    def __init__(
+        self,
+        parent: Optional[QWidget] = None,
+        default_x: Optional[float] = 1.0,
+        default_y: Optional[float] = 1.0,
+        default_z: Optional[float] = 1.0,
+        always_visible: Optional[bool] = False,
+    ):
+        """Creates an instance of AnisotropyWidgets
+        Args:
+            - parent: parent QWidget
+            - default_x: default resolution to use for x axis in microns
+            - default_y: default resolution to use for y axis in microns
+            - default_z: default resolution to use for z axis in microns
+        """
+        super().__init__(parent)
+
+        self._layout = QVBoxLayout()
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+
+        self.container, self._boxes_layout = make_container(T=7, parent=parent)
+        self.checkbox = make_checkbox(
+            "Anisotropic data", self._toggle_display_aniso, parent
+        )
+
+        self.box_widgets = DoubleIncrementCounter.make_n(
+            n=3, min=1.0, max=1000, default=1, step=0.5
+        )
+        self.box_widgets[0].setValue(default_x)
+        self.box_widgets[1].setValue(default_y)
+        self.box_widgets[2].setValue(default_z)
+
+        for w in self.box_widgets:
+            w.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        self.box_widgets_lbl = [
+            make_label("Resolution in " + axis + " (microns) :", parent=parent)
+            for axis in "xyz"
+        ]
+
+        ##################
+        # tooltips
+        self.checkbox.setToolTip(
+            "If you have anisotropic data, you can scale data using your resolution in microns"
+        )
+        [
+            w.setToolTip(f"Anisotropic resolution in microns for {dim} axis")
+            for w, dim in zip(self.box_widgets, "xyz")
+        ]
+        ##################
+
+        self.build()
+
+        if always_visible:
+            self.toggle_permanent_visibility()
+
+    def _toggle_display_aniso(self):
+        """Shows the choices for correcting anisotropy when viewing results depending on whether :py:attr:`self.checkbox` is checked"""
+        toggle_visibility(self.checkbox, self.container)
+
+    def build(self):
+        """Builds the layout of the widget"""
+        [
+            self._boxes_layout.addWidget(widget, alignment=HCENTER_AL)
+            for widgets in zip(self.box_widgets_lbl, self.box_widgets)
+            for widget in widgets
+        ]
+        # anisotropy
+        self.container.setLayout(self._boxes_layout)
+        self.container.setVisible(False)
+
+        add_widgets(self._layout, [self.checkbox, self.container])
+        self.setLayout(self._layout)
+
+    def get_anisotropy_resolution_xyz(self, as_factors=True):
+        """
+        Args :
+            as_factors: if True, returns zoom factors, otherwise returns the input resolution
+
+        Returns : the resolution in microns for each of the three dimensions. ZYX order suitable for napari scale"""
+
+        resolution = [w.value() for w in self.box_widgets]
+        if as_factors:
+            return self.anisotropy_zoom_factor(resolution)
+
+        return resolution
+
+    def get_anisotropy_resolution_zyx(self, as_factors=True):
+        """
+        Args :
+            as_factors: if True, returns zoom factors, otherwise returns the input resolution
+
+        Returns : the resolution in microns for each of the three dimensions. XYZ order suitable for MONAI"""
+        resolution = [w.value() for w in self.box_widgets]
+        if as_factors:
+            resolution = self.anisotropy_zoom_factor(resolution)
+
+        return [resolution[2], resolution[1], resolution[0]]
+
+    @staticmethod
+    def anisotropy_zoom_factor(aniso_res):
+        """Computes a zoom factor to correct anisotropy, based on anisotropy resolutions
+
+            Args:
+                aniso_res: array for anisotropic resolution (float) in microns for each axis
+
+        Returns: an array with the corresponding zoom factors for each axis (all values divided by min)
+
+        """
+
+        base = min(aniso_res)
+        zoom_factors = [base / res for res in aniso_res]
+        return zoom_factors
+
+    def is_enabled(self):
+        """Returns : whether anisotropy correction has been enabled or not"""
+        return self.checkbox.isChecked()
+
+    def toggle_permanent_visibility(self):
+        """Hides the checkbox and always display resolution spinboxes"""
+        self.checkbox.toggle()
+        self.checkbox.setVisible(False)
+
+
+class FilePathWidget(
+    QWidget
+):  # TODO upgrade logic, include load as folder, highlight if incorrect ?
+    """Widget to handle the choice of file paths for data throughout the plugin. Provides the following elements :
+    - An "Open" button to show a file dialog (defined externally)
+    - A QLineEdit in read only to display the chosen path/file"""
+
+    def __init__(
+        self,
+        description: str,
+        file_function: callable,
+        parent: Optional[QWidget] = None,
+        required: Optional[bool] = True,
+    ):
+        """Creates a FilePathWidget.
+        Args:
+            description (str): Initial text to add to the text box
+            file_function (callable): Function to handle the file dialog
+            parent (Optional[QWidget]): parent QWidget
+            required (Optional[bool]): if True, field will be highlighted in red if empty. Defaults to False.
+        """
+        super().__init__(parent)
+        self._layout = QHBoxLayout()
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+
+        self._initial_desc = description
+        self.text_field = QLineEdit(description, self)
+
+        self.button = Button("Open", file_function, parent=self, fixed=True)
+
+        self.text_field.setReadOnly(True)
+
+        self.set_required(required)
+
+    def build(self):
+        """Builds the layout of the widget"""
+        add_widgets(self._layout, [self.text_field, self.button])
+        self.setLayout(self._layout)
+
+    def get_text_field(self):
+        """Get text field with file path"""
+        return self.text_field
+
+    def get_button(self):
+        """Get "Open" button"""
+        return self.button
+
+    def check_ready(self):
+        """Check if a path is correctly set"""
+        if self.text_field.text() in ["", self._initial_desc]:
+            self.update_field_color("indianred")
+            self.text_field.setToolTip("Mandatory field !")
+            return False
+        else:
+            self.update_field_color("black")
+            return True
+
+    def set_required(self, is_required):
+        """If set to True, will be colored red if incorrectly set"""
+        if is_required:
+            self.text_field.textChanged.connect(self.check_ready)
+            self.check_ready()
+
+    def update_field_color(self, color: str):
+        """Updates the background of the text field"""
+        self.text_field.setStyleSheet(f"background-color : {color}")
+        self.text_field.style().unpolish(self.text_field)
+        self.text_field.style().polish(self.text_field)
+
+    def set_description(self, text: str):
+        """Sets the initial description ins the text field"""
+        self._initial_desc = text
+        self.text_field.setText(text)
+
+
+class ScrollArea(QScrollArea):
+    """Creates a QScrollArea and sets it up, then adds the contained_layout to it."""
+
+    def __init__(
+        self,
+        contained_layout: QLayout,
+        min_wh: Optional[List[int]] = None,
+        max_wh: Optional[List[int]] = None,
+        base_wh: Optional[List[int]] = None,
+        parent: Optional[QWidget] = None,
+    ):
+        """
+        Args:
+              contained_layout (QLayout): the layout of widgets to be made scrollable
+              min_wh (Optional[List[int]]): array of two ints for respectively the minimum width and minimum height of the scrollable area. Defaults to None, lets Qt decide if None
+              max_wh (Optional[List[int]]): array of two ints for respectively the maximum width and maximum height of the scrollable area. Defaults to None, lets Qt decide if None
+              base_wh (Optional[List[int]]): array of two ints for respectively the initial width and initial height of the scrollable area. Defaults to None, lets Qt decide if None
+              parent (Optional[QWidget]): array of two ints for respectively the initial width and initial height of the scrollable area. Defaults to None, lets Qt decide if None
+        """
+        # TODO : optimize the number of created objects ?
+        super().__init__(parent)
+
+        self._container_widget = (
+            QWidget()
+        )  # required to use QScrollArea.setWidget()
+        self._container_widget.setSizePolicy(
+            QSizePolicy.Fixed, QSizePolicy.Maximum
+        )
+        self._container_widget.setLayout(contained_layout)
+        self._container_widget.adjustSize()
+
+        self.setWidget(self._container_widget)
+        self.setWidgetResizable(True)
+        self.setSizePolicy(
+            QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
+        )
+
+        if base_wh is not None:
+            self.setBaseSize(base_wh[0], base_wh[1])
+        if max_wh is not None:
+            self.setMaximumSize(max_wh[0], max_wh[1])
+        if min_wh is not None:
+            self.setMinimumSize(min_wh[0], min_wh[1])
+
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+
+    @classmethod
+    def make_scrollable(
+        cls,
+        contained_layout: QLayout,
+        parent: QWidget,
+        min_wh: Optional[List[int]] = None,
+        max_wh: Optional[List[int]] = None,
+        base_wh: Optional[List[int]] = None,
+    ):
+        """Factory method to create a scroll area in a widget
+        Args:
+                contained_layout (QLayout): the widget to be made scrollable
+                parent (QWidget): the parent widget to add the resulting scroll area in
+                min_wh (Optional[List[int]]): array of two ints for respectively the minimum width and minimum height of the scrollable area. Defaults to None, lets Qt decide if None
+                max_wh (Optional[List[int]]): array of two ints for respectively the maximum width and maximum height of the scrollable area. Defaults to None, lets Qt decide if None
+                base_wh (Optional[List[int]]): array of two ints for respectively the initial width and initial height of the scrollable area. Defaults to None, lets Qt decide if None
+        """
+
+        scroll = cls(contained_layout, min_wh, max_wh, base_wh)
+        layout = QVBoxLayout(parent)
+        # layout.setContentsMargins(0,0,1,1)
+        layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
+        layout.addWidget(scroll)
+        parent.setLayout(layout)
+
+
+def set_spinbox(
+    box,
+    min=0,
+    max=10,
+    default=0,
+    step=1,
+    fixed: Optional[bool] = True,
+):
+    """Args:
+    class_ : QSpinBox or QDoubleSpinBox
+    min (Optional[int]): minimum value, defaults to 0
+    max (Optional[int]): maximum value, defaults to 10
+    default (Optional[int]): default value, defaults to 0
+    step (Optional[int]): step value, defaults to 1
+    fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed"""
+
+    box.setMinimum(min)
+    box.setMaximum(max)
+    box.setSingleStep(step)
+    box.setValue(default)
+
+    if fixed:
+        box.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+
+def make_n_spinboxes(
+    class_,
+    n: int = 2,
+    min=0,
+    max=10,
+    default=0,
+    step=1,
+    parent: Optional[QWidget] = None,
+    fixed: Optional[bool] = True,
+):
+    """Creates n increment counters with the specified parameters :
+
+    Args:
+        class_ : QSpinBox or QDoubleSpinbox
+        n (int): number of increment counters to create
+        min (Optional[int]): minimum value, defaults to 0
+        max (Optional[int]): maximum value, defaults to 10
+        default (Optional[int]): default value, defaults to 0
+        step (Optional[int]): step value, defaults to 1
+        parent: parent widget, defaults to None
+        fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed
+    """
+    if n <= 1:
+        raise ValueError("Cannot make less than 2 spin boxes")
+
+    boxes = []
+    for i in range(n):
+        box = class_(min, max, default, step, parent, fixed)
+        boxes.append(box)
+    return boxes
+
+
+class DoubleIncrementCounter(QDoubleSpinBox):
+    """Class implementing a number counter with increments (spin box) for floats."""
+
+    def __init__(
+        self,
+        min=0,
+        max=10,
+        default=0,
+        step=1,
+        parent: Optional[QWidget] = None,
+        fixed: Optional[bool] = True,
+    ):
+        """Args:
+        min (Optional[int]): minimum value, defaults to 0
+        max (Optional[int]): maximum value, defaults to 10
+        default (Optional[int]): default value, defaults to 0
+        step (Optional[int]): step value, defaults to 1
+        parent: parent widget, defaults to None
+        fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed"""
+
+        super().__init__(parent)
+        set_spinbox(self, min, max, default, step, fixed)
+
+    def set_precision(self, decimals):
+        """Sets the precision of the box to the speicifed number of decimals"""
+        self.setDecimals(decimals)
+
+    @classmethod
+    def make_n(
+        cls,
+        n: int = 2,
+        min=0,
+        max=10,
+        default=0,
+        step=1,
+        parent: Optional[QWidget] = None,
+        fixed: Optional[bool] = True,
+    ):
+        return make_n_spinboxes(cls, n, min, max, default, step, parent, fixed)
+
+
+class IntIncrementCounter(QSpinBox):
+    """Class implementing a number counter with increments (spin box) for int."""
+
+    def __init__(
+        self,
+        min=0,
+        max=10,
+        default=0,
+        step=1,
+        parent: Optional[QWidget] = None,
+        fixed: Optional[bool] = True,
+    ):
+        """Args:
+        min (Optional[int]): minimum value, defaults to 0
+        max (Optional[int]): maximum value, defaults to 10
+        default (Optional[int]): default value, defaults to 0
+        step (Optional[int]): step value, defaults to 1
+        parent: parent widget, defaults to None
+        fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed"""
+
+        super().__init__(parent)
+        set_spinbox(self, min, max, default, step, fixed)
+
+    @classmethod
+    def make_n(
+        cls,
+        n: int = 2,
+        min=0,
+        max=10,
+        default=0,
+        step=1,
+        parent: Optional[QWidget] = None,
+        fixed: Optional[bool] = True,
+    ):
+        return make_n_spinboxes(cls, n, min, max, default, step, parent, fixed)
 
 
 def add_blank(widget, layout=None):
@@ -109,98 +620,6 @@ def make_label(name, parent=None):  # TODO update to child class
         return QLabel(name, parent)
     else:
         return QLabel(name)
-
-
-def make_scrollable(
-    contained_layout, containing_widget, min_wh=None, max_wh=None, base_wh=None
-):  # TODO convert to child class
-    """Creates a QScrollArea and sets it up, then adds the contained_widget to it,
-    and finally adds the scroll area in a layout and sets it to the contaning_widget
-
-
-    Args:
-        contained_layout (QLayout): the widget to be made scrollable
-        containing_widget (QWidget): the widget to add the resulting scroll area in
-        min_wh (array(int)): array of two ints for respectively the minimum width and minimum height of the scrollable area. Defaults to None, lets Qt decide if None
-        max_wh (array(int)): array of two ints for respectively the maximum width and maximum height of the scrollable area. Defaults to None, lets Qt decide if None
-        base_wh (array(int)): array of two ints for respectively the initial width and initial height of the scrollable area. Defaults to None, lets Qt decide if None
-    """
-    container_widget = QWidget()  # required to use QScrollArea.setWidget()
-    container_widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Maximum)
-    container_widget.setLayout(contained_layout)
-    container_widget.adjustSize()
-    # TODO : optimize the number of created objects ?
-    scroll = QScrollArea()
-    scroll.setWidget(container_widget)
-    scroll.setWidgetResizable(True)
-    scroll.setSizePolicy(
-        QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
-    )
-    if base_wh is not None:
-        scroll.setBaseSize(base_wh[0], base_wh[1])
-    if max_wh is not None:
-        scroll.setMaximumSize(max_wh[0], max_wh[1])
-    if min_wh is not None:
-        scroll.setMinimumSize(min_wh[0], min_wh[1])
-
-    scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-    scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-    # scroll.adjustSize()
-
-    layout = QVBoxLayout(containing_widget)
-    # layout.setContentsMargins(0,0,1,1)
-    layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
-    layout.addWidget(scroll)
-    containing_widget.setLayout(layout)
-
-
-def make_n_spinboxes(
-    n=1,
-    min=0,
-    max=10,
-    default=0,
-    step=1,
-    parent=None,
-    double=False,
-    fixed=True,
-) -> Union[list, QWidget]:  # TODO: child class if possible ?
-    """
-
-    Args:
-        n: number of spinboxes, defaults to 1
-        min: min value, defaults to 0
-        max: max value, defaults to 10
-        default: default value, defaults to 0
-        step : step value, defaults to 1
-        parent: parent widget, defaults to None
-        double (bool): if True, creates a QDoubleSpinBox rather than a QSpinBox
-        fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed
-
-    Returns:
-            list: A list of n Q(Double)SpinBoxes with specified parameters. If only one box is made, returns the box itself instead
-    """
-    if double:
-        box_type = QDoubleSpinBox
-    else:
-        box_type = QSpinBox
-    boxes = []
-    for i in range(n):
-        if parent is not None:
-            widget = box_type(parent)
-        else:
-            widget = box_type()
-        widget.setMinimum(min)
-        widget.setMaximum(max)
-        widget.setSingleStep(step)
-        widget.setValue(default)
-
-        if fixed:
-            widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-
-        boxes.append(widget)
-    if len(boxes) == 1:
-        return boxes[0]
-    return boxes
 
 
 def add_to_group(title, widget, layout, L=7, T=20, R=7, B=11):
@@ -278,75 +697,7 @@ def make_container(
     return container_widget, container_layout
 
 
-def make_button(  # TODO child class
-    title: str = None,
-    func: callable = None,
-    parent: QWidget = None,
-    fixed: bool = True,
-):
-    """Creates a button with a title and connects it to a function when clicked
-
-    Args:
-        title (str-like): title of the button. Defaults to None, if None no title is set
-        func (callable): function to execute when button is clicked. Defaults to None, no binding is made if None
-        parent (QWidget): parent QWidget to add button to. Defaults to None, no parent is set if None
-        fixed (bool): if True, will set the size policy of the button to Fixed in h and w. Defaults to True.
-
-    Returns:
-        QPushButton : created button
-    """
-    if parent is not None:
-        if title is not None:
-            btn = QPushButton(title, parent)
-        else:
-            btn = QPushButton(parent)
-    else:
-        if title is not None:
-            btn = QPushButton(title, parent)
-        else:
-            btn = QPushButton(parent)
-
-    if fixed:
-        btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-
-    if func is not None:
-        btn.clicked.connect(func)
-
-    return btn
-
-
-class DropdownMenu(QComboBox):
-    """Creates a dropdown menu with a title and adds specified entries to it"""
-
-    def __init__(
-        self,
-        entries: Optional[list] = None,
-        parent: Optional[QWidget] = None,
-        label: Optional[str] = None,
-        fixed: Optional[bool] = True,
-    ):
-        """Args:
-        entries (array(str)): Entries to add to the dropdown menu. Defaults to None, no entries if None
-        parent (QWidget): parent QWidget to add dropdown menu to. Defaults to None, no parent is set if None
-        label (str) : if not None, creates a QLabel with the contents of 'label', and returns the label as well
-        fixed (bool): if True, will set the size policy of the dropdown menu to Fixed in h and w. Defaults to True.
-        """
-        super().__init__(parent)
-        self.label = None
-        if entries is not None:
-            self.addItems(entries)
-        if label is not None:
-            self.label = QLabel(label)
-        if fixed:
-            self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-
-
-def make_combobox(  # TODO child class
-    entries=None,
-    parent: QWidget = None,
-    label: str = None,
-    fixed: bool = True,
-):
+def make_combobox():  # TODO finish child class conversion
     """Creates a dropdown menu with a title and adds specified entries to it
 
     Args:
@@ -358,13 +709,7 @@ def make_combobox(  # TODO child class
     Returns:
         QComboBox : created dropdown menu
     """
-    if label is not None:
-        menu = DropdownMenu(entries, parent, label, fixed)
-        label = menu.label
-        return menu, label
-    else:
-        menu = DropdownMenu(entries, parent, fixed=fixed)
-        return menu
+    raise NotImplementedError
 
 
 def add_widgets(layout, widgets, alignment=LEFT_AL):
@@ -381,30 +726,6 @@ def add_widgets(layout, widgets, alignment=LEFT_AL):
     else:
         for w in widgets:
             layout.addWidget(w, alignment=alignment)
-
-
-class CheckBox(QCheckBox):
-    """Shortcut for creating QCheckBox with a title and a function"""
-
-    def __init__(
-        self,
-        title: Optional[str] = None,
-        func: Optional[callable] = None,
-        parent: Optional[QWidget] = None,
-        fixed: Optional[bool] = True,
-    ):
-        """
-        Args:
-            title (str-like): title of the checkbox. Defaults to None, if None no title is set
-            func (callable): function to execute when checkbox is toggled. Defaults to None, no binding is made if None
-            parent (QWidget): parent QWidget to add checkbox to. Defaults to None, no parent is set if None
-            fixed (bool): if True, will set the size policy of the checkbox to Fixed in h and w. Defaults to True.
-        """
-        super().__init__(title, parent)
-        if fixed:
-            self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        if func is not None:
-            self.toggled.connect(func)
 
 
 def make_checkbox(  # TODO update calls to class
@@ -482,115 +803,6 @@ def combine_blocks(
     temp_layout.addWidget(right_or_below, r2, c2)  # , alignment=LEFT_AL)
     temp_widget.setLayout(temp_layout)
     return temp_widget
-
-
-def toggle_visibility(checkbox, widget):
-    """Toggles the visibility of a widget based on the status of a checkbox.
-
-    Args:
-        checkbox: The QCheckbox that determines whether to show or not
-        widget: The widget to hide or show
-    """
-    widget.setVisible(checkbox.isChecked())
-
-
-class AnisotropyWidgets(QWidget):
-    def __init__(self, parent, default_x=1, default_y=1, default_z=1):
-        super().__init__(parent)
-
-        self._layout = QVBoxLayout()
-        self._layout.setSpacing(0)
-        self._layout.setContentsMargins(0, 0, 0, 0)
-
-        self.container, self._boxes_layout = make_container(T=7, parent=parent)
-        self.checkbox = make_checkbox(
-            "Anisotropic data", self.toggle_display_aniso, parent
-        )
-
-        self.box_widgets = make_n_spinboxes(
-            n=3, min=1.0, max=1000, default=1, step=0.5, double=True
-        )
-        self.box_widgets[0].setValue(default_x)
-        self.box_widgets[1].setValue(default_y)
-        self.box_widgets[2].setValue(default_z)
-
-        for w in self.box_widgets:
-            w.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-
-        self.box_widgets_lbl = [
-            make_label("Resolution in " + axis + " (microns) :", parent=parent)
-            for axis in "xyz"
-        ]
-
-        ##################
-        # tooltips
-        self.checkbox.setToolTip(
-            "If you have anisotropic data, you can scale data using your resolution in microns"
-        )
-        [w.setToolTip("Resolution in microns") for w in self.box_widgets]
-        ##################
-
-        self.build()
-
-    def toggle_display_aniso(self):
-        """Shows the choices for correcting anisotropy when viewing results depending on whether :py:attr:`self.checkbox` is checked"""
-        toggle_visibility(self.checkbox, self.container)
-
-    def build(self):
-        [
-            self._boxes_layout.addWidget(widget, alignment=LEFT_AL)
-            for widgets in zip(self.box_widgets_lbl, self.box_widgets)
-            for widget in widgets
-        ]
-        # anisotropy
-        self.container.setLayout(self._boxes_layout)
-        self.container.setVisible(False)
-
-        add_widgets(self._layout, [self.checkbox, self.container])
-        self.setLayout(self._layout)
-
-    def get_anisotropy_resolution_xyz(self, as_factors=True):
-        """
-        Args :
-            as_factors: if True, returns zoom factors, otherwise returns the input resolution
-
-        Returns : the resolution in microns for each of the three dimensions. ZYX order suitable for napari scale"""
-
-        resolution = [w.value() for w in self.box_widgets]
-        if as_factors:
-            return self.anisotropy_zoom_factor(resolution)
-
-        return resolution
-
-    def get_anisotropy_resolution_zyx(self, as_factors=True):
-        """
-        Args :
-            as_factors: if True, returns zoom factors, otherwise returns the input resolution
-
-        Returns : the resolution in microns for each of the three dimensions. XYZ order suitable for MONAI"""
-        resolution = [w.value() for w in self.box_widgets]
-        if as_factors:
-            resolution = self.anisotropy_zoom_factor(resolution)
-
-        return [resolution[2], resolution[1], resolution[0]]
-
-    def anisotropy_zoom_factor(self, aniso_res):
-        """Computes a zoom factor to correct anisotropy, based on anisotropy resolutions
-
-            Args:
-                resolutions: array for resolution (float) in microns for each axis
-
-        Returns: an array with the corresponding zoom factors for each axis (all values divided by min)
-
-        """
-
-        base = min(aniso_res)
-        zoom_factors = [base / res for res in aniso_res]
-        return zoom_factors
-
-    def is_enabled(self):
-        """Returns : whether anisotropy correction has been enabled or not"""
-        return self.checkbox.isChecked()
 
 
 def open_url(url):
