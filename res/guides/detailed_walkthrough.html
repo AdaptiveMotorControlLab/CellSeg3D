@@ -3,19 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Detailed walkthrough &mdash; napari-cellseg3d  documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>Detailed walkthrough &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -28,7 +26,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html" class="icon icon-home"> napari-cellseg3d
+            <a href="../../index.html"><img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -38,20 +36,20 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Main modules guides:</span></p>
+              <p class="caption"><span class="caption-text">Main modules guides:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Review module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inference_module_guide.html">Inference module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="training_module_guide.html">Training module guide</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Utilities :</span></p>
+<p class="caption"><span class="caption-text">Utilities :</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="metrics_module_guide.html">Metrics utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="convert_module_guide.html">Label conversion utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cropping_module_guide.html">Cropping utility guide</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
+<p class="caption"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Detailed walkthrough</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#preparing-images-and-labels">Preparing images and labels</a><ul>
@@ -74,7 +72,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
+<p class="caption"><span class="caption-text">Source files:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../code/interface.html">interface.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_base.html">plugin_base.py</a></li>
@@ -117,10 +115,10 @@
            <div itemprop="articleBody">
              
   <div class="section" id="detailed-walkthrough">
-<span id="id1"></span><h1>Detailed walkthrough<a class="headerlink" href="#detailed-walkthrough" title="Permalink to this heading"></a></h1>
+<span id="id1"></span><h1>Detailed walkthrough<a class="headerlink" href="#detailed-walkthrough" title="Permalink to this headline">¶</a></h1>
 <p>The following guide will show you how to use the plugin’s workflow, starting from human-labeled annotation volume, to running inference on novel volumes.</p>
 <div class="section" id="preparing-images-and-labels">
-<h2>Preparing images and labels<a class="headerlink" href="#preparing-images-and-labels" title="Permalink to this heading"></a></h2>
+<h2>Preparing images and labels<a class="headerlink" href="#preparing-images-and-labels" title="Permalink to this headline">¶</a></h2>
 <p>CellSeg3D was designed for cleared-brain tissue data (collected on mesoSPIM ligthsheet systems). Specifically, we provide a series
 of deep learning models that we have found to work well on cortical whole-neuron data. We also provide support for MONAI models, and
 we have ported TRAILMAP to PyTorch and trained the model on mesoSPIM collected data. We provide all the tooling for you to use these
@@ -130,7 +128,7 @@ let’s assume you have part of a cleared brain from mesoSPIM imaging as a large
 <p>If you want to test the models “as is”, please see “Inference” sections in our docs.</p>
 <div class="figure align-center" id="id2">
 <a class="reference internal image-reference" href="../../_images/init_image_labels.png"><img alt="../../_images/init_image_labels.png" src="../../_images/init_image_labels.png" style="width: 1188.0px; height: 738.0px;" /></a>
-<p class="caption"><span class="caption-text">Example of an anisotropic volume (i.e., often times the z resolution is not the same as x and y) and its associated labels.</span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+<p class="caption"><span class="caption-text">Example of an anisotropic volume (i.e., often times the z resolution is not the same as x and y) and its associated labels.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -139,7 +137,7 @@ If you need to label your volumes from scratch,
 or initially correct labels, please read the Review section right after Cropping.</p>
 </div>
 <div class="section" id="cropping">
-<h3>Cropping<a class="headerlink" href="#cropping" title="Permalink to this heading"></a></h3>
+<h3>Cropping<a class="headerlink" href="#cropping" title="Permalink to this headline">¶</a></h3>
 <p>To reduce memory requirements and build a dataset from a single, large volume,
 you can use the <strong>cropping</strong> tool to extract multiple smaller images from a large volume for training.</p>
 <p>Simply load your image and labels (by checking the “Crop labels simultaneously” option),
@@ -158,18 +156,18 @@ then either quicksave the results or select the layer you’d like to save and u
 (useful if you want to name the results or change the file extension).</p>
 <div class="figure align-center" id="id3">
 <img alt="../../_images/cropping_process_example.png" src="../../_images/cropping_process_example.png" />
-<p class="caption"><span class="caption-text">Cropping module layout</span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
+<p class="caption"><span class="caption-text">Cropping module layout</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="label-conversion-convert-utility">
-<h3>Label conversion : convert utility<a class="headerlink" href="#label-conversion-convert-utility" title="Permalink to this heading"></a></h3>
+<h3>Label conversion : convert utility<a class="headerlink" href="#label-conversion-convert-utility" title="Permalink to this headline">¶</a></h3>
 <p>Assuming you have instance labels, you’ll need to convert them to semantic labels before using them for training.
 To this end, you can use the folder conversion functions in the <em>Convert</em> tab of Utilities :
 choose your output directory for the results, select the folder containing your cropped volumes in the <em>Convert folder</em>
 section, and click on <strong>“Convert to semantic labels”</strong>.</p>
 <div class="figure align-center" id="id4">
 <a class="reference internal image-reference" href="../../_images/converted_labels.png"><img alt="../../_images/converted_labels.png" src="../../_images/converted_labels.png" style="width: 680.0px; height: 384.0px;" /></a>
-<p class="caption"><span class="caption-text">Example of instance labels from above converted to semantic labels</span><a class="headerlink" href="#id4" title="Permalink to this image"></a></p>
+<p class="caption"><span class="caption-text">Example of instance labels from above converted to semantic labels</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
 <p>If you wish to remove small objects, or convert a single image, you can open a single image with <strong>CTRL+O</strong>
 and, after selecting the corresponding layer on the left, use the layer-related buttons to perform
@@ -177,9 +175,9 @@ your operations.</p>
 </div>
 </div>
 <div class="section" id="models-for-object-detection">
-<h2>Models for object detection<a class="headerlink" href="#models-for-object-detection" title="Permalink to this heading"></a></h2>
+<h2>Models for object detection<a class="headerlink" href="#models-for-object-detection" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="training">
-<h3>Training<a class="headerlink" href="#training" title="Permalink to this heading"></a></h3>
+<h3>Training<a class="headerlink" href="#training" title="Permalink to this headline">¶</a></h3>
 <p>If you have a dataset of reasonably sized images (see cropping above) with semantic labels, you’re all set to proceed!
 First, load your data by inputting the paths to images and labels, as well as where you want the results to be saved.</p>
 <p>There are a few more options on this tab:</p>
@@ -237,7 +235,7 @@ You might want use weights generated from the epoch with the maximum validation 
 </div>
 <div class="figure align-center" id="id5">
 <img alt="../../_images/plots_train.png" src="../../_images/plots_train.png" />
-<p class="caption"><span class="caption-text">Plots displayed by the training module after 40 epochs</span><a class="headerlink" href="#id5" title="Permalink to this image"></a></p>
+<p class="caption"><span class="caption-text">Plots displayed by the training module after 40 epochs</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
 <ul class="simple">
 <li><p>Validation interval : if the value is e.g. 2, the training will stop every 2 epochs to perform validation (check performance)
@@ -253,7 +251,7 @@ the training you can do so anytime  by pressing the Start button again, whose te
 which you can then use in inference.</p>
 </div>
 <div class="section" id="inference">
-<h3>Inference<a class="headerlink" href="#inference" title="Permalink to this heading"></a></h3>
+<h3>Inference<a class="headerlink" href="#inference" title="Permalink to this headline">¶</a></h3>
 <p>To start, simply choose which folder of images you’d like to run inference on, then the folder in which you’d like the results to be.</p>
 <p>Then, select the model you trained (see note below for SegResNet), and load your weights from training.</p>
 <div class="admonition note">
@@ -305,14 +303,14 @@ Please note that using too small of a window might degrade performance, set the 
 <p>You can then launch inference and the results will be saved to your specified folder.</p>
 <div class="figure align-right" id="id6">
 <a class="reference internal image-reference" href="../../_images/plot_example_metrics.png"><img alt="../../_images/plot_example_metrics.png" src="../../_images/plot_example_metrics.png" style="width: 183.6px; height: 438.59999999999997px;" /></a>
-<p class="caption"><span class="caption-text">Dice metric score plot</span><a class="headerlink" href="#id6" title="Permalink to this image"></a></p>
+<p class="caption"><span class="caption-text">Dice metric score plot</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 </div>
 <div class="section" id="scoring-review-analysis">
-<h2>Scoring, review, analysis<a class="headerlink" href="#scoring-review-analysis" title="Permalink to this heading"></a></h2>
+<h2>Scoring, review, analysis<a class="headerlink" href="#scoring-review-analysis" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="model-performance-metrics-utility">
-<h3>Model performance : Metrics utility<a class="headerlink" href="#model-performance-metrics-utility" title="Permalink to this heading"></a></h3>
+<h3>Model performance : Metrics utility<a class="headerlink" href="#model-performance-metrics-utility" title="Permalink to this headline">¶</a></h3>
 <p>Using the metrics utility module, you can compare the model’s predictions to any ground truth
 labels you might have.</p>
 <p>Simply provide your prediction and ground truth labels, and compute the results.
@@ -327,7 +325,7 @@ If you wish to know how well the model performs on more general datasets, use di
 </div>
 </div>
 <div class="section" id="labels-review">
-<h3>Labels review<a class="headerlink" href="#labels-review" title="Permalink to this heading"></a></h3>
+<h3>Labels review<a class="headerlink" href="#labels-review" title="Permalink to this headline">¶</a></h3>
 <p>Using the review module, you can correct the predictions from the model.
 Simply load your images and labels, enter the name of the CSV (to keep track of the review process, it will
 record which slices have been checked or not and the time taken).</p>
@@ -337,14 +335,14 @@ you can use <strong>Shift+Click</strong> on the location you wish to see; this w
 the  surroundings of the selected location for easier viewing.</p>
 <div class="figure align-center" id="id7">
 <img alt="../../_images/review_process_example.png" src="../../_images/review_process_example.png" />
-<p class="caption"><span class="caption-text">Layout of the review module</span><a class="headerlink" href="#id7" title="Permalink to this image"></a></p>
+<p class="caption"><span class="caption-text">Layout of the review module</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
 </div>
 <p>Once you are done with the review of a slice, press the “Not checked” button to switch the status to
 “Checked” and save the time taken in the csv file.</p>
 <p>Finally, when you are done, press the <em>Save</em> button to record your work.</p>
 </div>
 <div class="section" id="analysis-jupyter-notebooks">
-<h3>Analysis : Jupyter notebooks<a class="headerlink" href="#analysis-jupyter-notebooks" title="Permalink to this heading"></a></h3>
+<h3>Analysis : Jupyter notebooks<a class="headerlink" href="#analysis-jupyter-notebooks" title="Permalink to this headline">¶</a></h3>
 <p>In the <a class="reference external" href="https://github.com/AdaptiveMotorControlLab/CellSeg3d/tree/main/notebooks">notebooks folder of the repository</a>, you can find notebooks you can use directly to plot
 labels (full_plot.ipynb) or notebooks for plotting the results from your inference csv with object stats (csv_cell_plot.ipynb).</p>
 <p>Simply enter your folder or csv file path and the notebooks will plot your results.
@@ -353,7 +351,7 @@ for the plots to work.</p>
 <div class="figure align-center" id="id8">
 <img alt="../../_images/stat_plots.png" src="../../_images/stat_plots.png" />
 <p class="caption"><span class="caption-text">Example of the plot present in the notebooks.
-Coordinates are based on centroids, the size represents the volume, the color the sphericity.</span><a class="headerlink" href="#id8" title="Permalink to this image"></a></p>
+Coordinates are based on centroids, the size represents the volume, the color the sphericity.</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
 </div>
 <p>With this complete, you can repeat the workflow as needed.</p>
 </div>
