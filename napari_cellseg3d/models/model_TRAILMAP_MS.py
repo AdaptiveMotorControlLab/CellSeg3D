@@ -2,7 +2,7 @@ from napari_cellseg3d.models.unet.model import UNet3D
 
 
 def get_weights_file():
-    # original model from Liqun Luo lab, transferred to pytorch
+    # original model from Liqun Luo lab, transferred to pytorch and trained on mesoSPIM-acquired data (mostly cFOS as of July 2022)
     return "TRAILMAP_MS_best_metric_epoch_26.pth"
 
 
