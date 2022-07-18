@@ -1,4 +1,5 @@
 import threading
+import warnings
 
 from qtpy import QtCore
 from qtpy.QtGui import QTextCursor
@@ -77,5 +78,12 @@ class Log(QTextEdit):
             self.verticalScrollBar().setValue(
                 self.verticalScrollBar().maximum()
             )
+        finally:
+            self.lock.release()
+
+    def warn(self, warning):
+        self.lock.acquire()
+        try:
+            warnings.warn(warning)
         finally:
             self.lock.release()

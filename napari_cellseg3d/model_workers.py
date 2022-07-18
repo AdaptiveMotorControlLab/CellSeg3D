@@ -149,10 +149,12 @@ class WeightsDownloader:
 class LogSignal(WorkerBaseSignals):
     """Signal to send messages to be logged from another thread.
 
-    Separate from Worker instances as indicated `here`_"""
+    Separate from Worker instances as indicated `here`_"""  # TODO link ?
 
     log_signal = Signal(str)
     """qtpy.QtCore.Signal: signal to be sent when some text should be logged"""
+    warn_signal = Signal(str)
+    """qtpy.QtCore.Signal: signal to be sent when some warning should be emitted in main thread"""
 
     # Should not be an instance variable but a class variable, not defined in __init__, see
     # https://stackoverflow.com/questions/2970312/pyqt4-qtcore-pyqtsignal-object-has-no-attribute-connect
@@ -213,6 +215,7 @@ class InferenceWorker(GeneratorWorker):
         super().__init__(self.inference)
         self._signals = LogSignal()  # add custom signals
         self.log_signal = self._signals.log_signal
+        self.warn_signal = self._signals.warn_signal
         ###########################################
         ###########################################
         self.device = device
@@ -251,6 +254,10 @@ class InferenceWorker(GeneratorWorker):
             text (str): text to logged
         """
         self.log_signal.emit(text)
+
+    def warn(self, warning):
+        """Sends a warning to main thread"""
+        self.warn_signal.emit(warning)
 
     def log_parameters(self):
 
@@ -647,7 +654,10 @@ class TrainingWorker(GeneratorWorker):
         super().__init__(self.train)
         self._signals = LogSignal()
         self.log_signal = self._signals.log_signal
+        self.warn_signal = self._signals.warn_signal
 
+        self._weight_error = False
+        #############################################
         self.device = device
         self.model_dict = model_dict
         self.weights_path = weights_path
@@ -669,7 +679,7 @@ class TrainingWorker(GeneratorWorker):
 
         self.train_files = []
         self.val_files = []
-
+        #######################################
         self.downloader = WeightsDownloader()
 
     def set_download_log(self, widget):
@@ -682,6 +692,10 @@ class TrainingWorker(GeneratorWorker):
             text (str): text to logged
         """
         self.log_signal.emit(text)
+
+    def warn(self, warning):
+        """Sends a warning to main thread"""
+        self.warn_signal.emit(warning)
 
     def log_parameters(self):
 
@@ -726,6 +740,13 @@ class TrainingWorker(GeneratorWorker):
 
         if self.weights_path is not None:
             self.log(f"Using weights from : {self.weights_path}")
+            if self._weight_error:
+                self.log(
+                    ">>>>>>>>>>>>>>>>>\n"
+                    "WARNING:\nChosen weights were incompatible with the model,\n"
+                    "the model will be trained from random weights\n"
+                    "<<<<<<<<<<<<<<<<<\n"
+                )
 
         # self.log("\n")
         self.log("-" * 20)
@@ -959,7 +980,8 @@ class TrainingWorker(GeneratorWorker):
                     "the model will be trained from random weights"
                 )
                 self.log(warn)
-                warnings.warn(warn)
+                self.warn(warn)
+                self._weight_error = True
 
         if self.device.type == "cuda":
             self.log("\nUsing GPU :")

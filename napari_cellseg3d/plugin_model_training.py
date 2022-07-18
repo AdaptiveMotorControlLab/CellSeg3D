@@ -857,6 +857,7 @@ class Trainer(ModelFramework):
             [btn.setVisible(False) for btn in self.close_buttons]
 
             self.worker.log_signal.connect(self.log.print_and_log)
+            self.worker.warn_signal.connect(self.log.warn)
 
             self.worker.started.connect(self.on_start)
 

@@ -599,6 +599,7 @@ class Inferer(ModelFramework):
 
             self.worker.started.connect(self.on_start)
             self.worker.log_signal.connect(self.log.print_and_log)
+            self.worker.warn_signal.connect(self.log.warn)
             self.worker.yielded.connect(yield_connect_show_res)
             self.worker.errored.connect(
                 yield_connect_show_res
