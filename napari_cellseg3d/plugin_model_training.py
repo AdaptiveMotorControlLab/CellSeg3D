@@ -994,7 +994,7 @@ class Trainer(ModelFramework):
         if len(self.loss_values) == 0 or self.loss_values is None:
             warnings.warn("No loss values to add to csv !")
             return
-        
+
         self.df = pd.DataFrame(
             {
                 "epoch": size_column,

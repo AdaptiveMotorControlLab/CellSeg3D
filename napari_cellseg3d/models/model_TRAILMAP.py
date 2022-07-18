@@ -2,11 +2,11 @@ import torch
 from torch import nn
 
 
-
 def get_weights_file():
     # model additionally trained on Mathis/Wyss mesoSPIM data
     return "TRAILMAP.pth"
     # FIXME currently incorrect, find good weights from TRAILMAP_test and upload them
+
 
 def get_net():
     return TRAILMAP(1, 1)
@@ -120,4 +120,3 @@ class TRAILMAP(nn.Module):
             # nn.BatchNorm3d(out_ch),
         )
         return out
-

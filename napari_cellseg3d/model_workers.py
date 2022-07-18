@@ -3,6 +3,7 @@ import platform
 from pathlib import Path
 import importlib.util
 from typing import Optional
+import warnings
 
 import numpy as np
 from tifffile import imwrite
@@ -65,19 +66,28 @@ WEIGHTS_DIR = os.path.dirname(os.path.realpath(__file__)) + str(
     Path("/models/pretrained")
 )
 
-class WeightsDownloader:
 
-    def __init__(self, log_widget: Optional[log_utility.Log]= None):
+class WeightsDownloader:
+    """A utility class the downloads the weights of a model when needed."""
+
+    def __init__(self, log_widget: Optional[log_utility.Log] = None):
+        """
+        Creates a WeightsDownloader, optionally with a log widget to display the progress.
+
+        Args:
+            log_widget (log_utility.Log): a Log to display the progress bar in. If None, uses print()
+        """
         self.log_widget = log_widget
 
-    def download_weights(self,model_name: str):
+    def download_weights(self, model_name: str, model_weights_filename: str):
         """
-            Downloads a specific pretrained model.
-            This code is adapted from DeepLabCut with permission from MWMathis.
+        Downloads a specific pretrained model.
+        This code is adapted from DeepLabCut with permission from MWMathis.
 
-            Args:
-                model_name (str): name of the model to download
-            """
+        Args:
+            model_name (str): name of the model to download
+            model_weights_filename (str): name of the .pth file expected for the model
+        """
         import json
         import tarfile
         import urllib.request
@@ -94,6 +104,17 @@ class WeightsDownloader:
         json_path = os.path.join(
             pretrained_folder_path, "pretrained_model_urls.json"
         )
+
+        check_path = os.path.join(
+            pretrained_folder_path, model_weights_filename
+        )
+        if os.path.exists(check_path):
+            message = f"Weight file {model_weights_filename} already exists, skipping download step"
+            if self.log_widget is not None:
+                self.log_widget.print_and_log(message, printing=False)
+            print(message)
+            return
+
         with open(json_path) as f:
             neturls = json.load(f)
         if model_name in neturls.keys():
@@ -107,9 +128,16 @@ class WeightsDownloader:
                 pbar = tqdm(unit="B", total=total_size, position=0)
             else:
                 self.log_widget.print_and_log(start_message)
-                pbar = tqdm(unit="B", total=total_size, position=0, file=self.log_widget)
+                pbar = tqdm(
+                    unit="B",
+                    total=total_size,
+                    position=0,
+                    file=self.log_widget,
+                )
 
-            filename, _ = urllib.request.urlretrieve(url, reporthook=show_progress)
+            filename, _ = urllib.request.urlretrieve(
+                url, reporthook=show_progress
+            )
             with tarfile.open(filename, mode="r:gz") as tar:
                 tar.extractall(pretrained_folder_path)
         else:
@@ -204,7 +232,6 @@ class InferenceWorker(GeneratorWorker):
         self.downloader = WeightsDownloader()
         """Download utility"""
 
-
     @staticmethod
     def create_inference_dict(images_filepaths):
         """Create a dict for MONAI with "image" keys with all image paths in :py:attr:`~self.images_filepaths`
@@ -297,7 +324,7 @@ class InferenceWorker(GeneratorWorker):
         sys = platform.system()
         print(f"OS is {sys}")
         if sys == "Darwin":
-            torch.set_num_threads(1) # required for threading on macOS ?
+            torch.set_num_threads(1)  # required for threading on macOS ?
             self.log("Number of threads has been set to 1 for macOS")
 
         images_dict = self.create_inference_dict(self.images_filepaths)
@@ -323,7 +350,11 @@ class InferenceWorker(GeneratorWorker):
         model = self.model_dict["class"].get_net()
         if self.model_dict["name"] == "SegResNet":
             model = self.model_dict["class"].get_net()(
-                input_image_size=[dims, dims, dims],  # TODO FIX ! find a better way & remove model-specific code
+                input_image_size=[
+                    dims,
+                    dims,
+                    dims,
+                ],  # TODO FIX ! find a better way & remove model-specific code
                 out_channels=1,
                 # dropout_prob=0.3,
             )
@@ -372,8 +403,13 @@ class InferenceWorker(GeneratorWorker):
         if self.weights_dict["custom"]:
             weights = self.weights_dict["path"]
         else:
-            self.downloader.download_weights(self.model_dict["name"])
-            weights = os.path.join(WEIGHTS_DIR, self.model_dict["class"].get_weights_file())
+            self.downloader.download_weights(
+                self.model_dict["name"],
+                self.model_dict["class"].get_weights_file(),
+            )
+            weights = os.path.join(
+                WEIGHTS_DIR, self.model_dict["class"].get_weights_file()
+            )
 
         model.load_state_dict(
             torch.load(
@@ -904,18 +940,26 @@ class TrainingWorker(GeneratorWorker):
         if self.weights_path is not None:
             if self.weights_path == "use_pretrained":
                 weights_file = model_class.get_weights_file()
-                self.downloader.download_weights(model_name)
+                self.downloader.download_weights(model_name, weights_file)
                 weights = os.path.join(WEIGHTS_DIR, weights_file)
                 self.weights_path = weights
             else:
                 weights = os.path.join(self.weights_path)
 
-            model.load_state_dict(
-                torch.load(
-                    weights,
-                    map_location=self.device,
+            try:
+                model.load_state_dict(
+                    torch.load(
+                        weights,
+                        map_location=self.device,
+                    )
                 )
-            )
+            except RuntimeError:
+                warn = (
+                    "WARNING:\nIt seems the weights were incompatible with the model,\n"
+                    "the model will be trained from random weights"
+                )
+                self.log(warn)
+                warnings.warn(warn)
 
         if self.device.type == "cuda":
             self.log("\nUsing GPU :")

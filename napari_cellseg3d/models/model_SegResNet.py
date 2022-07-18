@@ -1,7 +1,6 @@
 from monai.networks.nets import SegResNetVAE
 
 
-
 def get_net():
     return SegResNetVAE
 

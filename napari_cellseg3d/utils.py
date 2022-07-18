@@ -978,5 +978,3 @@ def merge_imgs(imgs, original_image_shape):
 
     print(merged_imgs.shape)
     return merged_imgs
-
-
