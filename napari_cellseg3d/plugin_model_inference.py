@@ -534,7 +534,6 @@ class Inferer(ModelFramework):
             else:
                 weights_dict = {
                     "custom": False,
-                    "path": self.get_model(model_key).get_weights_file(),
                 }
 
             if self.anisotropy_wdgt.is_enabled():
@@ -591,6 +590,7 @@ class Inferer(ModelFramework):
                 keep_on_cpu=self.keep_on_cpu,
                 stats_csv=self.stats_to_csv,
             )
+            self.worker.set_download_log(self.log)
 
             yield_connect_show_res = lambda data: self.on_yield(
                 data,
@@ -599,6 +599,7 @@ class Inferer(ModelFramework):
 
             self.worker.started.connect(self.on_start)
             self.worker.log_signal.connect(self.log.print_and_log)
+            self.worker.warn_signal.connect(self.log.warn)
             self.worker.yielded.connect(yield_connect_show_res)
             self.worker.errored.connect(
                 yield_connect_show_res
