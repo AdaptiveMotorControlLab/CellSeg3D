@@ -857,6 +857,7 @@ class Trainer(ModelFramework):
             [btn.setVisible(False) for btn in self.close_buttons]
 
             self.worker.log_signal.connect(self.log.print_and_log)
+            self.worker.warn_signal.connect(self.log.warn)
 
             self.worker.started.connect(self.on_start)
 
@@ -994,7 +995,7 @@ class Trainer(ModelFramework):
         if len(self.loss_values) == 0 or self.loss_values is None:
             warnings.warn("No loss values to add to csv !")
             return
-        
+
         self.df = pd.DataFrame(
             {
                 "epoch": size_column,

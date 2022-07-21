@@ -1,4 +1,5 @@
 import threading
+import warnings
 
 from qtpy import QtCore
 from qtpy.QtGui import QTextCursor
@@ -28,13 +29,15 @@ class Log(QTextEdit):
         try:
             if not hasattr(self, "flag"):
                 self.flag = False
-            message = message.replace('\r', '').rstrip()
+            message = message.replace("\r", "").rstrip()
             if message:
                 method = "replace_last_line" if self.flag else "append"
-                QtCore.QMetaObject.invokeMethod(self,
-                                                method,
-                                                QtCore.Qt.QueuedConnection,
-                                                QtCore.Q_ARG(str, message))
+                QtCore.QMetaObject.invokeMethod(
+                    self,
+                    method,
+                    QtCore.Qt.QueuedConnection,
+                    QtCore.Q_ARG(str, message),
+                )
                 self.flag = True
             else:
                 self.flag = False
@@ -75,5 +78,12 @@ class Log(QTextEdit):
             self.verticalScrollBar().setValue(
                 self.verticalScrollBar().maximum()
             )
+        finally:
+            self.lock.release()
+
+    def warn(self, warning):
+        self.lock.acquire()
+        try:
+            warnings.warn(warning)
         finally:
             self.lock.release()
