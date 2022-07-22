@@ -43,7 +43,6 @@ from napari.qt.threading import WorkerBaseSignals
 # Qt
 from qtpy.QtCore import Signal
 
-
 from napari_cellseg3d import utils
 from napari_cellseg3d import log_utility
 
@@ -168,20 +167,19 @@ class InferenceWorker(GeneratorWorker):
     Inherits from :py:class:`napari.qt.threading.GeneratorWorker`"""
 
     def __init__(
-        self,
-        device,
-        model_dict,
-        weights_dict,
-        images_filepaths,
-        results_path,
-        filetype,
-        transforms,
-        instance,
-        use_window,
-        window_infer_size,
-        window_overlap_percentage,
-        keep_on_cpu,
-        stats_csv,
+            self,
+            device,
+            model_dict,
+            weights_dict,
+            images_filepaths,
+            results_path,
+            filetype,
+            transforms,
+            instance,
+            use_window,
+            window_infer_size,
+            keep_on_cpu,
+            stats_csv,
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~inference` function.
 
@@ -206,8 +204,6 @@ class InferenceWorker(GeneratorWorker):
 
             * window_infer_size: size of window if use_window is True
 
-            * window_overlap_percentage: overlap of sliding windows if use_window is True
-
             * keep_on_cpu: keep images on CPU or no
 
             * stats_csv: compute stats on cells and save them to a csv file
@@ -231,7 +227,7 @@ class InferenceWorker(GeneratorWorker):
         self.instance_params = instance
         self.use_window = use_window
         self.window_infer_size = window_infer_size
-        self.window_overlap_percentage = window_overlap_percentage
+        self.window_overlap_percentage = 0.8,
         self.keep_on_cpu = keep_on_cpu
         self.stats_to_csv = stats_csv
         """These attributes are all arguments of :py:func:~inference, please see that for reference"""
@@ -343,36 +339,25 @@ class InferenceWorker(GeneratorWorker):
         # if self.device =="cuda": # TODO : fix mem alloc, this does not work it seems
         # torch.backends.cudnn.benchmark = False
 
-        # TODO : better solution than loading first image always ?
-        data_check = LoadImaged(keys=["image"])(images_dict[0])
-        # print(data)
-        check = data_check["image"].shape
-        # print(check)
-        # TODO remove
-        # z_aniso = 5 / 1.5
-        # if zoom is not None :
-        #     pad = utils.get_padding_dim(check, anisotropy_factor=zoom)
-        # else:
         self.log("\nChecking dimensions...")
-        dims = self.model_dict["segres_size"]
+        data_check = LoadImaged(keys=["image"])(images_dict[0])
+        check = data_check["image"].shape
+        pad = utils.get_padding_dim(check)
+
+        dims = self.model_dict["model_input_size"]
 
         model = self.model_dict["class"].get_net()
         if self.model_dict["name"] == "SegResNet":
-            model = self.model_dict["class"].get_net()(
+            model = self.model_dict["class"].get_net(
                 input_image_size=[
                     dims,
                     dims,
                     dims,
-                ],  # TODO FIX ! find a better way & remove model-specific code
-                out_channels=1,
-                # dropout_prob=0.3,
+                ]
             )
         elif self.model_dict["name"] == "SwinUNetR":
-            model = self.model_dict["class"].get_net()(
+            model = self.model_dict["class"].get_net(
                 img_size=[dims, dims, dims],
-                in_channels=1,
-                out_channels=1,
-                feature_size=48,
                 use_checkpoint=False,
             )
 
@@ -382,17 +367,29 @@ class InferenceWorker(GeneratorWorker):
 
         # print("FILEPATHS PRINT")
         # print(self.images_filepaths)
-
-        load_transforms = Compose(
-            [
-                LoadImaged(keys=["image"]),
-                # AddChanneld(keys=["image"]), #already done
-                EnsureChannelFirstd(keys=["image"]),
-                # Orientationd(keys=["image"], axcodes="PLI"),
-                # anisotropic_transform,
-                EnsureTyped(keys=["image"]),
-            ]
-        )
+        if self.use_window:
+            load_transforms = Compose(
+                [
+                    LoadImaged(keys=["image"]),
+                    # AddChanneld(keys=["image"]), #already done
+                    EnsureChannelFirstd(keys=["image"]),
+                    # Orientationd(keys=["image"], axcodes="PLI"),
+                    # anisotropic_transform,
+                    EnsureTyped(keys=["image"]),
+                ]
+            )
+        else:
+            load_transforms = Compose(
+                [
+                    LoadImaged(keys=["image"]),
+                    # AddChanneld(keys=["image"]), #already done
+                    EnsureChannelFirstd(keys=["image"]),
+                    # Orientationd(keys=["image"], axcodes="PLI"),
+                    # anisotropic_transform,
+                    SpatialPadd(keys=["image"], spatial_size=pad),
+                    EnsureTyped(keys=["image"]),
+                ]
+            )
 
         if not self.transforms["thresh"][0]:
             post_process_transforms = EnsureType()
@@ -448,16 +445,9 @@ class InferenceWorker(GeneratorWorker):
                 inputs = inputs.to("cpu")
                 print(inputs.shape)
 
-                if self.model_dict["name"] == "SwinUNetR":
-                    model_output = lambda inputs: post_process_transforms(
-                        torch.sigmoid(
-                            self.model_dict["class"].get_output(model, inputs)
-                        )
-                    )
-                else:
-                    model_output = lambda inputs: post_process_transforms(
-                        self.model_dict["class"].get_output(model, inputs)
-                    )
+                model_output = lambda inputs: post_process_transforms(
+                    self.model_dict["class"].get_output(model, inputs)
+                )
 
                 if self.keep_on_cpu:
                     dataset_device = "cpu"
@@ -479,7 +469,6 @@ class InferenceWorker(GeneratorWorker):
                     device=dataset_device,
                     overlap=window_overlap,
                 )
-                print("done window infernce")
                 out = outputs.detach().cpu()
                 # del outputs # TODO fix memory ?
                 # outputs = None
@@ -519,14 +508,14 @@ class InferenceWorker(GeneratorWorker):
 
                 # File output save name : original-name_model_date+time_number.filetype
                 file_path = (
-                    self.results_path
-                    + "/"
-                    + f"Prediction_{image_id}_"
-                    + original_filename
-                    + "_"
-                    + self.model_dict["name"]
-                    + f"_{time}_"
-                    + self.filetype
+                        self.results_path
+                        + "/"
+                        + f"Prediction_{image_id}_"
+                        + original_filename
+                        + "_"
+                        + self.model_dict["name"]
+                        + f"_{time}_"
+                        + self.filetype
                 )
 
                 # print(filename)
@@ -567,14 +556,14 @@ class InferenceWorker(GeneratorWorker):
                     instance_labels = method(to_instance)
 
                     instance_filepath = (
-                        self.results_path
-                        + "/"
-                        + f"Instance_seg_labels_{image_id}_"
-                        + original_filename
-                        + "_"
-                        + self.model_dict["name"]
-                        + f"_{time}_"
-                        + self.filetype
+                            self.results_path
+                            + "/"
+                            + f"Instance_seg_labels_{image_id}_"
+                            + original_filename
+                            + "_"
+                            + self.model_dict["name"]
+                            + f"_{time}_"
+                            + self.filetype
                     )
 
                     imwrite(instance_filepath, instance_labels)
@@ -617,23 +606,23 @@ class TrainingWorker(GeneratorWorker):
     Inherits from :py:class:`napari.qt.threading.GeneratorWorker`"""
 
     def __init__(
-        self,
-        device,
-        model_dict,
-        weights_path,
-        data_dicts,
-        validation_percent,
-        max_epochs,
-        loss_function,
-        learning_rate,
-        val_interval,
-        batch_size,
-        results_path,
-        sampling,
-        num_samples,
-        sample_size,
-        do_augmentation,
-        deterministic,
+            self,
+            device,
+            model_dict,
+            weights_path,
+            data_dicts,
+            validation_percent,
+            max_epochs,
+            loss_function,
+            learning_rate,
+            val_interval,
+            batch_size,
+            results_path,
+            sampling,
+            num_samples,
+            sample_size,
+            do_augmentation,
+            deterministic,
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~train` function. Note: See :py:func:`~train`
 
@@ -841,9 +830,8 @@ class TrainingWorker(GeneratorWorker):
             else:
                 size = check
             print(f"Size of image : {size}")
-            model = model_class.get_net()(
+            model = model_class.get_net(
                 input_image_size=utils.get_padding_dim(size),
-                out_channels=1,
                 dropout_prob=0.3,
             )
         elif model_name == "SwinUNetR":
@@ -852,11 +840,8 @@ class TrainingWorker(GeneratorWorker):
             else:
                 size = check
             print(f"Size of image : {size}")
-            model = model_class.get_net()(
+            model = model_class.get_net(
                 img_size=utils.get_padding_dim(size),
-                in_channels=1,
-                out_channels=1,
-                feature_size=48,
                 use_checkpoint=True,
             )
         else:
@@ -868,10 +853,10 @@ class TrainingWorker(GeneratorWorker):
 
         self.train_files, self.val_files = (
             self.data_dicts[
-                0 : int(len(self.data_dicts) * self.validation_percent)
+            0: int(len(self.data_dicts) * self.validation_percent)
             ],
             self.data_dicts[
-                int(len(self.data_dicts) * self.validation_percent) :
+            int(len(self.data_dicts) * self.validation_percent):
             ],
         )
 
@@ -1032,10 +1017,10 @@ class TrainingWorker(GeneratorWorker):
             if self.device.type == "cuda":
                 self.log("Memory Usage:")
                 alloc_mem = round(
-                    torch.cuda.memory_allocated(0) / 1024**3, 1
+                    torch.cuda.memory_allocated(0) / 1024 ** 3, 1
                 )
                 reserved_mem = round(
-                    torch.cuda.memory_reserved(0) / 1024**3, 1
+                    torch.cuda.memory_reserved(0) / 1024 ** 3, 1
                 )
                 self.log(f"Allocated: {alloc_mem}GB")
                 self.log(f"Cached: {reserved_mem}GB")
@@ -1117,7 +1102,7 @@ class TrainingWorker(GeneratorWorker):
                     yield train_report
 
                     weights_filename = (
-                        f"{model_name}_best_metric" + f"_epoch_{epoch + 1}.pth"
+                            f"{model_name}_best_metric" + f"_epoch_{epoch + 1}.pth"
                     )
 
                     if metric > best_metric:
@@ -1157,7 +1142,6 @@ class TrainingWorker(GeneratorWorker):
         # del best_metric_epoch
 
         # self.close()
-
 
 # def this_is_fine(self):
 #     import numpy as np

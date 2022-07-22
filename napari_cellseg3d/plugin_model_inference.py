@@ -76,7 +76,6 @@ class Inferer(ModelFramework):
         self.keep_on_cpu = False
         self.use_window_inference = False
         self.window_inference_size = None
-        self.window_overlap_percentage = None
 
         ###########################
         # interface
@@ -98,9 +97,9 @@ class Inferer(ModelFramework):
         ######################
         ######################
         # TODO : better way to handle SegResNet size reqs ?
-        self.segres_size = ui.IntIncrementCounter(min=1, max=1024, default=128)
+        self.model_input_size = ui.IntIncrementCounter(min=1, max=1024, default=128)
         self.model_choice.currentIndexChanged.connect(
-            self.toggle_display_segres_size
+            self.toggle_display_model_input_size
         )
         self.model_choice.setCurrentIndex(0)
 
@@ -133,16 +132,6 @@ class Inferer(ModelFramework):
         self.window_infer_box.clicked.connect(self.toggle_display_window_size)
 
         sizes_window = ["8", "16", "32", "64", "128", "256", "512"]
-        # (
-        #     self.window_size_choice,
-        #     self.lbl_window_size_choice,
-        # ) = ui.make_combobox(sizes_window, label="Window size and overlap")
-        # self.window_overlap = ui.make_n_spinboxes(
-        #     max=1,
-        #     default=0.7,
-        #     step=0.05,
-        #     double=True,
-        # )
 
         self.window_size_choice = ui.DropdownMenu(
             sizes_window, label="Window size"
@@ -156,11 +145,6 @@ class Inferer(ModelFramework):
             self.lbl_window_size_choice,
             horizontal=False,
         )
-        # self.window_infer_params = ui.combine_blocks(
-        #     self.window_overlap,
-        #     self.window_infer_params,
-        #     horizontal=False,
-        # )
 
         ##################
         ##################
@@ -226,7 +210,7 @@ class Inferer(ModelFramework):
         self.show_original_checkbox.setToolTip(
             "Displays the image used for inference in the viewer"
         )
-        self.segres_size.setToolTip(
+        self.model_input_size.setToolTip(
             "Image size on which the model has been trained (default : 128)"
         )
 
@@ -242,9 +226,6 @@ class Inferer(ModelFramework):
             "Size of the window to run inference with (in pixels)"
         )
 
-        # self.window_overlap.setToolTip(
-        #     "Amount of overlap between sliding windows"
-        # )
 
         self.keep_data_on_cpu_box.setToolTip(
             "If enabled, data will be kept on the RAM rather than the VRAM.\nCan avoid out of memory issues with CUDA"
@@ -284,14 +265,14 @@ class Inferer(ModelFramework):
             warnings.warn("Image and label paths are not correctly set")
             return False
 
-    def toggle_display_segres_size(self):
+    def toggle_display_model_input_size(self):
         if (
             self.model_choice.currentText() == "SegResNet"
             or self.model_choice.currentText() == "SwinUNetR"
         ):
-            self.segres_size.setVisible(True)
+            self.model_input_size.setVisible(True)
         else:
-            self.segres_size.setVisible(False)
+            self.model_input_size.setVisible(False)
 
     def toggle_display_number(self):
         """Shows the choices for viewing results depending on whether :py:attr:`self.view_checkbox` is checked"""
@@ -398,7 +379,7 @@ class Inferer(ModelFramework):
                 self.model_choice,
                 self.custom_weights_choice,
                 self.weights_path_container,
-                self.segres_size,
+                self.model_input_size,
             ],
         )
         self.weights_path_container.setVisible(False)
@@ -551,7 +532,7 @@ class Inferer(ModelFramework):
             model_dict = {  # gather model info
                 "name": model_key,
                 "class": self.get_model(model_key),
-                "segres_size": self.segres_size.value(),
+                "model_input_size": self.model_input_size.value(),
             }
 
             if self.custom_weights_choice.isChecked():
@@ -600,7 +581,6 @@ class Inferer(ModelFramework):
             self.window_inference_size = int(
                 self.window_size_choice.currentText()
             )
-            # self.window_overlap_percentage = self.window_overlap.value()
 
             self.worker = InferenceWorker(
                 device=device,
@@ -613,7 +593,6 @@ class Inferer(ModelFramework):
                 instance=self.instance_params,
                 use_window=self.use_window_inference,
                 window_infer_size=self.window_inference_size,
-                # window_overlap_percentage=self.window_overlap_percentage,
                 keep_on_cpu=self.keep_on_cpu,
                 stats_csv=self.stats_to_csv,
             )
