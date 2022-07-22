@@ -167,19 +167,19 @@ class InferenceWorker(GeneratorWorker):
     Inherits from :py:class:`napari.qt.threading.GeneratorWorker`"""
 
     def __init__(
-            self,
-            device,
-            model_dict,
-            weights_dict,
-            images_filepaths,
-            results_path,
-            filetype,
-            transforms,
-            instance,
-            use_window,
-            window_infer_size,
-            keep_on_cpu,
-            stats_csv,
+        self,
+        device,
+        model_dict,
+        weights_dict,
+        images_filepaths,
+        results_path,
+        filetype,
+        transforms,
+        instance,
+        use_window,
+        window_infer_size,
+        keep_on_cpu,
+        stats_csv,
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~inference` function.
 
@@ -227,7 +227,7 @@ class InferenceWorker(GeneratorWorker):
         self.instance_params = instance
         self.use_window = use_window
         self.window_infer_size = window_infer_size
-        self.window_overlap_percentage = 0.8,
+        self.window_overlap_percentage = (0.8,)
         self.keep_on_cpu = keep_on_cpu
         self.stats_to_csv = stats_csv
         """These attributes are all arguments of :py:func:~inference, please see that for reference"""
@@ -508,14 +508,14 @@ class InferenceWorker(GeneratorWorker):
 
                 # File output save name : original-name_model_date+time_number.filetype
                 file_path = (
-                        self.results_path
-                        + "/"
-                        + f"Prediction_{image_id}_"
-                        + original_filename
-                        + "_"
-                        + self.model_dict["name"]
-                        + f"_{time}_"
-                        + self.filetype
+                    self.results_path
+                    + "/"
+                    + f"Prediction_{image_id}_"
+                    + original_filename
+                    + "_"
+                    + self.model_dict["name"]
+                    + f"_{time}_"
+                    + self.filetype
                 )
 
                 # print(filename)
@@ -556,14 +556,14 @@ class InferenceWorker(GeneratorWorker):
                     instance_labels = method(to_instance)
 
                     instance_filepath = (
-                            self.results_path
-                            + "/"
-                            + f"Instance_seg_labels_{image_id}_"
-                            + original_filename
-                            + "_"
-                            + self.model_dict["name"]
-                            + f"_{time}_"
-                            + self.filetype
+                        self.results_path
+                        + "/"
+                        + f"Instance_seg_labels_{image_id}_"
+                        + original_filename
+                        + "_"
+                        + self.model_dict["name"]
+                        + f"_{time}_"
+                        + self.filetype
                     )
 
                     imwrite(instance_filepath, instance_labels)
@@ -606,23 +606,23 @@ class TrainingWorker(GeneratorWorker):
     Inherits from :py:class:`napari.qt.threading.GeneratorWorker`"""
 
     def __init__(
-            self,
-            device,
-            model_dict,
-            weights_path,
-            data_dicts,
-            validation_percent,
-            max_epochs,
-            loss_function,
-            learning_rate,
-            val_interval,
-            batch_size,
-            results_path,
-            sampling,
-            num_samples,
-            sample_size,
-            do_augmentation,
-            deterministic,
+        self,
+        device,
+        model_dict,
+        weights_path,
+        data_dicts,
+        validation_percent,
+        max_epochs,
+        loss_function,
+        learning_rate,
+        val_interval,
+        batch_size,
+        results_path,
+        sampling,
+        num_samples,
+        sample_size,
+        do_augmentation,
+        deterministic,
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~train` function. Note: See :py:func:`~train`
 
@@ -853,10 +853,10 @@ class TrainingWorker(GeneratorWorker):
 
         self.train_files, self.val_files = (
             self.data_dicts[
-            0: int(len(self.data_dicts) * self.validation_percent)
+                0 : int(len(self.data_dicts) * self.validation_percent)
             ],
             self.data_dicts[
-            int(len(self.data_dicts) * self.validation_percent):
+                int(len(self.data_dicts) * self.validation_percent) :
             ],
         )
 
@@ -1017,10 +1017,10 @@ class TrainingWorker(GeneratorWorker):
             if self.device.type == "cuda":
                 self.log("Memory Usage:")
                 alloc_mem = round(
-                    torch.cuda.memory_allocated(0) / 1024 ** 3, 1
+                    torch.cuda.memory_allocated(0) / 1024**3, 1
                 )
                 reserved_mem = round(
-                    torch.cuda.memory_reserved(0) / 1024 ** 3, 1
+                    torch.cuda.memory_reserved(0) / 1024**3, 1
                 )
                 self.log(f"Allocated: {alloc_mem}GB")
                 self.log(f"Cached: {reserved_mem}GB")
@@ -1102,7 +1102,7 @@ class TrainingWorker(GeneratorWorker):
                     yield train_report
 
                     weights_filename = (
-                            f"{model_name}_best_metric" + f"_epoch_{epoch + 1}.pth"
+                        f"{model_name}_best_metric" + f"_epoch_{epoch + 1}.pth"
                     )
 
                     if metric > best_metric:
@@ -1142,6 +1142,7 @@ class TrainingWorker(GeneratorWorker):
         # del best_metric_epoch
 
         # self.close()
+
 
 # def this_is_fine(self):
 #     import numpy as np

@@ -97,7 +97,9 @@ class Inferer(ModelFramework):
         ######################
         ######################
         # TODO : better way to handle SegResNet size reqs ?
-        self.model_input_size = ui.IntIncrementCounter(min=1, max=1024, default=128)
+        self.model_input_size = ui.IntIncrementCounter(
+            min=1, max=1024, default=128
+        )
         self.model_choice.currentIndexChanged.connect(
             self.toggle_display_model_input_size
         )
@@ -225,7 +227,6 @@ class Inferer(ModelFramework):
         self.window_size_choice.setToolTip(
             "Size of the window to run inference with (in pixels)"
         )
-
 
         self.keep_data_on_cpu_box.setToolTip(
             "If enabled, data will be kept on the RAM rather than the VRAM.\nCan avoid out of memory issues with CUDA"

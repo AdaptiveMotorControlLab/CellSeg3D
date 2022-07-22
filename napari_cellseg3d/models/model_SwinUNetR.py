@@ -7,7 +7,13 @@ def get_weights_file():
 
 
 def get_net(img_size, use_checkpoint=True):
-    return SwinUNETR(img_size, in_channels=1, out_channels=1, feature_size=48, use_checkpoint=use_checkpoint)
+    return SwinUNETR(
+        img_size,
+        in_channels=1,
+        out_channels=1,
+        feature_size=48,
+        use_checkpoint=use_checkpoint,
+    )
 
 
 def get_output(model, input):
