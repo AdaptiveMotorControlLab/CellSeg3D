@@ -45,7 +45,6 @@ from napari.qt.threading import WorkerBaseSignals
 # Qt
 from qtpy.QtCore import Signal
 
-
 from napari_cellseg3d import utils
 from napari_cellseg3d import log_utility
 
@@ -231,6 +230,7 @@ class InferenceWorker(GeneratorWorker):
         self.instance_params = instance
         self.use_window = use_window
         self.window_infer_size = window_infer_size
+        self.window_overlap_percentage = 0.8,
         self.keep_on_cpu = keep_on_cpu
         self.stats_to_csv = stats_csv
         ############################################
@@ -399,8 +399,10 @@ class InferenceWorker(GeneratorWorker):
 
         if self.use_window:
             window_size = self.window_infer_size
+            window_overlap = self.window_overlap_percentage
         else:
             window_size = None
+            window_overlap = 0.25
 
         outputs = sliding_window_inference(
             inputs,
@@ -409,6 +411,7 @@ class InferenceWorker(GeneratorWorker):
             predictor=model_output,
             sw_device=self.device,
             device=dataset_device,
+            overlap=window_overlap,
         )
 
         out = outputs.detach().cpu()
@@ -1029,9 +1032,6 @@ class TrainingWorker(GeneratorWorker):
                 print(f"Size of image : {size}")
                 model = model_class.get_net()(
                     img_size=utils.get_padding_dim(size),
-                    in_channels=1,
-                    out_channels=1,
-                    feature_size=48,
                     use_checkpoint=True,
                 )
             else:
