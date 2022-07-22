@@ -683,7 +683,7 @@ class InferenceWorker(GeneratorWorker):
         try:
             dims = self.model_dict["segres_size"]
 
-            model = self.model_dict["class"].get_net()
+
             if self.model_dict["name"] == "SegResNet":
                 model = self.model_dict["class"].get_net()(
                     input_image_size=[
@@ -694,6 +694,14 @@ class InferenceWorker(GeneratorWorker):
                     out_channels=1,
                     # dropout_prob=0.3,
                 )
+            elif self.model_dict["name"] == "SwinUNetR":
+                model = self.model_dict["class"].get_net(
+                    img_size=[dims, dims, dims],
+                    use_checkpoint=False,
+                )
+            else:
+                model = self.model_dict["class"].get_net()
+            model = model.to(self.device)
 
             self.log_parameters()
 

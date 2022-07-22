@@ -2,7 +2,9 @@ from monai.networks.nets import SegResNetVAE
 
 
 def get_net(input_image_size, dropout_prob=None):
-    return SegResNetVAE(input_image_size, out_channels=1, dropout_prob=dropout_prob)
+    return SegResNetVAE(
+        input_image_size, out_channels=1, dropout_prob=dropout_prob
+    )
 
 
 def get_weights_file():
