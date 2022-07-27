@@ -194,9 +194,9 @@ class Inferer(ModelFramework):
         ##################
         ##################
 
-        self.btn_start = ui.Button("Start inference on folder", self.start)
+        self.btn_start = ui.Button("Start on folder", self.start)
         self.btn_start_layer = ui.Button(
-            "Start inference on selected layer",
+            "Start on selected layer",
             lambda: self.start(on_layer=True),
         )
         self.btn_close = self.make_close_button()
