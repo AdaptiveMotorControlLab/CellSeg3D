@@ -15,6 +15,9 @@ from napari_cellseg3d.model_framework import ModelFramework
 from napari_cellseg3d.model_workers import InferenceWorker
 
 
+# TODO for layer inference : button behaviour/visibility, error if no layer selected, test all funcs
+
+
 class Inferer(ModelFramework):
     """A plugin to run already trained models in evaluation mode to preform inference and output a label on all
     given volumes."""
@@ -605,7 +608,7 @@ class Inferer(ModelFramework):
                     keep_on_cpu=self.keep_on_cpu,
                     stats_csv=self.stats_to_csv,
                 )
-            elif on_layer:
+            else:
                 layer = self._viewer.layers.selection.active
                 self.worker = InferenceWorker(
                     device=device,
@@ -663,7 +666,7 @@ class Inferer(ModelFramework):
         """Catches errors and tries to clean up. TODO : upgrade"""
         self.log.print_and_log("Worker errored...")
         self.log.print_and_log("Trying to clean up...")
-        self.btn_start.setText("Start")
+        self.btn_start.setText("Start on folder")
         self.btn_close.setVisible(True)
 
         self.worker = None
@@ -673,7 +676,7 @@ class Inferer(ModelFramework):
         """Catches finished signal from worker, resets workspace for next run."""
         self.log.print_and_log(f"\nWorker finished at {utils.get_time()}")
         self.log.print_and_log("*" * 20)
-        self.btn_start.setText("Start")
+        self.btn_start.setText("Start on folder")
         self.btn_close.setVisible(True)
 
         self.worker = None
@@ -704,13 +707,13 @@ class Inferer(ModelFramework):
 
             zoom = widget.zoom
 
-            print(data["original"].shape)
+            # print(data["original"].shape)
             print(data["result"].shape)
 
             viewer.dims.ndisplay = 3
             viewer.scale_bar.visible = True
 
-            if widget.show_original:
+            if widget.show_original and data["original"] is not None:
                 original_layer = viewer.add_image(
                     data["original"],
                     colormap="inferno",
