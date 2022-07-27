@@ -244,7 +244,17 @@ class InferenceWorker(GeneratorWorker):
 
     def load_layer(self):
 
-        volume = np.array(self.layer.data, dtype=np.int16)
+        data = np.squeeze(self.layer.data)
+
+        volume = np.array(data, dtype=np.int16)
+
+        volume_dims = len(volume.shape)
+        if volume_dims != 3:
+            raise ValueError(
+                f"Data array is not 3-dimensional but {volume_dims}-dimensional,"
+                f" please check for extra channel/batch dimensions"
+            )
+
         volume = np.swapaxes(
             volume, 0, 2
         )  # for anisotropy to be monai-like, i.e. zyx
@@ -437,7 +447,7 @@ class InferenceWorker(GeneratorWorker):
 
         # print(inputs.shape)
         image = image.type(torch.FloatTensor)
-        out = self.model_output(image,model, post_process_transforms)
+        out = self.model_output(image, model, post_process_transforms)
         out = self.aniso_transform(out)
         # if self.transforms["zoom"][0]:
         #     zoom = self.transforms["zoom"][1]
@@ -496,9 +506,9 @@ class InferenceWorker(GeneratorWorker):
         result = {
             "image_id": 0,
             "original": None,
-            "instance_labels": np.swapaxes(instance_labels, 0,2),
+            "instance_labels": np.swapaxes(instance_labels, 0, 2),
             "object stats": data_dict,
-            "result": np.swapaxes(out, 0,2),
+            "result": np.swapaxes(out, 0, 2),
             "model_name": self.model_dict["name"],
         }
         return result
