@@ -22,7 +22,6 @@ from monai.metrics import DiceMetric
 from monai.transforms import AddChannel
 from monai.transforms import AsDiscrete
 from monai.transforms import Compose
-from monai.transforms import EnsureChannelFirst
 from monai.transforms import EnsureChannelFirstd
 from monai.transforms import EnsureType
 from monai.transforms import EnsureTyped
@@ -346,33 +345,32 @@ class InferenceWorker(GeneratorWorker):
     def load_layer(self):
 
         volume = np.array(self.layer.data, dtype=np.int16)
+        volume = np.swapaxes(
+            volume, 0, 2
+        )  # for anisotropy to be monai-like, i.e. zyx
         print("Loading layer")
-        print(volume.shape)
-
         dims_check = volume.shape
         self.log("\nChecking dimensions...")
         pad = utils.get_padding_dim(dims_check)
-        print(f"padding: {pad}")
+        print(volume.shape)
+        print(volume.dtype)
         load_transforms = Compose(
             [
-                AddChannel(),
-                AddChannel(),
                 ToTensor(),
-                EnsureType(),
-                # EnsureChannelFirst(),
-                # Orientationd(keys=["image"], axcodes="PLI"),
                 # anisotropic_transform,
+                AddChannel(),
                 SpatialPad(spatial_size=pad),
-            ]
+                AddChannel(),
+                EnsureType(),
+            ],
+            map_items=False,
+            log_stats=True,
         )
 
         self.log("\nLoading dataset...")
-        inference_ds = Dataset(data=volume, transform=load_transforms)
-        inference_loader = DataLoader(
-            inference_ds, batch_size=1, num_workers=2
-        )
+        input_image = load_transforms(volume)
         self.log("Done")
-        return inference_loader
+        return input_image
 
     def model_output(self, inputs, model, post_process_transforms):
 
@@ -457,12 +455,7 @@ class InferenceWorker(GeneratorWorker):
         self.log(os.path.split(instance_filepath)[1])
 
         # print(self.stats_to_csv)
-        if self.stats_to_csv:
-            data_dict = volume_stats(
-                instance_labels
-            )  # TODO test with area mesh function
-            return data_dict
-        return None
+        return instance_labels
 
     def inference_on_list(self, inf_data, i, model, post_process_transforms):
 
@@ -638,16 +631,13 @@ class InferenceWorker(GeneratorWorker):
         # print(result)
         return result
 
-    def inference_on_array(self, image, model, post_process_transforms):
+    def inference_on_layer(self, image, model, post_process_transforms):
 
         self.log("-" * 10)
         self.log(f"Inference started on layer...")
 
         # print(inputs.shape)
-
-        image = ToTensor()(image)
-        image = AddChannel()(image)
-        image = AddChannel()(image)
+        image = image.type(torch.FloatTensor)
         inputs = image.to("cpu")
 
         model_output = lambda inputs: post_process_transforms(
@@ -732,7 +722,13 @@ class InferenceWorker(GeneratorWorker):
         #################
         #################
         if self.instance_params["do_instance"]:
-            data_dict = self.instance_seg(to_instance)
+            instance_labels = self.instance_seg(to_instance)
+            if self.stats_to_csv:
+                data_dict = volume_stats(
+                    instance_labels
+                )  # TODO test with area mesh function
+            else:
+                data_dict = None
         #     self.log(
         #         f"\nRunning instance segmentation for image n°{image_id}"
         #     )
@@ -791,16 +787,14 @@ class InferenceWorker(GeneratorWorker):
             instance_labels = None
             data_dict = None
 
-        # logging(f"Inference completed on image {i+1}")
         result = {
             "image_id": 0,
             "original": None,
-            "instance_labels": instance_labels,
+            "instance_labels": np.swapaxes(instance_labels, 0,2),
             "object stats": data_dict,
-            "result": out,
+            "result": np.swapaxes(out, 0,2),
             "model_name": self.model_dict["name"],
         }
-        # print(result)
         return result
 
     def inference(self):
@@ -945,8 +939,6 @@ class InferenceWorker(GeneratorWorker):
             )
         elif is_folder:
             inference_loader = self.load_folder()
-        elif is_layer:
-            inference_loader = self.load_layer()
             ##################
             ##################
             # DEBUG
@@ -957,6 +949,10 @@ class InferenceWorker(GeneratorWorker):
             print(image.shape)
             ##################
             ##################
+        elif is_layer:
+            input_image = self.load_layer()
+            print(input_image.shape)
+
         else:
             raise ValueError("No data has been provided. Aborting.")
 
@@ -968,13 +964,11 @@ class InferenceWorker(GeneratorWorker):
             if is_folder:
                 for i, inf_data in enumerate(inference_loader):
                     yield self.inference_on_list(
-                        inf_data,i, model, post_process_transforms
+                        inf_data, i, model, post_process_transforms
                     )
             elif is_layer:
-                image = self.layer.data
-                print(image.shape)
-                yield self.inference_on_array(
-                    image, model, post_process_transforms
+                yield self.inference_on_layer(
+                    input_image, model, post_process_transforms
                 )
             # for i, inf_data in enumerate(inference_loader):
             #
