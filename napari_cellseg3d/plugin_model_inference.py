@@ -220,7 +220,8 @@ class Inferer(ModelFramework):
             "Image size on which the SegResNet has been trained (default : 128)"
         )
 
-        thresh_desc = "Thresholding : all values in the image below the chosen probability threshold will be set to 0, and all others to 1."
+        thresh_desc = "Thresholding : all values in the image below the chosen probability" \
+                      " threshold will be set to 0, and all others to 1."
         self.thresholding_checkbox.setToolTip(thresh_desc)
         self.thresholding_count.setToolTip(thresh_desc)
         self.window_infer_box.setToolTip(
@@ -235,12 +236,16 @@ class Inferer(ModelFramework):
             "If enabled, data will be kept on the RAM rather than the VRAM.\nCan avoid out of memory issues with CUDA"
         )
         self.instance_box.setToolTip(
-            "Instance segmentation will convert instance (0/1) labels to labels that attempt to assign an unique ID to each cell."
+            "Instance segmentation will convert instance (0/1) labels to labels"
+            " that attempt to assign an unique ID to each cell."
         )
         self.instance_method_choice.setToolTip(
             "Choose which method to use for instance segmentation"
-            "\nConnected components : all separated objects will be assigned an unique ID. Robust but will not work correctly with adjacent/touching objects\n"
-            "Watershed : assigns objects ID based on the probability gradient surrounding an object. Requires the model to surround objects in a gradient; can possibly correctly separate unique but touching/adjacent objects."
+            "\nConnected components : all separated objects will be assigned an unique ID. "
+            "Robust but will not work correctly with adjacent/touching objects\n"
+            "Watershed : assigns objects ID based on the probability gradient surrounding an object. "
+            "Requires the model to surround objects in a gradient;"
+            " can possibly correctly separate unique but touching/adjacent objects."
         )
         self.instance_prob_thresh.setToolTip(
             "All objects below this probability will be ignored (set to 0)"
@@ -249,7 +254,8 @@ class Inferer(ModelFramework):
             "Will remove all objects smaller (in volume) than the specified number of pixels"
         )
         self.save_stats_to_csv_box.setToolTip(
-            "Will save several statistics for each object to a csv in the results folder. Stats include : volume, centroid coordinates, sphericity"
+            "Will save several statistics for each object to a csv in the results folder. Stats include : "
+            "volume, centroid coordinates, sphericity"
         )
         ##################
         ##################
@@ -654,6 +660,7 @@ class Inferer(ModelFramework):
         else:  # once worker is started, update buttons
             self.worker.start()
             self.btn_start.setText("Running...  Click to stop")
+            self.btn_start_layer.setVisible(False)
 
     def on_start(self):
         """Catches start signal from worker to call :py:func:`~display_status_report`"""
@@ -680,6 +687,7 @@ class Inferer(ModelFramework):
         self.log.print_and_log(f"\nWorker finished at {utils.get_time()}")
         self.log.print_and_log("*" * 20)
         self.btn_start.setText("Start on folder")
+        self.btn_start_layer.setVisible(True)
         self.btn_close.setVisible(True)
 
         self.worker = None

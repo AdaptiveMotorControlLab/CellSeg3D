@@ -357,7 +357,7 @@ class InferenceWorker(GeneratorWorker):
 
         volume = np.swapaxes(
             volume, 0, 2
-        )  # for anisotropy to be monai-like, i.e. zyx
+        )  # for anisotropy to be monai-like, i.e. zyx # FIXME rotation not always correct
         print("Loading layer")
         dims_check = volume.shape
         self.log("\nChecking dimensions...")
@@ -421,7 +421,7 @@ class InferenceWorker(GeneratorWorker):
         )
         return anisotropic_transform(image[0])
 
-    def instance_seg(self, to_instance, image_id=None, original_filename=""):
+    def instance_seg(self, to_instance, image_id=0, original_filename="layer"):
 
         if image_id is not None:
             self.log(f"\nRunning instance segmentation for image n°{image_id}")
@@ -579,7 +579,7 @@ class InferenceWorker(GeneratorWorker):
         # File output save name : original-name_model_date+time_number.filetype
         file_path = os.path.join(
             self.results_path,
-            f"Prediction_"
+            f"Prediction_layer"
             + "_"
             + self.model_dict["name"]
             + f"_{time}_"
