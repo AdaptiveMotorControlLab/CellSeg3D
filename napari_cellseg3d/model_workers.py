@@ -275,7 +275,7 @@ class InferenceWorker(GeneratorWorker):
     def log_parameters(self):
 
         self.log("-" * 20)
-        self.log("Parameters summary :")
+        self.log("\nParameters summary :")
 
         self.log(f"Model is : {self.model_dict['name']}")
         if self.transforms["thresh"][0]:
@@ -288,7 +288,7 @@ class InferenceWorker(GeneratorWorker):
         else:
             status = "disabled"
 
-        self.log(f"Window inference is {status}")
+        self.log(f"Window inference is {status}\n")
 
         if self.keep_on_cpu:
             self.log(f"Dataset loaded to CPU")
@@ -302,9 +302,10 @@ class InferenceWorker(GeneratorWorker):
             self.log(
                 f"Instance segmentation enabled, method : {self.instance_params['method']}\n"
                 f"Probability threshold is {self.instance_params['threshold']:.2f}\n"
-                f"Objects smaller than {self.instance_params['size_small']} pixels will be removed"
+                f"Objects smaller than {self.instance_params['size_small']} pixels will be removed\n"
             )
             # self.log(f"")
+            self.log("\n")
         self.log("-" * 20)
 
     def load_folder(self):
@@ -360,7 +361,7 @@ class InferenceWorker(GeneratorWorker):
         volume = np.swapaxes(
             volume, 0, 2
         )  # for anisotropy to be monai-like, i.e. zyx # FIXME rotation not always correct
-        print("Loading layer")
+        print("Loading layer\n")
         dims_check = volume.shape
         self.log("\nChecking dimensions...")
         pad = utils.get_padding_dim(dims_check)
@@ -609,6 +610,7 @@ class InferenceWorker(GeneratorWorker):
         #################
         if self.instance_params["do_instance"]:
             instance_labels = self.instance_seg(to_instance)
+            instance_labels = np.swapaxes(instance_labels, 0, 2) #FIXME always required ?
             data_dict = self.stats_csv(instance_labels)
         else:
             instance_labels = None
@@ -617,7 +619,7 @@ class InferenceWorker(GeneratorWorker):
         result = {
             "image_id": 0,
             "original": None,
-            "instance_labels": np.swapaxes(instance_labels, 0, 2),
+            "instance_labels": instance_labels,
             "object stats": data_dict,
             "result": np.swapaxes(out, 0, 2),
             "model_name": self.model_dict["name"],
