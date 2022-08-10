@@ -1,4 +1,3 @@
-import os
 import warnings
 
 import napari
@@ -220,8 +219,10 @@ class Inferer(ModelFramework):
             "Image size on which the SegResNet has been trained (default : 128)"
         )
 
-        thresh_desc = "Thresholding : all values in the image below the chosen probability" \
-                      " threshold will be set to 0, and all others to 1."
+        thresh_desc = (
+            "Thresholding : all values in the image below the chosen probability"
+            " threshold will be set to 0, and all others to 1."
+        )
         self.thresholding_checkbox.setToolTip(thresh_desc)
         self.thresholding_count.setToolTip(thresh_desc)
         self.window_infer_box.setToolTip(
@@ -712,14 +713,18 @@ class Inferer(ModelFramework):
 
         viewer = widget._viewer
 
-        widget.progress.setValue(100 * image_id // total)
+        pbar_value = image_id // total
+        if image_id == 0:
+            pbar_value = 1
+
+        widget.progress.setValue(100 * pbar_value)
 
         if widget.show_res and image_id <= widget.show_res_nbr:
 
             zoom = widget.zoom
 
             # print(data["original"].shape)
-            print(data["result"].shape)
+            # print(data["result"].shape)
 
             viewer.dims.ndisplay = 3
             viewer.scale_bar.visible = True

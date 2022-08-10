@@ -3,7 +3,6 @@ import platform
 from pathlib import Path
 import importlib.util
 from typing import Optional
-import warnings
 
 import numpy as np
 from tifffile import imwrite
@@ -112,7 +111,7 @@ class WeightsDownloader:
             pretrained_folder_path, model_weights_filename
         )
         if os.path.exists(check_path):
-            message = f"Weight file {model_weights_filename} already exists, skipping download step"
+            message = f"Weight file {model_weights_filename} already exists, skipping download"
             if self.log_widget is not None:
                 self.log_widget.print_and_log(message, printing=False)
             print(message)
@@ -240,7 +239,6 @@ class InferenceWorker(GeneratorWorker):
         self.layer = layer
         self.images_filepaths = images_filepaths
 
-
         """These attributes are all arguments of :py:func:~inference, please see that for reference"""
 
         self.downloader = WeightsDownloader()
@@ -362,8 +360,8 @@ class InferenceWorker(GeneratorWorker):
         dims_check = volume.shape
         self.log("\nChecking dimensions...")
         pad = utils.get_padding_dim(dims_check)
-        print(volume.shape)
-        print(volume.dtype)
+        # print(volume.shape)
+        # print(volume.dtype)
         load_transforms = Compose(
             [
                 ToTensor(),
@@ -534,10 +532,14 @@ class InferenceWorker(GeneratorWorker):
 
     def stats_csv(self, instance_labels):
         if self.stats_to_csv:
+            # try:
             data_dict = volume_stats(
                 instance_labels
             )  # TODO test with area mesh function
             return data_dict
+        # except ValueError as e:
+        #     self.log(f"Error occurred during stats computing : {e}")
+        #     return None
         else:
             return None
 
@@ -677,7 +679,6 @@ class InferenceWorker(GeneratorWorker):
         if self.model_dict["name"] == "SegResNet":
             model = self.model_dict["class"].get_net()(
                 input_image_size=[
-
                     dims,
                     dims,
                     dims,
@@ -751,7 +752,7 @@ class InferenceWorker(GeneratorWorker):
 
         if is_layer and is_folder:
             raise ValueError(
-                "Both a layer and a folder have been specified, please specifiy only one of the two. Aborting."
+                "Both a layer and a folder have been specified, please specify only one of the two. Aborting."
             )
         elif is_folder:
             inference_loader = self.load_folder()
@@ -767,7 +768,7 @@ class InferenceWorker(GeneratorWorker):
             ##################
         elif is_layer:
             input_image = self.load_layer()
-            print(input_image.shape)
+            # print(input_image.shape)
 
         else:
             raise ValueError("No data has been provided. Aborting.")
