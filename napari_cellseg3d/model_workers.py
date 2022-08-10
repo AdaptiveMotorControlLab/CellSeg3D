@@ -233,6 +233,10 @@ class InferenceWorker(GeneratorWorker):
         self.window_infer_size = window_infer_size
         self.keep_on_cpu = keep_on_cpu
         self.stats_to_csv = stats_csv
+        ############################################
+        ############################################
+        self.layer = layer
+        self.images_filepaths = images_filepaths
 
         ############################################
         ############################################
@@ -360,8 +364,10 @@ class InferenceWorker(GeneratorWorker):
         dims_check = volume.shape
         self.log("\nChecking dimensions...")
         pad = utils.get_padding_dim(dims_check)
+
         # print(volume.shape)
         # print(volume.dtype)
+
         load_transforms = Compose(
             [
                 ToTensor(),
@@ -532,11 +538,14 @@ class InferenceWorker(GeneratorWorker):
 
     def stats_csv(self, instance_labels):
         if self.stats_to_csv:
+
             # try:
+
             data_dict = volume_stats(
                 instance_labels
             )  # TODO test with area mesh function
             return data_dict
+
         # except ValueError as e:
         #     self.log(f"Error occurred during stats computing : {e}")
         #     return None
@@ -679,6 +688,7 @@ class InferenceWorker(GeneratorWorker):
         if self.model_dict["name"] == "SegResNet":
             model = self.model_dict["class"].get_net()(
                 input_image_size=[
+
                     dims,
                     dims,
                     dims,

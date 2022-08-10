@@ -219,10 +219,12 @@ class Inferer(ModelFramework):
             "Image size on which the SegResNet has been trained (default : 128)"
         )
 
+
         thresh_desc = (
             "Thresholding : all values in the image below the chosen probability"
             " threshold will be set to 0, and all others to 1."
         )
+
         self.thresholding_checkbox.setToolTip(thresh_desc)
         self.thresholding_count.setToolTip(thresh_desc)
         self.window_infer_box.setToolTip(
@@ -633,6 +635,7 @@ class Inferer(ModelFramework):
                 )
 
             self.worker.set_download_log(self.log)
+
 
             yield_connect_show_res = lambda data: self.on_yield(
                 data,
