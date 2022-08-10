@@ -688,7 +688,6 @@ class InferenceWorker(GeneratorWorker):
         if self.model_dict["name"] == "SegResNet":
             model = self.model_dict["class"].get_net()(
                 input_image_size=[
-
                     dims,
                     dims,
                     dims,
