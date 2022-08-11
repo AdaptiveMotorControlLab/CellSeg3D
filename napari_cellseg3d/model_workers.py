@@ -237,11 +237,8 @@ class InferenceWorker(GeneratorWorker):
         ############################################
         self.layer = layer
         self.images_filepaths = images_filepaths
-
         ############################################
         ############################################
-        self.layer = layer
-        self.images_filepaths = images_filepaths
 
         """These attributes are all arguments of :py:func:~inference, please see that for reference"""
 
@@ -305,7 +302,7 @@ class InferenceWorker(GeneratorWorker):
                 f"Objects smaller than {self.instance_params['size_small']} pixels will be removed\n"
             )
             # self.log(f"")
-            self.log("\n")
+            # self.log("\n")
         self.log("-" * 20)
 
     def load_folder(self):
