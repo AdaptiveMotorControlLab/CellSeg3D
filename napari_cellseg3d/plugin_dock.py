@@ -1,6 +1,6 @@
 import os
 import warnings
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import napari
@@ -16,6 +16,7 @@ from napari_cellseg3d import utils
 GUI_MAXIMUM_WIDTH = 225
 GUI_MAXIMUM_HEIGHT = 350
 GUI_MINIMUM_HEIGHT = 300
+TIMER_FORMAT = "%H:%M:%S"
 
 
 """
@@ -44,20 +45,24 @@ class Datamanager(QWidget):
         """napari.viewer.Viewer: viewer in which the widget is displayed"""
 
         # add some buttons
-        self.button = ui.Button(
-            "1", self.button_func, parent=self, fixed=False
-        )
+        self.button = ui.Button("1", self.button_func, parent=self, fixed=True)
         self.time_label = ui.make_label("", self)
         self.time_label.setVisible(False)
 
-        io_panel, io_layout = ui.make_container(vertical=False)
+        self.pause_box = ui.CheckBox(
+            "Pause", self.pause_timer, parent=self, fixed=True
+        )
+
+        io_panel, io_layout = ui.make_container()
+        io_layout.addWidget(self.button, alignment=ui.ABS_AL)
         io_layout.addWidget(
             ui.combine_blocks(
-                left_or_above=self.button,
+                left_or_above=self.pause_box,
                 right_or_below=self.time_label,
                 horizontal=True,
             )
-        )  # , alignment=utils.ABS_AL)
+        , alignment=ui.ABS_AL)
+
         io_panel.setLayout(io_layout)
         io_panel.setMaximumWidth(GUI_MAXIMUM_WIDTH)
         layout.addWidget(io_panel, alignment=ui.ABS_AL)
@@ -76,7 +81,40 @@ class Datamanager(QWidget):
         """Whether to load as folder or single file"""
 
         self.start_time = datetime.now()
-        self.time = None
+        self.time_elapsed = timedelta()
+        self.pause_start = None
+        self.is_paused = False
+        # self.pause_time = None
+
+    def pause_timer(self):
+        """Pause the timer for the review time"""
+        if self.pause_box.isChecked():
+            self.time_label.setVisible(True)
+
+            self.pause_start = datetime.now()
+            self.time_elapsed += self.pause_start - self.start_time
+            self.pause_box.setText("Resume timer")
+            self.time_label.setText(
+                f"({utils.time_difference(timedelta(),self.time_elapsed)})"
+            )
+            self.is_paused = True
+        else:
+            self.time_label.setVisible(False)
+            self.pause_box.setText("Pause timer")
+
+            # self.pause_time = datetime.now() - self.pause_start
+            self.start_time = datetime.now()
+            self.is_paused = False
+        self.update_time_csv()
+
+    def update_time_csv(self):
+        if not self.is_paused:
+            self.time_elapsed += datetime.now() - self.start_time
+            self.start_time = datetime.now()
+        str_time = utils.time_difference(timedelta(), self.time_elapsed)
+        print(f"Time elapsed : {str_time}")
+        self.df.at[0, "time"] = str_time
+        self.df.to_csv(self.csv_path)
 
     def prepare(self, label_dir, filetype, model_type, checkbox, as_folder):
         """Initialize the Datamanager, which loads the csv file and updates it
@@ -127,7 +165,7 @@ class Datamanager(QWidget):
         print(label_dir)
         csvs = sorted(list(Path(label_dir).glob(f"{model_type}*.csv")))
         if len(csvs) == 0:
-            df, csv_path = self.create(
+            df, csv_path = self.create_csv(
                 label_dir, model_type
             )  # df,  train_data_dir, ...
         else:
@@ -146,11 +184,18 @@ class Datamanager(QWidget):
                 df.to_csv(csv_path)
             else:
                 pass
-        self.start_time = datetime.now()
-        self.time = self.start_time
+
+        recorded_time = df.at[0, "time"]
+        # print("csv load time")
+        # print(recorded_time)
+        t = datetime.strptime(recorded_time, TIMER_FORMAT)
+        self.time_elapsed = timedelta(
+            hours=t.hour, minutes=t.minute, seconds=t.second
+        )
+        # print(self.time_elapsed)
         return df, csv_path
 
-    def create(self, label_dir, model_type, filename=None):
+    def create_csv(self, label_dir, model_type, filename=None):
         """
         Create a new dataframe and save the csv
         Args:
@@ -182,6 +227,8 @@ class Datamanager(QWidget):
                 "time": [""] * len(labels),
             }
         )
+        df.at[0, "time"] = "00:00:00"
+
         csv_path = os.path.join(label_dir, f"{model_type}_train0.csv")
         print("csv path for create")
         print(csv_path)
@@ -204,6 +251,7 @@ class Datamanager(QWidget):
 
         """
         self.slice_num = slice_num
+        self.update_time_csv()
 
         print(f"New slice review started at {utils.get_time()}")
         # print(self.df)
@@ -214,41 +262,40 @@ class Datamanager(QWidget):
             self.slice_num -= 1
             self.update_button()
 
-        self.time = datetime.now()
+        # self.time = datetime.now()
 
-        if self.button.text() == "Not checked":
-            self.time_label.setVisible(False)
-        else:
-            self.time_label.setVisible(True)
-            self.time_label.setText(
-                f"Previously completed in {self.df.at[self.df.index[self.slice_num], 'time']}"
-            )
+        # if self.button.text() == "Not checked":
+        #     self.time_label.setVisible(False)
+        # else:
+        #     self.time_label.setVisible(True)
+        #     self.time_label.setText(
+        #         f"Previously completed in {self.df.at[self.df.index[self.slice_num], 'time']}"
+        #     )
+        # self.df.at[0, "time"] = self.time_elapsed
 
     def button_func(self):  # updates csv every time you press button...
         if self.viewer.dims.ndisplay != 2:
             # TODO test if undefined behaviour or if okay
             warnings.warn("Please switch back to 2D mode !")
             return
+
+        self.update_time_csv()
+        # finish_time = datetime.now()
+        # self.time_elapsed = finish_time - self.start_time
+
         if self.button.text() == "Not checked":
-
-            start_time = self.time
-            finish_time = datetime.now()
-            self.time = finish_time
-
-            time_diff = utils.time_difference(start_time, finish_time)
-            print(f"Time taken : {time_diff}")
+            # time_diff = utils.time_difference(self.start_time, finish_time)
+            # print(f"Time taken : {time_diff}")
 
             self.button.setText("Checked")
-            self.time_label.setVisible(True)
-            self.time_label.setText(f"Completed in {time_diff}")
+            # self.time_label.setVisible(True)
+            # self.time_label.setText(f"Completed in {time_diff}")
             self.df.at[self.df.index[self.slice_num], "train"] = "Checked"
-            self.df.at[self.df.index[self.slice_num], "time"] = time_diff
-            self.df.to_csv(self.csv_path)
 
+            self.df.to_csv(self.csv_path)
         else:
             self.button.setText("Not checked")
-            self.time_label.setVisible(False)
-            self.time = datetime.now()
+            # self.time_label.setVisible(False)
             self.df.at[self.df.index[self.slice_num], "train"] = "Not checked"
             self.df.to_csv(self.csv_path)
 
