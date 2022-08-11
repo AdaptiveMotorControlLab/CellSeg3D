@@ -60,8 +60,9 @@ class Datamanager(QWidget):
                 left_or_above=self.pause_box,
                 right_or_below=self.time_label,
                 horizontal=True,
-            )
-        , alignment=ui.ABS_AL)
+            ),
+            alignment=ui.ABS_AL,
+        )
 
         io_panel.setLayout(io_layout)
         io_panel.setMaximumWidth(GUI_MAXIMUM_WIDTH)
