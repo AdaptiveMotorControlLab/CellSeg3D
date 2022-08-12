@@ -89,7 +89,7 @@ class Inferer(ModelFramework):
             "View results in napari", self.toggle_display_number
         )
 
-        self.display_number_choice = ui.make_n_spinboxes(min=1, default=5)
+        self.display_number_choice = ui.IntIncrementCounter(min=1, default=5)
         self.lbl_display_number = ui.make_label("How many ? (max. 10)", self)
 
         self.show_original_checkbox = ui.make_checkbox("Show originals")
@@ -97,7 +97,7 @@ class Inferer(ModelFramework):
         ######################
         ######################
         # TODO : better way to handle SegResNet size reqs ?
-        self.segres_size = ui.make_n_spinboxes(min=1, max=1024, default=128)
+        self.segres_size = ui.IntIncrementCounter(min=1, max=1024, default=128)
         self.model_choice.currentIndexChanged.connect(
             self.toggle_display_segres_size
         )
@@ -120,8 +120,8 @@ class Inferer(ModelFramework):
             "Perform thresholding", self.toggle_display_thresh
         )
 
-        self.thresholding_count = ui.make_n_spinboxes(
-            max=1, default=0.7, step=0.05, double=True
+        self.thresholding_count = ui.DoubleIncrementCounter(
+            max=1, default=0.7, step=0.05
         )
 
         self.thresholding_container, self.thresh_layout = ui.make_container(
@@ -130,11 +130,13 @@ class Inferer(ModelFramework):
 
         self.window_infer_box = ui.make_checkbox("Use window inference")
         self.window_infer_box.clicked.connect(self.toggle_display_window_size)
+
         sizes_window = ["8", "16", "32", "64", "128", "256", "512"]
-        (
-            self.window_size_choice,
-            self.lbl_window_size_choice,
-        ) = ui.make_combobox(sizes_window, label="Window size")
+        self.window_size_choice = ui.DropdownMenu(
+            sizes_window, label="Window size"
+        )
+        self.lbl_window_size_choice = self.window_size_choice.label
+
         self.keep_data_on_cpu_box = ui.make_checkbox("Keep data on CPU")
 
         self.window_infer_params = ui.combine_blocks(
@@ -150,12 +152,12 @@ class Inferer(ModelFramework):
             "Run instance segmentation", func=self.toggle_display_instance
         )
 
-        self.instance_method_choice = ui.make_combobox(
+        self.instance_method_choice = ui.DropdownMenu(
             ["Connected components", "Watershed"]
         )
 
-        self.instance_prob_thresh = ui.make_n_spinboxes(
-            n=1, max=0.99, default=0.7, step=0.05, double=True
+        self.instance_prob_thresh = ui.DoubleIncrementCounter(
+            max=0.99, default=0.7, step=0.05
         )
         self.instance_prob_thresh_lbl = ui.make_label(
             "Probability threshold :", self
@@ -166,8 +168,8 @@ class Inferer(ModelFramework):
             horizontal=False,
         )
 
-        self.instance_small_object_thresh = ui.make_n_spinboxes(
-            n=1, max=100, default=10, step=5
+        self.instance_small_object_thresh = ui.IntIncrementCounter(
+            max=100, default=10, step=5
         )
         self.instance_small_object_thresh_lbl = ui.make_label(
             "Small object removal threshold :", self
@@ -189,14 +191,12 @@ class Inferer(ModelFramework):
         ##################
         ##################
 
-        self.btn_start = ui.make_button("Start inference", self.start)
+        self.btn_start = ui.Button("Start inference", self.start)
         self.btn_close = self.make_close_button()
 
         # hide unused widgets from parent class
-        self.btn_label_files.setVisible(False)
-        self.lbl_label_files.setVisible(False)
-        self.btn_model_path.setVisible(False)
-        self.lbl_model_path.setVisible(False)
+        self.label_filewidget.setVisible(False)
+        self.model_filewidget.setVisible(False)
 
         ##################
         ##################
@@ -475,8 +475,8 @@ class Inferer(ModelFramework):
         ############
         ######
         # end of tabs, combine into scrollable
-        ui.make_scrollable(
-            containing_widget=tab,
+        ui.ScrollArea.make_scrollable(
+            parent=tab,
             contained_layout=tab_layout,
             min_wh=[200, 100],
         )
@@ -534,7 +534,6 @@ class Inferer(ModelFramework):
             else:
                 weights_dict = {
                     "custom": False,
-                    "path": self.get_model(model_key).get_weights_file(),
                 }
 
             if self.anisotropy_wdgt.is_enabled():
@@ -591,6 +590,7 @@ class Inferer(ModelFramework):
                 keep_on_cpu=self.keep_on_cpu,
                 stats_csv=self.stats_to_csv,
             )
+            self.worker.set_download_log(self.log)
 
             yield_connect_show_res = lambda data: self.on_yield(
                 data,
@@ -599,6 +599,7 @@ class Inferer(ModelFramework):
 
             self.worker.started.connect(self.on_start)
             self.worker.log_signal.connect(self.log.print_and_log)
+            self.worker.warn_signal.connect(self.log.warn)
             self.worker.yielded.connect(yield_connect_show_res)
             self.worker.errored.connect(
                 yield_connect_show_res

@@ -1,9 +1,14 @@
 import os
 import platform
 from pathlib import Path
+import importlib.util
+from typing import Optional
+import warnings
 
 import numpy as np
+from tifffile import imwrite
 import torch
+from tqdm import tqdm
 
 # MONAI
 from monai.data import CacheDataset
@@ -37,9 +42,10 @@ from napari.qt.threading import WorkerBaseSignals
 
 # Qt
 from qtpy.QtCore import Signal
-from tifffile import imwrite
+
 
 from napari_cellseg3d import utils
+from napari_cellseg3d import log_utility
 
 # local
 from napari_cellseg3d.model_instance_seg import binary_connected
@@ -57,17 +63,98 @@ a custom worker function."""
 # https://napari-staging-site.github.io/guides/stable/threading.html
 
 WEIGHTS_DIR = os.path.dirname(os.path.realpath(__file__)) + str(
-    Path("/models/saved_weights")
+    Path("/models/pretrained")
 )
+
+
+class WeightsDownloader:
+    """A utility class the downloads the weights of a model when needed."""
+
+    def __init__(self, log_widget: Optional[log_utility.Log] = None):
+        """
+        Creates a WeightsDownloader, optionally with a log widget to display the progress.
+
+        Args:
+            log_widget (log_utility.Log): a Log to display the progress bar in. If None, uses print()
+        """
+        self.log_widget = log_widget
+
+    def download_weights(self, model_name: str, model_weights_filename: str):
+        """
+        Downloads a specific pretrained model.
+        This code is adapted from DeepLabCut with permission from MWMathis.
+
+        Args:
+            model_name (str): name of the model to download
+            model_weights_filename (str): name of the .pth file expected for the model
+        """
+        import json
+        import tarfile
+        import urllib.request
+
+        def show_progress(count, block_size, total_size):
+            pbar.update(block_size)
+
+        cellseg3d_path = os.path.split(
+            importlib.util.find_spec("napari_cellseg3d").origin
+        )[0]
+        pretrained_folder_path = os.path.join(
+            cellseg3d_path, "models", "pretrained"
+        )
+        json_path = os.path.join(
+            pretrained_folder_path, "pretrained_model_urls.json"
+        )
+
+        check_path = os.path.join(
+            pretrained_folder_path, model_weights_filename
+        )
+        if os.path.exists(check_path):
+            message = f"Weight file {model_weights_filename} already exists, skipping download step"
+            if self.log_widget is not None:
+                self.log_widget.print_and_log(message, printing=False)
+            print(message)
+            return
+
+        with open(json_path) as f:
+            neturls = json.load(f)
+        if model_name in neturls.keys():
+            url = neturls[model_name]
+            response = urllib.request.urlopen(url)
+
+            start_message = f"Downloading the model from the M.W. Mathis Lab server {url}...."
+            total_size = int(response.getheader("Content-Length"))
+            if self.log_widget is None:
+                print(start_message)
+                pbar = tqdm(unit="B", total=total_size, position=0)
+            else:
+                self.log_widget.print_and_log(start_message)
+                pbar = tqdm(
+                    unit="B",
+                    total=total_size,
+                    position=0,
+                    file=self.log_widget,
+                )
+
+            filename, _ = urllib.request.urlretrieve(
+                url, reporthook=show_progress
+            )
+            with tarfile.open(filename, mode="r:gz") as tar:
+                tar.extractall(pretrained_folder_path)
+        else:
+            raise ValueError(
+                f"Unknown model: {model_name}. Should be one of {', '.join(neturls)}"
+            )
 
 
 class LogSignal(WorkerBaseSignals):
     """Signal to send messages to be logged from another thread.
 
-    Separate from Worker instances as indicated `here`_"""
+    Separate from Worker instances as indicated `here`_"""  # TODO link ?
 
     log_signal = Signal(str)
     """qtpy.QtCore.Signal: signal to be sent when some text should be logged"""
+    warn_signal = Signal(str)
+    """qtpy.QtCore.Signal: signal to be sent when some warning should be emitted in main thread"""
 
     # Should not be an instance variable but a class variable, not defined in __init__, see
     # https://stackoverflow.com/questions/2970312/pyqt4-qtcore-pyqtsignal-object-has-no-attribute-connect
@@ -128,6 +215,7 @@ class InferenceWorker(GeneratorWorker):
         super().__init__(self.inference)
         self._signals = LogSignal()  # add custom signals
         self.log_signal = self._signals.log_signal
+        self.warn_signal = self._signals.warn_signal
         ###########################################
         ###########################################
         self.device = device
@@ -142,8 +230,10 @@ class InferenceWorker(GeneratorWorker):
         self.window_infer_size = window_infer_size
         self.keep_on_cpu = keep_on_cpu
         self.stats_to_csv = stats_csv
-
         """These attributes are all arguments of :py:func:~inference, please see that for reference"""
+
+        self.downloader = WeightsDownloader()
+        """Download utility"""
 
     @staticmethod
     def create_inference_dict(images_filepaths):
@@ -154,6 +244,9 @@ class InferenceWorker(GeneratorWorker):
         data_dicts = [{"image": image_name} for image_name in images_filepaths]
         return data_dicts
 
+    def set_download_log(self, widget):
+        self.downloader.log_widget = widget
+
     def log(self, text):
         """Sends a signal that ``text`` should be logged
 
@@ -161,6 +254,10 @@ class InferenceWorker(GeneratorWorker):
             text (str): text to logged
         """
         self.log_signal.emit(text)
+
+    def warn(self, warning):
+        """Sends a warning to main thread"""
+        self.warn_signal.emit(warning)
 
     def log_parameters(self):
 
@@ -233,8 +330,8 @@ class InferenceWorker(GeneratorWorker):
         """
         sys = platform.system()
         print(f"OS is {sys}")
-        if sys == "Darwin":  # required for macOS ?
-            torch.set_num_threads(1)
+        if sys == "Darwin":
+            torch.set_num_threads(1)  # required for threading on macOS ?
             self.log("Number of threads has been set to 1 for macOS")
 
         images_dict = self.create_inference_dict(self.images_filepaths)
@@ -260,7 +357,11 @@ class InferenceWorker(GeneratorWorker):
         model = self.model_dict["class"].get_net()
         if self.model_dict["name"] == "SegResNet":
             model = self.model_dict["class"].get_net()(
-                input_image_size=[dims, dims, dims],  # TODO FIX !
+                input_image_size=[
+                    dims,
+                    dims,
+                    dims,
+                ],  # TODO FIX ! find a better way & remove model-specific code
                 out_channels=1,
                 # dropout_prob=0.3,
             )
@@ -304,12 +405,18 @@ class InferenceWorker(GeneratorWorker):
         # print(weights)
         self.log(
             "\nLoading weights..."
-        )  # TODO add try/except for invalid weights
+        )  # TODO add try/except for invalid weights for proper reset
 
         if self.weights_dict["custom"]:
             weights = self.weights_dict["path"]
         else:
-            weights = os.path.join(WEIGHTS_DIR, self.weights_dict["path"])
+            self.downloader.download_weights(
+                self.model_dict["name"],
+                self.model_dict["class"].get_weights_file(),
+            )
+            weights = os.path.join(
+                WEIGHTS_DIR, self.model_dict["class"].get_weights_file()
+            )
 
         model.load_state_dict(
             torch.load(
@@ -544,12 +651,13 @@ class TrainingWorker(GeneratorWorker):
 
 
         """
-
-        print("init")
         super().__init__(self.train)
         self._signals = LogSignal()
         self.log_signal = self._signals.log_signal
+        self.warn_signal = self._signals.warn_signal
 
+        self._weight_error = False
+        #############################################
         self.device = device
         self.model_dict = model_dict
         self.weights_path = weights_path
@@ -571,7 +679,11 @@ class TrainingWorker(GeneratorWorker):
 
         self.train_files = []
         self.val_files = []
-        print("end init")
+        #######################################
+        self.downloader = WeightsDownloader()
+
+    def set_download_log(self, widget):
+        self.downloader.log_widget = widget
 
     def log(self, text):
         """Sends a signal that ``text`` should be logged
@@ -580,6 +692,10 @@ class TrainingWorker(GeneratorWorker):
             text (str): text to logged
         """
         self.log_signal.emit(text)
+
+    def warn(self, warning):
+        """Sends a warning to main thread"""
+        self.warn_signal.emit(warning)
 
     def log_parameters(self):
 
@@ -624,12 +740,19 @@ class TrainingWorker(GeneratorWorker):
 
         if self.weights_path is not None:
             self.log(f"Using weights from : {self.weights_path}")
+            if self._weight_error:
+                self.log(
+                    ">>>>>>>>>>>>>>>>>\n"
+                    "WARNING:\nChosen weights were incompatible with the model,\n"
+                    "the model will be trained from random weights\n"
+                    "<<<<<<<<<<<<<<<<<\n"
+                )
 
         # self.log("\n")
         self.log("-" * 20)
 
     def train(self):
-        """Trains the Pytorch model for the given number of epochs, with the selected model and data,
+        """Trains the PyTorch model for the given number of epochs, with the selected model and data,
         using the chosen batch size, validation interval, loss function, and number of samples.
         Will perform validation once every :py:obj:`val_interval` and save results if the mean dice is better
 
@@ -838,17 +961,27 @@ class TrainingWorker(GeneratorWorker):
         if self.weights_path is not None:
             if self.weights_path == "use_pretrained":
                 weights_file = model_class.get_weights_file()
+                self.downloader.download_weights(model_name, weights_file)
                 weights = os.path.join(WEIGHTS_DIR, weights_file)
                 self.weights_path = weights
             else:
                 weights = os.path.join(self.weights_path)
 
-            model.load_state_dict(
-                torch.load(
-                    weights,
-                    map_location=self.device,
+            try:
+                model.load_state_dict(
+                    torch.load(
+                        weights,
+                        map_location=self.device,
+                    )
                 )
-            )
+            except RuntimeError:
+                warn = (
+                    "WARNING:\nIt seems the weights were incompatible with the model,\n"
+                    "the model will be trained from random weights"
+                )
+                self.log(warn)
+                self.warn(warn)
+                self._weight_error = True
 
         if self.device.type == "cuda":
             self.log("\nUsing GPU :")

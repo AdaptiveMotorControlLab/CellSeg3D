@@ -5,7 +5,6 @@ import napari
 import torch
 
 # Qt
-from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QProgressBar
 from qtpy.QtWidgets import QSizePolicy
 
@@ -16,7 +15,7 @@ from napari_cellseg3d.log_utility import Log
 from napari_cellseg3d.models import model_SegResNet as SegResNet
 from napari_cellseg3d.models import model_TRAILMAP as TRAILMAP
 from napari_cellseg3d.models import model_VNet as VNet
-from napari_cellseg3d.models import TRAILMAP_MS as TMAP
+from napari_cellseg3d.models import model_TRAILMAP_MS as TRAILMAP_MS
 from napari_cellseg3d.plugin_base import BasePluginFolder
 
 warnings.formatwarning = utils.format_Warning
@@ -63,8 +62,8 @@ class ModelFramework(BasePluginFolder):
         self.models_dict = {
             "VNet": VNet,
             "SegResNet": SegResNet,
-            "TRAILMAP pre-trained": TRAILMAP,
-            "TRAILMAP_MS": TMAP,
+            "TRAILMAP": TRAILMAP,
+            "TRAILMAP_MS": TRAILMAP_MS,
         }
         """dict: dictionary of available models, with string for widget display as key
 
@@ -77,21 +76,22 @@ class ModelFramework(BasePluginFolder):
         # interface
 
         # TODO : implement custom model
-        self.btn_model_path = ui.make_button(
-            "Open", self.load_model_path, self
+        self.model_filewidget = ui.FilePathWidget(
+            "Model path", self.load_model_path, self
         )
-        self.lbl_model_path = QLineEdit("Model directory", self)
-        self.lbl_model_path.setReadOnly(True)
+        self.btn_model_path = self.model_filewidget.get_button()
+        self.lbl_model_path = self.model_filewidget.get_text_field()
 
-        self.model_choice, self.lbl_model_choice = ui.make_combobox(
+        self.model_choice = ui.DropdownMenu(
             sorted(self.models_dict.keys()), label="Model name"
         )
+        self.lbl_model_choice = self.model_choice.label
 
-        self.btn_weights_path = ui.make_button(
-            "Open", self.load_weights_path, self
+        self.weights_filewidget = ui.FilePathWidget(
+            "Weights path", self.load_weights_path, self
         )
-        self.lbl_weights_path = QLineEdit("Weights directory", self)
-        self.lbl_weights_path.setReadOnly(True)
+        self.btn_weights_path = self.weights_filewidget.get_button()
+        self.lbl_weights_path = self.weights_filewidget.get_text_field()
 
         self.weights_path_container = ui.combine_blocks(
             self.btn_weights_path, self.lbl_weights_path, b=0
@@ -121,7 +121,7 @@ class ModelFramework(BasePluginFolder):
         self.log.setVisible(False)
         """Read-only display for process-related info. Use only for info destined to user."""
 
-        self.btn_save_log = ui.make_button(
+        self.btn_save_log = ui.Button(
             "Save log in results folder",
             func=self.save_log,
             parent=self.container_report,
@@ -187,7 +187,7 @@ class ModelFramework(BasePluginFolder):
         #     )
         #     self.progress = QProgressBar(self.container_report)
         #     self.log = QTextEdit(self.container_report)
-        #     self.btn_save_log = ui.make_button(
+        #     self.btn_save_log = ui.Button(
         #         "Save log in results folder", parent=self.container_report
         #     )
         #     self.btn_save_log.clicked.connect(self.save_log)

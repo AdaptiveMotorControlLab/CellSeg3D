@@ -35,7 +35,7 @@ DEFAULT_PATCH_SIZE = 60
 
 
 class Trainer(ModelFramework):
-    """A plugin to train pre-defined Pytorch models for one-channel segmentation directly in napari.
+    """A plugin to train pre-defined PyTorch models for one-channel segmentation directly in napari.
     Features parameter selection for training, dynamic loss plotting and automatic saving of the best weights during
     training through validation."""
 
@@ -186,19 +186,22 @@ class Trainer(ModelFramework):
 
         self.zip_choice = ui.make_checkbox("Compress results")
 
-        self.validation_percent_choice = ui.make_combobox(["80%", "90%"])
+        self.validation_percent_choice = ui.IntIncrementCounter(
+            10, 90, default=80, step=1, parent=self
+        )
 
-        self.epoch_choice = ui.make_n_spinboxes(
+        self.epoch_choice = ui.IntIncrementCounter(
             min=2, max=1000, default=self.max_epochs
         )
         self.lbl_epoch_choice = ui.make_label("Number of epochs : ", self)
 
-        self.loss_choice, self.lbl_loss_choice = ui.make_combobox(
+        self.loss_choice = ui.DropdownMenu(
             sorted(self.loss_dict.keys()), label="Loss function"
         )
+        self.lbl_loss_choice = self.loss_choice.label
         self.loss_choice.setCurrentIndex(loss_index)
 
-        self.sample_choice = ui.make_n_spinboxes(
+        self.sample_choice = ui.IntIncrementCounter(
             min=2, max=50, default=self.num_samples
         )
         self.lbl_sample_choice = ui.make_label(
@@ -207,12 +210,12 @@ class Trainer(ModelFramework):
         self.sample_choice.setVisible(False)
         self.lbl_sample_choice.setVisible(False)
 
-        self.batch_choice = ui.make_n_spinboxes(
+        self.batch_choice = ui.IntIncrementCounter(
             min=1, max=10, default=self.batch_size
         )
         self.lbl_batch_choice = ui.make_label("Batch size : ", self)
 
-        self.val_interval_choice = ui.make_n_spinboxes(
+        self.val_interval_choice = ui.IntIncrementCounter(
             default=self.val_interval
         )
         self.lbl_val_interv_choice = ui.make_label(
@@ -227,10 +230,11 @@ class Trainer(ModelFramework):
             "1e-6",
         ]
 
-        (
-            self.learning_rate_choice,
-            self.lbl_learning_rate_choice,
-        ) = ui.make_combobox(learning_rate_vals, label="Learning rate")
+        self.learning_rate_choice = ui.DropdownMenu(
+            learning_rate_vals, label="Learning rate"
+        )
+        self.lbl_learning_rate_choice = self.learning_rate_choice.label
+
         self.learning_rate_choice.setCurrentIndex(1)
 
         self.augment_choice = ui.make_checkbox("Augment data")
@@ -240,7 +244,7 @@ class Trainer(ModelFramework):
         ]
         """Close buttons list for each tab"""
 
-        self.patch_size_widgets = ui.make_n_spinboxes(
+        self.patch_size_widgets = ui.IntIncrementCounter.make_n(
             3, 10, 1024, DEFAULT_PATCH_SIZE
         )
 
@@ -266,7 +270,7 @@ class Trainer(ModelFramework):
         self.use_deterministic_choice = ui.make_checkbox(
             "Deterministic training", func=self.toggle_deterministic_param
         )
-        self.box_seed = ui.make_n_spinboxes(max=10000000, default=23498)
+        self.box_seed = ui.IntIncrementCounter(max=10000000, default=23498)
         self.lbl_seed = ui.make_label("Seed", self)
         self.container_seed = ui.combine_blocks(
             self.box_seed, self.lbl_seed, horizontal=False
@@ -275,7 +279,7 @@ class Trainer(ModelFramework):
         self.progress.setVisible(False)
         """Dock widget containing the progress bar"""
 
-        self.btn_start = ui.make_button("Start training", self.start)
+        self.btn_start = ui.Button("Start training", self.start)
 
         self.btn_model_path.setVisible(False)
         self.lbl_model_path.setVisible(False)
@@ -477,7 +481,7 @@ class Trainer(ModelFramework):
         ui.add_blank(self, data_tab_layout)
         ################
         ui.add_to_group(
-            "Validation %",
+            "Validation (%)",
             self.validation_percent_choice,
             data_tab_layout,
         )
@@ -690,21 +694,21 @@ class Trainer(ModelFramework):
         ######
         # end of tab layouts
 
-        ui.make_scrollable(
+        ui.ScrollArea.make_scrollable(
             contained_layout=data_tab_layout,
-            containing_widget=data_tab,
+            parent=data_tab,
             min_wh=[200, 300],
         )  # , max_wh=[200,1000])
 
-        ui.make_scrollable(
+        ui.ScrollArea.make_scrollable(
             contained_layout=augment_tab_l,
-            containing_widget=augment_tab_w,
+            parent=augment_tab_w,
             min_wh=[200, 300],
         )
 
-        ui.make_scrollable(
+        ui.ScrollArea.make_scrollable(
             contained_layout=train_tab_layout,
-            containing_widget=train_tab,
+            parent=train_tab,
             min_wh=[200, 300],
         )
         self.addTab(data_tab, "Data")
@@ -789,11 +793,8 @@ class Trainer(ModelFramework):
                 raise err
             self.max_epochs = self.epoch_choice.value()
 
-            validation_percent_dict = {"80%": 0.8, "90%": 0.9}
+            validation_percent = self.validation_percent_choice.value() / 100
 
-            validation_percent = validation_percent_dict[
-                self.validation_percent_choice.currentText()
-            ]
             print(f"val % : {validation_percent}")
 
             self.learning_rate = float(self.learning_rate_choice.currentText())
@@ -851,10 +852,12 @@ class Trainer(ModelFramework):
                 do_augmentation=self.augment_choice.isChecked(),
                 deterministic=seed_dict,
             )
+            self.worker.set_download_log(self.log)
 
             [btn.setVisible(False) for btn in self.close_buttons]
 
             self.worker.log_signal.connect(self.log.print_and_log)
+            self.worker.warn_signal.connect(self.log.warn)
 
             self.worker.started.connect(self.on_start)
 
@@ -988,6 +991,11 @@ class Trainer(ModelFramework):
     def make_csv(self):
 
         size_column = range(1, self.max_epochs + 1)
+
+        if len(self.loss_values) == 0 or self.loss_values is None:
+            warnings.warn("No loss values to add to csv !")
+            return
+
         self.df = pd.DataFrame(
             {
                 "epoch": size_column,

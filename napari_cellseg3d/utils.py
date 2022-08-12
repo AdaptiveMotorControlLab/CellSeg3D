@@ -1,8 +1,8 @@
-import importlib.util
 import os
 import warnings
 from datetime import datetime
 from pathlib import Path
+
 
 import cv2
 import numpy as np
@@ -99,6 +99,17 @@ def dice_coeff(y_true, y_pred):
         np.sum(y_true_f) + np.sum(y_pred_f) + smooth
     )
     return score
+
+
+def resize(image, zoom_factors):
+    from monai.transforms import Zoom
+
+    isotropic_image = Zoom(
+        zoom_factors,
+        keep_size=False,
+        padding_mode="empty",
+    )(np.expand_dims(image, axis=0))
+    return isotropic_image[0]
 
 
 def align_array_sizes(array_shape, target_shape):
@@ -967,44 +978,3 @@ def merge_imgs(imgs, original_image_shape):
 
     print(merged_imgs.shape)
     return merged_imgs
-
-
-def download_model(modelname):
-    """
-    Downloads a specific pretained model.
-    This code is adapted from DeepLabCut with permission from MWMathis
-    """
-    import json
-    import tarfile
-    import urllib.request
-
-    def show_progress(count, block_size, total_size):
-        pbar.update(block_size)
-
-    cellseg3d_path = os.path.split(
-        importlib.util.find_spec("napari_cellseg3d").origin
-    )[0]
-    pretrained_folder_path = os.path.join(
-        cellseg3d_path, "models", "pretrained"
-    )
-    json_path = os.path.join(
-        pretrained_folder_path, "pretrained_model_urls.json"
-    )
-    with open(json_path) as f:
-        neturls = json.load(f)
-    if modelname in neturls.keys():
-        url = neturls[modelname]
-        response = urllib.request.urlopen(url)
-        print(
-            f"Downloading the model from the M.W. Mathis Lab server {url}...."
-        )
-        total_size = int(response.getheader("Content-Length"))
-        pbar = tqdm(unit="B", total=total_size, position=0)
-        filename, _ = urllib.request.urlretrieve(url, reporthook=show_progress)
-        with tarfile.open(filename, mode="r:gz") as tar:
-            tar.extractall(pretrained_folder_path)
-        return pretrained_folder_path
-    else:
-        raise ValueError(
-            f"Unknown model. `modelname` should be one of {', '.join(neturls)}"
-        )
