@@ -59,6 +59,7 @@ def toggle_visibility(checkbox, widget):
     """
     widget.setVisible(checkbox.isChecked())
 
+
 def add_label(widget, label, label_before=True, horizontal=True):
     if label_before:
         return combine_blocks(widget, label, horizontal=horizontal)
@@ -181,13 +182,15 @@ class AnisotropyWidgets(QWidget):
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
 
-        self.container, self._boxes_layout = make_container(T=7, parent=parent)
+        self.container, self._boxes_layout = ContainerWidget(
+            t=7, parent=parent
+        )
         self.checkbox = make_checkbox(
             "Anisotropic data", self._toggle_display_aniso, parent
         )
 
         self.box_widgets = DoubleIncrementCounter.make_n(
-            n=3, min=1.0, max=1000, default=1, step=0.5
+            n=3, min=1.0, max=1000.0, default=1.0, step=0.5
         )
         self.box_widgets[0].setValue(default_x)
         self.box_widgets[1].setValue(default_y)
@@ -447,11 +450,11 @@ def set_spinbox(
     fixed: Optional[bool] = True,
 ):
     """Args:
-    class_ : QSpinBox or QDoubleSpinBox
-    min (Optional[int]): minimum value, defaults to 0
-    max (Optional[int]): maximum value, defaults to 10
-    default (Optional[int]): default value, defaults to 0
-    step (Optional[int]): step value, defaults to 1
+    box : QSpinBox or QDoubleSpinBox
+    min : minimum value, defaults to 0
+    max : maximum value, defaults to 10
+    default :  default value, defaults to 0
+    step : step value, defaults to 1
     fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed"""
 
     box.setMinimum(min)
@@ -500,14 +503,13 @@ class DoubleIncrementCounter(QDoubleSpinBox):
 
     def __init__(
         self,
-        min=0,
-        max=10,
-        default=0,
-        step=1,
+        min: Optional[float] = 0.0,
+        max: Optional[float] = 10.0,
+        default: Optional[float] = 0.0,
+        step: Optional[float] = 1.0,
         parent: Optional[QWidget] = None,
         fixed: Optional[bool] = True,
         label: Optional[str] = None,
-
     ):
         """Args:
         min (Optional[float]): minimum value, defaults to 0
@@ -542,10 +544,10 @@ class DoubleIncrementCounter(QDoubleSpinBox):
     def make_n(
         cls,
         n: int = 2,
-        min=0,
-        max=10,
-        default=0,
-        step=1,
+        min: float = 0,
+        max: float = 10,
+        default: float = 0,
+        step: float = 1,
         parent: Optional[QWidget] = None,
         fixed: Optional[bool] = True,
     ):
@@ -583,10 +585,10 @@ class IntIncrementCounter(QSpinBox):
     def make_n(
         cls,
         n: int = 2,
-        min=0,
-        max=10,
-        default=0,
-        step=1,
+        min: int = 0,
+        max: int = 10,
+        default: int = 0,
+        step: int = 1,
         parent: Optional[QWidget] = None,
         fixed: Optional[bool] = True,
     ):
@@ -657,7 +659,9 @@ def make_label(name, parent=None):  # TODO update to child class
         return QLabel(name)
 
 
-def add_to_group(title, widget, layout, L=7, T=20, R=7, B=11):
+def add_to_group(
+    title, widget, layout, L=7, T=20, R=7, B=11
+):  # TODO remove and use GroupedWidget instead
     """Adds a single widget to a layout as a named group with margins specified.
 
     Args:
@@ -699,25 +703,31 @@ def make_group(title, L=7, T=20, R=7, B=11, parent=None):  # TODO : child class
 
     return group, layout
 
-class GroupedWidgets(QGroupBox):
+
+class GroupedWidget(QGroupBox):
     """Subclass of QGroupBox designed to easily group widgets belonging to a same category"""
+
     def __init__(self, title, l=7, t=20, r=7, b=11, parent=None):
         super().__init__(title, parent)
 
         self.setSizePolicy(QSizePolicy.Fixed)
+
         self.layout = QVBoxLayout()
-        self.layout.setContentsMargins(l,t,r,b)
+        self.layout.setContentsMargins(l, t, r, b)
         self.layout.setSizeConstraint(QLayout.SetFixedSize)
 
-        return self, self.layout
+    @property
+    def layout(self) -> "QLayout":
+        return self.layout
 
     @classmethod
-    def create_single_widget_group(cls, title, widget, layout, l=7,t=20,r=7,b=11):
-        group, group_layout = cls(title, l,t,r,b)
+    def create_single_widget_group(
+        cls, title, widget, layout, l=7, t=20, r=7, b=11
+    ):
+        group, group_layout = cls(title, l, t, r, b)
         group_layout.addWidget(widget)
         group.setLayout(group_layout)
         layout.addWidget(group)
-
 
 
 def make_container(
@@ -737,22 +747,14 @@ def make_container(
         QWidget : widget that contains the other widgets. Fixed size.
         QBoxLayout :  H/V Box layout to add contained widgets in. Fixed size.
     """
-    if parent is None:
-        container_widget = QWidget()
-    else:
-        container_widget = QWidget(parent)
+    return ContainerWidget(
+        l=L, t=T, r=R, b=B, vertical=vertical, parent=parent
+    )
+    # TODO remove and refactor
 
-    if vertical:
-        container_layout = QVBoxLayout()
-    else:
-        container_layout = QHBoxLayout()
-    container_layout.setContentsMargins(L, T, R, B)
-    container_layout.setSizeConstraint(QLayout.SetFixedSize)
 
-    return container_widget, container_layout
-
-class ContainerWidget(QWidget):
-    def __init__(self, l,t,r,b, vertical=True, parent=None):
+class ContainerWidget(QWidget):  # TODO convert calls
+    def __init__(self, l=0, t=0, r=1, b=11, vertical=True, parent=None):
 
         super().__init__(parent)
         self.layout = None
@@ -762,22 +764,12 @@ class ContainerWidget(QWidget):
         else:
             self.layout = QHBoxLayout(self)
 
-        self.layout.setContentsMargins(l,t,r,b)
+        self.layout.setContentsMargins(l, t, r, b)
         self.layout.setSizeConstraint(QLayout.SetFixedSize)
 
-def make_combobox():  # TODO finish child class conversion
-    """Creates a dropdown menu with a title and adds specified entries to it
-
-    Args:
-        entries (array(str)): Entries to add to the dropdown menu. Defaults to None, no entries if None
-        parent (QWidget): parent QWidget to add dropdown menu to. Defaults to None, no parent is set if None
-        label (str) : if not None, creates a QLabel with the contents of 'label', and returns the label as well
-        fixed (bool): if True, will set the size policy of the dropdown menu to Fixed in h and w. Defaults to True.
-
-    Returns:
-        QComboBox : created dropdown menu
-    """
-    raise NotImplementedError
+    @property
+    def layout(self) -> "QLayout":
+        return self.layout
 
 
 def add_widgets(layout, widgets, alignment=LEFT_AL):
@@ -817,7 +809,7 @@ def make_checkbox(  # TODO update calls to class
     return CheckBox(title, func, parent, fixed)
 
 
-def combine_blocks(
+def combine_blocks( # TODO FIXME PLEASE
     right_or_below,
     left_or_above,
     min_spacing=0,
