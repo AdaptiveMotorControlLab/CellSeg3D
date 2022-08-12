@@ -14,7 +14,7 @@ from napari_cellseg3d import utils
 from napari_cellseg3d.log_utility import Log
 from napari_cellseg3d.models import model_SegResNet as SegResNet
 from napari_cellseg3d.models import model_SwinUNetR as SwinUNetR
-from napari_cellseg3d.models import model_TRAILMAP as TRAILMAP
+# from napari_cellseg3d.models import model_TRAILMAP as TRAILMAP
 from napari_cellseg3d.models import model_VNet as VNet
 from napari_cellseg3d.models import model_TRAILMAP_MS as TRAILMAP_MS
 from napari_cellseg3d.plugin_base import BasePluginFolder
@@ -63,7 +63,7 @@ class ModelFramework(BasePluginFolder):
         self.models_dict = {
             "VNet": VNet,
             "SegResNet": SegResNet,
-            "TRAILMAP": TRAILMAP,
+            # "TRAILMAP": TRAILMAP,
             "TRAILMAP_MS": TRAILMAP_MS,
             "SwinUNetR": SwinUNetR,
         }
