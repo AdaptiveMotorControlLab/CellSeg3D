@@ -269,13 +269,9 @@ class Inferer(ModelFramework):
             "Size of the window to run inference with (in pixels)"
         )
 
-        self.window_overlap_counter.setToolTip(
+        self.window_overlap_counter.set_all_tooltips(
             "Percentage of overlap between windows to use when using sliding window"
         )
-
-        # self.window_overlap.setToolTip(
-        #     "Amount of overlap between sliding windows"
-        # )
 
         self.keep_data_on_cpu_box.setToolTip(
             "If enabled, data will be kept on the RAM rather than the VRAM.\nCan avoid out of memory issues with CUDA"

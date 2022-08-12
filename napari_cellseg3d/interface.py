@@ -59,6 +59,12 @@ def toggle_visibility(checkbox, widget):
     """
     widget.setVisible(checkbox.isChecked())
 
+def add_label(widget, label, label_before=True, horizontal=True):
+    if label_before:
+        return combine_blocks(widget, label, horizontal=horizontal)
+    else:
+        return combine_blocks(label, widget, horizontal=horizontal)
+
 
 def add_label(widget, label, label_before=True, horizontal=True):
     if label_before:
@@ -501,6 +507,7 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         parent: Optional[QWidget] = None,
         fixed: Optional[bool] = True,
         label: Optional[str] = None,
+
     ):
         """Args:
         min (Optional[float]): minimum value, defaults to 0
@@ -517,12 +524,14 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         if label is not None:
             self.label = make_label(name=label)
 
-    # def setToolTip(self, a0: str) -> None:
-    #     self.setToolTip(a0)
-    #     if self.label is not None:
-    #         self.label.setToolTip(a0)
+    def set_all_tooltips(self, tooltip: str):
+        """Sets the tooltip of both the DoubleIncrementCounter and its label"""
+        self.setToolTip(tooltip)
+        if self.label is not None:
+            self.label.setToolTip(tooltip)
 
     def get_with_label(self, horizontal=True):
+        """Returns a widget containing both the counter and its label in a single widget"""
         return add_label(self, self.label, horizontal=horizontal)
 
     def set_precision(self, decimals):
@@ -690,6 +699,26 @@ def make_group(title, L=7, T=20, R=7, B=11, parent=None):  # TODO : child class
 
     return group, layout
 
+class GroupedWidgets(QGroupBox):
+    """Subclass of QGroupBox designed to easily group widgets belonging to a same category"""
+    def __init__(self, title, l=7, t=20, r=7, b=11, parent=None):
+        super().__init__(title, parent)
+
+        self.setSizePolicy(QSizePolicy.Fixed)
+        self.layout = QVBoxLayout()
+        self.layout.setContentsMargins(l,t,r,b)
+        self.layout.setSizeConstraint(QLayout.SetFixedSize)
+
+        return self, self.layout
+
+    @classmethod
+    def create_single_widget_group(cls, title, widget, layout, l=7,t=20,r=7,b=11):
+        group, group_layout = cls(title, l,t,r,b)
+        group_layout.addWidget(widget)
+        group.setLayout(group_layout)
+        layout.addWidget(group)
+
+
 
 def make_container(
     L=0, T=0, R=1, B=11, vertical=True, parent=None
@@ -722,6 +751,19 @@ def make_container(
 
     return container_widget, container_layout
 
+class ContainerWidget(QWidget):
+    def __init__(self, l,t,r,b, vertical=True, parent=None):
+
+        super().__init__(parent)
+        self.layout = None
+
+        if vertical:
+            self.layout = QVBoxLayout(self)
+        else:
+            self.layout = QHBoxLayout(self)
+
+        self.layout.setContentsMargins(l,t,r,b)
+        self.layout.setSizeConstraint(QLayout.SetFixedSize)
 
 def make_combobox():  # TODO finish child class conversion
     """Creates a dropdown menu with a title and adds specified entries to it
