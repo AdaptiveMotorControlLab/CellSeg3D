@@ -607,7 +607,7 @@ class InferenceWorker(GeneratorWorker):
         #################
         if self.instance_params["do_instance"]:
             instance_labels = self.instance_seg(to_instance)
-            instance_labels = np.swapaxes(instance_labels, 0, 2) #FIXME always required ?
+            instance_labels = np.swapaxes(instance_labels, 0, 2)
             data_dict = self.stats_csv(instance_labels)
         else:
             instance_labels = None
@@ -681,121 +681,128 @@ class InferenceWorker(GeneratorWorker):
         # self.log("\nChecking dimensions...")
         # pad = utils.get_padding_dim(check)
         # print(pad)
-        dims = self.model_dict["segres_size"]
+        try:
+            dims = self.model_dict["segres_size"]
 
-        model = self.model_dict["class"].get_net()
-        if self.model_dict["name"] == "SegResNet":
-            model = self.model_dict["class"].get_net()(
-                input_image_size=[
-                    dims,
-                    dims,
-                    dims,
-                ],  # TODO FIX ! find a better way & remove model-specific code
-                out_channels=1,
-                # dropout_prob=0.3,
-            )
-
-        self.log_parameters()
-
-        model.to(self.device)
-
-        # print("FILEPATHS PRINT")
-        # print(self.images_filepaths)
-
-        # load_transforms = Compose(
-        #     [
-        #         LoadImaged(keys=["image"]),
-        #         # AddChanneld(keys=["image"]), #already done
-        #         EnsureChannelFirstd(keys=["image"]),
-        #         # Orientationd(keys=["image"], axcodes="PLI"),
-        #         # anisotropic_transform,
-        #         SpatialPadd(keys=["image"], spatial_size=pad),
-        #         EnsureTyped(keys=["image"]),
-        #     ]
-        # )
-
-        if not self.transforms["thresh"][0]:
-            post_process_transforms = EnsureType()
-        else:
-            t = self.transforms["thresh"][1]
-            post_process_transforms = Compose(
-                AsDiscrete(threshold=t), EnsureType()
-            )
-
-        # LabelFilter(applied_labels=[0]),
-
-        # self.log("\nLoading dataset...")
-        # inference_ds = Dataset(data=images_dict, transform=load_transforms)
-        # inference_loader = DataLoader(
-        #     inference_ds, batch_size=1, num_workers=2
-        # )
-        # self.log("Done")
-        # print(f"wh dir : {WEIGHTS_DIR}")
-        # print(weights)
-        self.log(
-            "\nLoading weights..."
-        )  # TODO add try/except for invalid weights for proper reset
-
-        if self.weights_dict["custom"]:
-            weights = self.weights_dict["path"]
-        else:
-            self.downloader.download_weights(
-                self.model_dict["name"],
-                self.model_dict["class"].get_weights_file(),
-            )
-            weights = os.path.join(
-                WEIGHTS_DIR, self.model_dict["class"].get_weights_file()
-            )
-
-        model.load_state_dict(
-            torch.load(
-                weights,
-                map_location=self.device,
-            )
-        )
-        self.log("Done")
-
-        is_folder = self.images_filepaths is not None
-        is_layer = self.layer is not None
-
-        if is_layer and is_folder:
-            raise ValueError(
-                "Both a layer and a folder have been specified, please specify only one of the two. Aborting."
-            )
-        elif is_folder:
-            inference_loader = self.load_folder()
-            ##################
-            ##################
-            # DEBUG
-            # from monai.utils import first
-            #
-            # check_data = first(inference_loader)
-            # image = check_data[0][0]
-            # print(image.shape)
-            ##################
-            ##################
-        elif is_layer:
-            input_image = self.load_layer()
-            # print(input_image.shape)
-
-        else:
-            raise ValueError("No data has been provided. Aborting.")
-
-        model.eval()
-        with torch.no_grad():
-            ################################
-            ################################
-            ################################
-            if is_folder:
-                for i, inf_data in enumerate(inference_loader):
-                    yield self.inference_on_list(
-                        inf_data, i, model, post_process_transforms
-                    )
-            elif is_layer:
-                yield self.inference_on_layer(
-                    input_image, model, post_process_transforms
+            model = self.model_dict["class"].get_net()
+            if self.model_dict["name"] == "SegResNet":
+                model = self.model_dict["class"].get_net()(
+                    input_image_size=[
+                        dims,
+                        dims,
+                        dims,
+                    ],  # TODO FIX ! find a better way & remove model-specific code
+                    out_channels=1,
+                    # dropout_prob=0.3,
                 )
-        model.to("cpu")
+
+            self.log_parameters()
+
+            model.to(self.device)
+
+            # print("FILEPATHS PRINT")
+            # print(self.images_filepaths)
+
+            # load_transforms = Compose(
+            #     [
+            #         LoadImaged(keys=["image"]),
+            #         # AddChanneld(keys=["image"]), #already done
+            #         EnsureChannelFirstd(keys=["image"]),
+            #         # Orientationd(keys=["image"], axcodes="PLI"),
+            #         # anisotropic_transform,
+            #         SpatialPadd(keys=["image"], spatial_size=pad),
+            #         EnsureTyped(keys=["image"]),
+            #     ]
+            # )
+
+            if not self.transforms["thresh"][0]:
+                post_process_transforms = EnsureType()
+            else:
+                t = self.transforms["thresh"][1]
+                post_process_transforms = Compose(
+                    AsDiscrete(threshold=t), EnsureType()
+                )
+
+            # LabelFilter(applied_labels=[0]),
+
+            # self.log("\nLoading dataset...")
+            # inference_ds = Dataset(data=images_dict, transform=load_transforms)
+            # inference_loader = DataLoader(
+            #     inference_ds, batch_size=1, num_workers=2
+            # )
+            # self.log("Done")
+            # print(f"wh dir : {WEIGHTS_DIR}")
+            # print(weights)
+            self.log(
+                "\nLoading weights..."
+            )  # TODO add try/except for invalid weights for proper reset
+
+            if self.weights_dict["custom"]:
+                weights = self.weights_dict["path"]
+            else:
+                self.downloader.download_weights(
+                    self.model_dict["name"],
+                    self.model_dict["class"].get_weights_file(),
+                )
+                weights = os.path.join(
+                    WEIGHTS_DIR, self.model_dict["class"].get_weights_file()
+                )
+
+            model.load_state_dict(
+                torch.load(
+                    weights,
+                    map_location=self.device,
+                )
+            )
+            self.log("Done")
+
+            is_folder = self.images_filepaths is not None
+            is_layer = self.layer is not None
+
+            if is_layer and is_folder:
+                raise ValueError(
+                    "Both a layer and a folder have been specified, please specify only one of the two. Aborting."
+                )
+            elif is_folder:
+                inference_loader = self.load_folder()
+                ##################
+                ##################
+                # DEBUG
+                # from monai.utils import first
+                #
+                # check_data = first(inference_loader)
+                # image = check_data[0][0]
+                # print(image.shape)
+                ##################
+                ##################
+            elif is_layer:
+                input_image = self.load_layer()
+                # print(input_image.shape)
+
+            else:
+                raise ValueError("No data has been provided. Aborting.")
+
+            model.eval()
+            with torch.no_grad():
+                ################################
+                ################################
+                ################################
+                if is_folder:
+                    for i, inf_data in enumerate(inference_loader):
+                        yield self.inference_on_list(
+                            inf_data, i, model, post_process_transforms
+                        )
+                elif is_layer:
+                    yield self.inference_on_layer(
+                        input_image, model, post_process_transforms
+                    )
+            model.to("cpu")
+
+        except Exception as e:
+            self.log(f"Error : {e}")
+            self.quit()
+        finally:
+            self.quit()
 
 
 class TrainingWorker(GeneratorWorker):
@@ -1002,342 +1009,328 @@ class TrainingWorker(GeneratorWorker):
         # error_log = open(results_path +"/error_log.log" % multiprocessing.current_process().name, 'x')
         # faulthandler.enable(file=error_log, all_threads=True)
         #########################
+        try:
+            if self.seed_dict["use deterministic"]:
+                set_determinism(
+                    seed=self.seed_dict["seed"]
+                )  # use_deterministic_algorithms = True causes cuda error
 
-        if self.seed_dict["use deterministic"]:
-            set_determinism(
-                seed=self.seed_dict["seed"]
-            )  # use_deterministic_algorithms = True causes cuda error
+            sys = platform.system()
+            print(sys)
+            if sys == "Darwin":  # required for macOS ?
+                torch.set_num_threads(1)
+                self.log("Number of threads has been set to 1 for macOS")
 
-        sys = platform.system()
-        print(sys)
-        if sys == "Darwin":  # required for macOS ?
-            torch.set_num_threads(1)
-            self.log("Number of threads has been set to 1 for macOS")
+            model_name = self.model_dict["name"]
+            model_class = self.model_dict["class"]
 
-        model_name = self.model_dict["name"]
-        model_class = self.model_dict["class"]
+            if not self.sampling:
+                data_check = LoadImaged(keys=["image"])(self.data_dicts[0])
+                check = data_check["image"].shape
 
-        if not self.sampling:
-            data_check = LoadImaged(keys=["image"])(self.data_dicts[0])
-            check = data_check["image"].shape
-
-        if model_name == "SegResNet":
-            if self.sampling:
-                size = self.sample_size
+            if model_name == "SegResNet":
+                if self.sampling:
+                    size = self.sample_size
+                else:
+                    size = check
+                print(f"Size of image : {size}")
+                model = model_class.get_net()(
+                    input_image_size=utils.get_padding_dim(size),
+                    out_channels=1,
+                    dropout_prob=0.3,
+                )
             else:
-                size = check
-            print(f"Size of image : {size}")
-            model = model_class.get_net()(
-                input_image_size=utils.get_padding_dim(size),
-                out_channels=1,
-                dropout_prob=0.3,
-            )
-        else:
-            model = model_class.get_net()  # get an instance of the model
-        model = model.to(self.device)
+                model = model_class.get_net()  # get an instance of the model
+            model = model.to(self.device)
 
-        epoch_loss_values = []
-        val_metric_values = []
+            epoch_loss_values = []
+            val_metric_values = []
 
-        self.train_files, self.val_files = (
-            self.data_dicts[
-                0 : int(len(self.data_dicts) * self.validation_percent)
-            ],
-            self.data_dicts[
-                int(len(self.data_dicts) * self.validation_percent) :
-            ],
-        )
-
-        if self.train_files == [] or self.val_files == []:
-            self.log("ERROR : datasets are empty")
-
-        if self.sampling:
-            sample_loader = Compose(
-                [
-                    LoadImaged(keys=["image", "label"]),
-                    EnsureChannelFirstd(keys=["image", "label"]),
-                    RandSpatialCropSamplesd(
-                        keys=["image", "label"],
-                        roi_size=(
-                            self.sample_size
-                        ),  # multiply by axis_stretch_factor if anisotropy
-                        # max_roi_size=(120, 120, 120),
-                        random_size=False,
-                        num_samples=self.num_samples,
-                    ),
-                    Orientationd(keys=["image", "label"], axcodes="PLI"),
-                    SpatialPadd(
-                        keys=["image", "label"],
-                        spatial_size=(utils.get_padding_dim(self.sample_size)),
-                    ),
-                    EnsureTyped(keys=["image", "label"]),
-                ]
+            self.train_files, self.val_files = (
+                self.data_dicts[
+                    0 : int(len(self.data_dicts) * self.validation_percent)
+                ],
+                self.data_dicts[
+                    int(len(self.data_dicts) * self.validation_percent) :
+                ],
             )
 
-        if self.do_augment:
-            train_transforms = (
-                Compose(  # TODO : figure out which ones and values ?
+            if self.train_files == [] or self.val_files == []:
+                self.log("ERROR : datasets are empty")
+
+            if self.sampling:
+                sample_loader = Compose(
                     [
-                        RandShiftIntensityd(keys=["image"], offsets=0.7),
-                        Rand3DElasticd(
+                        LoadImaged(keys=["image", "label"]),
+                        EnsureChannelFirstd(keys=["image", "label"]),
+                        RandSpatialCropSamplesd(
                             keys=["image", "label"],
-                            sigma_range=(0.3, 0.7),
-                            magnitude_range=(0.3, 0.7),
+                            roi_size=(
+                                self.sample_size
+                            ),  # multiply by axis_stretch_factor if anisotropy
+                            # max_roi_size=(120, 120, 120),
+                            random_size=False,
+                            num_samples=self.num_samples,
                         ),
-                        RandFlipd(keys=["image", "label"]),
-                        RandRotate90d(keys=["image", "label"]),
-                        RandAffined(
+                        Orientationd(keys=["image", "label"], axcodes="PLI"),
+                        SpatialPadd(
                             keys=["image", "label"],
+                            spatial_size=(
+                                utils.get_padding_dim(self.sample_size)
+                            ),
                         ),
                         EnsureTyped(keys=["image", "label"]),
                     ]
                 )
-            )
-        else:
-            train_transforms = EnsureTyped(keys=["image", "label"])
 
-        val_transforms = Compose(
-            [
-                # LoadImaged(keys=["image", "label"]),
-                # EnsureChannelFirstd(keys=["image", "label"]),
-                EnsureTyped(keys=["image", "label"]),
-            ]
-        )
-        # self.log("Loading dataset...\n")
-        if self.sampling:
-            print("train_ds")
-            train_ds = PatchDataset(
-                data=self.train_files,
-                transform=train_transforms,
-                patch_func=sample_loader,
-                samples_per_image=self.num_samples,
-            )
-            print("val_ds")
-            val_ds = PatchDataset(
-                data=self.val_files,
-                transform=val_transforms,
-                patch_func=sample_loader,
-                samples_per_image=self.num_samples,
-            )
+            if self.do_augment:
+                train_transforms = (
+                    Compose(  # TODO : figure out which ones and values ?
+                        [
+                            RandShiftIntensityd(keys=["image"], offsets=0.7),
+                            Rand3DElasticd(
+                                keys=["image", "label"],
+                                sigma_range=(0.3, 0.7),
+                                magnitude_range=(0.3, 0.7),
+                            ),
+                            RandFlipd(keys=["image", "label"]),
+                            RandRotate90d(keys=["image", "label"]),
+                            RandAffined(
+                                keys=["image", "label"],
+                            ),
+                            EnsureTyped(keys=["image", "label"]),
+                        ]
+                    )
+                )
+            else:
+                train_transforms = EnsureTyped(keys=["image", "label"])
 
-        else:
-            load_single_images = Compose(
+            val_transforms = Compose(
                 [
-                    LoadImaged(keys=["image", "label"]),
-                    EnsureChannelFirstd(keys=["image", "label"]),
-                    Orientationd(keys=["image", "label"], axcodes="PLI"),
-                    SpatialPadd(
-                        keys=["image", "label"],
-                        spatial_size=(utils.get_padding_dim(check)),
-                    ),
+                    # LoadImaged(keys=["image", "label"]),
+                    # EnsureChannelFirstd(keys=["image", "label"]),
                     EnsureTyped(keys=["image", "label"]),
                 ]
             )
-            print("Cache dataset : train")
-            train_ds = CacheDataset(
-                data=self.train_files,
-                transform=Compose(load_single_images, train_transforms),
-            )
-            print("Cache dataset : val")
-            val_ds = CacheDataset(
-                data=self.val_files, transform=load_single_images
-            )
-        print("Dataloader")
-        train_loader = DataLoader(
-            train_ds,
-            batch_size=self.batch_size,
-            shuffle=True,
-            num_workers=2,
-            collate_fn=pad_list_data_collate,
-        )
+            # self.log("Loading dataset...\n")
+            if self.sampling:
+                print("train_ds")
+                train_ds = PatchDataset(
+                    data=self.train_files,
+                    transform=train_transforms,
+                    patch_func=sample_loader,
+                    samples_per_image=self.num_samples,
+                )
+                print("val_ds")
+                val_ds = PatchDataset(
+                    data=self.val_files,
+                    transform=val_transforms,
+                    patch_func=sample_loader,
+                    samples_per_image=self.num_samples,
+                )
 
-        val_loader = DataLoader(
-            val_ds, batch_size=self.batch_size, num_workers=2
-        )
-        print("\nDone")
-
-        print("Optimizer")
-        optimizer = torch.optim.Adam(model.parameters(), self.learning_rate)
-        dice_metric = DiceMetric(include_background=True, reduction="mean")
-
-        best_metric = -1
-        best_metric_epoch = -1
-
-        # time = utils.get_date_time()
-        print("Weights")
-        if self.weights_path is not None:
-            if self.weights_path == "use_pretrained":
-                weights_file = model_class.get_weights_file()
-                self.downloader.download_weights(model_name, weights_file)
-                weights = os.path.join(WEIGHTS_DIR, weights_file)
-                self.weights_path = weights
             else:
-                weights = os.path.join(self.weights_path)
+                load_single_images = Compose(
+                    [
+                        LoadImaged(keys=["image", "label"]),
+                        EnsureChannelFirstd(keys=["image", "label"]),
+                        Orientationd(keys=["image", "label"], axcodes="PLI"),
+                        SpatialPadd(
+                            keys=["image", "label"],
+                            spatial_size=(utils.get_padding_dim(check)),
+                        ),
+                        EnsureTyped(keys=["image", "label"]),
+                    ]
+                )
+                print("Cache dataset : train")
+                train_ds = CacheDataset(
+                    data=self.train_files,
+                    transform=Compose(load_single_images, train_transforms),
+                )
+                print("Cache dataset : val")
+                val_ds = CacheDataset(
+                    data=self.val_files, transform=load_single_images
+                )
+            print("Dataloader")
+            train_loader = DataLoader(
+                train_ds,
+                batch_size=self.batch_size,
+                shuffle=True,
+                num_workers=2,
+                collate_fn=pad_list_data_collate,
+            )
 
-            try:
-                model.load_state_dict(
-                    torch.load(
-                        weights,
-                        map_location=self.device,
+            val_loader = DataLoader(
+                val_ds, batch_size=self.batch_size, num_workers=2
+            )
+            print("\nDone")
+
+            print("Optimizer")
+            optimizer = torch.optim.Adam(
+                model.parameters(), self.learning_rate
+            )
+            dice_metric = DiceMetric(include_background=True, reduction="mean")
+
+            best_metric = -1
+            best_metric_epoch = -1
+
+            # time = utils.get_date_time()
+            print("Weights")
+            if self.weights_path is not None:
+                if self.weights_path == "use_pretrained":
+                    weights_file = model_class.get_weights_file()
+                    self.downloader.download_weights(model_name, weights_file)
+                    weights = os.path.join(WEIGHTS_DIR, weights_file)
+                    self.weights_path = weights
+                else:
+                    weights = os.path.join(self.weights_path)
+
+                try:
+                    model.load_state_dict(
+                        torch.load(
+                            weights,
+                            map_location=self.device,
+                        )
                     )
-                )
-            except RuntimeError:
-                warn = (
-                    "WARNING:\nIt seems the weights were incompatible with the model,\n"
-                    "the model will be trained from random weights"
-                )
-                self.log(warn)
-                self.warn(warn)
-                self._weight_error = True
+                except RuntimeError as e:
+                    print(f"Error : {e}")
+                    warn = (
+                        "WARNING:\nIt'd seem that the weights were incompatible with the model,\n"
+                        "the model will be trained from random weights"
+                    )
+                    self.log(warn)
+                    self.warn(warn)
+                    self._weight_error = True
 
-        if self.device.type == "cuda":
-            self.log("\nUsing GPU :")
-            self.log(torch.cuda.get_device_name(0))
-        else:
-            self.log("Using CPU")
-
-        self.log_parameters()
-
-        for epoch in range(self.max_epochs):
-            # self.log("\n")
-            self.log("-" * 10)
-            self.log(f"Epoch {epoch + 1}/{self.max_epochs}")
             if self.device.type == "cuda":
-                self.log("Memory Usage:")
-                alloc_mem = round(
-                    torch.cuda.memory_allocated(0) / 1024**3, 1
-                )
-                reserved_mem = round(
-                    torch.cuda.memory_reserved(0) / 1024**3, 1
-                )
-                self.log(f"Allocated: {alloc_mem}GB")
-                self.log(f"Cached: {reserved_mem}GB")
+                self.log("\nUsing GPU :")
+                self.log(torch.cuda.get_device_name(0))
+            else:
+                self.log("Using CPU")
 
-            model.train()
-            epoch_loss = 0
-            step = 0
-            for batch_data in train_loader:
-                step += 1
-                inputs, labels = (
-                    batch_data["image"].to(self.device),
-                    batch_data["label"].to(self.device),
-                )
-                optimizer.zero_grad()
-                outputs = model_class.get_output(model, inputs)
-                # print(f"OUT : {outputs.shape}")
-                loss = self.loss_function(outputs, labels)
-                loss.backward()
-                optimizer.step()
-                epoch_loss += loss.detach().item()
-                self.log(
-                    f"* {step}/{len(train_ds) // train_loader.batch_size}, "
-                    f"Train loss: {loss.detach().item():.4f}"
-                )
-                yield {"plot": False, "weights": model.state_dict()}
+            self.log_parameters()
 
-            epoch_loss /= step
-            epoch_loss_values.append(epoch_loss)
-            self.log(f"Epoch: {epoch + 1}, Average loss: {epoch_loss:.4f}")
-
-            if (epoch + 1) % self.val_interval == 0:
-                model.eval()
-                with torch.no_grad():
-                    for val_data in val_loader:
-                        val_inputs, val_labels = (
-                            val_data["image"].to(self.device),
-                            val_data["label"].to(self.device),
-                        )
-
-                        val_outputs = model_class.get_validation(
-                            model, val_inputs
-                        )
-
-                        pred = decollate_batch(val_outputs)
-
-                        labs = decollate_batch(val_labels)
-
-                        # TODO : more parameters/flexibility
-                        post_pred = Compose(
-                            AsDiscrete(threshold=0.6), EnsureType()
-                        )  #
-                        post_label = EnsureType()
-
-                        val_outputs = [
-                            post_pred(res_tensor) for res_tensor in pred
-                        ]
-
-                        val_labels = [
-                            post_label(res_tensor) for res_tensor in labs
-                        ]
-
-                        # print(len(val_outputs))
-                        # print(len(val_labels))
-
-                        dice_metric(y_pred=val_outputs, y=val_labels)
-
-                    metric = dice_metric.aggregate().detach().item()
-                    dice_metric.reset()
-
-                    val_metric_values.append(metric)
-
-                    train_report = {
-                        "plot": True,
-                        "epoch": epoch,
-                        "losses": epoch_loss_values,
-                        "val_metrics": val_metric_values,
-                        "weights": model.state_dict(),
-                    }
-                    yield train_report
-
-                    weights_filename = (
-                        f"{model_name}_best_metric" + f"_epoch_{epoch + 1}.pth"
+            for epoch in range(self.max_epochs):
+                # self.log("\n")
+                self.log("-" * 10)
+                self.log(f"Epoch {epoch + 1}/{self.max_epochs}")
+                if self.device.type == "cuda":
+                    self.log("Memory Usage:")
+                    alloc_mem = round(
+                        torch.cuda.memory_allocated(0) / 1024**3, 1
                     )
+                    reserved_mem = round(
+                        torch.cuda.memory_reserved(0) / 1024**3, 1
+                    )
+                    self.log(f"Allocated: {alloc_mem}GB")
+                    self.log(f"Cached: {reserved_mem}GB")
 
-                    if metric > best_metric:
-                        best_metric = metric
-                        best_metric_epoch = epoch + 1
-                        self.log("Saving best metric model")
-                        torch.save(
-                            model.state_dict(),
-                            os.path.join(self.results_path, weights_filename),
-                        )
-                        self.log("Saving complete")
+                model.train()
+                epoch_loss = 0
+                step = 0
+                for batch_data in train_loader:
+                    step += 1
+                    inputs, labels = (
+                        batch_data["image"].to(self.device),
+                        batch_data["label"].to(self.device),
+                    )
+                    optimizer.zero_grad()
+                    outputs = model_class.get_output(model, inputs)
+                    # print(f"OUT : {outputs.shape}")
+                    loss = self.loss_function(outputs, labels)
+                    loss.backward()
+                    optimizer.step()
+                    epoch_loss += loss.detach().item()
                     self.log(
-                        f"Current epoch: {epoch + 1}, Current mean dice: {metric:.4f}"
-                        f"\nBest mean dice: {best_metric:.4f} "
-                        f"at epoch: {best_metric_epoch}"
+                        f"* {step}/{len(train_ds) // train_loader.batch_size}, "
+                        f"Train loss: {loss.detach().item():.4f}"
                     )
-        self.log("=" * 10)
-        self.log(
-            f"Train completed, best_metric: {best_metric:.4f} "
-            f"at epoch: {best_metric_epoch}"
-        )
-        model.to("cpu")
-        # optimizer = None
-        # del optimizer
-        # del device
-        # del model_id
-        # del model_name
-        # del model
-        # del data_dicts
-        # del max_epochs
-        # del loss_function
-        # del val_interval
-        # del batch_size
-        # del results_path
-        # del num_samples
-        # del best_metric
-        # del best_metric_epoch
+                    yield {"plot": False, "weights": model.state_dict()}
 
-        # self.close()
+                epoch_loss /= step
+                epoch_loss_values.append(epoch_loss)
+                self.log(f"Epoch: {epoch + 1}, Average loss: {epoch_loss:.4f}")
 
+                if (epoch + 1) % self.val_interval == 0:
+                    model.eval()
+                    with torch.no_grad():
+                        for val_data in val_loader:
+                            val_inputs, val_labels = (
+                                val_data["image"].to(self.device),
+                                val_data["label"].to(self.device),
+                            )
 
-# def this_is_fine(self):
-#     import numpy as np
-#
-#     length = 10
-#     for i in range(5):
-#         loss = np.random.rand(length)
-#         dice_metric = np.random.rand(int(length / 2))
-#         self.log("this is fine :)")
-#         yield {"epoch": i, "losses": loss, "val_metrics": dice_metric}
+                            val_outputs = model_class.get_validation(
+                                model, val_inputs
+                            )
+
+                            pred = decollate_batch(val_outputs)
+
+                            labs = decollate_batch(val_labels)
+
+                            # TODO : more parameters/flexibility
+                            post_pred = Compose(
+                                AsDiscrete(threshold=0.6), EnsureType()
+                            )  #
+                            post_label = EnsureType()
+
+                            val_outputs = [
+                                post_pred(res_tensor) for res_tensor in pred
+                            ]
+
+                            val_labels = [
+                                post_label(res_tensor) for res_tensor in labs
+                            ]
+
+                            # print(len(val_outputs))
+                            # print(len(val_labels))
+
+                            dice_metric(y_pred=val_outputs, y=val_labels)
+
+                        metric = dice_metric.aggregate().detach().item()
+                        dice_metric.reset()
+
+                        val_metric_values.append(metric)
+
+                        train_report = {
+                            "plot": True,
+                            "epoch": epoch,
+                            "losses": epoch_loss_values,
+                            "val_metrics": val_metric_values,
+                            "weights": model.state_dict(),
+                        }
+                        yield train_report
+
+                        weights_filename = (
+                            f"{model_name}_best_metric"
+                            + f"_epoch_{epoch + 1}.pth"
+                        )
+
+                        if metric > best_metric:
+                            best_metric = metric
+                            best_metric_epoch = epoch + 1
+                            self.log("Saving best metric model")
+                            torch.save(
+                                model.state_dict(),
+                                os.path.join(
+                                    self.results_path, weights_filename
+                                ),
+                            )
+                            self.log("Saving complete")
+                        self.log(
+                            f"Current epoch: {epoch + 1}, Current mean dice: {metric:.4f}"
+                            f"\nBest mean dice: {best_metric:.4f} "
+                            f"at epoch: {best_metric_epoch}"
+                        )
+            self.log("=" * 10)
+            self.log(
+                f"Train completed, best_metric: {best_metric:.4f} "
+                f"at epoch: {best_metric_epoch}"
+            )
+            model.to("cpu")
+            
+        except Exception as e:
+            self.log(f"Error : {e}")
+            self.quit()
+        finally:
+            self.quit()
