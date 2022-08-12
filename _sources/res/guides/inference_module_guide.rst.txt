@@ -17,12 +17,13 @@ Model            Link to original paper
 ==============   ================================================================================================
 VNet             `Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation`_
 SegResNet        `3D MRI brain tumor segmentation using autoencoder regularization`_
-TRAILMAP_MS       A PyTorch implementation of the `TRAILMAP project on GitHub`_ pretrained with MesoSpim data
-TRAILMAP          An implementation of the `TRAILMAP project on GitHub`_ using a `3DUNet for PyTorch`_
+TRAILMAP_MS      An implementation of the `TRAILMAP project on GitHub`_ using a `3DUNet for PyTorch`_
+SwinUNetR        `Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images`_
 ==============   ================================================================================================
 
 .. _Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation: https://arxiv.org/pdf/1606.04797.pdf
 .. _3D MRI brain tumor segmentation using autoencoder regularization: https://arxiv.org/pdf/1810.11654.pdf
+.. _Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images: https://arxiv.org/abs/2201.01266
 .. _TRAILMAP project on GitHub: https://github.com/AlbertPun/TRAILMAP
 .. _3DUnet for Pytorch: https://github.com/wolny/pytorch-3dunet
 
@@ -35,32 +36,40 @@ Interface and functionalities
 
 * **Loading data** :
 
-  | When launching the module, you will be asked to provide an **image folder** containing all the 3D volumes you'd like to be labeled.
-  | All images with the chosen extension (**.tif** or **.tiff** currently supported) in this folder will be labeled.
-  | You can then choose an **output folder**, where all the results will be saved.
+  When launching the module, you will be asked to either :
+
+  * Provide an **image folder** containing all the 3D volumes you'd like to be labeled.
+
+  All images with the chosen extension (**.tif** or **.tiff** currently supported) in this folder will be labeled.
+
+  * Select a single layer in napari containing a **3D image** you want to have labeled
+
+  You must then choose an **output folder**, where all the results will be saved.
 
 
 * **Model choice** :
 
   | You can then choose one of the provided **models** above, which will be used for inference.
   | You may also choose to **load custom weights** rather than the pre-trained ones, simply ensure they are **compatible** (e.g. produced from the training module for the same model)
-  | If you choose to use a SegResNet with custom weights, you will have to provide the size of images it was trained on to ensure compatibility. (See note below)
+  | If you choose to use a SegResNet or SwinUNetR with custom weights, you will have to provide the size of images it was trained on to ensure compatibility. (See note below)
 
 * **Inference parameters** :
 
-  | You can choose to use inference on the whole image at once, which generally yields better performance at the cost of more memory, or you can use a specific window size to run inference on smaller chunks one by one, for lower memory usage.
-  | You can also choose to keep the dataset in the RAM rather than the VRAM (cpu vs cuda device) to avoid running out of VRAM if you have several images.
+  You can choose to use inference :
+  * On the whole image at once, which generally uses more memory
+  * Using a specific window size to run inference on smaller chunks one by one, for lower memory usage and better performance depending on overlap.
+  You can also choose to keep the dataset in the RAM rather than the VRAM (cpu vs cuda device) to avoid running out of VRAM if you have several images.
 
 
 * **Anisotropy** :
 
-  | If you want to see your results without **anisotropy** when you have anisotropic images, you can specify that you have anisotropic data and set the **resolution of your imaging method in micron**, this wil save and show the results without anisotropy.
+ If you want to see your results without **anisotropy** when you have anisotropic images, you can specify that you have anisotropic data and set the **resolution of your imaging method in micron**, this wil save and show the results without anisotropy.
 
 
 * **Thresholding** :
 
-  | You can perform thresholding to **binarize your labels**,
-  | all values beneath the **confidence threshold** will be set to 0 using this.
+  You can perform thresholding to **binarize your labels**,
+  all values beneath the **confidence threshold** will be set to 0 using this.
 
 * **Instance segmentation** :
 

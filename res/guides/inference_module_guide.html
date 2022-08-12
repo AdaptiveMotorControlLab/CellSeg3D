@@ -3,17 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inference module guide &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>Inference module guide &mdash; napari-cellseg3d  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -26,7 +28,8 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html"><img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+            <a href="../../index.html">
+            <img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -36,7 +39,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Main modules guides:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Main modules guides:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Review module guide</a></li>
@@ -47,18 +50,18 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="training_module_guide.html">Training module guide</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Utilities :</span></p>
+<p class="caption" role="heading"><span class="caption-text">Utilities :</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="metrics_module_guide.html">Metrics utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="convert_module_guide.html">Label conversion utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cropping_module_guide.html">Cropping utility guide</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Advanced guides and walk-through:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Detailed walkthrough</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Source files:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../code/interface.html">interface.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_base.html">plugin_base.py</a></li>
@@ -101,7 +104,7 @@
            <div itemprop="articleBody">
              
   <div class="section" id="inference-module-guide">
-<span id="id1"></span><h1>Inference module guide<a class="headerlink" href="#inference-module-guide" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1>Inference module guide<a class="headerlink" href="#inference-module-guide" title="Permalink to this heading"></a></h1>
 <p>This module allows you to use  pre-trained segmentation algorithms (written in Pytorch) on 3D volumes
 to automatically label cells.</p>
 <div class="admonition important">
@@ -128,47 +131,50 @@ to automatically label cells.</p>
 <td><p><a class="reference external" href="https://arxiv.org/pdf/1810.11654.pdf">3D MRI brain tumor segmentation using autoencoder regularization</a></p></td>
 </tr>
 <tr class="row-even"><td><p>TRAILMAP_MS</p></td>
-<td><p>A PyTorch implementation of the <a class="reference external" href="https://github.com/AlbertPun/TRAILMAP">TRAILMAP project on GitHub</a> pretrained with MesoSpim data</p></td>
-</tr>
-<tr class="row-odd"><td><p>TRAILMAP</p></td>
 <td><p>An implementation of the <a class="reference external" href="https://github.com/AlbertPun/TRAILMAP">TRAILMAP project on GitHub</a> using a <a class="reference external" href="https://github.com/wolny/pytorch-3dunet">3DUNet for PyTorch</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>SwinUNetR</p></td>
+<td><p><a class="reference external" href="https://arxiv.org/abs/2201.01266">Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images</a></p></td>
 </tr>
 </tbody>
 </table>
 <div class="section" id="interface-and-functionalities">
-<h2>Interface and functionalities<a class="headerlink" href="#interface-and-functionalities" title="Permalink to this headline">¶</a></h2>
+<h2>Interface and functionalities<a class="headerlink" href="#interface-and-functionalities" title="Permalink to this heading"></a></h2>
 <a class="reference internal image-reference" href="../../_images/inference_plugin_layout.png"><img alt="../../_images/inference_plugin_layout.png" class="align-right" src="../../_images/inference_plugin_layout.png" style="width: 232.0px; height: 702.0px;" /></a>
 <ul>
 <li><p><strong>Loading data</strong> :</p>
-<div class="line-block">
-<div class="line">When launching the module, you will be asked to provide an <strong>image folder</strong> containing all the 3D volumes you’d like to be labeled.</div>
-<div class="line">All images with the chosen extension (<strong>.tif</strong> or <strong>.tiff</strong> currently supported) in this folder will be labeled.</div>
-<div class="line">You can then choose an <strong>output folder</strong>, where all the results will be saved.</div>
-</div>
+<p>When launching the module, you will be asked to either :</p>
+<ul class="simple">
+<li><p>Provide an <strong>image folder</strong> containing all the 3D volumes you’d like to be labeled.</p></li>
+</ul>
+<p>All images with the chosen extension (<strong>.tif</strong> or <strong>.tiff</strong> currently supported) in this folder will be labeled.</p>
+<ul class="simple">
+<li><p>Select a single layer in napari containing a <strong>3D image</strong> you want to have labeled</p></li>
+</ul>
+<p>You must then choose an <strong>output folder</strong>, where all the results will be saved.</p>
 </li>
 <li><p><strong>Model choice</strong> :</p>
 <div class="line-block">
 <div class="line">You can then choose one of the provided <strong>models</strong> above, which will be used for inference.</div>
 <div class="line">You may also choose to <strong>load custom weights</strong> rather than the pre-trained ones, simply ensure they are <strong>compatible</strong> (e.g. produced from the training module for the same model)</div>
-<div class="line">If you choose to use a SegResNet with custom weights, you will have to provide the size of images it was trained on to ensure compatibility. (See note below)</div>
+<div class="line">If you choose to use a SegResNet or SwinUNetR with custom weights, you will have to provide the size of images it was trained on to ensure compatibility. (See note below)</div>
 </div>
 </li>
 <li><p><strong>Inference parameters</strong> :</p>
-<div class="line-block">
-<div class="line">You can choose to use inference on the whole image at once, which generally yields better performance at the cost of more memory, or you can use a specific window size to run inference on smaller chunks one by one, for lower memory usage.</div>
-<div class="line">You can also choose to keep the dataset in the RAM rather than the VRAM (cpu vs cuda device) to avoid running out of VRAM if you have several images.</div>
-</div>
+<p>You can choose to use inference :
+* On the whole image at once, which generally uses more memory
+* Using a specific window size to run inference on smaller chunks one by one, for lower memory usage and better performance depending on overlap.
+You can also choose to keep the dataset in the RAM rather than the VRAM (cpu vs cuda device) to avoid running out of VRAM if you have several images.</p>
 </li>
-<li><p><strong>Anisotropy</strong> :</p>
-<div class="line-block">
-<div class="line">If you want to see your results without <strong>anisotropy</strong> when you have anisotropic images, you can specify that you have anisotropic data and set the <strong>resolution of your imaging method in micron</strong>, this wil save and show the results without anisotropy.</div>
-</div>
-</li>
+<li><p><strong>Anisotropy</strong> :</p></li>
+</ul>
+<blockquote>
+<div><p>If you want to see your results without <strong>anisotropy</strong> when you have anisotropic images, you can specify that you have anisotropic data and set the <strong>resolution of your imaging method in micron</strong>, this wil save and show the results without anisotropy.</p>
+</div></blockquote>
+<ul>
 <li><p><strong>Thresholding</strong> :</p>
-<div class="line-block">
-<div class="line">You can perform thresholding to <strong>binarize your labels</strong>,</div>
-<div class="line">all values beneath the <strong>confidence threshold</strong> will be set to 0 using this.</div>
-</div>
+<p>You can perform thresholding to <strong>binarize your labels</strong>,
+all values beneath the <strong>confidence threshold</strong> will be set to 0 using this.</p>
 </li>
 <li><p><strong>Instance segmentation</strong> :</p>
 <div class="line-block">
@@ -244,7 +250,7 @@ Provided weights use a size of 128, please leave it as is if you’re not using 
 </div>
 </div>
 <div class="section" id="source-code">
-<h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h2>
+<h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../code/plugin_model_inference.html"><span class="doc">plugin_model_inference.py</span></a></p></li>
 <li><p><a class="reference internal" href="../code/model_framework.html"><span class="doc">model_framework.py</span></a></p></li>
