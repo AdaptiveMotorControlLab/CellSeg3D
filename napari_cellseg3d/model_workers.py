@@ -674,8 +674,6 @@ class InferenceWorker(GeneratorWorker):
             torch.set_num_threads(1)  # required for threading on macOS ?
             self.log("Number of threads has been set to 1 for macOS")
 
-        # images_dict = self.create_inference_dict(self.images_filepaths)
-
         # if self.device =="cuda": # TODO : fix mem alloc, this does not work it seems
         # torch.backends.cudnn.benchmark = False
 
