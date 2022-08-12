@@ -263,17 +263,6 @@ class Datamanager(QWidget):
             self.slice_num -= 1
             self.update_button()
 
-        # self.time = datetime.now()
-
-        # if self.button.text() == "Not checked":
-        #     self.time_label.setVisible(False)
-        # else:
-        #     self.time_label.setVisible(True)
-        #     self.time_label.setText(
-        #         f"Previously completed in {self.df.at[self.df.index[self.slice_num], 'time']}"
-        #     )
-        # self.df.at[0, "time"] = self.time_elapsed
-
     def button_func(self):  # updates csv every time you press button...
         if self.viewer.dims.ndisplay != 2:
             # TODO test if undefined behaviour or if okay
@@ -281,22 +270,13 @@ class Datamanager(QWidget):
             return
 
         self.update_time_csv()
-        # finish_time = datetime.now()
-        # self.time_elapsed = finish_time - self.start_time
 
         if self.button.text() == "Not checked":
-            # time_diff = utils.time_difference(self.start_time, finish_time)
-            # print(f"Time taken : {time_diff}")
-
             self.button.setText("Checked")
-            # self.time_label.setVisible(True)
-            # self.time_label.setText(f"Completed in {time_diff}")
             self.df.at[self.df.index[self.slice_num], "train"] = "Checked"
-
             self.df.to_csv(self.csv_path)
         else:
             self.button.setText("Not checked")
-            # self.time_label.setVisible(False)
             self.df.at[self.df.index[self.slice_num], "train"] = "Not checked"
             self.df.to_csv(self.csv_path)
 
