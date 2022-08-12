@@ -164,6 +164,9 @@ class LogSignal(WorkerBaseSignals):
         super().__init__()
 
 
+# TODO : use dataclass for config instead ?
+
+
 class InferenceWorker(GeneratorWorker):
     """A custom worker to run inference jobs in.
     Inherits from :py:class:`napari.qt.threading.GeneratorWorker`"""
@@ -179,6 +182,7 @@ class InferenceWorker(GeneratorWorker):
         instance,
         use_window,
         window_infer_size,
+        window_overlap,
         keep_on_cpu,
         stats_csv,
         images_filepaths=None,
@@ -230,7 +234,7 @@ class InferenceWorker(GeneratorWorker):
         self.instance_params = instance
         self.use_window = use_window
         self.window_infer_size = window_infer_size
-        self.window_overlap_percentage = 0.8,
+        self.window_overlap_percentage = window_overlap
         self.keep_on_cpu = keep_on_cpu
         self.stats_to_csv = stats_csv
         ############################################
@@ -315,17 +319,53 @@ class InferenceWorker(GeneratorWorker):
         self.log("\nChecking dimensions...")
         pad = utils.get_padding_dim(check)
 
-        load_transforms = Compose(
-            [
-                LoadImaged(keys=["image"]),
-                # AddChanneld(keys=["image"]), #already done
-                EnsureChannelFirstd(keys=["image"]),
-                # Orientationd(keys=["image"], axcodes="PLI"),
-                # anisotropic_transform,
-                SpatialPadd(keys=["image"], spatial_size=pad),
-                EnsureTyped(keys=["image"]),
-            ]
-        )
+        dims = self.model_dict["model_input_size"]
+
+        if self.model_dict["name"] == "SegResNet":
+            model = self.model_dict["class"].get_net(
+                input_image_size=[
+                    dims,
+                    dims,
+                    dims,
+                ]
+            )
+        elif self.model_dict["name"] == "SwinUNetR":
+            model = self.model_dict["class"].get_net(
+                img_size=[dims, dims, dims],
+                use_checkpoint=False,
+            )
+        else:
+            model = self.model_dict["class"].get_net()
+
+        self.log_parameters()
+
+        model.to(self.device)
+
+        # print("FILEPATHS PRINT")
+        # print(self.images_filepaths)
+        if self.use_window:
+            load_transforms = Compose(
+                [
+                    LoadImaged(keys=["image"]),
+                    # AddChanneld(keys=["image"]), #already done
+                    EnsureChannelFirstd(keys=["image"]),
+                    # Orientationd(keys=["image"], axcodes="PLI"),
+                    # anisotropic_transform,
+                    EnsureTyped(keys=["image"]),
+                ]
+            )
+        else:
+            load_transforms = Compose(
+                [
+                    LoadImaged(keys=["image"]),
+                    # AddChanneld(keys=["image"]), #already done
+                    EnsureChannelFirstd(keys=["image"]),
+                    # Orientationd(keys=["image"], axcodes="PLI"),
+                    # anisotropic_transform,
+                    SpatialPadd(keys=["image"], spatial_size=pad),
+                    EnsureTyped(keys=["image"]),
+                ]
+            )
 
         self.log("\nLoading dataset...")
         inference_ds = Dataset(data=images_dict, transform=load_transforms)
