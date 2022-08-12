@@ -162,6 +162,9 @@ class LogSignal(WorkerBaseSignals):
         super().__init__()
 
 
+# TODO : use dataclass for config instead ?
+
+
 class InferenceWorker(GeneratorWorker):
     """A custom worker to run inference jobs in.
     Inherits from :py:class:`napari.qt.threading.GeneratorWorker`"""
@@ -178,6 +181,7 @@ class InferenceWorker(GeneratorWorker):
         instance,
         use_window,
         window_infer_size,
+        window_overlap,
         keep_on_cpu,
         stats_csv,
     ):
@@ -227,7 +231,7 @@ class InferenceWorker(GeneratorWorker):
         self.instance_params = instance
         self.use_window = use_window
         self.window_infer_size = window_infer_size
-        self.window_overlap_percentage = 0.8
+        self.window_overlap_percentage = window_overlap
         self.keep_on_cpu = keep_on_cpu
         self.stats_to_csv = stats_csv
         """These attributes are all arguments of :py:func:~inference, please see that for reference"""
@@ -346,7 +350,6 @@ class InferenceWorker(GeneratorWorker):
 
         dims = self.model_dict["model_input_size"]
 
-
         if self.model_dict["name"] == "SegResNet":
             model = self.model_dict["class"].get_net(
                 input_image_size=[
@@ -445,7 +448,7 @@ class InferenceWorker(GeneratorWorker):
                 # print(inputs.shape)
 
                 inputs = inputs.to("cpu")
-                print(inputs.shape)
+                # print(inputs.shape)
 
                 # self.log("output")
                 model_output = lambda inputs: post_process_transforms(
@@ -477,7 +480,7 @@ class InferenceWorker(GeneratorWorker):
                 out = outputs.detach().cpu()
                 # del outputs # TODO fix memory ?
                 # outputs = None
-                print(out.shape)
+                # print(out.shape)
                 if self.transforms["zoom"][0]:
                     zoom = self.transforms["zoom"][1]
                     anisotropic_transform = Zoom(
@@ -489,9 +492,9 @@ class InferenceWorker(GeneratorWorker):
 
                 # out = post_process_transforms(out)
                 out = np.array(out).astype(np.float32)
-                print(out.shape)
+                # print(out.shape)
                 out = np.squeeze(out)
-                print(out.shape)
+                # print(out.shape)
                 to_instance = out  # avoid post processing since thresholding is done there anyway
 
                 # batch_len = out.shape[1]

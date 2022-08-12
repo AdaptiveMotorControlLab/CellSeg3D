@@ -76,6 +76,7 @@ class Inferer(ModelFramework):
         self.keep_on_cpu = False
         self.use_window_inference = False
         self.window_inference_size = None
+        self.window_overlap = 0.25
 
         ###########################
         # interface
@@ -130,7 +131,7 @@ class Inferer(ModelFramework):
             T=7, parent=self
         )
 
-        self.window_infer_box = ui.make_checkbox("Use window inference")
+        self.window_infer_box = ui.CheckBox(title="Use window inference")
         self.window_infer_box.clicked.connect(self.toggle_display_window_size)
 
         sizes_window = ["8", "16", "32", "64", "128", "256", "512"]
@@ -140,11 +141,26 @@ class Inferer(ModelFramework):
         )
         self.lbl_window_size_choice = self.window_size_choice.label
 
-        self.keep_data_on_cpu_box = ui.make_checkbox("Keep data on CPU")
+        self.window_overlap_counter = ui.DoubleIncrementCounter(
+            min=0,
+            max=1,
+            default=0.25,
+            step=0.05,
+            parent=self,
+            label="Overlap %",
+        )
 
-        self.window_infer_params = ui.combine_blocks(
+        self.keep_data_on_cpu_box = ui.CheckBox(title="Keep data on CPU")
+
+        window_size_widgets = ui.combine_blocks(
             self.window_size_choice,
             self.lbl_window_size_choice,
+            horizontal=False,
+        )
+
+        self.window_infer_params = ui.combine_blocks(
+            window_size_widgets,
+            self.window_overlap_counter.get_with_label(horizontal=False),
             horizontal=False,
         )
 
@@ -226,6 +242,10 @@ class Inferer(ModelFramework):
         )
         self.window_size_choice.setToolTip(
             "Size of the window to run inference with (in pixels)"
+        )
+
+        self.window_overlap_counter.setToolTip(
+            "Percentage of overlap between windows to use when using sliding window"
         )
 
         self.keep_data_on_cpu_box.setToolTip(
@@ -582,6 +602,7 @@ class Inferer(ModelFramework):
             self.window_inference_size = int(
                 self.window_size_choice.currentText()
             )
+            self.window_overlap = self.window_overlap_counter.value()
 
             self.worker = InferenceWorker(
                 device=device,
@@ -594,6 +615,7 @@ class Inferer(ModelFramework):
                 instance=self.instance_params,
                 use_window=self.use_window_inference,
                 window_infer_size=self.window_inference_size,
+                window_overlap=self.window_overlap,
                 keep_on_cpu=self.keep_on_cpu,
                 stats_csv=self.stats_to_csv,
             )

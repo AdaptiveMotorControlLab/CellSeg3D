@@ -1,5 +1,4 @@
 from typing import Optional
-from typing import Union
 from typing import List
 
 
@@ -59,6 +58,13 @@ def toggle_visibility(checkbox, widget):
         widget: The widget to hide or show
     """
     widget.setVisible(checkbox.isChecked())
+
+
+def add_label(widget, label, label_before=True, horizontal=True):
+    if label_before:
+        return combine_blocks(widget, label, horizontal=horizontal)
+    else:
+        return combine_blocks(label, widget, horizontal=horizontal)
 
 
 class Button(QPushButton):
@@ -492,6 +498,7 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         step=1,
         parent: Optional[QWidget] = None,
         fixed: Optional[bool] = True,
+        label: Optional[str] = None,
     ):
         """Args:
         min (Optional[int]): minimum value, defaults to 0
@@ -499,13 +506,25 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         default (Optional[int]): default value, defaults to 0
         step (Optional[int]): step value, defaults to 1
         parent: parent widget, defaults to None
-        fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed"""
+        fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed
+        label (Optional[str]): if provided, creates a label with the chosen title to use with the counter"""
 
         super().__init__(parent)
         set_spinbox(self, min, max, default, step, fixed)
 
+        if label is not None:
+            self.label = make_label(name=label)
+
+    # def setToolTip(self, a0: str) -> None:
+    #     self.setToolTip(a0)
+    #     if self.label is not None:
+    #         self.label.setToolTip(a0)
+
+    def get_with_label(self, horizontal=True):
+        return add_label(self, self.label, horizontal=horizontal)
+
     def set_precision(self, decimals):
-        """Sets the precision of the box to the speicifed number of decimals"""
+        """Sets the precision of the box to the specified number of decimals"""
         self.setDecimals(decimals)
 
     @classmethod
@@ -533,6 +552,7 @@ class IntIncrementCounter(QSpinBox):
         step=1,
         parent: Optional[QWidget] = None,
         fixed: Optional[bool] = True,
+        label: Optional[str] = None,
     ):
         """Args:
         min (Optional[int]): minimum value, defaults to 0
@@ -544,6 +564,9 @@ class IntIncrementCounter(QSpinBox):
 
         super().__init__(parent)
         set_spinbox(self, min, max, default, step, fixed)
+        self.label = None
+        if label is not None:
+            self.label = make_label(label, self)
 
     @classmethod
     def make_n(
