@@ -38,4 +38,4 @@ Attributes
 *********************
 
 .. autoclass:: napari_cellseg3d.plugin_base::BasePluginFolder
-   :members:  _viewer, images_filepaths, labels_filepaths,results_path, filetype_choice
+   :members:  _viewer, images_filepaths, labels_filepaths, results_path

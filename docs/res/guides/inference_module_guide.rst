@@ -36,14 +36,15 @@ Interface and functionalities
 
 * **Loading data** :
 
-When launching the module, you will be asked to either :
+  When launching the module, you will be asked to either :
 
-* Provide an **image folder** containing all the 3D volumes you'd like to be labeled.
+  * Provide an **image folder** containing all the 3D volumes you'd like to be labeled.
+
   All images with the chosen extension (**.tif** or **.tiff** currently supported) in this folder will be labeled.
 
-* Select a single layer in napari containing a **3D image** you want to have labeled
+  * Select a single layer in napari containing a **3D image** you want to have labeled
 
-You must then choose an **output folder**, where all the results will be saved.
+  You must then choose an **output folder**, where all the results will be saved.
 
 
 * **Model choice** :
@@ -54,21 +55,21 @@ You must then choose an **output folder**, where all the results will be saved.
 
 * **Inference parameters** :
 
-You can choose to use inference :
-* On the whole image at once, which generally uses more memory
-* Using a specific window size to run inference on smaller chunks one by one, for lower memory usage and better performance depending on overlap.
-You can also choose to keep the dataset in the RAM rather than the VRAM (cpu vs cuda device) to avoid running out of VRAM if you have several images.
+  You can choose to use inference :
+  * On the whole image at once, which generally uses more memory
+  * Using a specific window size to run inference on smaller chunks one by one, for lower memory usage and better performance depending on overlap.
+  You can also choose to keep the dataset in the RAM rather than the VRAM (cpu vs cuda device) to avoid running out of VRAM if you have several images.
 
 
 * **Anisotropy** :
 
-  | If you want to see your results without **anisotropy** when you have anisotropic images, you can specify that you have anisotropic data and set the **resolution of your imaging method in micron**, this wil save and show the results without anisotropy.
+ If you want to see your results without **anisotropy** when you have anisotropic images, you can specify that you have anisotropic data and set the **resolution of your imaging method in micron**, this wil save and show the results without anisotropy.
 
 
 * **Thresholding** :
 
-  | You can perform thresholding to **binarize your labels**,
-  | all values beneath the **confidence threshold** will be set to 0 using this.
+  You can perform thresholding to **binarize your labels**,
+  all values beneath the **confidence threshold** will be set to 0 using this.
 
 * **Instance segmentation** :
 
