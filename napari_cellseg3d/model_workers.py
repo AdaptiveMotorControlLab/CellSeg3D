@@ -568,7 +568,6 @@ class InferenceWorker(GeneratorWorker):
         )
         self.log(os.path.split(instance_filepath)[1])
         return instance_labels
-        # print(self.stats_to_csv)
 
     def inference_on_folder(self, inf_data, i, model, post_process_transforms):
 
@@ -685,14 +684,7 @@ class InferenceWorker(GeneratorWorker):
         # print(data)
         # check = data_check["image"].shape
         # print(check)
-        # TODO remove
-        # z_aniso = 5 / 1.5
-        # if zoom is not None :
-        #     pad = utils.get_padding_dim(check, anisotropy_factor=zoom)
-        # else:
-        # self.log("\nChecking dimensions...")
-        # pad = utils.get_padding_dim(check)
-        # print(pad)
+
         try:
             dims = self.model_dict["segres_size"]
 
@@ -711,9 +703,6 @@ class InferenceWorker(GeneratorWorker):
             self.log_parameters()
 
             model.to(self.device)
-
-            # print("FILEPATHS PRINT")
-            # print(self.images_filepaths)
 
             # load_transforms = Compose(
             #     [
@@ -735,19 +724,10 @@ class InferenceWorker(GeneratorWorker):
                     AsDiscrete(threshold=t), EnsureType()
                 )
 
-            # LabelFilter(applied_labels=[0]),
 
-            # self.log("\nLoading dataset...")
-            # inference_ds = Dataset(data=images_dict, transform=load_transforms)
-            # inference_loader = DataLoader(
-            #     inference_ds, batch_size=1, num_workers=2
-            # )
-            # self.log("Done")
-            # print(f"wh dir : {WEIGHTS_DIR}")
-            # print(weights)
             self.log(
                 "\nLoading weights..."
-            )  # TODO add try/except for invalid weights for proper reset
+            )
 
             if self.weights_dict["custom"]:
                 weights = self.weights_dict["path"]
@@ -789,8 +769,6 @@ class InferenceWorker(GeneratorWorker):
                 ##################
             elif is_layer:
                 input_image = self.load_layer()
-                # print(input_image.shape)
-
             else:
                 raise ValueError("No data has been provided. Aborting.")
 
