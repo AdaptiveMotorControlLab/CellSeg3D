@@ -67,7 +67,7 @@ def sphericity_axis(semi_major, semi_minor):
     a = semi_major
     b = semi_minor
 
-    root = (a**2 - b**2) ** (1 / 2)
+    root = np.sqrt(a**2 - b**2)
     try:
         result = (
             2
@@ -77,6 +77,9 @@ def sphericity_axis(semi_major, semi_minor):
     except ZeroDivisionError:
         print("Zero division in sphericity calculation was replaced by 0")
         result = 0
+    except ValueError as e:
+        print(f"Error encountered in calculation : {e}")
+        result = "Error in calculation"
 
     return result
 
@@ -154,7 +157,7 @@ def time_difference(time_start, time_finish, as_string=True):
     """
     Args:
         time_start (datetime): time to subtract to time_finish
-        time_finish (datetime): time to add to (-time_start)
+        time_finish (datetime): time to add to subtract time_start to
         as_string (bool): if True, returns a string with the full time diff. Otherwise, returns as a list [hours,minutes,seconds]
     """
 

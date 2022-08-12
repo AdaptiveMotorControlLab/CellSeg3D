@@ -4,7 +4,7 @@ from torch import nn
 
 def get_weights_file():
     # model additionally trained on Mathis/Wyss mesoSPIM data
-    return "TRAILMAP.pth"
+    return "TRAILMAP_PyTorch.pth"
     # FIXME currently incorrect, find good weights from TRAILMAP_test and upload them
 
 

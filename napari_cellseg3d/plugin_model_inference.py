@@ -1,4 +1,3 @@
-import os
 import warnings
 
 import napari
@@ -13,6 +12,9 @@ from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
 from napari_cellseg3d.model_framework import ModelFramework
 from napari_cellseg3d.model_workers import InferenceWorker
+
+
+# TODO for layer inference : button behaviour/visibility, error if no layer selected, test all funcs
 
 
 class Inferer(ModelFramework):
@@ -98,9 +100,7 @@ class Inferer(ModelFramework):
         ######################
         ######################
         # TODO : better way to handle SegResNet size reqs ?
-        self.model_input_size = ui.IntIncrementCounter(
-            min=1, max=1024, default=128
-        )
+        self.model_input_size = ui.IntIncrementCounter(min=1, max=1024, default=128)
         self.model_choice.currentIndexChanged.connect(
             self.toggle_display_model_input_size
         )
@@ -135,6 +135,16 @@ class Inferer(ModelFramework):
         self.window_infer_box.clicked.connect(self.toggle_display_window_size)
 
         sizes_window = ["8", "16", "32", "64", "128", "256", "512"]
+        # (
+        #     self.window_size_choice,
+        #     self.lbl_window_size_choice,
+        # ) = ui.make_combobox(sizes_window, label="Window size and overlap")
+        # self.window_overlap = ui.make_n_spinboxes(
+        #     max=1,
+        #     default=0.7,
+        #     step=0.05,
+        #     double=True,
+        # )
 
         self.window_size_choice = ui.DropdownMenu(
             sizes_window, label="Window size"
@@ -157,6 +167,11 @@ class Inferer(ModelFramework):
             self.lbl_window_size_choice,
             horizontal=False,
         )
+        # self.window_infer_params = ui.combine_blocks(
+        #     self.window_overlap,
+        #     self.window_infer_params,
+        #     horizontal=False,
+        # )
 
         self.window_infer_params = ui.combine_blocks(
             window_size_widgets,
@@ -210,7 +225,11 @@ class Inferer(ModelFramework):
         ##################
         ##################
 
-        self.btn_start = ui.Button("Start inference", self.start)
+        self.btn_start = ui.Button("Start on folder", self.start)
+        self.btn_start_layer = ui.Button(
+            "Start on selected layer",
+            lambda: self.start(on_layer=True),
+        )
         self.btn_close = self.make_close_button()
 
         # hide unused widgets from parent class
@@ -232,7 +251,11 @@ class Inferer(ModelFramework):
             "Image size on which the model has been trained (default : 128)"
         )
 
-        thresh_desc = "Thresholding : all values in the image below the chosen probability threshold will be set to 0, and all others to 1."
+        thresh_desc = (
+            "Thresholding : all values in the image below the chosen probability"
+            " threshold will be set to 0, and all others to 1."
+        )
+
         self.thresholding_checkbox.setToolTip(thresh_desc)
         self.thresholding_count.setToolTip(thresh_desc)
         self.window_infer_box.setToolTip(
@@ -248,16 +271,24 @@ class Inferer(ModelFramework):
             "Percentage of overlap between windows to use when using sliding window"
         )
 
+        # self.window_overlap.setToolTip(
+        #     "Amount of overlap between sliding windows"
+        # )
+
         self.keep_data_on_cpu_box.setToolTip(
             "If enabled, data will be kept on the RAM rather than the VRAM.\nCan avoid out of memory issues with CUDA"
         )
         self.instance_box.setToolTip(
-            "Instance segmentation will convert instance (0/1) labels to labels that attempt to assign an unique ID to each cell."
+            "Instance segmentation will convert instance (0/1) labels to labels"
+            " that attempt to assign an unique ID to each cell."
         )
         self.instance_method_choice.setToolTip(
             "Choose which method to use for instance segmentation"
-            "\nConnected components : all separated objects will be assigned an unique ID. Robust but will not work correctly with adjacent/touching objects\n"
-            "Watershed : assigns objects ID based on the probability gradient surrounding an object. Requires the model to surround objects in a gradient; can possibly correctly separate unique but touching/adjacent objects."
+            "\nConnected components : all separated objects will be assigned an unique ID. "
+            "Robust but will not work correctly with adjacent/touching objects\n"
+            "Watershed : assigns objects ID based on the probability gradient surrounding an object. "
+            "Requires the model to surround objects in a gradient;"
+            " can possibly correctly separate unique but touching/adjacent objects."
         )
         self.instance_prob_thresh.setToolTip(
             "All objects below this probability will be ignored (set to 0)"
@@ -266,7 +297,8 @@ class Inferer(ModelFramework):
             "Will remove all objects smaller (in volume) than the specified number of pixels"
         )
         self.save_stats_to_csv_box.setToolTip(
-            "Will save several statistics for each object to a csv in the results folder. Stats include : volume, centroid coordinates, sphericity"
+            "Will save several statistics for each object to a csv in the results folder. Stats include : "
+            "volume, centroid coordinates, sphericity"
         )
         ##################
         ##################
@@ -279,6 +311,9 @@ class Inferer(ModelFramework):
             self.images_filepaths != [""]
             and self.images_filepaths != []
             and self.results_path != ""
+        ) or (
+            self.results_path != ""
+            and self._viewer.layers.selection.active is not None
         ):
             return True
         else:
@@ -380,6 +415,8 @@ class Inferer(ModelFramework):
                 ),  # out folder
             ],
         )
+        self.image_filewidget.set_required(False)
+        self.image_filewidget.update_field_color("black")
 
         io_group.setLayout(io_layout)
         tab_layout.addWidget(io_group)
@@ -495,6 +532,7 @@ class Inferer(ModelFramework):
             tab_layout,
             [
                 self.btn_start,
+                self.btn_start_layer,
                 self.btn_close,
             ],
         )
@@ -512,7 +550,7 @@ class Inferer(ModelFramework):
         self.setMinimumSize(180, 100)
         # self.setBaseSize(210, 400)
 
-    def start(self):
+    def start(self, on_layer=False):
         """Start the inference process, enables :py:attr:`~self.worker` and does the following:
 
         * Checks if the output and input folders are correctly set
@@ -530,6 +568,9 @@ class Inferer(ModelFramework):
         * If the option has been selected, display the results in napari, up to the maximum number selected
 
         * Runs instance segmentation, thresholding, and stats computing if requested
+
+        Args:
+            on_layer: if True, will start inference on a selected layer
         """
 
         if not self.check_ready():
@@ -542,6 +583,7 @@ class Inferer(ModelFramework):
                 pass
             else:
                 self.worker.start()
+                self.btn_start_layer.setVisible(False)
                 self.btn_start.setText("Running... Click to stop")
         else:
             self.log.print_and_log("Starting...")
@@ -604,21 +646,40 @@ class Inferer(ModelFramework):
             )
             self.window_overlap = self.window_overlap_counter.value()
 
-            self.worker = InferenceWorker(
-                device=device,
-                model_dict=model_dict,
-                weights_dict=weights_dict,
-                images_filepaths=self.images_filepaths,
-                results_path=self.results_path,
-                filetype=self.filetype_choice.currentText(),
-                transforms=self.transforms,
-                instance=self.instance_params,
-                use_window=self.use_window_inference,
-                window_infer_size=self.window_inference_size,
-                window_overlap=self.window_overlap,
-                keep_on_cpu=self.keep_on_cpu,
-                stats_csv=self.stats_to_csv,
-            )
+            if not on_layer:
+                self.worker = InferenceWorker(
+                    device=device,
+                    model_dict=model_dict,
+                    weights_dict=weights_dict,
+                    images_filepaths=self.images_filepaths,
+                    results_path=self.results_path,
+                    filetype=self.filetype_choice.currentText(),
+                    transforms=self.transforms,
+                    instance=self.instance_params,
+                    use_window=self.use_window_inference,
+                    window_infer_size=self.window_inference_size,
+                    window_overlap=self.window_overlap,
+                    keep_on_cpu=self.keep_on_cpu,
+                    stats_csv=self.stats_to_csv,
+                )
+            else:
+                layer = self._viewer.layers.selection.active
+                self.worker = InferenceWorker(
+                    device=device,
+                    model_dict=model_dict,
+                    weights_dict=weights_dict,
+                    results_path=self.results_path,
+                    filetype=self.filetype_choice.currentText(),
+                    transforms=self.transforms,
+                    instance=self.instance_params,
+                    use_window=self.use_window_inference,
+                    window_infer_size=self.window_inference_size,
+                    keep_on_cpu=self.keep_on_cpu,
+                    window_overlap=self.window_overlap,
+                    stats_csv=self.stats_to_csv,
+                    layer=layer,
+                )
+
             self.worker.set_download_log(self.log)
 
             yield_connect_show_res = lambda data: self.on_yield(
@@ -648,6 +709,7 @@ class Inferer(ModelFramework):
         else:  # once worker is started, update buttons
             self.worker.start()
             self.btn_start.setText("Running...  Click to stop")
+            self.btn_start_layer.setVisible(False)
 
     def on_start(self):
         """Catches start signal from worker to call :py:func:`~display_status_report`"""
@@ -663,7 +725,7 @@ class Inferer(ModelFramework):
         """Catches errors and tries to clean up. TODO : upgrade"""
         self.log.print_and_log("Worker errored...")
         self.log.print_and_log("Trying to clean up...")
-        self.btn_start.setText("Start")
+        self.btn_start.setText("Start on folder")
         self.btn_close.setVisible(True)
 
         self.worker = None
@@ -673,7 +735,8 @@ class Inferer(ModelFramework):
         """Catches finished signal from worker, resets workspace for next run."""
         self.log.print_and_log(f"\nWorker finished at {utils.get_time()}")
         self.log.print_and_log("*" * 20)
-        self.btn_start.setText("Start")
+        self.btn_start.setText("Start on folder")
+        self.btn_start_layer.setVisible(True)
         self.btn_close.setVisible(True)
 
         self.worker = None
@@ -698,19 +761,21 @@ class Inferer(ModelFramework):
 
         viewer = widget._viewer
 
-        widget.progress.setValue(100 * image_id // total)
+        pbar_value = image_id // total
+        if image_id == 0:
+            pbar_value = 1
+
+        widget.progress.setValue(100 * pbar_value)
 
         if widget.show_res and image_id <= widget.show_res_nbr:
 
             zoom = widget.zoom
 
-            print(data["original"].shape)
-            print(data["result"].shape)
 
             viewer.dims.ndisplay = 3
             viewer.scale_bar.visible = True
 
-            if widget.show_original:
+            if widget.show_original and data["original"] is not None:
                 original_layer = viewer.add_image(
                     data["original"],
                     colormap="inferno",

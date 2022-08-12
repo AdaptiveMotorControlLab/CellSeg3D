@@ -3,7 +3,6 @@ import platform
 from pathlib import Path
 import importlib.util
 from typing import Optional
-import warnings
 
 import numpy as np
 from tifffile import imwrite
@@ -19,6 +18,7 @@ from monai.data import pad_list_data_collate
 from monai.data import PatchDataset
 from monai.inferers import sliding_window_inference
 from monai.metrics import DiceMetric
+from monai.transforms import AddChannel
 from monai.transforms import AsDiscrete
 from monai.transforms import Compose
 from monai.transforms import EnsureChannelFirstd
@@ -32,7 +32,9 @@ from monai.transforms import RandFlipd
 from monai.transforms import RandRotate90d
 from monai.transforms import RandShiftIntensityd
 from monai.transforms import RandSpatialCropSamplesd
+from monai.transforms import SpatialPad
 from monai.transforms import SpatialPadd
+from monai.transforms import ToTensor
 from monai.transforms import Zoom
 from monai.utils import set_determinism
 
@@ -108,7 +110,7 @@ class WeightsDownloader:
             pretrained_folder_path, model_weights_filename
         )
         if os.path.exists(check_path):
-            message = f"Weight file {model_weights_filename} already exists, skipping download step"
+            message = f"Weight file {model_weights_filename} already exists, skipping download"
             if self.log_widget is not None:
                 self.log_widget.print_and_log(message, printing=False)
             print(message)
@@ -174,7 +176,6 @@ class InferenceWorker(GeneratorWorker):
         device,
         model_dict,
         weights_dict,
-        images_filepaths,
         results_path,
         filetype,
         transforms,
@@ -184,6 +185,8 @@ class InferenceWorker(GeneratorWorker):
         window_overlap,
         keep_on_cpu,
         stats_csv,
+        images_filepaths=None,
+        layer=None,  # FIXME
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~inference` function.
 
@@ -193,8 +196,6 @@ class InferenceWorker(GeneratorWorker):
             * model_dict: the :py:attr:`~self.models_dict` dictionary to obtain the model name, class and instance
 
             * weights_dict: dict with "custom" : bool to use custom weights or not; "path" : the path to weights if custom or name of the file if not custom
-
-            * images_filepaths: the paths to the images of the dataset
 
             * results_path: the path to save the results to
 
@@ -212,6 +213,9 @@ class InferenceWorker(GeneratorWorker):
 
             * stats_csv: compute stats on cells and save them to a csv file
 
+            * images_filepaths: the paths to the images of the dataset
+
+            * layer: the layer to run inference on
         Note: See :py:func:`~self.inference`
         """
 
@@ -224,7 +228,6 @@ class InferenceWorker(GeneratorWorker):
         self.device = device
         self.model_dict = model_dict
         self.weights_dict = weights_dict
-        self.images_filepaths = images_filepaths
         self.results_path = results_path
         self.filetype = filetype
         self.transforms = transforms
@@ -234,6 +237,13 @@ class InferenceWorker(GeneratorWorker):
         self.window_overlap_percentage = window_overlap
         self.keep_on_cpu = keep_on_cpu
         self.stats_to_csv = stats_csv
+        ############################################
+        ############################################
+        self.layer = layer
+        self.images_filepaths = images_filepaths
+        ############################################
+        ############################################
+
         """These attributes are all arguments of :py:func:~inference, please see that for reference"""
 
         self.downloader = WeightsDownloader()
@@ -266,7 +276,7 @@ class InferenceWorker(GeneratorWorker):
     def log_parameters(self):
 
         self.log("-" * 20)
-        self.log("Parameters summary :")
+        self.log("\nParameters summary :")
 
         self.log(f"Model is : {self.model_dict['name']}")
         if self.transforms["thresh"][0]:
@@ -279,7 +289,7 @@ class InferenceWorker(GeneratorWorker):
         else:
             status = "disabled"
 
-        self.log(f"Window inference is {status}")
+        self.log(f"Window inference is {status}\n")
 
         if self.keep_on_cpu:
             self.log(f"Dataset loaded to CPU")
@@ -293,59 +303,20 @@ class InferenceWorker(GeneratorWorker):
             self.log(
                 f"Instance segmentation enabled, method : {self.instance_params['method']}\n"
                 f"Probability threshold is {self.instance_params['threshold']:.2f}\n"
-                f"Objects smaller than {self.instance_params['size_small']} pixels will be removed"
+                f"Objects smaller than {self.instance_params['size_small']} pixels will be removed\n"
             )
-            # self.log(f"")
         self.log("-" * 20)
 
-    def inference(self):
-        """
-        Requires:
-            * device: cuda or cpu device to use for torch
-
-            * model_dict: the :py:attr:`~self.models_dict` dictionary to obtain the model name, class and instance
-
-            * weights: the loaded weights from the model
-
-            * images_filepaths: the paths to the images of the dataset
-
-            * results_path: the path to save the results to
-
-            * filetype: the file extension to use when saving,
-
-            * transforms: a dict containing transforms to perform at various times.
-
-            * use_window: use window inference with specific size or whole image
-
-            * window_infer_size: size of window if use_window is True
-
-            * keep_on_cpu: keep images on CPU or no
-
-            * stats_csv: compute stats on cells and save them to a csv file
-
-        Yields:
-            dict: contains :
-                * "image_id" : index of the returned image
-
-                * "original" : original volume used for inference
-
-                * "result" : inference result
-
-        """
-        sys = platform.system()
-        print(f"OS is {sys}")
-        if sys == "Darwin":
-            torch.set_num_threads(1)  # required for threading on macOS ?
-            self.log("Number of threads has been set to 1 for macOS")
+    def load_folder(self):
 
         images_dict = self.create_inference_dict(self.images_filepaths)
 
-        # if self.device =="cuda": # TODO : fix mem alloc, this does not work it seems
-        # torch.backends.cudnn.benchmark = False
+        # TODO : better solution than loading first image always ?
+        data_check = LoadImaged(keys=["image"])(images_dict[0])
+
+        check = data_check["image"].shape
 
         self.log("\nChecking dimensions...")
-        data_check = LoadImaged(keys=["image"])(images_dict[0])
-        check = data_check["image"].shape
         pad = utils.get_padding_dim(check)
 
         dims = self.model_dict["model_input_size"]
@@ -396,217 +367,467 @@ class InferenceWorker(GeneratorWorker):
                 ]
             )
 
-        if not self.transforms["thresh"][0]:
-            post_process_transforms = EnsureType()
-        else:
-            t = self.transforms["thresh"][1]
-            post_process_transforms = Compose(
-                AsDiscrete(threshold=t), EnsureType()
-            )
-
-        # LabelFilter(applied_labels=[0]),
-
         self.log("\nLoading dataset...")
         inference_ds = Dataset(data=images_dict, transform=load_transforms)
         inference_loader = DataLoader(
             inference_ds, batch_size=1, num_workers=2
         )
         self.log("Done")
-        # print(f"wh dir : {WEIGHTS_DIR}")
-        # print(weights)
-        self.log(
-            "\nLoading weights..."
-        )  # TODO add try/except for invalid weights for proper reset
+        return inference_loader
 
-        if self.weights_dict["custom"]:
-            weights = self.weights_dict["path"]
-        else:
-            self.downloader.download_weights(
-                self.model_dict["name"],
-                self.model_dict["class"].get_weights_file(),
-            )
-            weights = os.path.join(
-                WEIGHTS_DIR, self.model_dict["class"].get_weights_file()
+    def load_layer(self):
+
+        data = np.squeeze(self.layer.data)
+
+        volume = np.array(data, dtype=np.int16)
+
+        volume_dims = len(volume.shape)
+        if volume_dims != 3:
+            raise ValueError(
+                f"Data array is not 3-dimensional but {volume_dims}-dimensional,"
+                f" please check for extra channel/batch dimensions"
             )
 
-        model.load_state_dict(
-            torch.load(
-                weights,
-                map_location=self.device,
-            )
+        volume = np.swapaxes(
+            volume, 0, 2
+        )  # for anisotropy to be monai-like, i.e. zyx # FIXME rotation not always correct
+        print("Loading layer\n")
+        dims_check = volume.shape
+        self.log("\nChecking dimensions...")
+        pad = utils.get_padding_dim(dims_check)
+
+        # print(volume.shape)
+        # print(volume.dtype)
+
+        load_transforms = Compose(
+            [
+                ToTensor(),
+                # anisotropic_transform,
+                AddChannel(),
+                SpatialPad(spatial_size=pad),
+                AddChannel(),
+                EnsureType(),
+            ],
+            map_items=False,
+            log_stats=True,
         )
+
+        self.log("\nLoading dataset...")
+        input_image = load_transforms(volume)
         self.log("Done")
+        return input_image
 
-        model.eval()
-        with torch.no_grad():
-            for i, inf_data in enumerate(inference_loader):
+    def model_output(
+        self,
+        inputs,
+        model,
+        post_process_transforms,
+        post_process=True,
+        aniso_transform=None,
+    ):
 
-                self.log("-" * 10)
-                self.log(f"Inference started on image n°{i + 1}...")
+        inputs = inputs.to("cpu")
 
-                inputs = inf_data["image"]
-                # print(inputs.shape)
+        model_output = lambda inputs: post_process_transforms(
+            self.model_dict["class"].get_output(model, inputs)
+        )
 
-                inputs = inputs.to("cpu")
-                # print(inputs.shape)
+        if self.keep_on_cpu:
+            dataset_device = "cpu"
+        else:
+            dataset_device = self.device
 
-                # self.log("output")
-                model_output = lambda inputs: post_process_transforms(
-                    self.model_dict["class"].get_output(model, inputs)
+        if self.use_window:
+            window_size = self.window_infer_size
+            window_overlap = self.window_overlap_percentage
+        else:
+            window_size = None
+            window_overlap = 0.25
+
+        outputs = sliding_window_inference(
+            inputs,
+            roi_size=window_size,
+            sw_batch_size=1,
+            predictor=model_output,
+            sw_device=self.device,
+            device=dataset_device,
+            overlap=window_overlap,
+        )
+
+        out = outputs.detach().cpu()
+
+        if aniso_transform is not None:
+            out = aniso_transform(out)
+
+        if post_process:
+            out = np.array(out).astype(np.float32)
+            out = np.squeeze(out)
+            return out
+        else:
+            return out
+
+    def create_result_dict(
+        self,
+        semantic_labels,
+        instance_labels,
+        from_layer: bool,
+        original=None,
+        data_dict=None,
+        i=0,
+    ):
+
+        if not from_layer and original is None:
+            raise ValueError(
+                "If the image is not from a layer, an original should always be available"
+            )
+
+        if from_layer:
+            if i != 0:
+                raise ValueError(
+                    "A layer's ID should always be 0 (default value)"
+                )
+            semantic_labels = np.swapaxes(semantic_labels, 0, 2)
+
+        return {
+            "image_id": i + 1,
+            "original": original,
+            "instance_labels": instance_labels,
+            "object stats": data_dict,
+            "result": semantic_labels,
+            "model_name": self.model_dict["name"],
+        }
+
+    def get_original_filename(self, i):
+        return os.path.basename(self.images_filepaths[i]).split(".")[0]
+
+    def get_instance_result(self, semantic_labels, from_layer=False, i=-1):
+
+        if not from_layer and i == -1:
+            raise ValueError(
+                "An ID should be provided when running from a file"
+            )
+
+        if self.instance_params["do_instance"]:
+            instance_labels = self.instance_seg(
+                semantic_labels,
+                i + 1,
+            )
+            if from_layer:
+                instance_labels = np.swapaxes(instance_labels, 0, 2)
+            data_dict = self.stats_csv(instance_labels)
+        else:
+            instance_labels = None
+            data_dict = None
+        return instance_labels, data_dict
+
+    def save_image(
+        self,
+        image,
+        from_layer=False,
+        i=0,
+    ):
+
+        if not from_layer:
+            original_filename = "_" + self.get_original_filename(i) + "_"
+        else:
+            original_filename = "_"
+
+        time = utils.get_date_time()
+
+        file_path = (
+            self.results_path
+            + "/"
+            + f"Prediction_{i+1}"
+            + original_filename
+            + self.model_dict["name"]
+            + f"_{time}_"
+            + self.filetype
+        )
+
+        imwrite(file_path, image)
+
+        if from_layer:
+            self.log(f"\nLayer prediction saved as :")
+        else:
+            self.log(f"\nFile n°{i+1} saved as :")
+            filename = os.path.split(file_path)[1]
+            self.log(filename)
+
+    def aniso_transform(self, image):
+        zoom = self.transforms["zoom"][1]
+        anisotropic_transform = Zoom(
+            zoom=zoom,
+            keep_size=False,
+            padding_mode="empty",
+        )
+        return anisotropic_transform(image[0])
+
+    def instance_seg(self, to_instance, image_id=0, original_filename="layer"):
+
+        if image_id is not None:
+            self.log(f"\nRunning instance segmentation for image n°{image_id}")
+
+        threshold = self.instance_params["threshold"]
+        size_small = self.instance_params["size_small"]
+        method_name = self.instance_params["method"]
+
+        if method_name == "Watershed":
+
+            def method(image):
+                return binary_watershed(image, threshold, size_small)
+
+        elif method_name == "Connected components":
+
+            def method(image):
+                return binary_connected(image, threshold, size_small)
+
+        else:
+            raise NotImplementedError(
+                "Selected instance segmentation method is not defined"
+            )
+
+        instance_labels = method(to_instance)
+
+        instance_filepath = (
+            self.results_path
+            + "/"
+            + f"Instance_seg_labels_{image_id}_"
+            + original_filename
+            + "_"
+            + self.model_dict["name"]
+            + f"_{utils.get_date_time()}_"
+            + self.filetype
+        )
+
+        imwrite(instance_filepath, instance_labels)
+        self.log(
+            f"Instance segmentation results for image n°{image_id} have been saved as:"
+        )
+        self.log(os.path.split(instance_filepath)[1])
+        return instance_labels
+
+    def inference_on_folder(self, inf_data, i, model, post_process_transforms):
+
+        self.log("-" * 10)
+        self.log(f"Inference started on image n°{i + 1}...")
+
+        inputs = inf_data["image"]
+
+        out = self.model_output(
+            inputs,
+            model,
+            post_process_transforms,
+            aniso_transform=self.aniso_transform,
+        )
+
+        self.save_image(out, i=i)
+        instance_labels, data_dict = self.get_instance_result(out, i=i)
+
+        original = np.array(inf_data["image"]).astype(np.float32)
+
+        self.log(f"Inference completed on layer")
+
+        return self.create_result_dict(
+            out,
+            instance_labels,
+            from_layer=False,
+            original=original,
+            data_dict=data_dict,
+            i=i,
+        )
+
+    def stats_csv(self, instance_labels):
+        if self.stats_to_csv:
+
+            # try:
+
+            data_dict = volume_stats(
+                instance_labels
+            )  # TODO test with area mesh function
+            return data_dict
+
+        # except ValueError as e:
+        #     self.log(f"Error occurred during stats computing : {e}")
+        #     return None
+        else:
+            return None
+
+    def inference_on_layer(self, image, model, post_process_transforms):
+        self.log("-" * 10)
+        self.log(f"Inference started on layer...")
+
+        image = image.type(torch.FloatTensor)
+
+        out = self.model_output(
+            image,
+            model,
+            post_process_transforms,
+            aniso_transform=self.aniso_transform,
+        )
+
+        self.save_image(out, from_layer=True)
+
+        instance_labels, data_dict = self.get_instance_result(out,from_layer=True)
+
+        return self.create_result_dict(out, instance_labels, from_layer=True, data_dict=data_dict)
+
+    def inference(self):
+        """
+        Requires:
+            * device: cuda or cpu device to use for torch
+
+            * model_dict: the :py:attr:`~self.models_dict` dictionary to obtain the model name, class and instance
+
+            * weights: the loaded weights from the model
+
+            * images_filepaths: the paths to the images of the dataset
+
+            * results_path: the path to save the results to
+
+            * filetype: the file extension to use when saving,
+
+            * transforms: a dict containing transforms to perform at various times.
+
+            * use_window: use window inference with specific size or whole image
+
+            * window_infer_size: size of window if use_window is True
+
+            * keep_on_cpu: keep images on CPU or no
+
+            * stats_csv: compute stats on cells and save them to a csv file
+
+        Yields:
+            dict: contains :
+                * "image_id" : index of the returned image
+
+                * "original" : original volume used for inference
+
+                * "result" : inference result
+
+        """
+        sys = platform.system()
+        print(f"OS is {sys}")
+        if sys == "Darwin":
+            torch.set_num_threads(1)  # required for threading on macOS ?
+            self.log("Number of threads has been set to 1 for macOS")
+
+
+        try:
+            dims = self.model_dict["model_input_size"]
+
+
+            if self.model_dict["name"] == "SegResNet":
+                model = self.model_dict["class"].get_net()(
+                    input_image_size=[
+                        dims,
+                        dims,
+                        dims,
+                    ],  # TODO FIX ! find a better way & remove model-specific code
+                    out_channels=1,
+                    # dropout_prob=0.3,
+                )
+            elif self.model_dict["name"] == "SwinUNetR":
+                model = self.model_dict["class"].get_net(
+                    img_size=[dims, dims, dims],
+                    use_checkpoint=False,
+                )
+            else:
+                model = self.model_dict["class"].get_net()
+            model = model.to(self.device)
+
+            self.log_parameters()
+
+            model.to(self.device)
+
+            # load_transforms = Compose(
+            #     [
+            #         LoadImaged(keys=["image"]),
+            #         # AddChanneld(keys=["image"]), #already done
+            #         EnsureChannelFirstd(keys=["image"]),
+            #         # Orientationd(keys=["image"], axcodes="PLI"),
+            #         # anisotropic_transform,
+            #         SpatialPadd(keys=["image"], spatial_size=pad),
+            #         EnsureTyped(keys=["image"]),
+            #     ]
+            # )
+
+            if not self.transforms["thresh"][0]:
+                post_process_transforms = EnsureType()
+            else:
+                t = self.transforms["thresh"][1]
+                post_process_transforms = Compose(
+                    AsDiscrete(threshold=t), EnsureType()
                 )
 
-                if self.keep_on_cpu:
-                    dataset_device = "cpu"
-                else:
-                    dataset_device = self.device
 
-                if self.use_window:
-                    window_size = self.window_infer_size
-                    window_overlap = self.window_overlap_percentage
-                else:
-                    window_size = None
-                    window_overlap = 0.25
+            self.log(
+                "\nLoading weights..."
+            )
 
-                # self.log("window")
-                outputs = sliding_window_inference(
-                    inputs,
-                    roi_size=window_size,
-                    sw_batch_size=1,
-                    predictor=model_output,
-                    sw_device=self.device,
-                    device=dataset_device,
-                    overlap=window_overlap,
+            if self.weights_dict["custom"]:
+                weights = self.weights_dict["path"]
+            else:
+                self.downloader.download_weights(
+                    self.model_dict["name"],
+                    self.model_dict["class"].get_weights_file(),
                 )
-                out = outputs.detach().cpu()
-                # del outputs # TODO fix memory ?
-                # outputs = None
-                # print(out.shape)
-                if self.transforms["zoom"][0]:
-                    zoom = self.transforms["zoom"][1]
-                    anisotropic_transform = Zoom(
-                        zoom=zoom,
-                        keep_size=False,
-                        padding_mode="empty",
-                    )
-                    out = anisotropic_transform(out[0])
-
-                # out = post_process_transforms(out)
-                out = np.array(out).astype(np.float32)
-                # print(out.shape)
-                out = np.squeeze(out)
-                # print(out.shape)
-                to_instance = out  # avoid post processing since thresholding is done there anyway
-
-                # batch_len = out.shape[1]
-                # print("trying to check len")
-                # print(batch_len)
-                # if batch_len != 1 :
-                #     sum  = np.sum(out, axis=1)
-                #     print(sum.shape)
-                #     out = sum
-                #     print(out.shape)
-
-                image_id = i + 1
-                time = utils.get_date_time()
-                # print(time)
-
-                original_filename = os.path.basename(
-                    self.images_filepaths[i]
-                ).split(".")[0]
-
-                # File output save name : original-name_model_date+time_number.filetype
-                file_path = (
-                    self.results_path
-                    + "/"
-                    + f"Prediction_{image_id}_"
-                    + original_filename
-                    + "_"
-                    + self.model_dict["name"]
-                    + f"_{time}_"
-                    + self.filetype
+                weights = os.path.join(
+                    WEIGHTS_DIR, self.model_dict["class"].get_weights_file()
                 )
 
-                # print(filename)
-                imwrite(file_path, out)
+            model.load_state_dict(
+                torch.load(
+                    weights,
+                    map_location=self.device,
+                )
+            )
+            self.log("Done")
 
-                self.log(f"\nFile n°{image_id} saved as :")
-                filename = os.path.split(file_path)[1]
-                self.log(filename)
+            is_folder = self.images_filepaths is not None
+            is_layer = self.layer is not None
 
-                if self.instance_params["do_instance"]:
-                    self.log(
-                        f"\nRunning instance segmentation for image n°{image_id}"
-                    )
+            if is_layer and is_folder:
+                raise ValueError(
+                    "Both a layer and a folder have been specified, please specify only one of the two. Aborting."
+                )
+            elif is_folder:
+                inference_loader = self.load_folder()
+                ##################
+                ##################
+                # DEBUG
+                # from monai.utils import first
+                #
+                # check_data = first(inference_loader)
+                # image = check_data[0][0]
+                # print(image.shape)
+                ##################
+                ##################
+            elif is_layer:
+                input_image = self.load_layer()
+            else:
+                raise ValueError("No data has been provided. Aborting.")
 
-                    threshold = self.instance_params["threshold"]
-                    size_small = self.instance_params["size_small"]
-                    method_name = self.instance_params["method"]
-
-                    if method_name == "Watershed":
-
-                        def method(image):
-                            return binary_watershed(
-                                image, threshold, size_small
-                            )
-
-                    elif method_name == "Connected components":
-
-                        def method(image):
-                            return binary_connected(
-                                image, threshold, size_small
-                            )
-
-                    else:
-                        raise NotImplementedError(
-                            "Selected instance segmentation method is not defined"
+            model.eval()
+            with torch.no_grad():
+                ################################
+                ################################
+                ################################
+                if is_folder:
+                    for i, inf_data in enumerate(inference_loader):
+                        yield self.inference_on_folder(
+                            inf_data, i, model, post_process_transforms
                         )
-
-                    instance_labels = method(to_instance)
-
-                    instance_filepath = (
-                        self.results_path
-                        + "/"
-                        + f"Instance_seg_labels_{image_id}_"
-                        + original_filename
-                        + "_"
-                        + self.model_dict["name"]
-                        + f"_{time}_"
-                        + self.filetype
+                elif is_layer:
+                    yield self.inference_on_layer(
+                        input_image, model, post_process_transforms
                     )
+            model.to("cpu")
 
-                    imwrite(instance_filepath, instance_labels)
-                    self.log(
-                        f"Instance segmentation results for image n°{image_id} have been saved as:"
-                    )
-                    self.log(os.path.split(instance_filepath)[1])
-
-                    # print(self.stats_to_csv)
-                    if self.stats_to_csv:
-                        data_dict = volume_stats(
-                            instance_labels
-                        )  # TODO test with area mesh function
-                    else:
-                        data_dict = None
-
-                else:
-                    instance_labels = None
-                    data_dict = None
-
-                original = np.array(inf_data["image"]).astype(np.float32)
-
-                # logging(f"Inference completed on image {i+1}")
-                result = {
-                    "image_id": i + 1,
-                    "original": original,
-                    "instance_labels": instance_labels,
-                    "object stats": data_dict,
-                    "result": out,
-                    "model_name": self.model_dict["name"],
-                }
-                # print(result)
-                yield result
-
-        model.to("cpu")
+        except Exception as e:
+            self.log(f"Error : {e}")
+            self.quit()
+        finally:
+            self.quit()
 
 
 class TrainingWorker(GeneratorWorker):
@@ -813,351 +1034,341 @@ class TrainingWorker(GeneratorWorker):
         # error_log = open(results_path +"/error_log.log" % multiprocessing.current_process().name, 'x')
         # faulthandler.enable(file=error_log, all_threads=True)
         #########################
+        try:
+            if self.seed_dict["use deterministic"]:
+                set_determinism(
+                    seed=self.seed_dict["seed"]
+                )  # use_deterministic_algorithms = True causes cuda error
 
-        if self.seed_dict["use deterministic"]:
-            set_determinism(
-                seed=self.seed_dict["seed"]
-            )  # use_deterministic_algorithms = True causes cuda error
+            sys = platform.system()
+            print(sys)
+            if sys == "Darwin":  # required for macOS ?
+                torch.set_num_threads(1)
+                self.log("Number of threads has been set to 1 for macOS")
 
-        sys = platform.system()
-        print(sys)
-        if sys == "Darwin":  # required for macOS ?
-            torch.set_num_threads(1)
-            self.log("Number of threads has been set to 1 for macOS")
+            model_name = self.model_dict["name"]
+            model_class = self.model_dict["class"]
 
-        model_name = self.model_dict["name"]
-        model_class = self.model_dict["class"]
+            if not self.sampling:
+                data_check = LoadImaged(keys=["image"])(self.data_dicts[0])
+                check = data_check["image"].shape
 
-        if not self.sampling:
-            data_check = LoadImaged(keys=["image"])(self.data_dicts[0])
-            check = data_check["image"].shape
-
-        if model_name == "SegResNet":
-            if self.sampling:
-                size = self.sample_size
+            if model_name == "SegResNet":
+                if self.sampling:
+                    size = self.sample_size
+                else:
+                    size = check
+                print(f"Size of image : {size}")
+                model = model_class.get_net()(
+                    input_image_size=utils.get_padding_dim(size),
+                    out_channels=1,
+                    dropout_prob=0.3,
+                )
+            elif model_name == "SwinUNetR":
+                if self.sampling:
+                    size = self.sample_size
+                else:
+                    size = check
+                print(f"Size of image : {size}")
+                model = model_class.get_net()(
+                    img_size=utils.get_padding_dim(size),
+                    use_checkpoint=True,
+                )
             else:
-                size = check
-            print(f"Size of image : {size}")
-            model = model_class.get_net(
-                input_image_size=utils.get_padding_dim(size),
-                dropout_prob=0.3,
+                model = model_class.get_net()  # get an instance of the model
+            model = model.to(self.device)
+
+
+
+
+            epoch_loss_values = []
+            val_metric_values = []
+
+            self.train_files, self.val_files = (
+                self.data_dicts[
+                    0 : int(len(self.data_dicts) * self.validation_percent)
+                ],
+                self.data_dicts[
+                    int(len(self.data_dicts) * self.validation_percent) :
+                ],
             )
-        elif model_name == "SwinUNetR":
+
+            if self.train_files == [] or self.val_files == []:
+                self.log("ERROR : datasets are empty")
+
             if self.sampling:
-                size = self.sample_size
-            else:
-                size = check
-            print(f"Size of image : {size}")
-            model = model_class.get_net(
-                img_size=utils.get_padding_dim(size),
-                use_checkpoint=True,
-            )
-        else:
-            model = model_class.get_net()  # get an instance of the model
-        model = model.to(self.device)
-
-        epoch_loss_values = []
-        val_metric_values = []
-
-        self.train_files, self.val_files = (
-            self.data_dicts[
-                0 : int(len(self.data_dicts) * self.validation_percent)
-            ],
-            self.data_dicts[
-                int(len(self.data_dicts) * self.validation_percent) :
-            ],
-        )
-
-        if self.train_files == [] or self.val_files == []:
-            self.log("ERROR : datasets are empty")
-
-        if self.sampling:
-            sample_loader = Compose(
-                [
-                    LoadImaged(keys=["image", "label"]),
-                    EnsureChannelFirstd(keys=["image", "label"]),
-                    RandSpatialCropSamplesd(
-                        keys=["image", "label"],
-                        roi_size=(
-                            self.sample_size
-                        ),  # multiply by axis_stretch_factor if anisotropy
-                        # max_roi_size=(120, 120, 120),
-                        random_size=False,
-                        num_samples=self.num_samples,
-                    ),
-                    Orientationd(keys=["image", "label"], axcodes="PLI"),
-                    SpatialPadd(
-                        keys=["image", "label"],
-                        spatial_size=(utils.get_padding_dim(self.sample_size)),
-                    ),
-                    EnsureTyped(keys=["image", "label"]),
-                ]
-            )
-
-        if self.do_augment:
-            train_transforms = (
-                Compose(  # TODO : figure out which ones and values ?
+                sample_loader = Compose(
                     [
-                        RandShiftIntensityd(keys=["image"], offsets=0.7),
-                        Rand3DElasticd(
+                        LoadImaged(keys=["image", "label"]),
+                        EnsureChannelFirstd(keys=["image", "label"]),
+                        RandSpatialCropSamplesd(
                             keys=["image", "label"],
-                            sigma_range=(0.3, 0.7),
-                            magnitude_range=(0.3, 0.7),
+                            roi_size=(
+                                self.sample_size
+                            ),  # multiply by axis_stretch_factor if anisotropy
+                            # max_roi_size=(120, 120, 120),
+                            random_size=False,
+                            num_samples=self.num_samples,
                         ),
-                        RandFlipd(keys=["image", "label"]),
-                        RandRotate90d(keys=["image", "label"]),
-                        RandAffined(
+                        Orientationd(keys=["image", "label"], axcodes="PLI"),
+                        SpatialPadd(
                             keys=["image", "label"],
+                            spatial_size=(
+                                utils.get_padding_dim(self.sample_size)
+                            ),
                         ),
                         EnsureTyped(keys=["image", "label"]),
                     ]
                 )
-            )
-        else:
-            train_transforms = EnsureTyped(keys=["image", "label"])
 
-        val_transforms = Compose(
-            [
-                # LoadImaged(keys=["image", "label"]),
-                # EnsureChannelFirstd(keys=["image", "label"]),
-                EnsureTyped(keys=["image", "label"]),
-            ]
-        )
-        # self.log("Loading dataset...\n")
-        if self.sampling:
-            print("train_ds")
-            train_ds = PatchDataset(
-                data=self.train_files,
-                transform=train_transforms,
-                patch_func=sample_loader,
-                samples_per_image=self.num_samples,
-            )
-            print("val_ds")
-            val_ds = PatchDataset(
-                data=self.val_files,
-                transform=val_transforms,
-                patch_func=sample_loader,
-                samples_per_image=self.num_samples,
-            )
+            if self.do_augment:
+                train_transforms = (
+                    Compose(  # TODO : figure out which ones and values ?
+                        [
+                            RandShiftIntensityd(keys=["image"], offsets=0.7),
+                            Rand3DElasticd(
+                                keys=["image", "label"],
+                                sigma_range=(0.3, 0.7),
+                                magnitude_range=(0.3, 0.7),
+                            ),
+                            RandFlipd(keys=["image", "label"]),
+                            RandRotate90d(keys=["image", "label"]),
+                            RandAffined(
+                                keys=["image", "label"],
+                            ),
+                            EnsureTyped(keys=["image", "label"]),
+                        ]
+                    )
+                )
+            else:
+                train_transforms = EnsureTyped(keys=["image", "label"])
 
-        else:
-            load_single_images = Compose(
+            val_transforms = Compose(
                 [
-                    LoadImaged(keys=["image", "label"]),
-                    EnsureChannelFirstd(keys=["image", "label"]),
-                    Orientationd(keys=["image", "label"], axcodes="PLI"),
-                    SpatialPadd(
-                        keys=["image", "label"],
-                        spatial_size=(utils.get_padding_dim(check)),
-                    ),
+                    # LoadImaged(keys=["image", "label"]),
+                    # EnsureChannelFirstd(keys=["image", "label"]),
                     EnsureTyped(keys=["image", "label"]),
                 ]
             )
-            print("Cache dataset : train")
-            train_ds = CacheDataset(
-                data=self.train_files,
-                transform=Compose(load_single_images, train_transforms),
-            )
-            print("Cache dataset : val")
-            val_ds = CacheDataset(
-                data=self.val_files, transform=load_single_images
-            )
-        print("Dataloader")
-        train_loader = DataLoader(
-            train_ds,
-            batch_size=self.batch_size,
-            shuffle=True,
-            num_workers=2,
-            collate_fn=pad_list_data_collate,
-        )
+            # self.log("Loading dataset...\n")
+            if self.sampling:
+                print("train_ds")
+                train_ds = PatchDataset(
+                    data=self.train_files,
+                    transform=train_transforms,
+                    patch_func=sample_loader,
+                    samples_per_image=self.num_samples,
+                )
+                print("val_ds")
+                val_ds = PatchDataset(
+                    data=self.val_files,
+                    transform=val_transforms,
+                    patch_func=sample_loader,
+                    samples_per_image=self.num_samples,
+                )
 
-        val_loader = DataLoader(
-            val_ds, batch_size=self.batch_size, num_workers=2
-        )
-        print("\nDone")
-
-        print("Optimizer")
-        optimizer = torch.optim.Adam(model.parameters(), self.learning_rate)
-        dice_metric = DiceMetric(include_background=True, reduction="mean")
-
-        best_metric = -1
-        best_metric_epoch = -1
-
-        # time = utils.get_date_time()
-        print("Weights")
-        if self.weights_path is not None:
-            if self.weights_path == "use_pretrained":
-                weights_file = model_class.get_weights_file()
-                self.downloader.download_weights(model_name, weights_file)
-                weights = os.path.join(WEIGHTS_DIR, weights_file)
-                self.weights_path = weights
             else:
-                weights = os.path.join(self.weights_path)
+                load_single_images = Compose(
+                    [
+                        LoadImaged(keys=["image", "label"]),
+                        EnsureChannelFirstd(keys=["image", "label"]),
+                        Orientationd(keys=["image", "label"], axcodes="PLI"),
+                        SpatialPadd(
+                            keys=["image", "label"],
+                            spatial_size=(utils.get_padding_dim(check)),
+                        ),
+                        EnsureTyped(keys=["image", "label"]),
+                    ]
+                )
+                print("Cache dataset : train")
+                train_ds = CacheDataset(
+                    data=self.train_files,
+                    transform=Compose(load_single_images, train_transforms),
+                )
+                print("Cache dataset : val")
+                val_ds = CacheDataset(
+                    data=self.val_files, transform=load_single_images
+                )
+            print("Dataloader")
+            train_loader = DataLoader(
+                train_ds,
+                batch_size=self.batch_size,
+                shuffle=True,
+                num_workers=2,
+                collate_fn=pad_list_data_collate,
+            )
 
-            try:
-                model.load_state_dict(
-                    torch.load(
-                        weights,
-                        map_location=self.device,
+            val_loader = DataLoader(
+                val_ds, batch_size=self.batch_size, num_workers=2
+            )
+            print("\nDone")
+
+            print("Optimizer")
+            optimizer = torch.optim.Adam(
+                model.parameters(), self.learning_rate
+            )
+            dice_metric = DiceMetric(include_background=True, reduction="mean")
+
+            best_metric = -1
+            best_metric_epoch = -1
+
+            # time = utils.get_date_time()
+            print("Weights")
+            if self.weights_path is not None:
+                if self.weights_path == "use_pretrained":
+                    weights_file = model_class.get_weights_file()
+                    self.downloader.download_weights(model_name, weights_file)
+                    weights = os.path.join(WEIGHTS_DIR, weights_file)
+                    self.weights_path = weights
+                else:
+                    weights = os.path.join(self.weights_path)
+
+                try:
+                    model.load_state_dict(
+                        torch.load(
+                            weights,
+                            map_location=self.device,
+                        )
                     )
-                )
-            except RuntimeError:
-                warn = (
-                    "WARNING:\nIt seems the weights were incompatible with the model,\n"
-                    "the model will be trained from random weights"
-                )
-                self.log(warn)
-                self.warn(warn)
-                self._weight_error = True
+                except RuntimeError as e:
+                    print(f"Error : {e}")
+                    warn = (
+                        "WARNING:\nIt'd seem that the weights were incompatible with the model,\n"
+                        "the model will be trained from random weights"
+                    )
+                    self.log(warn)
+                    self.warn(warn)
+                    self._weight_error = True
 
-        if self.device.type == "cuda":
-            self.log("\nUsing GPU :")
-            self.log(torch.cuda.get_device_name(0))
-        else:
-            self.log("Using CPU")
-
-        self.log_parameters()
-
-        for epoch in range(self.max_epochs):
-            # self.log("\n")
-            self.log("-" * 10)
-            self.log(f"Epoch {epoch + 1}/{self.max_epochs}")
             if self.device.type == "cuda":
-                self.log("Memory Usage:")
-                alloc_mem = round(
-                    torch.cuda.memory_allocated(0) / 1024**3, 1
-                )
-                reserved_mem = round(
-                    torch.cuda.memory_reserved(0) / 1024**3, 1
-                )
-                self.log(f"Allocated: {alloc_mem}GB")
-                self.log(f"Cached: {reserved_mem}GB")
+                self.log("\nUsing GPU :")
+                self.log(torch.cuda.get_device_name(0))
+            else:
+                self.log("Using CPU")
 
-            model.train()
-            epoch_loss = 0
-            step = 0
-            for batch_data in train_loader:
-                step += 1
-                inputs, labels = (
-                    batch_data["image"].to(self.device),
-                    batch_data["label"].to(self.device),
-                )
-                optimizer.zero_grad()
-                outputs = model_class.get_output(model, inputs)
-                # print(f"OUT : {outputs.shape}")
-                loss = self.loss_function(outputs, labels)
-                loss.backward()
-                optimizer.step()
-                epoch_loss += loss.detach().item()
-                self.log(
-                    f"* {step}/{len(train_ds) // train_loader.batch_size}, "
-                    f"Train loss: {loss.detach().item():.4f}"
-                )
-                yield {"plot": False, "weights": model.state_dict()}
+            self.log_parameters()
 
-            epoch_loss /= step
-            epoch_loss_values.append(epoch_loss)
-            self.log(f"Epoch: {epoch + 1}, Average loss: {epoch_loss:.4f}")
-
-            if (epoch + 1) % self.val_interval == 0:
-                model.eval()
-                with torch.no_grad():
-                    for val_data in val_loader:
-                        val_inputs, val_labels = (
-                            val_data["image"].to(self.device),
-                            val_data["label"].to(self.device),
-                        )
-
-                        val_outputs = model_class.get_validation(
-                            model, val_inputs
-                        )
-
-                        pred = decollate_batch(val_outputs)
-
-                        labs = decollate_batch(val_labels)
-
-                        # TODO : more parameters/flexibility
-                        post_pred = Compose(
-                            AsDiscrete(threshold=0.6), EnsureType()
-                        )  #
-                        post_label = EnsureType()
-
-                        val_outputs = [
-                            post_pred(res_tensor) for res_tensor in pred
-                        ]
-
-                        val_labels = [
-                            post_label(res_tensor) for res_tensor in labs
-                        ]
-
-                        # print(len(val_outputs))
-                        # print(len(val_labels))
-
-                        dice_metric(y_pred=val_outputs, y=val_labels)
-
-                    metric = dice_metric.aggregate().detach().item()
-                    dice_metric.reset()
-
-                    val_metric_values.append(metric)
-
-                    train_report = {
-                        "plot": True,
-                        "epoch": epoch,
-                        "losses": epoch_loss_values,
-                        "val_metrics": val_metric_values,
-                        "weights": model.state_dict(),
-                    }
-                    yield train_report
-
-                    weights_filename = (
-                        f"{model_name}_best_metric" + f"_epoch_{epoch + 1}.pth"
+            for epoch in range(self.max_epochs):
+                # self.log("\n")
+                self.log("-" * 10)
+                self.log(f"Epoch {epoch + 1}/{self.max_epochs}")
+                if self.device.type == "cuda":
+                    self.log("Memory Usage:")
+                    alloc_mem = round(
+                        torch.cuda.memory_allocated(0) / 1024**3, 1
                     )
+                    reserved_mem = round(
+                        torch.cuda.memory_reserved(0) / 1024**3, 1
+                    )
+                    self.log(f"Allocated: {alloc_mem}GB")
+                    self.log(f"Cached: {reserved_mem}GB")
 
-                    if metric > best_metric:
-                        best_metric = metric
-                        best_metric_epoch = epoch + 1
-                        self.log("Saving best metric model")
-                        torch.save(
-                            model.state_dict(),
-                            os.path.join(self.results_path, weights_filename),
-                        )
-                        self.log("Saving complete")
+                model.train()
+                epoch_loss = 0
+                step = 0
+                for batch_data in train_loader:
+                    step += 1
+                    inputs, labels = (
+                        batch_data["image"].to(self.device),
+                        batch_data["label"].to(self.device),
+                    )
+                    optimizer.zero_grad()
+                    outputs = model_class.get_output(model, inputs)
+                    # print(f"OUT : {outputs.shape}")
+                    loss = self.loss_function(outputs, labels)
+                    loss.backward()
+                    optimizer.step()
+                    epoch_loss += loss.detach().item()
                     self.log(
-                        f"Current epoch: {epoch + 1}, Current mean dice: {metric:.4f}"
-                        f"\nBest mean dice: {best_metric:.4f} "
-                        f"at epoch: {best_metric_epoch}"
+                        f"* {step}/{len(train_ds) // train_loader.batch_size}, "
+                        f"Train loss: {loss.detach().item():.4f}"
                     )
-        self.log("=" * 10)
-        self.log(
-            f"Train completed, best_metric: {best_metric:.4f} "
-            f"at epoch: {best_metric_epoch}"
-        )
-        model.to("cpu")
-        # optimizer = None
-        # del optimizer
-        # del device
-        # del model_id
-        # del model_name
-        # del model
-        # del data_dicts
-        # del max_epochs
-        # del loss_function
-        # del val_interval
-        # del batch_size
-        # del results_path
-        # del num_samples
-        # del best_metric
-        # del best_metric_epoch
+                    yield {"plot": False, "weights": model.state_dict()}
 
-        # self.close()
+                epoch_loss /= step
+                epoch_loss_values.append(epoch_loss)
+                self.log(f"Epoch: {epoch + 1}, Average loss: {epoch_loss:.4f}")
 
+                if (epoch + 1) % self.val_interval == 0:
+                    model.eval()
+                    with torch.no_grad():
+                        for val_data in val_loader:
+                            val_inputs, val_labels = (
+                                val_data["image"].to(self.device),
+                                val_data["label"].to(self.device),
+                            )
 
-# def this_is_fine(self):
-#     import numpy as np
-#
-#     length = 10
-#     for i in range(5):
-#         loss = np.random.rand(length)
-#         dice_metric = np.random.rand(int(length / 2))
-#         self.log("this is fine :)")
-#         yield {"epoch": i, "losses": loss, "val_metrics": dice_metric}
+                            val_outputs = model_class.get_validation(
+                                model, val_inputs
+                            )
+
+                            pred = decollate_batch(val_outputs)
+
+                            labs = decollate_batch(val_labels)
+
+                            # TODO : more parameters/flexibility
+                            post_pred = Compose(
+                                AsDiscrete(threshold=0.6), EnsureType()
+                            )  #
+                            post_label = EnsureType()
+
+                            val_outputs = [
+                                post_pred(res_tensor) for res_tensor in pred
+                            ]
+
+                            val_labels = [
+                                post_label(res_tensor) for res_tensor in labs
+                            ]
+
+                            # print(len(val_outputs))
+                            # print(len(val_labels))
+
+                            dice_metric(y_pred=val_outputs, y=val_labels)
+
+                        metric = dice_metric.aggregate().detach().item()
+                        dice_metric.reset()
+
+                        val_metric_values.append(metric)
+
+                        train_report = {
+                            "plot": True,
+                            "epoch": epoch,
+                            "losses": epoch_loss_values,
+                            "val_metrics": val_metric_values,
+                            "weights": model.state_dict(),
+                        }
+                        yield train_report
+
+                        weights_filename = (
+                            f"{model_name}_best_metric"
+                            + f"_epoch_{epoch + 1}.pth"
+                        )
+
+                        if metric > best_metric:
+                            best_metric = metric
+                            best_metric_epoch = epoch + 1
+                            self.log("Saving best metric model")
+                            torch.save(
+                                model.state_dict(),
+                                os.path.join(
+                                    self.results_path, weights_filename
+                                ),
+                            )
+                            self.log("Saving complete")
+                        self.log(
+                            f"Current epoch: {epoch + 1}, Current mean dice: {metric:.4f}"
+                            f"\nBest mean dice: {best_metric:.4f} "
+                            f"at epoch: {best_metric_epoch}"
+                        )
+            self.log("=" * 10)
+            self.log(
+                f"Train completed, best_metric: {best_metric:.4f} "
+                f"at epoch: {best_metric_epoch}"
+            )
+            model.to("cpu")
+
+        except Exception as e:
+            self.log(f"Error : {e}")
+            self.quit()
+        finally:
+            self.quit()
