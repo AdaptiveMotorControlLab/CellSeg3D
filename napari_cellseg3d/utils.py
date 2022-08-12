@@ -155,7 +155,7 @@ def time_difference(time_start, time_finish, as_string=True):
     """
     Args:
         time_start (datetime): time to subtract to time_finish
-        time_finish (datetime): time to add to (-time_start)
+        time_finish (datetime): time to add to subtract time_start to
         as_string (bool): if True, returns a string with the full time diff. Otherwise, returns as a list [hours,minutes,seconds]
     """
 
