@@ -194,15 +194,19 @@ def volume_stats(volume_image):
     """
 
     properties = regionprops(volume_image)
-    number_objects = np.amax(volume_image)
 
-    sphericity_va = []
-    sphericity_ax = [
-        sphericity_axis(
-            region.axis_major_length * 0.5, region.axis_minor_length * 0.5
-        )
-        for region in properties
-    ]
+    # sphericity_va = []
+    def sphericity(region):
+        try:
+            return sphericity_axis(
+                region.axis_major_length * 0.5, region.axis_minor_length * 0.5
+            )
+        except ValueError:
+            return (
+                np.nan
+            )  # FIXME better way ? inconsistent errors in region.axis_minor_length
+
+    sphericity_ax = [sphericity(region) for region in properties]
     # for region in properties:
     # object = (volume_image == region.label).transpose(1, 2, 0)
     # verts, faces, _, values = marching_cubes(

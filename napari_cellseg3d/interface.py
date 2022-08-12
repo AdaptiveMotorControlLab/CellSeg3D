@@ -335,7 +335,9 @@ class FilePathWidget(
         """If set to True, will be colored red if incorrectly set"""
         if is_required:
             self.text_field.textChanged.connect(self.check_ready)
-            self.check_ready()
+        else:
+            self.text_field.textChanged.disconnect(self.check_ready)
+        self.check_ready()
 
     def update_field_color(self, color: str):
         """Updates the background of the text field"""
@@ -494,10 +496,10 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         fixed: Optional[bool] = True,
     ):
         """Args:
-        min (Optional[int]): minimum value, defaults to 0
-        max (Optional[int]): maximum value, defaults to 10
-        default (Optional[int]): default value, defaults to 0
-        step (Optional[int]): step value, defaults to 1
+        min (Optional[float]): minimum value, defaults to 0
+        max (Optional[float]): maximum value, defaults to 10
+        default (Optional[float]): default value, defaults to 0
+        step (Optional[float]): step value, defaults to 1
         parent: parent widget, defaults to None
         fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed"""
 
