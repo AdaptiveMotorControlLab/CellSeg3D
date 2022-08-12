@@ -711,17 +711,9 @@ class InferenceWorker(GeneratorWorker):
             torch.set_num_threads(1)  # required for threading on macOS ?
             self.log("Number of threads has been set to 1 for macOS")
 
-        # if self.device =="cuda": # TODO : fix mem alloc, this does not work it seems
-        # torch.backends.cudnn.benchmark = False
-
-        # TODO : better solution than loading first image always ?
-        # data_check = LoadImaged(keys=["image"])(images_dict[0])
-        # print(data)
-        # check = data_check["image"].shape
-        # print(check)
 
         try:
-            dims = self.model_dict["segres_size"]
+            dims = self.model_dict["model_input_size"]
 
 
             if self.model_dict["name"] == "SegResNet":
