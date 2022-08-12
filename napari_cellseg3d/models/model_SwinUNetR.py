@@ -3,7 +3,7 @@ from monai.networks.nets import SwinUNETR
 
 
 def get_weights_file():
-    return ""
+    return "Swin64_best_metric.pth"
 
 
 def get_net(img_size, use_checkpoint=True):

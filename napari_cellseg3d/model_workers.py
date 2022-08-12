@@ -227,7 +227,7 @@ class InferenceWorker(GeneratorWorker):
         self.instance_params = instance
         self.use_window = use_window
         self.window_infer_size = window_infer_size
-        self.window_overlap_percentage = (0.8,)
+        self.window_overlap_percentage = 0.8
         self.keep_on_cpu = keep_on_cpu
         self.stats_to_csv = stats_csv
         """These attributes are all arguments of :py:func:~inference, please see that for reference"""
@@ -346,7 +346,7 @@ class InferenceWorker(GeneratorWorker):
 
         dims = self.model_dict["model_input_size"]
 
-        model = self.model_dict["class"].get_net()
+
         if self.model_dict["name"] == "SegResNet":
             model = self.model_dict["class"].get_net(
                 input_image_size=[
@@ -360,6 +360,8 @@ class InferenceWorker(GeneratorWorker):
                 img_size=[dims, dims, dims],
                 use_checkpoint=False,
             )
+        else:
+            model = self.model_dict["class"].get_net()
 
         self.log_parameters()
 
@@ -445,6 +447,7 @@ class InferenceWorker(GeneratorWorker):
                 inputs = inputs.to("cpu")
                 print(inputs.shape)
 
+                # self.log("output")
                 model_output = lambda inputs: post_process_transforms(
                     self.model_dict["class"].get_output(model, inputs)
                 )
@@ -460,6 +463,8 @@ class InferenceWorker(GeneratorWorker):
                 else:
                     window_size = None
                     window_overlap = 0.25
+
+                # self.log("window")
                 outputs = sliding_window_inference(
                     inputs,
                     roi_size=window_size,
