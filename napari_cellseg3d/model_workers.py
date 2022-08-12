@@ -398,19 +398,32 @@ class InferenceWorker(GeneratorWorker):
 
         # print(volume.shape)
         # print(volume.dtype)
-
-        load_transforms = Compose(
+        if self.use_window:
+            load_transforms =  Compose(
             [
                 ToTensor(),
                 # anisotropic_transform,
                 AddChannel(),
-                SpatialPad(spatial_size=pad),
+                # SpatialPad(spatial_size=pad),
                 AddChannel(),
                 EnsureType(),
             ],
             map_items=False,
             log_stats=True,
         )
+        else:
+            load_transforms = Compose(
+                [
+                    ToTensor(),
+                    # anisotropic_transform,
+                    AddChannel(),
+                    SpatialPad(spatial_size=pad),
+                    AddChannel(),
+                    EnsureType(),
+                ],
+                map_items=False,
+                log_stats=True,
+            )
 
         self.log("\nLoading dataset...")
         input_image = load_transforms(volume)
