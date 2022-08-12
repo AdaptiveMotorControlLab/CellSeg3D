@@ -59,6 +59,12 @@ def toggle_visibility(checkbox, widget):
     """
     widget.setVisible(checkbox.isChecked())
 
+def add_label(widget, label, label_before=True, horizontal=True):
+    if label_before:
+        return combine_blocks(widget, label, horizontal=horizontal)
+    else:
+        return combine_blocks(label, widget, horizontal=horizontal)
+
 
 def add_label(widget, label, label_before=True, horizontal=True):
     if label_before:
@@ -701,6 +707,26 @@ def make_group(title, L=7, T=20, R=7, B=11, parent=None):  # TODO : child class
     layout.setSizeConstraint(QLayout.SetFixedSize)
 
     return group, layout
+
+class GroupedWidgets(QGroupBox):
+    """Subclass of QGroupBox designed to easily group widgets belonging to a same category"""
+    def __init__(self, title, l=7, t=20, r=7, b=11, parent=None):
+        super().__init__(title, parent)
+
+        self.setSizePolicy(QSizePolicy.Fixed)
+        self.layout = QVBoxLayout()
+        self.layout.setContentsMargins(l,t,r,b)
+        self.layout.setSizeConstraint(QLayout.SetFixedSize)
+
+        return self, self.layout
+
+    @classmethod
+    def create_single_widget_group(cls, title, widget, layout, l=7,t=20,r=7,b=11):
+        group, group_layout = cls(title, l,t,r,b)
+        group_layout.addWidget(widget)
+        group.setLayout(group_layout)
+        layout.addWidget(group)
+
 
 
 class GroupedWidget(QGroupBox):
