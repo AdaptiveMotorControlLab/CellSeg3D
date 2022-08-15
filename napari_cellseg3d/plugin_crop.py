@@ -42,7 +42,7 @@ class Cropping(BasePluginSingleImage):
 
         self.btn_start = ui.Button("Start", self.start, self)
 
-        self.crop_label_choice = ui.make_checkbox(
+        self.crop_label_choice = ui.CheckBox(
             "Crop labels simultaneously", self.toggle_label_path
         )
         self.lbl_label.setVisible(False)
@@ -92,7 +92,7 @@ class Cropping(BasePluginSingleImage):
     def build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
 
-        w, layout = ui.make_container(0, 0, 1, 11)
+        w, layout = ui.ContainerWidget(0, 0, 1, 11)
 
         data_group_w, data_group_l = ui.make_group("Data")
 

@@ -44,7 +44,7 @@ class Reviewer(BasePluginSingleImage):
         self.textbox = QLineEdit(self)
         self.textbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-        self.checkBox = ui.make_checkbox("Create new dataset ?")
+        self.checkBox = ui.CheckBox("Create new dataset ?")
 
         self.btn_start = ui.Button("Start reviewing", self.run_review, self)
 
@@ -76,7 +76,7 @@ class Reviewer(BasePluginSingleImage):
 
         self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.MinimumExpanding)
 
-        tab, layout = ui.make_container(0, 0, 1, 1)
+        tab, layout = ui.ContainerWidget(0, 0, 1, 1)
 
         # ui.add_blank(self, layout)
         ###########################

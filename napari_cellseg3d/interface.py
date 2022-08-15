@@ -185,7 +185,7 @@ class AnisotropyWidgets(QWidget):
         self.container, self._boxes_layout = ContainerWidget(
             t=7, parent=parent
         )
-        self.checkbox = make_checkbox(
+        self.checkbox = CheckBox(
             "Anisotropic data", self._toggle_display_aniso, parent
         )
 
@@ -288,9 +288,7 @@ class AnisotropyWidgets(QWidget):
         self.checkbox.setVisible(False)
 
 
-class FilePathWidget(
-    QWidget
-):  # TODO upgrade logic, include load as folder, highlight if incorrect ?
+class FilePathWidget(QWidget):  # TODO upgrade logic, include load as folder
     """Widget to handle the choice of file paths for data throughout the plugin. Provides the following elements :
     - An "Open" button to show a file dialog (defined externally)
     - A QLineEdit in read only to display the chosen path/file"""
@@ -385,7 +383,6 @@ class ScrollArea(QScrollArea):
               base_wh (Optional[List[int]]): array of two ints for respectively the initial width and initial height of the scrollable area. Defaults to None, lets Qt decide if None
               parent (Optional[QWidget]): array of two ints for respectively the initial width and initial height of the scrollable area. Defaults to None, lets Qt decide if None
         """
-        # TODO : optimize the number of created objects ?
         super().__init__(parent)
 
         self._container_widget = (
@@ -730,29 +727,6 @@ class GroupedWidget(QGroupBox):
         layout.addWidget(group)
 
 
-def make_container(
-    L=0, T=0, R=1, B=11, vertical=True, parent=None
-):  # TODO child class?
-    """Creates a QWidget and a layout for the purpose of containing other modules, with a Fixed layout.
-
-    Args:
-        parent : parent widget. If None, no widget is set
-        L (int): left margin of layout
-        T (int): top margin of layout
-        R (int): right margin of layout
-        B (int): bottom margin of layout
-        vertical (bool): if False, uses QHBoxLayout instead of QVboxLayout. Default: True
-
-    Returns:
-        QWidget : widget that contains the other widgets. Fixed size.
-        QBoxLayout :  H/V Box layout to add contained widgets in. Fixed size.
-    """
-    return ContainerWidget(
-        l=L, t=T, r=R, b=B, vertical=vertical, parent=parent
-    )
-    # TODO remove and refactor
-
-
 class ContainerWidget(QWidget):  # TODO convert calls
     def __init__(self, l=0, t=0, r=1, b=11, vertical=True, parent=None):
 
@@ -771,6 +745,10 @@ class ContainerWidget(QWidget):  # TODO convert calls
     def layout(self) -> "QLayout":
         return self.layout
 
+    @layout.setter
+    def layout(self, new_layout):
+        self.layout = new_layout
+
 
 def add_widgets(layout, widgets, alignment=LEFT_AL):
     """Adds all widgets in the list to layout, with the specified alignment.
@@ -788,28 +766,7 @@ def add_widgets(layout, widgets, alignment=LEFT_AL):
             layout.addWidget(w, alignment=alignment)
 
 
-def make_checkbox(  # TODO update calls to class
-    title: str = None,
-    func: callable = None,
-    parent: QWidget = None,
-    fixed: bool = True,
-):
-    """Creates a checkbox with a title and connects it to a function when clicked
-
-    Args:
-        title (str-like): title of the checkbox. Defaults to None, if None no title is set
-        func (callable): function to execute when checkbox is toggled. Defaults to None, no binding is made if None
-        parent (QWidget): parent QWidget to add checkbox to. Defaults to None, no parent is set if None
-        fixed (bool): if True, will set the size policy of the checkbox to Fixed in h and w. Defaults to True.
-
-    Returns:
-        QCheckBox : created widget
-    """
-
-    return CheckBox(title, func, parent, fixed)
-
-
-def combine_blocks( # TODO FIXME PLEASE
+def combine_blocks(  # TODO FIXME PLEASE
     right_or_below,
     left_or_above,
     min_spacing=0,
@@ -823,10 +780,14 @@ def combine_blocks( # TODO FIXME PLEASE
        Weird argument names due the initial implementation of it.  # TODO maybe fix arg names
 
     Args:
-        horizontal (bool): whether to stack widgets vertically (False) or horizontally (True)
         left_or_above (QWidget): First widget, to be added on the left/above of "second"
         right_or_below (QWidget): Second widget, to be displayed right/below of "first"
         min_spacing (int): Minimum spacing between the two widgets (from the start of label to the start of button)
+                horizontal (bool): whether to stack widgets vertically (False) or horizontally (True)
+        l (int): left spacing in pixels
+        t (int): top spacing in pixels
+        r (int): right spacing in pixels
+        b (int): bottom spacing in pixels
 
     Returns:
         QWidget: new QWidget containing the merged widget and label

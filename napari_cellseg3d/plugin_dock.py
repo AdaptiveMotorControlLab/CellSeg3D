@@ -53,7 +53,7 @@ class Datamanager(QWidget):
             "Pause", self.pause_timer, parent=self, fixed=True
         )
 
-        io_panel, io_layout = ui.make_container()
+        io_panel, io_layout = ui.ContainerWidget()
         io_layout.addWidget(self.button, alignment=ui.ABS_AL)
         io_layout.addWidget(
             ui.combine_blocks(

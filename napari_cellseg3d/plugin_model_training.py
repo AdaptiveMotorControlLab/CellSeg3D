@@ -184,7 +184,7 @@ class Trainer(ModelFramework):
         ################################
         # interface
 
-        self.zip_choice = ui.make_checkbox("Compress results")
+        self.zip_choice = ui.CheckBox("Compress results")
 
         self.validation_percent_choice = ui.IntIncrementCounter(
             10, 90, default=80, step=1, parent=self
@@ -237,7 +237,7 @@ class Trainer(ModelFramework):
 
         self.learning_rate_choice.setCurrentIndex(1)
 
-        self.augment_choice = ui.make_checkbox("Augment data")
+        self.augment_choice = ui.CheckBox("Augment data")
 
         self.close_buttons = [
             self.make_close_button() for i in range(NUMBER_TABS)
@@ -256,18 +256,18 @@ class Trainer(ModelFramework):
             w.setVisible(False)
         for l in self.patch_size_lbl:
             l.setVisible(False)
-        self.sampling_container, l = ui.make_container()
+        self.sampling_container, l = ui.ContainerWidget()
 
-        self.patch_choice = ui.make_checkbox(
+        self.patch_choice = ui.CheckBox(
             "Extract patches from images", func=self.toggle_patch_dims
         )
         self.patch_choice.clicked.connect(self.toggle_patch_dims)
 
-        self.use_transfer_choice = ui.make_checkbox(
+        self.use_transfer_choice = ui.CheckBox(
             "Transfer weights", self.toggle_transfer_param
         )
 
-        self.use_deterministic_choice = ui.make_checkbox(
+        self.use_deterministic_choice = ui.CheckBox(
             "Deterministic training", func=self.toggle_deterministic_param
         )
         self.box_seed = ui.IntIncrementCounter(max=10000000, default=23498)
@@ -422,7 +422,7 @@ class Trainer(ModelFramework):
         ################
         ########################
         # first tab : model and dataset choices
-        data_tab, data_tab_layout = ui.make_container()
+        data_tab, data_tab_layout = ui.ContainerWidget()
         ################
         # first group : Data
         data_group, data_layout = ui.make_group("Data")
@@ -504,11 +504,11 @@ class Trainer(ModelFramework):
         ######
         ############
         ##################
-        augment_tab_w, augment_tab_l = ui.make_container()
+        augment_tab_w, augment_tab_l = ui.ContainerWidget()
         ##################
         # extract patches or not
 
-        patch_size_w, patch_size_l = ui.make_container()
+        patch_size_w, patch_size_l = ui.ContainerWidget()
         [
             patch_size_l.addWidget(widget, alignment=ui.LEFT_AL)
             for widgts in zip(self.patch_size_lbl, self.patch_size_widgets)
@@ -516,7 +516,7 @@ class Trainer(ModelFramework):
         ]  # patch sizes
         patch_size_w.setLayout(patch_size_l)
 
-        sampling_w, sampling_l = ui.make_container()
+        sampling_w, sampling_l = ui.ContainerWidget()
 
         ui.add_widgets(
             sampling_l,
@@ -573,7 +573,7 @@ class Trainer(ModelFramework):
         ######
         ############
         ##################
-        train_tab, train_tab_layout = ui.make_container()
+        train_tab, train_tab_layout = ui.ContainerWidget()
         ##################
         # solo groups for loss and model
         ui.add_blank(train_tab, train_tab_layout)

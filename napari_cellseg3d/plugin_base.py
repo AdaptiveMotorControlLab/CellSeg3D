@@ -67,7 +67,7 @@ class BasePluginSingleImage(QTabWidget):
 
         self.filetype_choice = ui.DropdownMenu([".png", ".tif"])
 
-        self.file_handling_box = ui.make_checkbox(
+        self.file_handling_box = ui.CheckBox(
             "Load as folder ?", self.show_filetype_choice
         )
         """Checkbox to choose single file or directory loader handling"""

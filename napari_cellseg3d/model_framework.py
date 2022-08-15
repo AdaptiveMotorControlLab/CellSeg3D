@@ -101,7 +101,7 @@ class ModelFramework(BasePluginFolder):
         )
         self.weights_path_container.setVisible(False)
 
-        self.custom_weights_choice = ui.make_checkbox(
+        self.custom_weights_choice = ui.CheckBox(
             "Load custom weights", self.toggle_weights_path, self
         )
 
@@ -110,7 +110,7 @@ class ModelFramework(BasePluginFolder):
         (
             self.container_report,
             self.container_report_layout,
-        ) = ui.make_container(10, 5, 5, 5)
+        ) = ui.ContainerWidget(l=10, t=5, r=5, b=5)
         self.container_report.setSizePolicy(
             QSizePolicy.Fixed, QSizePolicy.Minimum
         )

@@ -47,7 +47,7 @@ class MetricsUtils(BasePluginFolder):
 
         self.btn_compute_dice = ui.Button("Compute Dice", self.compute_dice)
 
-        self.rotate_choice = ui.make_checkbox("Find best orientation")
+        self.rotate_choice = ui.CheckBox("Find best orientation")
 
         self.btn_reset_plot = ui.Button("Clear plots", self.remove_plots)
 
@@ -75,7 +75,7 @@ class MetricsUtils(BasePluginFolder):
 
         self.lbl_filetype.setVisible(False)
 
-        w, self.layout = ui.make_container()
+        w, self.layout = ui.ContainerWidget()
 
         metrics_group_w, metrics_group_l = ui.make_group("Data")
 
