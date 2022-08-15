@@ -28,15 +28,8 @@ MODEL_LIST = {
     "SegResNet": SegResNet,
     # "TRAILMAP": TRAILMAP,
     "TRAILMAP_MS": TRAILMAP_MS,
+    "SwinUNetR": SwinUNetR
 }
-
-
-@dataclass
-class ModelConfig:
-    model_name: str
-    model_class: MODEL_LIST[model_name]
-    image_input_size: list[int]
-
 
 class ModelFramework(BasePluginFolder):
     """A framework with buttons to use for loading images, labels, models, etc. for both inference and training"""
