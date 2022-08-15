@@ -164,7 +164,6 @@ class Inferer(ModelFramework):
         )
         self.keep_data_on_cpu_box = ui.CheckBox("Keep data on CPU")
 
-
         window_size_widgets = ui.combine_blocks(
             self.window_size_choice,
             self.lbl_window_size_choice,

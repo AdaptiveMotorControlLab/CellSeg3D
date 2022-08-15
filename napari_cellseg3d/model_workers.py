@@ -185,6 +185,7 @@ class LogSignal(WorkerBaseSignals):
     def __init__(self):
         super().__init__()
 
+
 @dataclass
 class InferenceConfig:
     """Class to record configuration for Inference job"""
@@ -202,7 +203,6 @@ class InferenceConfig:
     stats_csv: bool
     images_filepaths: str = None
     layer: napari.layers.Layer = None
-
 
 
 class InferenceWorker(GeneratorWorker):
