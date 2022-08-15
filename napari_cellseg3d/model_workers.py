@@ -319,27 +319,27 @@ class InferenceWorker(GeneratorWorker):
         self.log("\nChecking dimensions...")
         pad = utils.get_padding_dim(check)
 
-        dims = self.model_dict["model_input_size"]
-
-        if self.model_dict["name"] == "SegResNet":
-            model = self.model_dict["class"].get_net(
-                input_image_size=[
-                    dims,
-                    dims,
-                    dims,
-                ]
-            )
-        elif self.model_dict["name"] == "SwinUNetR":
-            model = self.model_dict["class"].get_net(
-                img_size=[dims, dims, dims],
-                use_checkpoint=False,
-            )
-        else:
-            model = self.model_dict["class"].get_net()
-
-        self.log_parameters()
-
-        model.to(self.device)
+        # dims = self.model_dict["model_input_size"]
+        #
+        # if self.model_dict["name"] == "SegResNet":
+        #     model = self.model_dict["class"].get_net(
+        #         input_image_size=[
+        #             dims,
+        #             dims,
+        #             dims,
+        #         ]
+        #     )
+        # elif self.model_dict["name"] == "SwinUNetR":
+        #     model = self.model_dict["class"].get_net(
+        #         img_size=[dims, dims, dims],
+        #         use_checkpoint=False,
+        #     )
+        # else:
+        #     model = self.model_dict["class"].get_net()
+        #
+        # self.log_parameters()
+        #
+        # model.to(self.device)
 
         # print("FILEPATHS PRINT")
         # print(self.images_filepaths)
@@ -399,18 +399,18 @@ class InferenceWorker(GeneratorWorker):
         # print(volume.shape)
         # print(volume.dtype)
         if self.use_window:
-            load_transforms =  Compose(
-            [
-                ToTensor(),
-                # anisotropic_transform,
-                AddChannel(),
-                # SpatialPad(spatial_size=pad),
-                AddChannel(),
-                EnsureType(),
-            ],
-            map_items=False,
-            log_stats=True,
-        )
+            load_transforms = Compose(
+                [
+                    ToTensor(),
+                    # anisotropic_transform,
+                    AddChannel(),
+                    # SpatialPad(spatial_size=pad),
+                    AddChannel(),
+                    EnsureType(),
+                ],
+                map_items=False,
+                log_stats=True,
+            )
         else:
             load_transforms = Compose(
                 [
@@ -558,13 +558,12 @@ class InferenceWorker(GeneratorWorker):
         )
 
         imwrite(file_path, image)
+        filename = os.path.split(file_path)[1]
 
         if from_layer:
-            self.log(f"\nLayer prediction saved as :")
+            self.log(f"\nLayer prediction saved as : {filename}")
         else:
-            self.log(f"\nFile n°{i+1} saved as :")
-            filename = os.path.split(file_path)[1]
-            self.log(filename)
+            self.log(f"\nFile n°{i+1} saved as : {filename}")
 
     def aniso_transform(self, image):
         zoom = self.transforms["zoom"][1]
@@ -680,9 +679,13 @@ class InferenceWorker(GeneratorWorker):
 
         self.save_image(out, from_layer=True)
 
-        instance_labels, data_dict = self.get_instance_result(out,from_layer=True)
+        instance_labels, data_dict = self.get_instance_result(
+            out, from_layer=True
+        )
 
-        return self.create_result_dict(out, instance_labels, from_layer=True, data_dict=data_dict)
+        return self.create_result_dict(
+            out, instance_labels, from_layer=True, data_dict=data_dict
+        )
 
     def inference(self):
         """
@@ -724,20 +727,18 @@ class InferenceWorker(GeneratorWorker):
             torch.set_num_threads(1)  # required for threading on macOS ?
             self.log("Number of threads has been set to 1 for macOS")
 
-
         try:
             dims = self.model_dict["model_input_size"]
-
+            self.log(f"MODEL DIMS : {dims}")
+            self.log(self.model_dict["name"])
 
             if self.model_dict["name"] == "SegResNet":
-                model = self.model_dict["class"].get_net()(
+                model = self.model_dict["class"].get_net(
                     input_image_size=[
                         dims,
                         dims,
                         dims,
                     ],  # TODO FIX ! find a better way & remove model-specific code
-                    out_channels=1,
-                    # dropout_prob=0.3,
                 )
             elif self.model_dict["name"] == "SwinUNetR":
                 model = self.model_dict["class"].get_net(
@@ -772,10 +773,7 @@ class InferenceWorker(GeneratorWorker):
                     AsDiscrete(threshold=t), EnsureType()
                 )
 
-
-            self.log(
-                "\nLoading weights..."
-            )
+            self.log("\nLoading weights...")
 
             if self.weights_dict["custom"]:
                 weights = self.weights_dict["path"]
@@ -1090,9 +1088,6 @@ class TrainingWorker(GeneratorWorker):
             else:
                 model = model_class.get_net()  # get an instance of the model
             model = model.to(self.device)
-
-
-
 
             epoch_loss_values = []
             val_metric_values = []

@@ -100,7 +100,9 @@ class Inferer(ModelFramework):
         ######################
         ######################
         # TODO : better way to handle SegResNet size reqs ?
-        self.model_input_size = ui.IntIncrementCounter(min=1, max=1024, default=128)
+        self.model_input_size = ui.IntIncrementCounter(
+            min=1, max=1024, default=128
+        )
         self.model_choice.currentIndexChanged.connect(
             self.toggle_display_model_input_size
         )
@@ -770,7 +772,6 @@ class Inferer(ModelFramework):
         if widget.show_res and image_id <= widget.show_res_nbr:
 
             zoom = widget.zoom
-
 
             viewer.dims.ndisplay = 3
             viewer.scale_bar.visible = True
