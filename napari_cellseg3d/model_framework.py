@@ -28,8 +28,9 @@ MODEL_LIST = {
     "SegResNet": SegResNet,
     # "TRAILMAP": TRAILMAP,
     "TRAILMAP_MS": TRAILMAP_MS,
-    "SwinUNetR": SwinUNetR
+    "SwinUNetR": SwinUNetR,
 }
+
 
 class ModelFramework(BasePluginFolder):
     """A framework with buttons to use for loading images, labels, models, etc. for both inference and training"""
@@ -111,8 +112,7 @@ class ModelFramework(BasePluginFolder):
         ###################################################
         # status report docked widget
 
-        self.container_report  = ui.ContainerWidget(l=10, t=5, r=5, b=5)
-
+        self.container_report = ui.ContainerWidget(l=10, t=5, r=5, b=5)
 
         self.container_report.setSizePolicy(
             QSizePolicy.Fixed, QSizePolicy.Minimum

@@ -83,7 +83,6 @@ class Inferer(ModelFramework):
         ###########################
         # interface
 
-
         self.view_results_container = ui.ContainerWidget(t=7, b=0, parent=self)
 
         self.view_checkbox = ui.CheckBox(
@@ -127,9 +126,7 @@ class Inferer(ModelFramework):
             max=1, default=0.7, step=0.05
         )
 
-        self.thresholding_container  = ui.ContainerWidget(
-            t=7, parent=self
-        )
+        self.thresholding_container = ui.ContainerWidget(t=7, parent=self)
         self.thresh_layout = self.thresholding_container.layout
 
         self.window_infer_box = ui.CheckBox("Use window inference")
@@ -218,7 +215,9 @@ class Inferer(ModelFramework):
             "Save stats to csv", parent=self
         )
 
-        self.instance_param_container= ui.ContainerWidget(t=7, b=0, parent=self)
+        self.instance_param_container = ui.ContainerWidget(
+            t=7, b=0, parent=self
+        )
         self.instance_layout = self.instance_param_container.layout
 
         ##################
@@ -358,7 +357,9 @@ class Inferer(ModelFramework):
             alignment=None,
         )
 
-        self.view_results_container.setLayout(self.view_results_container.layout)
+        self.view_results_container.setLayout(
+            self.view_results_container.layout
+        )
 
         self.anisotropy_wdgt.build()
 

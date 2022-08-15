@@ -190,9 +190,7 @@ class AnisotropyWidgets(QWidget):
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
 
-        self.container = ContainerWidget(
-            t=7, parent=parent
-        )
+        self.container = ContainerWidget(t=7, parent=parent)
         self.checkbox = CheckBox(
             "Anisotropic data", self._toggle_display_aniso, parent
         )
