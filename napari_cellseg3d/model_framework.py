@@ -110,10 +110,10 @@ class ModelFramework(BasePluginFolder):
 
         ###################################################
         # status report docked widget
-        (
-            self.container_report,
-            self.container_report_layout,
-        ) = ui.ContainerWidget(l=10, t=5, r=5, b=5)
+
+        self.container_report  = ui.ContainerWidget(l=10, t=5, r=5, b=5)
+
+
         self.container_report.setSizePolicy(
             QSizePolicy.Fixed, QSizePolicy.Minimum
         )
@@ -205,12 +205,12 @@ class ModelFramework(BasePluginFolder):
         elif not self.container_docked:
 
             ui.add_widgets(
-                self.container_report_layout,
+                self.container_report.layout,
                 [self.progress, self.log, self.btn_save_log],
                 alignment=None,
             )
 
-            self.container_report.setLayout(self.container_report_layout)
+            self.container_report.setLayout(self.container_report.layout)
 
             report_dock = self._viewer.window.add_dock_widget(
                 self.container_report,

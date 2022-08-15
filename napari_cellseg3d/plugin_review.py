@@ -76,7 +76,8 @@ class Reviewer(BasePluginSingleImage):
 
         self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.MinimumExpanding)
 
-        tab, layout = ui.ContainerWidget(0, 0, 1, 1)
+        tab = ui.ContainerWidget(0, 0, 1, 1)
+        layout = tab.layout
 
         # ui.add_blank(self, layout)
         ###########################

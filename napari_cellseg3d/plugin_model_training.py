@@ -256,7 +256,7 @@ class Trainer(ModelFramework):
             w.setVisible(False)
         for l in self.patch_size_lbl:
             l.setVisible(False)
-        self.sampling_container, l = ui.ContainerWidget()
+        self.sampling_container = ui.ContainerWidget()
 
         self.patch_choice = ui.CheckBox(
             "Extract patches from images", func=self.toggle_patch_dims
@@ -422,7 +422,7 @@ class Trainer(ModelFramework):
         ################
         ########################
         # first tab : model and dataset choices
-        data_tab, data_tab_layout = ui.ContainerWidget()
+        data_tab = ui.ContainerWidget()
         ################
         # first group : Data
         data_group, data_layout = ui.make_group("Data")
@@ -457,10 +457,10 @@ class Trainer(ModelFramework):
             self.lbl_result_path.setText(self.results_path)
 
         data_group.setLayout(data_layout)
-        data_tab_layout.addWidget(data_group, alignment=ui.LEFT_AL)
+        data_tab.layout.addWidget(data_group, alignment=ui.LEFT_AL)
         # end of first group : Data
         ################
-        ui.add_blank(widget=data_tab, layout=data_tab_layout)
+        ui.add_blank(widget=data_tab, layout=data_tab.layout)
         ################
         transfer_group_w, transfer_group_l = ui.make_group("Transfer learning")
 
@@ -476,21 +476,21 @@ class Trainer(ModelFramework):
         self.custom_weights_choice.setVisible(False)
 
         transfer_group_w.setLayout(transfer_group_l)
-        data_tab_layout.addWidget(transfer_group_w, alignment=ui.LEFT_AL)
+        data_tab.layout.addWidget(transfer_group_w, alignment=ui.LEFT_AL)
         ################
-        ui.add_blank(self, data_tab_layout)
+        ui.add_blank(self, data_tab.layout)
         ################
         ui.add_to_group(
             "Validation (%)",
             self.validation_percent_choice,
-            data_tab_layout,
+            data_tab.layout,
         )
         ################
-        ui.add_blank(self, data_tab_layout)
+        ui.add_blank(self, data_tab.layout)
         ################
         # buttons
         ui.add_widgets(
-            data_tab_layout,
+            data_tab.layout,
             [
                 self.make_next_button(),  # next
                 ui.add_blank(self),
@@ -504,11 +504,13 @@ class Trainer(ModelFramework):
         ######
         ############
         ##################
-        augment_tab_w, augment_tab_l = ui.ContainerWidget()
+        augment_tab_w = ui.ContainerWidget()
+        augment_tab_l = augment_tab_w.layout
         ##################
         # extract patches or not
 
-        patch_size_w, patch_size_l = ui.ContainerWidget()
+        patch_size_w = ui.ContainerWidget()
+        patch_size_l = patch_size_w.layout
         [
             patch_size_l.addWidget(widget, alignment=ui.LEFT_AL)
             for widgts in zip(self.patch_size_lbl, self.patch_size_widgets)
@@ -516,7 +518,8 @@ class Trainer(ModelFramework):
         ]  # patch sizes
         patch_size_w.setLayout(patch_size_l)
 
-        sampling_w, sampling_l = ui.ContainerWidget()
+        sampling_w = ui.ContainerWidget()
+        sampling_l = sampling_w.layout
 
         ui.add_widgets(
             sampling_l,
@@ -573,30 +576,29 @@ class Trainer(ModelFramework):
         ######
         ############
         ##################
-        train_tab, train_tab_layout = ui.ContainerWidget()
+        train_tab = ui.ContainerWidget()
         ##################
         # solo groups for loss and model
-        ui.add_blank(train_tab, train_tab_layout)
+        ui.add_blank(train_tab, train_tab.layout)
 
         ui.add_to_group(
             "Model",
             self.model_choice,
-            train_tab_layout,
+            train_tab.layout,
         )  # model choice
         self.lbl_model_choice.setVisible(False)
 
-        ui.add_blank(train_tab, train_tab_layout)
-
+        ui.add_blank(train_tab, train_tab.layout)
         ui.add_to_group(
             "Loss",
             self.loss_choice,
-            train_tab_layout,
+            train_tab.layout,
         )  # loss choice
         self.lbl_loss_choice.setVisible(False)
 
         # end of solo groups for loss and model
         ##################
-        ui.add_blank(train_tab, train_tab_layout)
+        ui.add_blank(train_tab, train_tab.layout)
         ##################
         # training params group
 
@@ -654,10 +656,10 @@ class Trainer(ModelFramework):
         )
 
         train_param_group_w.setLayout(train_param_group_l)
-        train_tab_layout.addWidget(train_param_group_w)
+        train_tab.layout.addWidget(train_param_group_w)
         # end of training params group
         ##################
-        ui.add_blank(self, train_tab_layout)
+        ui.add_blank(self, train_tab.layout)
         ##################
         # deterministic choice group
         seed_w, seed_l = ui.make_group(
@@ -672,16 +674,16 @@ class Trainer(ModelFramework):
         self.container_seed.setVisible(False)
 
         seed_w.setLayout(seed_l)
-        train_tab_layout.addWidget(seed_w)
+        train_tab.layout.addWidget(seed_w)
 
         # end of deterministic choice group
         ##################
         # buttons
 
-        ui.add_blank(self, train_tab_layout)
+        ui.add_blank(self, train_tab.layout)
 
         ui.add_widgets(
-            train_tab_layout,
+            train_tab.layout,
             [
                 self.make_prev_button(),  # previous
                 self.btn_start,  # start
@@ -695,7 +697,7 @@ class Trainer(ModelFramework):
         # end of tab layouts
 
         ui.ScrollArea.make_scrollable(
-            contained_layout=data_tab_layout,
+            contained_layout=data_tab.layout,
             parent=data_tab,
             min_wh=[200, 300],
         )  # , max_wh=[200,1000])
@@ -707,7 +709,7 @@ class Trainer(ModelFramework):
         )
 
         ui.ScrollArea.make_scrollable(
-            contained_layout=train_tab_layout,
+            contained_layout=train_tab.layout,
             parent=train_tab,
             min_wh=[200, 300],
         )

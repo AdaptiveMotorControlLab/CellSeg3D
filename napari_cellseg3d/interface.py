@@ -190,7 +190,7 @@ class AnisotropyWidgets(QWidget):
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
 
-        self.container, self._boxes_layout = ContainerWidget(
+        self.container = ContainerWidget(
             t=7, parent=parent
         )
         self.checkbox = CheckBox(
@@ -236,12 +236,12 @@ class AnisotropyWidgets(QWidget):
     def build(self):
         """Builds the layout of the widget"""
         [
-            self._boxes_layout.addWidget(widget, alignment=HCENTER_AL)
+            self.container.layout.addWidget(widget, alignment=HCENTER_AL)
             for widgets in zip(self.box_widgets_lbl, self.box_widgets)
             for widget in widgets
         ]
         # anisotropy
-        self.container.setLayout(self._boxes_layout)
+        self.container.setLayout(self.container.layout)
         self.container.setVisible(False)
 
         add_widgets(self._layout, [self.checkbox, self.container])
@@ -776,14 +776,6 @@ class ContainerWidget(QWidget):  # TODO convert calls
 
         self.layout.setContentsMargins(l, t, r, b)
         self.layout.setSizeConstraint(QLayout.SetFixedSize)
-
-    @property
-    def layout(self) -> "QLayout":
-        return self.layout
-
-    @layout.setter
-    def layout(self, new_layout):
-        self.layout = new_layout
 
 
 def add_widgets(layout, widgets, alignment=LEFT_AL):

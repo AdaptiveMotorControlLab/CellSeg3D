@@ -75,7 +75,8 @@ class MetricsUtils(BasePluginFolder):
 
         self.lbl_filetype.setVisible(False)
 
-        w, self.layout = ui.ContainerWidget()
+        w = ui.ContainerWidget()
+        self.layout =  w.layout
 
         metrics_group_w, metrics_group_l = ui.make_group("Data")
 
