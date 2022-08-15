@@ -1070,7 +1070,7 @@ class TrainingWorker(GeneratorWorker):
                 else:
                     size = check
                 print(f"Size of image : {size}")
-                model = model_class.get_net()(
+                model = model_class.get_net(
                     input_image_size=utils.get_padding_dim(size),
                     out_channels=1,
                     dropout_prob=0.3,
@@ -1081,7 +1081,7 @@ class TrainingWorker(GeneratorWorker):
                 else:
                     size = check
                 print(f"Size of image : {size}")
-                model = model_class.get_net()(
+                model = model_class.get_net(
                     img_size=utils.get_padding_dim(size),
                     use_checkpoint=True,
                 )
