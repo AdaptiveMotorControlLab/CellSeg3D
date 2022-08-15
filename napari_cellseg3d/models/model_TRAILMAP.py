@@ -92,7 +92,6 @@ class TRAILMAP(nn.Module):
             ),
             nn.BatchNorm3d(out_ch),
             nn.ReLU(),
-            # nn.ConvTranspose3d(out_ch, out_ch, kernel_size=2, stride=2),
         )
         return encode
 
@@ -117,6 +116,5 @@ class TRAILMAP(nn.Module):
 
         out = nn.Sequential(
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
-            # nn.BatchNorm3d(out_ch),
         )
         return out
