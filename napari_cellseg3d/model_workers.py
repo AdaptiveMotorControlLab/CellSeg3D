@@ -2,6 +2,7 @@ import os
 import platform
 from pathlib import Path
 import importlib.util
+from typing import List
 from typing import Optional
 
 from dataclasses import dataclass
@@ -198,7 +199,7 @@ class InferenceConfig:
     transforms: dict
     instance: bool
     use_window: bool
-    window_infer_size: list[int]
+    window_infer_size: List[int]
     keep_on_cpu: bool
     stats_csv: bool
     images_filepaths: str = None
