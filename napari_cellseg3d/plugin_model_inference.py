@@ -218,10 +218,8 @@ class Inferer(ModelFramework):
             "Save stats to csv", parent=self
         )
 
-        (
-            self.instance_param_container,
-            self.instance_layout,
-        ) = ui.ContainerWidget(t=7, b=0, parent=self)
+        self.instance_param_container= ui.ContainerWidget(t=7, b=0, parent=self)
+        self.instance_layout = self.instance_param_container.layout
 
         ##################
         ##################
@@ -390,7 +388,7 @@ class Inferer(ModelFramework):
         ############
         ##################
         tab = ui.ContainerWidget(
-            B=1, parent=self
+            b=1, parent=self
         )  # tab that will contain all widgets
 
         L, T, R, B = 7, 20, 7, 11  # margins for group boxes
