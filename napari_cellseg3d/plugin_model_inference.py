@@ -221,7 +221,7 @@ class Inferer(ModelFramework):
         (
             self.instance_param_container,
             self.instance_layout,
-        ) = ui.ContainerWidget(T=7, B=0, parent=self)
+        ) = ui.ContainerWidget(t=7, b=0, parent=self)
 
         ##################
         ##################
