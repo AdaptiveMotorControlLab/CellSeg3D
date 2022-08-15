@@ -4,6 +4,9 @@ from pathlib import Path
 import importlib.util
 from typing import Optional
 
+from dataclasses import dataclass
+
+import napari.layers
 import numpy as np
 from tifffile import imwrite
 import torch
@@ -182,8 +185,24 @@ class LogSignal(WorkerBaseSignals):
     def __init__(self):
         super().__init__()
 
+@dataclass
+class InferenceConfig:
+    """Class to record configuration for Inference job"""
 
-# TODO : use dataclass for config instead ?
+    device: str
+    model_dict: dict
+    weights_dict: dict
+    results_path: str
+    filetype: str
+    transforms: dict
+    instance: bool
+    use_window: bool
+    window_infer_size: list[int]
+    keep_on_cpu: bool
+    stats_csv: bool
+    images_filepaths: str = None
+    layer: napari.layers.Layer = None
+
 
 
 class InferenceWorker(GeneratorWorker):

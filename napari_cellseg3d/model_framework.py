@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import os
 import warnings
 
@@ -21,6 +22,20 @@ from napari_cellseg3d.models import model_TRAILMAP_MS as TRAILMAP_MS
 from napari_cellseg3d.plugin_base import BasePluginFolder
 
 warnings.formatwarning = utils.format_Warning
+
+MODEL_LIST = {
+    "VNet": VNet,
+    "SegResNet": SegResNet,
+    # "TRAILMAP": TRAILMAP,
+    "TRAILMAP_MS": TRAILMAP_MS,
+}
+
+
+@dataclass
+class ModelConfig:
+    model_name: str
+    model_class: MODEL_LIST[model_name]
+    image_input_size: list[int]
 
 
 class ModelFramework(BasePluginFolder):
@@ -61,13 +76,8 @@ class ModelFramework(BasePluginFolder):
         ]
         """Update defaults from PluginBaseFolder with model_path"""
 
-        self.models_dict = {
-            "VNet": VNet,
-            "SegResNet": SegResNet,
-            # "TRAILMAP": TRAILMAP,
-            "TRAILMAP_MS": TRAILMAP_MS,
-            "SwinUNetR": SwinUNetR,
-        }
+        self.models_dict = MODEL_LIST
+
         """dict: dictionary of available models, with string for widget display as key
 
         Currently implemented : SegResNet, VNet, TRAILMAP_MS"""

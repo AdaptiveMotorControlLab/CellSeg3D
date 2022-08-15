@@ -103,6 +103,7 @@ class Button(QPushButton):
             self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
     def visibility_condition(self, checkbox):
+        """Provide a QCheckBox to use to determine whether to show the button or not"""
         toggle_visibility(checkbox, self)
 
 
@@ -221,7 +222,8 @@ class AnisotropyWidgets(QWidget):
             self.toggle_permanent_visibility()
 
     def _toggle_display_aniso(self):
-        """Shows the choices for correcting anisotropy when viewing results depending on whether :py:attr:`self.checkbox` is checked"""
+        """Shows the choices for correcting anisotropy
+        when viewing results depending on whether :py:attr:`self.checkbox` is checked"""
         toggle_visibility(self.checkbox, self.container)
 
     def build(self):
