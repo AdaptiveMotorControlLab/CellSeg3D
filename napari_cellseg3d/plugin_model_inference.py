@@ -98,7 +98,7 @@ class Inferer(ModelFramework):
         ######################
         # TODO : better way to handle SegResNet size reqs ?
         self.model_input_size = ui.IntIncrementCounter(
-            min=1, max=1024, default=128
+            min=1, max=1024, default=128, label="Model input size"
         )
         self.model_choice.currentIndexChanged.connect(
             self.toggle_display_model_input_size
@@ -246,7 +246,8 @@ class Inferer(ModelFramework):
             "Displays the image used for inference in the viewer"
         )
         self.model_input_size.setToolTip(
-            "Image size on which the model has been trained (default : 128)"
+            "Image size on which the model has been trained (default : 128)\n"
+            "DO NOT CHANGE if you are using the provided pre-trained weights"
         )
 
         thresh_desc = (
@@ -321,8 +322,10 @@ class Inferer(ModelFramework):
             or self.model_choice.currentText() == "SwinUNetR"
         ):
             self.model_input_size.setVisible(True)
+            self.model_input_size.label.setVisible(True)
         else:
             self.model_input_size.setVisible(False)
+            self.model_input_size.label.setVisible(False)
 
     def toggle_display_number(self):
         """Shows the choices for viewing results depending on whether :py:attr:`self.view_checkbox` is checked"""
@@ -433,6 +436,7 @@ class Inferer(ModelFramework):
                 self.model_choice,
                 self.custom_weights_choice,
                 self.weights_path_container,
+                self.model_input_size.label,
                 self.model_input_size,
             ],
         )

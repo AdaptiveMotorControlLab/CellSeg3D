@@ -1,5 +1,6 @@
 import glob
 import os
+import warnings
 
 import napari
 from qtpy.QtWidgets import QSizePolicy
@@ -249,6 +250,11 @@ class BasePluginFolder(QTabWidget):
         directory = ui.open_file_dialog(self, self._default_path, True)
         # print(directory)
         file_paths = sorted(glob.glob(os.path.join(directory, "*" + filetype)))
+        if len(file_paths) == 0:
+            warnings.warn(
+                f"The folder does not contain any compatible {filetype} files.\n"
+                f"Please check the validity of the folder and images."
+            )
         # print(file_paths)
         return file_paths
 
