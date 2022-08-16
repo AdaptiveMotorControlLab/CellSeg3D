@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+from typing import List
 import warnings
 
 import napari
@@ -10,7 +12,12 @@ from qtpy.QtWidgets import QSizePolicy
 # local
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
+
+from napari_cellseg3d import config
+
+
 from napari_cellseg3d.model_framework import ModelFramework
+from napari_cellseg3d.model_workers import InferenceResult
 from napari_cellseg3d.model_workers import InferenceWorker
 
 
@@ -65,31 +72,24 @@ class Inferer(ModelFramework):
         self.worker = None
         """Worker for inference, should be an InferenceWorker instance from :doc:model_workers.py"""
 
-        self.transforms = None
+        self.model_info: config.ModelInfo = None
 
-        self.show_res = False
-        self.show_res_nbr = 1
-        self.show_original = True
-        self.zoom = [1, 1, 1]
-
-        self.instance_params = None
-        self.stats_to_csv = False
-
-        self.keep_on_cpu = False
-        self.use_window_inference = False
-        self.window_inference_size = None
-        self.window_overlap = 0.25
+        self.config = config.InfererConfig()
+        self.worker_config = config.InferenceWorkerConfig()
+        self.instance_config = config.InstanceSegConfig()
+        self.post_process_config = config.PostProcessConfig()
 
         ###########################
         # interface
-
         self.view_results_container = ui.ContainerWidget(t=7, b=0, parent=self)
 
         self.view_checkbox = ui.CheckBox(
             "View results in napari", self.toggle_display_number
         )
 
-        self.display_number_choice = ui.IntIncrementCounter(min=1, default=5)
+        self.display_number_choice = ui.IntIncrementCounter(
+            min=1, default=self.config.show_results_count
+        )
         self.lbl_display_number = ui.make_label("How many ? (max. 10)", self)
 
         self.show_original_checkbox = ui.CheckBox("Show originals")
@@ -112,7 +112,11 @@ class Inferer(ModelFramework):
             default_z=5,  # TODO change default
         )
 
-        self.aniso_resolutions = [1, 1, 1]
+        self.worker_config.post_process_config.zoom.zoom_values = [
+            1.0,
+            1.0,
+            1.0,
+        ]
 
         # ui.add_blank(self.aniso_container, aniso_layout)
 
@@ -153,7 +157,7 @@ class Inferer(ModelFramework):
         self.window_overlap_counter = ui.DoubleIncrementCounter(
             min=0,
             max=1,
-            default=0.25,
+            default=self.worker_config.sliding_window_config.window_overlap,
             step=0.05,
             parent=self,
             label="Overlap %",
@@ -185,7 +189,7 @@ class Inferer(ModelFramework):
         )
 
         self.instance_method_choice = ui.DropdownMenu(
-            ["Connected components", "Watershed"]
+            config.INSTANCE_SEGMENTATION_METHOD_LIST.keys()
         )
 
         self.instance_prob_thresh = ui.DoubleIncrementCounter(
@@ -234,26 +238,27 @@ class Inferer(ModelFramework):
         self.label_filewidget.setVisible(False)
         self.model_filewidget.setVisible(False)
 
-        ##################
-        ##################
-        # tooltips
-        self.view_checkbox.setToolTip("Show results in the napari viewer")
-        self.display_number_choice.setToolTip(
-            "Choose how many results to display once the work is done.\n"
-            "Maximum is 10 for clarity"
-        )
-        self.show_original_checkbox.setToolTip(
-            "Displays the image used for inference in the viewer"
-        )
-        self.model_input_size.setToolTip(
-            "Image size on which the model has been trained (default : 128)\n"
-            "DO NOT CHANGE if you are using the provided pre-trained weights"
-        )
+        def set_tooltips():
+            ##################
+            ##################
+            # tooltips
+            self.view_checkbox.setToolTip("Show results in the napari viewer")
+            self.display_number_choice.setToolTip(
+                "Choose how many results to display once the work is done.\n"
+                "Maximum is 10 for clarity"
+            )
+            self.show_original_checkbox.setToolTip(
+                "Displays the image used for inference in the viewer"
+            )
+            self.model_input_size.setToolTip(
+                "Image size on which the model has been trained (default : 128)\n"
+                "DO NOT CHANGE if you are using the provided pre-trained weights"
+            )
 
-        thresh_desc = (
-            "Thresholding : all values in the image below the chosen probability"
-            " threshold will be set to 0, and all others to 1."
-        )
+            thresh_desc = (
+                "Thresholding : all values in the image below the chosen probability"
+                " threshold will be set to 0, and all others to 1."
+            )
 
         self.thresholding_checkbox.setToolTip(thresh_desc)
         self.thresholding_count.setToolTip(thresh_desc)
@@ -270,34 +275,35 @@ class Inferer(ModelFramework):
             "Percentage of overlap between windows to use when using sliding window"
         )
 
-        self.keep_data_on_cpu_box.setToolTip(
-            "If enabled, data will be kept on the RAM rather than the VRAM.\nCan avoid out of memory issues with CUDA"
-        )
-        self.instance_box.setToolTip(
-            "Instance segmentation will convert instance (0/1) labels to labels"
-            " that attempt to assign an unique ID to each cell."
-        )
-        self.instance_method_choice.setToolTip(
-            "Choose which method to use for instance segmentation"
-            "\nConnected components : all separated objects will be assigned an unique ID. "
-            "Robust but will not work correctly with adjacent/touching objects\n"
-            "Watershed : assigns objects ID based on the probability gradient surrounding an object. "
-            "Requires the model to surround objects in a gradient;"
-            " can possibly correctly separate unique but touching/adjacent objects."
-        )
-        self.instance_prob_thresh.setToolTip(
-            "All objects below this probability will be ignored (set to 0)"
-        )
-        self.instance_small_object_thresh.setToolTip(
-            "Will remove all objects smaller (in volume) than the specified number of pixels"
-        )
-        self.save_stats_to_csv_box.setToolTip(
-            "Will save several statistics for each object to a csv in the results folder. Stats include : "
-            "volume, centroid coordinates, sphericity"
-        )
-        ##################
-        ##################
+            self.keep_data_on_cpu_box.setToolTip(
+                "If enabled, data will be kept on the RAM rather than the VRAM.\nCan avoid out of memory issues with CUDA"
+            )
+            self.instance_box.setToolTip(
+                "Instance segmentation will convert instance (0/1) labels to labels"
+                " that attempt to assign an unique ID to each cell."
+            )
+            self.instance_method_choice.setToolTip(
+                "Choose which method to use for instance segmentation"
+                "\nConnected components : all separated objects will be assigned an unique ID. "
+                "Robust but will not work correctly with adjacent/touching objects\n"
+                "Watershed : assigns objects ID based on the probability gradient surrounding an object. "
+                "Requires the model to surround objects in a gradient;"
+                " can possibly correctly separate unique but touching/adjacent objects."
+            )
+            self.instance_prob_thresh.setToolTip(
+                "All objects below this probability will be ignored (set to 0)"
+            )
+            self.instance_small_object_thresh.setToolTip(
+                "Will remove all objects smaller (in volume) than the specified number of pixels"
+            )
+            self.save_stats_to_csv_box.setToolTip(
+                "Will save several statistics for each object to a csv in the results folder. Stats include : "
+                "volume, centroid coordinates, sphericity"
+            )
+            ##################
+            ##################
 
+        set_tooltips()
         self.build()
 
     def check_ready(self):
@@ -589,96 +595,73 @@ class Inferer(ModelFramework):
             self.log.print_and_log("Starting...")
             self.log.print_and_log("*" * 20)
 
-            device = self.get_device()
-
-            model_key = self.model_choice.currentText()
-            model_dict = {  # gather model info
-                "name": model_key,
-                "class": self.get_model(model_key),
-                "model_input_size": self.model_input_size.value(),
-            }
-
-            if self.custom_weights_choice.isChecked():
-                weights_dict = {"custom": True, "path": self.weights_path}
-            else:
-                weights_dict = {
-                    "custom": False,
-                }
-
-            if self.anisotropy_wdgt.is_enabled():
-                self.aniso_resolutions = (
-                    self.anisotropy_wdgt.get_anisotropy_resolution_xyz(
-                        as_factors=False
-                    )
-                )
-                self.zoom = (
-                    self.anisotropy_wdgt.get_anisotropy_resolution_xyz()
-                )
-            else:
-                self.zoom = [1, 1, 1]
-
-            self.transforms = {  # TODO figure out a better way ?
-                "thresh": [
-                    self.thresholding_checkbox.isChecked(),
-                    self.thresholding_count.value(),
-                ],
-                "zoom": [
-                    self.anisotropy_wdgt.checkbox.isChecked(),
-                    self.zoom,
-                ],
-            }
-
-            self.instance_params = {
-                "do_instance": self.instance_box.isChecked(),
-                "method": self.instance_method_choice.currentText(),
-                "threshold": self.instance_prob_thresh.value(),
-                "size_small": self.instance_small_object_thresh.value(),
-            }
-            self.stats_to_csv = self.save_stats_to_csv_box.isChecked()
-            # print(f"METHOD : {self.instance_method_choice.currentText()}")
-
-            self.show_res_nbr = self.display_number_choice.value()
-
-            self.keep_on_cpu = self.keep_data_on_cpu_box.isChecked()
-            self.use_window_inference = self.window_infer_box.isChecked()
-            self.window_inference_size = int(
-                self.window_size_choice.currentText()
+            self.model_info = config.ModelInfo(
+                name=self.model_choice.currentText(),
+                model_input_size=self.model_input_size.value(),
             )
-            self.window_overlap = self.window_overlap_counter.value()
+
+            weights_config = config.WeightsInfo(
+                self.weights_path, self.custom_weights_choice.isChecked()
+            )
+
+            zoom_config = config.Zoom(
+                enabled=self.anisotropy_wdgt.is_enabled(),
+                zoom_values=self.anisotropy_wdgt.get_anisotropy_resolution_xyz(
+                    as_factors=True
+                ),
+            )
+            thresholding_config = config.Thresholding(
+                enabled=self.thresholding_checkbox.isChecked(),
+                threshold_value=self.thresholding_count.value(),
+            )
+
+            instance_thresh_config = config.Thresholding(
+                threshold_value=self.instance_prob_thresh.value()
+            )
+            instance_small_object_thresh_config = config.Thresholding(
+                threshold_value=self.instance_small_object_thresh.value()
+            )
+            self.instance_config = config.InstanceSegConfig(
+                enabled=self.instance_box.isChecked(),
+                method=self.instance_method_choice.currentText(),
+                threshold=instance_thresh_config,
+                small_object_removal_threshold=instance_small_object_thresh_config,
+            )
+
+            self.post_process_config = config.PostProcessConfig(
+                zoom=zoom_config,
+                thresholding=thresholding_config,
+                instance=self.instance_config,
+            )
+
+            if self.window_infer_box.isChecked():
+                window_config = config.SlidingWindowConfig(
+                    window_size=int(self.window_size_choice.currentText()),
+                    window_overlap=self.window_overlap_counter.value(),
+                )
+            else:
+                window_config = config.SlidingWindowConfig()
+
+            self.worker_config = config.InferenceWorkerConfig(
+                device=self.get_device(),
+                model_info=self.model_info,
+                weights_config=weights_config,
+                results_path=self.results_path,
+                filetype=self.filetype_choice.currentText(),
+                keep_on_cpu=self.keep_data_on_cpu_box.isChecked(),
+                post_process_config=self.post_process_config,
+                sliding_window_config=window_config,
+            )
+            #####################
+            #####################
+            #####################
 
             if not on_layer:
-                self.worker = InferenceWorker(
-                    device=device,
-                    model_dict=model_dict,
-                    weights_dict=weights_dict,
-                    images_filepaths=self.images_filepaths,
-                    results_path=self.results_path,
-                    filetype=self.filetype_choice.currentText(),
-                    transforms=self.transforms,
-                    instance=self.instance_params,
-                    use_window=self.use_window_inference,
-                    window_infer_size=self.window_inference_size,
-                    window_overlap=self.window_overlap,
-                    keep_on_cpu=self.keep_on_cpu,
-                    stats_csv=self.stats_to_csv,
-                )
+                self.worker_config.images_filepaths = self.images_filepaths
+                self.worker = InferenceWorker(worker_config=self.worker_config)
             else:
-                layer = self._viewer.layers.selection.active
-                self.worker = InferenceWorker(
-                    device=device,
-                    model_dict=model_dict,
-                    weights_dict=weights_dict,
-                    results_path=self.results_path,
-                    filetype=self.filetype_choice.currentText(),
-                    transforms=self.transforms,
-                    instance=self.instance_params,
-                    use_window=self.use_window_inference,
-                    window_infer_size=self.window_inference_size,
-                    keep_on_cpu=self.keep_on_cpu,
-                    window_overlap=self.window_overlap,
-                    stats_csv=self.stats_to_csv,
-                    layer=layer,
-                )
+                self.worker_config.layer = self._viewer.layers.selection.active
+                self.worker = InferenceWorker(worker_config=self.worker_config)
 
             self.worker.set_download_log(self.log)
 
@@ -715,8 +698,16 @@ class Inferer(ModelFramework):
         """Catches start signal from worker to call :py:func:`~display_status_report`"""
         self.display_status_report()
 
-        self.show_res = self.view_checkbox.isChecked()
-        self.show_original = self.show_original_checkbox.isChecked()
+        self.config = config.InfererConfig(
+            model_info=self.model_info,
+            show_results=self.view_checkbox.isChecked(),
+            show_results_count=self.display_number_choice.value(),
+            show_original=self.show_original_checkbox.isChecked(),
+            anisotropy_resolution=self.anisotropy_wdgt.get_anisotropy_resolution_xyz(
+                as_factors=False
+            ),
+        )
+
         self.log.print_and_log(f"Worker started at {utils.get_time()}")
         self.log.print_and_log(f"Saving results to : {self.results_path}")
         self.log.print_and_log("Worker is running...")

@@ -2,12 +2,10 @@ import os
 import platform
 from pathlib import Path
 import importlib.util
-from typing import List
 from typing import Optional
 
 from dataclasses import dataclass
 
-import napari.layers
 import numpy as np
 from tifffile import imwrite
 import torch
@@ -50,11 +48,13 @@ from napari.qt.threading import WorkerBaseSignals
 from qtpy.QtCore import Signal
 
 from napari_cellseg3d import utils
+from napari_cellseg3d import config
 from napari_cellseg3d import log_utility
 
 # local
 from napari_cellseg3d.model_instance_seg import binary_connected
 from napari_cellseg3d.model_instance_seg import binary_watershed
+from napari_cellseg3d.model_instance_seg import ImageStats
 from napari_cellseg3d.model_instance_seg import volume_stats
 
 """
@@ -188,22 +188,15 @@ class LogSignal(WorkerBaseSignals):
 
 
 @dataclass
-class InferenceConfig:
-    """Class to record configuration for Inference job"""
+class InferenceResult:
+    """Class to record results of a segmentation job"""
 
-    device: str
-    model_dict: dict
-    weights_dict: dict
-    results_path: str
-    filetype: str
-    transforms: dict
-    instance: bool
-    use_window: bool
-    window_infer_size: List[int]
-    keep_on_cpu: bool
-    stats_csv: bool
-    images_filepaths: str = None
-    layer: napari.layers.Layer = None
+    image_id: int = (0,)
+    original: np.array = (None,)
+    instance_labels: np.array = (None,)
+    stats: ImageStats = (None,)
+    result: np.array = (None,)
+    model_name: str = None
 
 
 class InferenceWorker(GeneratorWorker):
@@ -212,24 +205,12 @@ class InferenceWorker(GeneratorWorker):
 
     def __init__(
         self,
-        device,
-        model_dict,
-        weights_dict,
-        results_path,
-        filetype,
-        transforms,
-        instance,
-        use_window,
-        window_infer_size,
-        window_overlap,
-        keep_on_cpu,
-        stats_csv,
-        images_filepaths=None,
-        layer=None,  # FIXME
+        worker_config: config.InferenceWorkerConfig = config.InferenceWorkerConfig(),
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~inference` function.
 
         Args:
+            * config (config.InferenceWorkerConfig): dataclass containing the proper configuration elements
             * device: cuda or cpu device to use for torch
 
             * model_dict: the :py:attr:`~self.models_dict` dictionary to obtain the model name, class and instance
@@ -262,26 +243,8 @@ class InferenceWorker(GeneratorWorker):
         self._signals = LogSignal()  # add custom signals
         self.log_signal = self._signals.log_signal
         self.warn_signal = self._signals.warn_signal
-        ###########################################
-        ###########################################
-        self.device = device
-        self.model_dict = model_dict
-        self.weights_dict = weights_dict
-        self.results_path = results_path
-        self.filetype = filetype
-        self.transforms = transforms
-        self.instance_params = instance
-        self.use_window = use_window
-        self.window_infer_size = window_infer_size
-        self.window_overlap_percentage = window_overlap
-        self.keep_on_cpu = keep_on_cpu
-        self.stats_to_csv = stats_csv
-        ############################################
-        ############################################
-        self.layer = layer
-        self.images_filepaths = images_filepaths
-        ############################################
-        ############################################
+
+        self.config = worker_config
 
         """These attributes are all arguments of :py:func:~inference, please see that for reference"""
 
@@ -333,7 +296,7 @@ class InferenceWorker(GeneratorWorker):
         if self.keep_on_cpu:
             self.log(f"Dataset loaded to CPU")
         else:
-            self.log(f"Dataset loaded on {self.device}")
+            self.log(f"Dataset loaded on {self.config.device}")
 
         if self.transforms["zoom"][0]:
             self.log(f"Scaling factor : {self.transforms['zoom'][1]} (x,y,z)")
@@ -348,7 +311,7 @@ class InferenceWorker(GeneratorWorker):
 
     def load_folder(self):
 
-        images_dict = self.create_inference_dict(self.images_filepaths)
+        images_dict = self.create_inference_dict(self.config.images_filepaths)
 
         # TODO : better solution than loading first image always ?
         data_check = LoadImaged(keys=["image"])(images_dict[0])
@@ -378,11 +341,11 @@ class InferenceWorker(GeneratorWorker):
         #
         # self.log_parameters()
         #
-        # model.to(self.device)
+        # model.to(self.config.device)
 
         # print("FILEPATHS PRINT")
         # print(self.images_filepaths)
-        if self.use_window:
+        if self.config.sliding_window_config.enabled:
             load_transforms = Compose(
                 [
                     LoadImaged(keys=["image"]),
@@ -416,7 +379,7 @@ class InferenceWorker(GeneratorWorker):
 
     def load_layer(self):
 
-        data = np.squeeze(self.layer.data)
+        data = np.squeeze(self.config.layer.data)
 
         volume = np.array(data, dtype=np.int16)
 
@@ -437,7 +400,7 @@ class InferenceWorker(GeneratorWorker):
 
         # print(volume.shape)
         # print(volume.dtype)
-        if self.use_window:
+        if self.config.sliding_window_config.window_size is not None:
             load_transforms = Compose(
                 [
                     ToTensor(),
@@ -481,27 +444,23 @@ class InferenceWorker(GeneratorWorker):
         inputs = inputs.to("cpu")
 
         model_output = lambda inputs: post_process_transforms(
-            self.model_dict["class"].get_output(model, inputs)
+            self.config.model_info.get_model().get_output(model, inputs)
         )
 
         if self.keep_on_cpu:
             dataset_device = "cpu"
         else:
-            dataset_device = self.device
+            dataset_device = self.config.device
 
-        if self.use_window:
-            window_size = self.window_infer_size
-            window_overlap = self.window_overlap_percentage
-        else:
-            window_size = None
-            window_overlap = 0.25
+        window_size = self.config.sliding_window_config.window_size
+        window_overlap = self.config.sliding_window_config.window_overlap
 
         outputs = sliding_window_inference(
             inputs,
             roi_size=window_size,
             sw_batch_size=1,
             predictor=model_output,
-            sw_device=self.device,
+            sw_device=self.config.device,
             device=dataset_device,
             overlap=window_overlap,
         )
@@ -518,7 +477,7 @@ class InferenceWorker(GeneratorWorker):
         else:
             return out
 
-    def create_result_dict(
+    def create_result_dict(  # FIXME replace with result class
         self,
         semantic_labels,
         instance_labels,
@@ -540,14 +499,14 @@ class InferenceWorker(GeneratorWorker):
                 )
             semantic_labels = np.swapaxes(semantic_labels, 0, 2)
 
-        return {
-            "image_id": i + 1,
-            "original": original,
-            "instance_labels": instance_labels,
-            "object stats": data_dict,
-            "result": semantic_labels,
-            "model_name": self.model_dict["name"],
-        }
+        return InferenceResult(
+            image_id=i + 1,
+            original=original,
+            instance_labels=instance_labels,
+            stats=data_dict,
+            result=semantic_labels,
+            model_name=self.config.model_info.name,
+        )
 
     def get_original_filename(self, i):
         return os.path.basename(self.images_filepaths[i]).split(".")[0]
@@ -559,7 +518,7 @@ class InferenceWorker(GeneratorWorker):
                 "An ID should be provided when running from a file"
             )
 
-        if self.instance_params["do_instance"]:
+        if self.config.post_process_config.instance.enabled:
             instance_labels = self.instance_seg(
                 semantic_labels,
                 i + 1,
@@ -591,7 +550,7 @@ class InferenceWorker(GeneratorWorker):
             + "/"
             + f"Prediction_{i+1}"
             + original_filename
-            + self.model_dict["name"]
+            + self.config.model_info.name
             + f"_{time}_"
             + self.filetype
         )
@@ -605,7 +564,7 @@ class InferenceWorker(GeneratorWorker):
             self.log(f"\nFile n°{i+1} saved as : {filename}")
 
     def aniso_transform(self, image):
-        zoom = self.transforms["zoom"][1]
+        zoom = self.config.post_process_config.zoom.zoom_values
         anisotropic_transform = Zoom(
             zoom=zoom,
             keep_size=False,
@@ -618,9 +577,13 @@ class InferenceWorker(GeneratorWorker):
         if image_id is not None:
             self.log(f"\nRunning instance segmentation for image n°{image_id}")
 
-        threshold = self.instance_params["threshold"]
-        size_small = self.instance_params["size_small"]
-        method_name = self.instance_params["method"]
+        threshold = (
+            self.config.post_process_config.instance.threshold.threshold_value
+        )
+        size_small = (
+            self.config.post_process_config.instance.small_object_removal_threshold.threshold_value
+        )
+        method_name = self.config.post_process_config.instance.method
 
         if method_name == "Watershed":
 
@@ -645,7 +608,7 @@ class InferenceWorker(GeneratorWorker):
             + f"Instance_seg_labels_{image_id}_"
             + original_filename
             + "_"
-            + self.model_dict["name"]
+            + self.config.model_info.name
             + f"_{utils.get_date_time()}_"
             + self.filetype
         )
@@ -688,14 +651,11 @@ class InferenceWorker(GeneratorWorker):
         )
 
     def stats_csv(self, instance_labels):
-        if self.stats_to_csv:
-
-            # try:
-
-            data_dict = volume_stats(
+        if self.config.stats_csv:
+            stats = volume_stats(
                 instance_labels
             )  # TODO test with area mesh function
-            return data_dict
+            return stats
 
         # except ValueError as e:
         #     self.log(f"Error occurred during stats computing : {e}")
@@ -722,7 +682,7 @@ class InferenceWorker(GeneratorWorker):
             out, from_layer=True
         )
 
-        return self.create_result_dict(
+        return self.create_result_dict(  # TODO refactor
             out, instance_labels, from_layer=True, data_dict=data_dict
         )
 
@@ -767,30 +727,35 @@ class InferenceWorker(GeneratorWorker):
             self.log("Number of threads has been set to 1 for macOS")
 
         try:
-            dims = self.model_dict["model_input_size"]
-            self.log(f"MODEL DIMS : {dims}")
-            self.log(self.model_dict["name"])
+            dims = self.config.model_info.model_input_size
+            # self.log(f"MODEL DIMS : {dims}")
+            model_name = self.config.model_info.name
+            model_class = self.config.model_info.get_model()
+            self.log(model_name)
 
-            if self.model_dict["name"] == "SegResNet":
-                model = self.model_dict["class"].get_net(
+            weights_config = self.config.weights_config
+            post_process_config = self.config.post_process_config
+
+            if model_name == "SegResNet":
+                model = model_class.get_net(
                     input_image_size=[
                         dims,
                         dims,
                         dims,
                     ],  # TODO FIX ! find a better way & remove model-specific code
                 )
-            elif self.model_dict["name"] == "SwinUNetR":
-                model = self.model_dict["class"].get_net(
+            elif model_name == "SwinUNetR":
+                model = model_class.get_net(
                     img_size=[dims, dims, dims],
                     use_checkpoint=False,
                 )
             else:
-                model = self.model_dict["class"].get_net()
-            model = model.to(self.device)
+                model = model_class.get_net()
+            model = model.to(self.config.device)
 
             self.log_parameters()
 
-            model.to(self.device)
+            model.to(self.config.device)
 
             # load_transforms = Compose(
             #     [
@@ -804,37 +769,37 @@ class InferenceWorker(GeneratorWorker):
             #     ]
             # )
 
-            if not self.transforms["thresh"][0]:
+            if not post_process_config.thresholding.enabled:
                 post_process_transforms = EnsureType()
             else:
-                t = self.transforms["thresh"][1]
+                t = post_process_config.thresholding.threshold_value
                 post_process_transforms = Compose(
                     AsDiscrete(threshold=t), EnsureType()
                 )
 
             self.log("\nLoading weights...")
 
-            if self.weights_dict["custom"]:
-                weights = self.weights_dict["path"]
+            if weights_config.custom:
+                weights = weights_config.path
             else:
                 self.downloader.download_weights(
-                    self.model_dict["name"],
-                    self.model_dict["class"].get_weights_file(),
+                    model_name,
+                    model_class.get_weights_file(),
                 )
                 weights = os.path.join(
-                    WEIGHTS_DIR, self.model_dict["class"].get_weights_file()
+                    WEIGHTS_DIR, model_class.get_weights_file()
                 )
 
             model.load_state_dict(
                 torch.load(
                     weights,
-                    map_location=self.device,
+                    map_location=self.config.device,
                 )
             )
             self.log("Done")
 
-            is_folder = self.images_filepaths is not None
-            is_layer = self.layer is not None
+            is_folder = self.config.images_filepaths is not None
+            is_layer = self.config.layer is not None
 
             if is_layer and is_folder:
                 raise ValueError(

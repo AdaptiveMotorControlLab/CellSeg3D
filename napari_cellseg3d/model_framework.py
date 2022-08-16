@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import os
+from typing import Optional, List
 import warnings
 
 import napari
@@ -13,23 +14,9 @@ from qtpy.QtWidgets import QSizePolicy
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
 from napari_cellseg3d.log_utility import Log
-from napari_cellseg3d.models import model_SegResNet as SegResNet
-from napari_cellseg3d.models import model_SwinUNetR as SwinUNetR
-
-# from napari_cellseg3d.models import model_TRAILMAP as TRAILMAP
-from napari_cellseg3d.models import model_VNet as VNet
-from napari_cellseg3d.models import model_TRAILMAP_MS as TRAILMAP_MS
 from napari_cellseg3d.plugin_base import BasePluginFolder
 
 warnings.formatwarning = utils.format_Warning
-
-MODEL_LIST = {
-    "VNet": VNet,
-    "SegResNet": SegResNet,
-    # "TRAILMAP": TRAILMAP,
-    "TRAILMAP_MS": TRAILMAP_MS,
-    "SwinUNetR": SwinUNetR,
-}
 
 
 class ModelFramework(BasePluginFolder):
@@ -56,25 +43,24 @@ class ModelFramework(BasePluginFolder):
         self._viewer = viewer
         """Viewer to display the widget in"""
 
-        self.model_path = ""
-        """str: path to custom model defined by user"""
-        self.weights_path = ""
+        # self.model_path = "" # TODO add custom models
+        # """str: path to custom model defined by user"""
+
+        self.weights_info = WeightsInfo()
+        self.weights_path = ""  # TODO remove
         """str : path to custom weights defined by user"""
 
-        self._default_path = [
+        self._default_path = [  # TODO update
             self.images_filepaths,
             self.labels_filepaths,
-            self.model_path,
             self.weights_path,
             self.results_path,
         ]
         """Update defaults from PluginBaseFolder with model_path"""
 
-        self.models_dict = MODEL_LIST
+        self.available_models = MODEL_LIST
 
-        """dict: dictionary of available models, with string for widget display as key
-
-        Currently implemented : SegResNet, VNet, TRAILMAP_MS"""
+        """dict: dictionary of available models, with string as key for name in widget display"""
 
         self.worker = None
         """Worker from model_workers.py, either inference or training"""
@@ -86,11 +72,12 @@ class ModelFramework(BasePluginFolder):
         self.model_filewidget = ui.FilePathWidget(
             "Model path", self.load_model_path, self
         )
+
         self.btn_model_path = self.model_filewidget.get_button()
         self.lbl_model_path = self.model_filewidget.get_text_field()
 
         self.model_choice = ui.DropdownMenu(
-            sorted(self.models_dict.keys()), label="Model name"
+            sorted(self.available_models.keys()), label="Model name"
         )
         self.lbl_model_choice = self.model_choice.label
 
@@ -263,13 +250,14 @@ class ModelFramework(BasePluginFolder):
 
         return data_dicts
 
-    def get_model(self, key):
+    def get_model(self, key):  # TODO remove
         """Getter for module (class and functions) associated to currently selected model"""
         return self.models_dict[key]
 
-    def get_loss(self, key):
-        """Getter for loss function selected by user"""
-        return self.loss_dict[key]
+    @staticmethod
+    def get_available_models():
+        """Getter for module (class and functions) associated to currently selected model"""
+        return MODEL_LIST
 
     def load_model_path(self):
         """Show file dialog to set :py:attr:`model_path`"""
@@ -285,7 +273,8 @@ class ModelFramework(BasePluginFolder):
             self, self._default_path, filetype="Weights file (*.pth)"
         )
         if file != "":
-            self.weights_path = file[0]
+            self.weights_path = file[0]  # TODO remove
+            self.weights_info.path = file[0]
             self.lbl_weights_path.setText(self.weights_path)
             self.update_default()
 

@@ -1,7 +1,8 @@
 from __future__ import division
 from __future__ import print_function
-
+from dataclasses import dataclass
 import numpy as np
+from typing import List
 
 # from skimage.measure import marching_cubes
 # from skimage.measure import mesh_surface_area
@@ -16,6 +17,20 @@ from napari_cellseg3d.utils import fill_list_in_between
 from napari_cellseg3d.utils import sphericity_axis
 
 # from napari_cellseg3d.utils import sphericity_volume_area
+
+
+@dataclass
+class ImageStats:
+    volume: List[float]
+    centroid_x: List[float]
+    centroid_y: List[float]
+    centroid_z: List[float]
+    sphericity_ax: List[float]
+    image_size: List[int]
+    total_image_volume: int
+    total_filled_volume: int
+    filling_ratio: float
+    number_objects: int
 
 
 def binary_connected(
@@ -227,16 +242,15 @@ def volume_stats(volume_image):
     else:
         ratio = 0
 
-    return {
-        "Volume": volume,
-        "Centroid x": [region.centroid[0] for region in properties],
-        "Centroid y": [region.centroid[1] for region in properties],
-        "Centroid z": [region.centroid[2] for region in properties],
-        # "Sphericity (volume/area)": sphericity_va,
-        "Sphericity (axes)": sphericity_ax,
-        "Image size": fill([volume_image.shape]),
-        "Total image volume": fill([len(volume_image.flatten())]),
-        "Total object volume (pixels)": fill([np.sum(volume)]),
-        "Filling ratio": ratio,
-        "Number objects": fill([len(properties)]),
-    }
+    return ImageStats(
+        volume,
+        [region.centroid[0] for region in properties],
+        [region.centroid[0] for region in properties],
+        [region.centroid[2] for region in properties],
+        sphericity_ax,
+        fill([volume_image.shape]),
+        fill([len(volume_image.flatten())]),
+        fill([np.sum(volume)]),
+        ratio,
+        fill([len(properties)]),
+    )

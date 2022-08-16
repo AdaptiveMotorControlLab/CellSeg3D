@@ -1,7 +1,6 @@
 import os
 import shutil
 import warnings
-from pathlib import Path
 
 import matplotlib.pyplot as plt
 import napari
@@ -25,6 +24,7 @@ from monai.losses import TverskyLoss
 from qtpy.QtWidgets import QSizePolicy
 
 # local
+from napari_cellseg3d import config
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
 from napari_cellseg3d.model_framework import ModelFramework
@@ -42,15 +42,6 @@ class Trainer(ModelFramework):
     def __init__(
         self,
         viewer: "napari.viewer.Viewer",
-        data_path="",
-        label_path="",
-        results_path="",
-        model_index=0,
-        loss_index=0,
-        epochs=5,
-        samples=2,
-        batch=1,
-        val_interval=1,
     ):
         """Creates a Trainer tab widget with the following functionalities :
 
@@ -130,25 +121,28 @@ class Trainer(ModelFramework):
         self.results_path_folder = ""
         """Path to the folder inside the results path that contains all results"""
 
-        self.save_as_zip = False
-        """Whether to zip results folder once done. Creates a zipped copy of the results folder."""
+        self.config = config.TrainerConfig()
 
-        # recover default values
-        self.num_samples = samples
-        """Number of samples to extract"""
-        self.batch_size = batch
-        """Batch size"""
-        self.max_epochs = epochs
-        """Epochs"""
-        self.val_interval = val_interval
-        """At which epochs to perform validation. E.g. if 2, will run validation on epochs 2,4,6..."""
-        self.patch_size = []
-        """The size of samples to be extracted from images"""
-        self.learning_rate = 1e-3
+        # self.save_as_zip = False
+        # """Whether to zip results folder once done. Creates a zipped copy of the results folder."""
+        #
+        # # recover default values
+        # self.num_samples = samples
+        # """Number of samples to extract"""
+        # self.batch_size = batch
+        # """Batch size"""
+        # self.max_epochs = epochs
+        # """Epochs"""
+        # self.val_interval = val_interval
+        # """At which epochs to perform validation. E.g. if 2, will run validation on epochs 2,4,6..."""
+        # self.patch_size = []
+        # """The size of samples to be extracted from images"""
+        # self.learning_rate = 1e-3
 
         self.model = None  # TODO : custom model loading ?
         self.worker = None
         """Training worker for multithreading, should be a TrainingWorker instance from :doc:model_workers.py"""
+        self.worker_config = config.TrainingWorkerConfig
         self.data = None
         """Data dictionary containing file paths"""
         self.stop_requested = False
@@ -179,7 +173,7 @@ class Trainer(ModelFramework):
         self.loss_values = []
         self.validation_values = []
 
-        self.model_choice.setCurrentIndex(model_index)
+        # self.model_choice.setCurrentIndex(0)
 
         ################################
         # interface
@@ -191,7 +185,7 @@ class Trainer(ModelFramework):
         )
 
         self.epoch_choice = ui.IntIncrementCounter(
-            min=2, max=1000, default=self.max_epochs
+            min=2, max=1000, default=self.worker_config.max_epochs
         )
         self.lbl_epoch_choice = ui.make_label("Number of epochs : ", self)
 
@@ -199,10 +193,10 @@ class Trainer(ModelFramework):
             sorted(self.loss_dict.keys()), label="Loss function"
         )
         self.lbl_loss_choice = self.loss_choice.label
-        self.loss_choice.setCurrentIndex(loss_index)
+        self.loss_choice.setCurrentIndex(0)
 
         self.sample_choice = ui.IntIncrementCounter(
-            min=2, max=50, default=self.num_samples
+            min=2, max=50, default=self.worker_config.num_samples
         )
         self.lbl_sample_choice = ui.make_label(
             "Number of patches per image : ", self
@@ -211,12 +205,12 @@ class Trainer(ModelFramework):
         self.lbl_sample_choice.setVisible(False)
 
         self.batch_choice = ui.IntIncrementCounter(
-            min=1, max=10, default=self.batch_size
+            min=1, max=10, default=self.worker_config.batch_size
         )
         self.lbl_batch_choice = ui.make_label("Batch size : ", self)
 
         self.val_interval_choice = ui.IntIncrementCounter(
-            default=self.val_interval
+            default=self.worker_config.validation_interval
         )
         self.lbl_val_interv_choice = ui.make_label(
             "Validation interval : ", self
@@ -270,7 +264,7 @@ class Trainer(ModelFramework):
         self.use_deterministic_choice = ui.CheckBox(
             "Deterministic training", func=self.toggle_deterministic_param
         )
-        self.box_seed = ui.IntIncrementCounter(max=10000000, default=23498)
+        self.box_seed = ui.IntIncrementCounter(max=10000000, default=self.worker_config.deterministic_config.seed)
         self.lbl_seed = ui.make_label("Seed", self)
         self.container_seed = ui.combine_blocks(
             self.box_seed, self.lbl_seed, horizontal=False
@@ -286,57 +280,62 @@ class Trainer(ModelFramework):
 
         ############################
         ############################
-        # tooltips
-        self.zip_choice.setToolTip(
-            "Checking this will save a copy of the results as a zip folder"
-        )
-        self.validation_percent_choice.setToolTip(
-            "Choose the proportion of images to retain for training.\nThe remaining images will be used for validation"
-        )
-        self.epoch_choice.setToolTip(
-            "The number of epochs to train for.\nThe more you train, the better the model will fit the training data"
-        )
-        self.loss_choice.setToolTip(
-            "The loss function to use for training.\nSee the list in the inference guide for more info"
-        )
-        self.sample_choice.setToolTip(
-            "The number of samples to extract per image"
-        )
-        self.batch_choice.setToolTip(
-            "The batch size to use for training.\n A larger value will feed more images per iteration to the model,\n"
-            " which is faster and possibly improves performance, but uses more memory"
-        )
-        self.val_interval_choice.setToolTip(
-            "The number of epochs to perform before validating data.\n "
-            "The lower the value, the more often the score of the model will be computed and the more often the weights will be saved."
-        )
-        self.learning_rate_choice.setToolTip(
-            "The learning rate to use in the optimizer. \nUse a lower value if you're using pre-trained weights"
-        )
-        self.augment_choice.setToolTip(
-            "Check this to enable data augmentation, which will randomly deform, flip and shift the intensity in images"
-            " to provide a more general dataset. \nUse this if you're extracting more than 10 samples per image"
-        )
-        [
-            w.setToolTip("Size of the sample to extract")
-            for w in self.patch_size_widgets
-        ]
-        self.patch_choice.setToolTip(
-            "Check this to automatically crop your images in smaller, cubic images for training."
-            "\nShould be used if you have a small dataset (and large images)"
-        )
-        self.use_deterministic_choice.setToolTip(
-            "Enable deterministic training for reproducibility."
-            "Using the same seed with all other parameters being similar should yield the exact same results between two runs."
-        )
-        self.use_transfer_choice.setToolTip(
-            "Use this you want to initialize the model with pre-trained weights or use your own weights."
-        )
-        self.box_seed.setToolTip("Seed to use for RNG")
+        def set_tooltips():
+            # tooltips
+            self.zip_choice.setToolTip(
+                "Checking this will save a copy of the results as a zip folder"
+            )
+            self.validation_percent_choice.setToolTip(
+                "Choose the proportion of images to retain for training.\nThe remaining images will be used for validation"
+            )
+            self.epoch_choice.setToolTip(
+                "The number of epochs to train for.\nThe more you train, the better the model will fit the training data"
+            )
+            self.loss_choice.setToolTip(
+                "The loss function to use for training.\nSee the list in the inference guide for more info"
+            )
+            self.sample_choice.setToolTip(
+                "The number of samples to extract per image"
+            )
+            self.batch_choice.setToolTip(
+                "The batch size to use for training.\n A larger value will feed more images per iteration to the model,\n"
+                " which is faster and possibly improves performance, but uses more memory"
+            )
+            self.val_interval_choice.setToolTip(
+                "The number of epochs to perform before validating data.\n "
+                "The lower the value, the more often the score of the model will be computed and the more often the weights will be saved."
+            )
+            self.learning_rate_choice.setToolTip(
+                "The learning rate to use in the optimizer. \nUse a lower value if you're using pre-trained weights"
+            )
+            self.augment_choice.setToolTip(
+                "Check this to enable data augmentation, which will randomly deform, flip and shift the intensity in images"
+                " to provide a more general dataset. \nUse this if you're extracting more than 10 samples per image"
+            )
+            [
+                w.setToolTip("Size of the sample to extract")
+                for w in self.patch_size_widgets
+            ]
+            self.patch_choice.setToolTip(
+                "Check this to automatically crop your images in smaller, cubic images for training."
+                "\nShould be used if you have a small dataset (and large images)"
+            )
+            self.use_deterministic_choice.setToolTip(
+                "Enable deterministic training for reproducibility."
+                "Using the same seed with all other parameters being similar should yield the exact same results between two runs."
+            )
+            self.use_transfer_choice.setToolTip(
+                "Use this you want to initialize the model with pre-trained weights or use your own weights."
+            )
+            self.box_seed.setToolTip("Seed to use for RNG")
         ############################
         ############################
-
+        set_tooltips()
         self.build()
+
+    def get_loss(self, key):
+        """Getter for loss function selected by user"""
+        return self.loss_dict[key]
 
     def toggle_patch_dims(self):
         if self.patch_choice.isChecked():
@@ -762,7 +761,6 @@ class Trainer(ModelFramework):
 
         """
         self.start_time = utils.get_time_filepath()
-        self.save_as_zip = self.zip_choice.isChecked()
 
         if self.stop_requested:
             self.log.print_and_log("Worker is already stopping !")
@@ -785,14 +783,21 @@ class Trainer(ModelFramework):
             self.log.print_and_log("*" * 20)
 
             self.reset_loss_plot()
-            self.num_samples = self.sample_choice.value()
-            self.batch_size = self.batch_choice.value()
-            self.val_interval = self.val_interval_choice.value()
+
+
             try:
                 self.data = self.create_train_dataset_dict()
             except ValueError as err:
                 self.data = None
                 raise err
+
+            model_config = config.ModelInfo(name=self.model_choice.currentText())
+            weight_config = config.WeightsInfo(path=self.weights_path, custom=self.custom_weights_choice.isChecked(),
+                                               use_pretrained=self.use_transfer_choice.isChecked())
+
+            self.worker_config = config.TrainingWorkerConfig(device=self.get_device(),
+                                                             model_info=model_config,
+                                                             weights_info=weight_config) #FIXME continue
             self.max_epochs = self.epoch_choice.value()
 
             validation_percent = self.validation_percent_choice.value() / 100
