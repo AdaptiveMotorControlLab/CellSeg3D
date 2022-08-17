@@ -747,7 +747,7 @@ class Inferer(ModelFramework):
         # viewer, progress, show_res, show_res_number, zoon, show_original
 
         # check that viewer checkbox is on and that max number of displays has not been reached.
-        widget.log.print_and_log(result)
+        # widget.log.print_and_log(result)
 
         image_id = result.image_id
         model_name = result.model_name
