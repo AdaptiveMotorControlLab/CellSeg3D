@@ -118,7 +118,6 @@ class Trainer(ModelFramework):
         self.data_path = ""
         self.label_path = ""
         self.results_path = ""
-        self.results_path_folder = ""
         """Path to the folder inside the results path that contains all results"""
 
         self.config = config.TrainerConfig()
@@ -142,7 +141,7 @@ class Trainer(ModelFramework):
         self.model = None  # TODO : custom model loading ?
         self.worker = None
         """Training worker for multithreading, should be a TrainingWorker instance from :doc:model_workers.py"""
-        self.worker_config = config.TrainingWorkerConfig
+        self.worker_config = None
         self.data = None
         """Data dictionary containing file paths"""
         self.stop_requested = False
@@ -177,6 +176,7 @@ class Trainer(ModelFramework):
 
         ################################
         # interface
+        default = config.TrainingWorkerConfig()
 
         self.zip_choice = ui.CheckBox("Compress results")
 
@@ -185,7 +185,7 @@ class Trainer(ModelFramework):
         )
 
         self.epoch_choice = ui.IntIncrementCounter(
-            min=2, max=1000, default=self.worker_config.max_epochs
+            min=2, max=1000, default=default.max_epochs
         )
         self.lbl_epoch_choice = ui.make_label("Number of epochs : ", self)
 
@@ -196,7 +196,7 @@ class Trainer(ModelFramework):
         self.loss_choice.setCurrentIndex(0)
 
         self.sample_choice = ui.IntIncrementCounter(
-            min=2, max=50, default=self.worker_config.num_samples
+            min=2, max=50, default=default.num_samples
         )
         self.lbl_sample_choice = ui.make_label(
             "Number of patches per image : ", self
@@ -205,12 +205,12 @@ class Trainer(ModelFramework):
         self.lbl_sample_choice.setVisible(False)
 
         self.batch_choice = ui.IntIncrementCounter(
-            min=1, max=10, default=self.worker_config.batch_size
+            min=1, max=10, default=default.batch_size
         )
         self.lbl_batch_choice = ui.make_label("Batch size : ", self)
 
         self.val_interval_choice = ui.IntIncrementCounter(
-            default=self.worker_config.validation_interval
+            default=default.validation_interval
         )
         self.lbl_val_interv_choice = ui.make_label(
             "Validation interval : ", self
@@ -264,7 +264,9 @@ class Trainer(ModelFramework):
         self.use_deterministic_choice = ui.CheckBox(
             "Deterministic training", func=self.toggle_deterministic_param
         )
-        self.box_seed = ui.IntIncrementCounter(max=10000000, default=self.worker_config.deterministic_config.seed)
+        self.box_seed = ui.IntIncrementCounter(
+            max=10000000, default=default.deterministic_config.seed
+        )
         self.lbl_seed = ui.make_label("Seed", self)
         self.container_seed = ui.combine_blocks(
             self.box_seed, self.lbl_seed, horizontal=False
@@ -328,6 +330,7 @@ class Trainer(ModelFramework):
                 "Use this you want to initialize the model with pre-trained weights or use your own weights."
             )
             self.box_seed.setToolTip("Seed to use for RNG")
+
         ############################
         ############################
         set_tooltips()
@@ -784,81 +787,61 @@ class Trainer(ModelFramework):
 
             self.reset_loss_plot()
 
-
             try:
                 self.data = self.create_train_dataset_dict()
             except ValueError as err:
                 self.data = None
                 raise err
 
-            model_config = config.ModelInfo(name=self.model_choice.currentText())
-            weight_config = config.WeightsInfo(path=self.weights_path, custom=self.custom_weights_choice.isChecked(),
-                                               use_pretrained=self.use_transfer_choice.isChecked())
-
-            self.worker_config = config.TrainingWorkerConfig(device=self.get_device(),
-                                                             model_info=model_config,
-                                                             weights_info=weight_config) #FIXME continue
-            self.max_epochs = self.epoch_choice.value()
+            model_config = config.ModelInfo(
+                name=self.model_choice.currentText()
+            )
+            weight_config = config.WeightsInfo(
+                path=self.weights_path,
+                custom=self.custom_weights_choice.isChecked(),
+                use_pretrained=self.use_transfer_choice.isChecked(),
+            )
+            deterministic_config = config.DeterministicConfig(
+                enabled=self.use_deterministic_choice.isChecked(),
+                seed=self.box_seed.value(),
+            )
 
             validation_percent = self.validation_percent_choice.value() / 100
 
-            print(f"val % : {validation_percent}")
-
-            self.learning_rate = float(self.learning_rate_choice.currentText())
-
-            seed_dict = {
-                "use deterministic": self.use_deterministic_choice.isChecked(),
-                "seed": self.box_seed.value(),
-            }
-
-            self.patch_size = []
-            [
-                self.patch_size.append(w.value())
-                for w in self.patch_size_widgets
-            ]
-
-            model_dict = {
-                "class": self.get_model(self.model_choice.currentText()),
-                "name": self.model_choice.currentText(),
-            }
-            self.results_path_folder = (
+            results_path_folder = (
                 self.results_path
-                + f"/{model_dict['name']}_{utils.get_date_time()}"
+                + f"/{model_config.name}_{utils.get_date_time()}"
             )
             os.makedirs(
-                self.results_path_folder, exist_ok=False
+                results_path_folder, exist_ok=False
             )  # avoid overwrite where possible
 
-            if self.use_transfer_choice.isChecked():
-                if self.custom_weights_choice.isChecked():
-                    weights_path = self.weights_path
-                else:
-                    weights_path = "use_pretrained"
-            else:
-                weights_path = None
+            patch_size = [w.value() for w in self.patch_size_widgets]
+
+            self.worker_config = config.TrainingWorkerConfig(
+                device=self.get_device(),
+                model_info=model_config,
+                weights_info=weight_config,
+                train_data_dict=self.data,
+                validation_percent=validation_percent,
+                max_epochs=self.epoch_choice.value(),
+                loss_function=self.get_loss(self.loss_choice.currentText()),
+                learning_rate=float(self.learning_rate_choice.currentText()),
+                validation_interval=self.val_interval_choice.value(),
+                batch_size=self.batch_choice.value(),
+                results_path_folder=results_path_folder,
+                sampling=self.patch_choice.isChecked(),
+                num_samples=self.sample_choice.value(),
+                sample_size=patch_size,
+                do_augmentation=self.augment_choice.isChecked(),
+                deterministic_config=deterministic_config,
+            )  # FIXME continue
 
             self.log.print_and_log(
-                f"Saving results to : {self.results_path_folder}"
+                f"Saving results to : {results_path_folder}"
             )
 
-            self.worker = TrainingWorker(
-                device=self.get_device(),
-                model_dict=model_dict,
-                weights_path=weights_path,
-                data_dicts=self.data,
-                validation_percent=validation_percent,
-                max_epochs=self.max_epochs,
-                loss_function=self.get_loss(self.loss_choice.currentText()),
-                learning_rate=self.learning_rate,
-                val_interval=self.val_interval,
-                batch_size=self.batch_size,
-                results_path=self.results_path_folder,
-                sampling=self.patch_choice.isChecked(),
-                num_samples=self.num_samples,
-                sample_size=self.patch_size,
-                do_augmentation=self.augment_choice.isChecked(),
-                deterministic=seed_dict,
-            )
+            self.worker = TrainingWorker(config=self.config)
             self.worker.set_download_log(self.log)
 
             [btn.setVisible(False) for btn in self.close_buttons]
@@ -902,20 +885,20 @@ class Trainer(ModelFramework):
         self.log.print_and_log("*" * 20)
         self.log.print_and_log(f"\nWorker finished at {utils.get_time()}")
 
-        self.log.print_and_log(f"Saving in {self.results_path_folder}")
+        self.log.print_and_log(f"Saving in {self.worker_config.results_path_folder}")
         self.log.print_and_log(f"Saving last loss plot")
 
         if self.canvas is not None:
             self.canvas.figure.savefig(
                 (
-                    self.results_path_folder
+                    self.worker_config.results_path_folder
                     + f"/final_metric_plots_{utils.get_time_filepath()}.png"
                 ),
                 format="png",
             )
 
         self.log.print_and_log("Saving log")
-        self.save_log_to_path(self.results_path_folder)
+        self.save_log_to_path(self.worker_config.results_path_folder)
 
         self.log.print_and_log("Done")
         self.log.print_and_log("*" * 10)
@@ -931,7 +914,7 @@ class Trainer(ModelFramework):
 
         if self.save_as_zip:
             shutil.make_archive(
-                self.results_path_folder, "zip", self.results_path_folder
+                self.worker_config.results_path_folder, "zip", self.worker_config.results_path_folder
             )
 
         # if zipfile.is_zipfile(self.results_path_folder+".zip"):
@@ -941,7 +924,7 @@ class Trainer(ModelFramework):
 
         # shutil.rmtree(self.results_path_folder)
 
-        self.results_path_folder = ""
+        # self.results_path_folder = ""
 
         # self.clean_cache() # trying to fix memory leak
 

@@ -75,7 +75,7 @@ class Inferer(ModelFramework):
         self.model_info: config.ModelInfo = None
 
         self.config = config.InfererConfig()
-        self.worker_config = config.InferenceWorkerConfig()
+        self.worker_config = None
         self.instance_config = config.InstanceSegConfig()
         self.post_process_config = config.PostProcessConfig()
 
@@ -112,11 +112,11 @@ class Inferer(ModelFramework):
             default_z=5,  # TODO change default
         )
 
-        self.worker_config.post_process_config.zoom.zoom_values = [
-            1.0,
-            1.0,
-            1.0,
-        ]
+        # self.worker_config.post_process_config.zoom.zoom_values = [
+        #     1.0,
+        #     1.0,
+        #     1.0,
+        # ]
 
         # ui.add_blank(self.aniso_container, aniso_layout)
 
@@ -157,7 +157,7 @@ class Inferer(ModelFramework):
         self.window_overlap_counter = ui.DoubleIncrementCounter(
             min=0,
             max=1,
-            default=self.worker_config.sliding_window_config.window_overlap,
+            default=config.SlidingWindowConfig().window_overlap,
             step=0.05,
             parent=self,
             label="Overlap %",
@@ -649,6 +649,7 @@ class Inferer(ModelFramework):
                 results_path=self.results_path,
                 filetype=self.filetype_choice.currentText(),
                 keep_on_cpu=self.keep_data_on_cpu_box.isChecked(),
+                compute_stats=self.save_stats_to_csv_box.isChecked(),
                 post_process_config=self.post_process_config,
                 sliding_window_config=window_config,
             )
@@ -734,7 +735,7 @@ class Inferer(ModelFramework):
         self.empty_cuda_cache()
 
     @staticmethod
-    def on_yield(data, widget):
+    def on_yield(result: InferenceResult, widget):
         """
         Displays the inference results in napari as long as data["image_id"] is lower than nbr_to_show,
         and updates the status report docked widget (namely the progress bar)
@@ -746,28 +747,33 @@ class Inferer(ModelFramework):
         # viewer, progress, show_res, show_res_number, zoon, show_original
 
         # check that viewer checkbox is on and that max number of displays has not been reached.
-        image_id = data["image_id"]
-        model_name = data["model_name"]
-        total = len(widget.images_filepaths)
+        widget.log.print_and_log(result)
+
+        image_id = result.image_id
+        model_name = result.model_name
+        if widget.worker_config.images_filepaths is not None:
+            total = len(widget.worker_config.images_filepaths)
+        else:
+            total = 1
 
         viewer = widget._viewer
 
         pbar_value = image_id // total
-        if image_id == 0:
+        if pbar_value == 0:
             pbar_value = 1
 
         widget.progress.setValue(100 * pbar_value)
 
-        if widget.show_res and image_id <= widget.show_res_nbr:
+        if widget.config.show_results and image_id <= widget.config.show_results_count:
 
-            zoom = widget.zoom
+            zoom = widget.worker_config.post_process_config.zoom.zoom_values
 
             viewer.dims.ndisplay = 3
             viewer.scale_bar.visible = True
 
-            if widget.show_original and data["original"] is not None:
+            if widget.config.show_original and result.original is not None:
                 original_layer = viewer.add_image(
-                    data["original"],
+                    result.original,
                     colormap="inferno",
                     name=f"original_{image_id}",
                     scale=zoom,
@@ -775,35 +781,35 @@ class Inferer(ModelFramework):
                 )
 
             out_colormap = "twilight"
-            if widget.transforms["thresh"][0]:
+            if widget.worker_config.post_process_config.thresholding.enabled:
                 out_colormap = "turbo"
 
             out_layer = viewer.add_image(
-                data["result"],
+                result.result,
                 colormap=out_colormap,
                 name=f"pred_{image_id}_{model_name}",
                 opacity=0.8,
             )
 
-            if data["instance_labels"] is not None:
+            if result.instance_labels is not None:
 
-                labels = data["instance_labels"]
-                method = widget.instance_params["method"]
+                labels = result.instance_labels
+                method = widget.worker_config.post_process_config.instance.method
                 number_cells = np.amax(labels)
 
                 name = f"({number_cells} objects)_{method}_instance_labels_{image_id}"
 
                 instance_layer = viewer.add_labels(labels, name=name)
 
-                data_dict = data["object stats"]
+                data_dict = result.stats
 
-                if widget.stats_to_csv and data_dict is not None:
+                if widget.worker_config.compute_stats and data_dict is not None:
 
                     numeric_data = pd.DataFrame(data_dict)
 
                     csv_name = f"/{method}_seg_results_{image_id}_{utils.get_date_time()}.csv"
                     numeric_data.to_csv(
-                        widget.results_path + csv_name, index=False
+                        widget.worker_config.results_path + csv_name, index=False
                     )
 
                     # widget.log.print_and_log(

@@ -2,6 +2,7 @@ import os
 import platform
 from pathlib import Path
 import importlib.util
+from typing import List
 from typing import Optional
 
 from dataclasses import dataclass
@@ -191,11 +192,11 @@ class LogSignal(WorkerBaseSignals):
 class InferenceResult:
     """Class to record results of a segmentation job"""
 
-    image_id: int = (0,)
-    original: np.array = (None,)
-    instance_labels: np.array = (None,)
-    stats: ImageStats = (None,)
-    result: np.array = (None,)
+    image_id: int = 0
+    original: np.array = None
+    instance_labels: np.array = None
+    stats: ImageStats = None
+    result: np.array = None
     model_name: str = None
 
 
@@ -205,7 +206,7 @@ class InferenceWorker(GeneratorWorker):
 
     def __init__(
         self,
-        worker_config: config.InferenceWorkerConfig = config.InferenceWorkerConfig(),
+        worker_config: config.InferenceWorkerConfig,
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~inference` function.
 
@@ -277,35 +278,40 @@ class InferenceWorker(GeneratorWorker):
 
     def log_parameters(self):
 
+        config = self.config
+
         self.log("-" * 20)
         self.log("\nParameters summary :")
 
-        self.log(f"Model is : {self.model_dict['name']}")
-        if self.transforms["thresh"][0]:
+        self.log(f"Model is : {config.model_info.name}")
+        if config.post_process_config.thresholding.enabled:
             self.log(
-                f"Thresholding is enabled at {self.transforms['thresh'][1]}"
+                f"Thresholding is enabled at {config.post_process_config.thresholding.threshold_value}"
             )
 
-        if self.use_window:
+        if config.sliding_window_config.is_enabled():
             status = "enabled"
         else:
             status = "disabled"
 
         self.log(f"Window inference is {status}\n")
 
-        if self.keep_on_cpu:
+        if config.keep_on_cpu:
             self.log(f"Dataset loaded to CPU")
         else:
-            self.log(f"Dataset loaded on {self.config.device}")
+            self.log(f"Dataset loaded on {config.device}")
 
-        if self.transforms["zoom"][0]:
-            self.log(f"Scaling factor : {self.transforms['zoom'][1]} (x,y,z)")
-
-        if self.instance_params["do_instance"]:
+        if config.post_process_config.zoom.enabled:
             self.log(
-                f"Instance segmentation enabled, method : {self.instance_params['method']}\n"
-                f"Probability threshold is {self.instance_params['threshold']:.2f}\n"
-                f"Objects smaller than {self.instance_params['size_small']} pixels will be removed\n"
+                f"Scaling factor : {config.post_process_config.zoom.zoom_values} (x,y,z)"
+            )
+
+        instance_config = config.post_process_config.instance
+        if instance_config.enabled:
+            self.log(
+                f"Instance segmentation enabled, method : {instance_config.method}\n"
+                f"Probability threshold is {instance_config.threshold.threshold_value:.2f}\n"
+                f"Objects smaller than {instance_config.small_object_removal_threshold.threshold_value} pixels will be removed\n"
             )
         self.log("-" * 20)
 
@@ -447,7 +453,7 @@ class InferenceWorker(GeneratorWorker):
             self.config.model_info.get_model().get_output(model, inputs)
         )
 
-        if self.keep_on_cpu:
+        if self.config.keep_on_cpu:
             dataset_device = "cpu"
         else:
             dataset_device = self.config.device
@@ -483,7 +489,7 @@ class InferenceWorker(GeneratorWorker):
         instance_labels,
         from_layer: bool,
         original=None,
-        data_dict=None,
+        stats=None,
         i=0,
     ):
 
@@ -503,7 +509,7 @@ class InferenceWorker(GeneratorWorker):
             image_id=i + 1,
             original=original,
             instance_labels=instance_labels,
-            stats=data_dict,
+            stats=stats,
             result=semantic_labels,
             model_name=self.config.model_info.name,
         )
@@ -546,15 +552,14 @@ class InferenceWorker(GeneratorWorker):
         time = utils.get_date_time()
 
         file_path = (
-            self.results_path
+            self.config.results_path
             + "/"
             + f"Prediction_{i+1}"
             + original_filename
             + self.config.model_info.name
             + f"_{time}_"
-            + self.filetype
+            + self.config.filetype
         )
-
         imwrite(file_path, image)
         filename = os.path.split(file_path)[1]
 
@@ -603,14 +608,14 @@ class InferenceWorker(GeneratorWorker):
         instance_labels = method(to_instance)
 
         instance_filepath = (
-            self.results_path
+            self.config.results_path
             + "/"
             + f"Instance_seg_labels_{image_id}_"
             + original_filename
             + "_"
             + self.config.model_info.name
             + f"_{utils.get_date_time()}_"
-            + self.filetype
+            + self.config.filetype
         )
 
         imwrite(instance_filepath, instance_labels)
@@ -635,23 +640,23 @@ class InferenceWorker(GeneratorWorker):
         )
 
         self.save_image(out, i=i)
-        instance_labels, data_dict = self.get_instance_result(out, i=i)
+        instance_labels, stats = self.get_instance_result(out, i=i)
 
         original = np.array(inf_data["image"]).astype(np.float32)
 
-        self.log(f"Inference completed on layer")
+        self.log(f"Inference completed on image n°{i+1}")
 
         return self.create_result_dict(
             out,
             instance_labels,
             from_layer=False,
             original=original,
-            data_dict=data_dict,
+            stats=stats,
             i=i,
         )
 
     def stats_csv(self, instance_labels):
-        if self.config.stats_csv:
+        if self.config.compute_stats:
             stats = volume_stats(
                 instance_labels
             )  # TODO test with area mesh function
@@ -678,12 +683,12 @@ class InferenceWorker(GeneratorWorker):
 
         self.save_image(out, from_layer=True)
 
-        instance_labels, data_dict = self.get_instance_result(
+        instance_labels, stats = self.get_instance_result(
             out, from_layer=True
         )
 
         return self.create_result_dict(  # TODO refactor
-            out, instance_labels, from_layer=True, data_dict=data_dict
+            semantic_labels=out, instance_labels= instance_labels, from_layer=True, stats=stats
         )
 
     def inference(self):
@@ -845,28 +850,22 @@ class InferenceWorker(GeneratorWorker):
             self.quit()
 
 
+@dataclass
+class TrainingReport:
+    show_plot: bool = True
+    epoch: int = 0
+    loss_values: List = None
+    validation_metric: List = None
+    weights = None
+
+
 class TrainingWorker(GeneratorWorker):
     """A custom worker to run training jobs in.
     Inherits from :py:class:`napari.qt.threading.GeneratorWorker`"""
 
     def __init__(
         self,
-        device,
-        model_dict,
-        weights_path,
-        data_dicts,
-        validation_percent,
-        max_epochs,
-        loss_function,
-        learning_rate,
-        val_interval,
-        batch_size,
-        results_path,
-        sampling,
-        num_samples,
-        sample_size,
-        do_augmentation,
-        deterministic,
+        config: config.TrainingWorkerConfig,
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~train` function. Note: See :py:func:`~train`
 
@@ -912,24 +911,7 @@ class TrainingWorker(GeneratorWorker):
 
         self._weight_error = False
         #############################################
-        self.device = device
-        self.model_dict = model_dict
-        self.weights_path = weights_path
-        self.data_dicts = data_dicts
-        self.validation_percent = validation_percent
-        self.max_epochs = max_epochs
-        self.loss_function = loss_function
-        self.learning_rate = learning_rate
-        self.val_interval = val_interval
-        self.batch_size = batch_size
-        self.results_path = results_path
-
-        self.num_samples = num_samples
-        self.sampling = sampling
-        self.sample_size = sample_size
-
-        self.do_augment = do_augmentation
-        self.seed_dict = deterministic
+        self.config = config
 
         self.train_files = []
         self.val_files = []
@@ -957,7 +939,7 @@ class TrainingWorker(GeneratorWorker):
         self.log("Parameters summary :\n")
 
         self.log(
-            f"Percentage of dataset used for validation : {self.validation_percent * 100}%"
+            f"Percentage of dataset used for validation : {self.config.validation_percent * 100}%"
         )
         self.log("-" * 10)
         self.log("Training files :\n")
@@ -972,28 +954,30 @@ class TrainingWorker(GeneratorWorker):
             for val_file in self.val_files
         ]
         self.log("-" * 10)
-        if self.seed_dict["use deterministic"]:
+        if self.config.deterministic_config.enabled:
             self.log(f"Deterministic training is enabled")
-            self.log(f"Seed is {self.seed_dict['seed']}")
+            self.log(f"Seed is {self.config.deterministic_config.seed}")
 
-        self.log(f"Training for {self.max_epochs} epochs")
-        self.log(f"Loss function is : {str(self.loss_function)}")
-        self.log(f"Validation is performed every {self.val_interval} epochs")
-        self.log(f"Batch size is {self.batch_size}")
-        self.log(f"Learning rate is {self.learning_rate}")
+        self.log(f"Training for {self.config.max_epochs} epochs")
+        self.log(f"Loss function is : {str(self.config.loss_function)}")
+        self.log(
+            f"Validation is performed every {self.config.val_interval} epochs"
+        )
+        self.log(f"Batch size is {self.config.batch_size}")
+        self.log(f"Learning rate is {self.config.learning_rate}")
 
-        if self.sampling:
+        if self.config.sampling:
             self.log(
-                f"Extracting {self.num_samples} patches of size {self.sample_size}"
+                f"Extracting {self.config.num_samples} patches of size {self.config.sample_size}"
             )
         else:
             self.log("Using whole images as dataset")
 
-        if self.do_augment:
+        if self.config.do_augment:
             self.log("Data augmentation is enabled")
 
-        if self.weights_path is not None:
-            self.log(f"Using weights from : {self.weights_path}")
+        if self.config.weights_info.path is not None:
+            self.log(f"Using weights from : {self.config.weights_info.path}")
             if self._weight_error:
                 self.log(
                     ">>>>>>>>>>>>>>>>>\n"
@@ -1049,10 +1033,14 @@ class TrainingWorker(GeneratorWorker):
         # error_log = open(results_path +"/error_log.log" % multiprocessing.current_process().name, 'x')
         # faulthandler.enable(file=error_log, all_threads=True)
         #########################
+        model_config = self.config.model_info
+        weights_config = self.config.weights_info
+        deterministic_config = self.config.deterministic_config
+
         try:
-            if self.seed_dict["use deterministic"]:
+            if deterministic_config.enabled:
                 set_determinism(
-                    seed=self.seed_dict["seed"]
+                    seed=deterministic_config.seed
                 )  # use_deterministic_algorithms = True causes cuda error
 
             sys = platform.system()
@@ -1061,16 +1049,20 @@ class TrainingWorker(GeneratorWorker):
                 torch.set_num_threads(1)
                 self.log("Number of threads has been set to 1 for macOS")
 
-            model_name = self.model_dict["name"]
-            model_class = self.model_dict["class"]
+            model_name = model_config.name
+            model_class = model_config.get_model()
 
-            if not self.sampling:
-                data_check = LoadImaged(keys=["image"])(self.data_dicts[0])
+            if not self.config.sampling:
+                data_check = LoadImaged(keys=["image"])(
+                    self.config.train_data_dict[0]
+                )
                 check = data_check["image"].shape
 
+            do_sampling = self.config.sampling
+
             if model_name == "SegResNet":
-                if self.sampling:
-                    size = self.sample_size
+                if do_sampling:
+                    size = self.config.sample_size
                 else:
                     size = check
                 print(f"Size of image : {size}")
@@ -1080,7 +1072,7 @@ class TrainingWorker(GeneratorWorker):
                     dropout_prob=0.3,
                 )
             elif model_name == "SwinUNetR":
-                if self.sampling:
+                if do_sampling:
                     size = self.sample_size
                 else:
                     size = check
@@ -1091,24 +1083,32 @@ class TrainingWorker(GeneratorWorker):
                 )
             else:
                 model = model_class.get_net()  # get an instance of the model
-            model = model.to(self.device)
+            model = model.to(self.config.device)
 
             epoch_loss_values = []
             val_metric_values = []
 
             self.train_files, self.val_files = (
-                self.data_dicts[
-                    0 : int(len(self.data_dicts) * self.validation_percent)
+                self.config.train_data_dict[
+                    0 : int(
+                        len(self.config.train_data_dict)
+                        * self.config.validation_percent
+                    )
                 ],
                 self.data_dicts[
-                    int(len(self.data_dicts) * self.validation_percent) :
+                    int(
+                        len(self.config.train_data_dict)
+                        * self.config.validation_percent
+                    ) :
                 ],
             )
 
-            if self.train_files == [] or self.val_files == []:
-                self.log("ERROR : datasets are empty")
+            if len(self.train_files) == 0:
+                raise ValueError("Training dataset is empty")
+            if len(self.val_files) == 0:
+                raise ValueError("Validation dataset is empty")
 
-            if self.sampling:
+            if do_sampling:
                 sample_loader = Compose(
                     [
                         LoadImaged(keys=["image", "label"]),
@@ -1116,24 +1116,24 @@ class TrainingWorker(GeneratorWorker):
                         RandSpatialCropSamplesd(
                             keys=["image", "label"],
                             roi_size=(
-                                self.sample_size
+                                self.config.sample_size
                             ),  # multiply by axis_stretch_factor if anisotropy
                             # max_roi_size=(120, 120, 120),
                             random_size=False,
-                            num_samples=self.num_samples,
+                            num_samples=self.config.num_samples,
                         ),
                         Orientationd(keys=["image", "label"], axcodes="PLI"),
                         SpatialPadd(
                             keys=["image", "label"],
                             spatial_size=(
-                                utils.get_padding_dim(self.sample_size)
+                                utils.get_padding_dim(self.config.sample_size)
                             ),
                         ),
                         EnsureTyped(keys=["image", "label"]),
                     ]
                 )
 
-            if self.do_augment:
+            if self.config.do_augmentation:
                 train_transforms = (
                     Compose(  # TODO : figure out which ones and values ?
                         [
@@ -1163,24 +1163,24 @@ class TrainingWorker(GeneratorWorker):
                 ]
             )
             # self.log("Loading dataset...\n")
-            if self.sampling:
+            if do_sampling:
                 print("train_ds")
                 train_ds = PatchDataset(
                     data=self.train_files,
                     transform=train_transforms,
                     patch_func=sample_loader,
-                    samples_per_image=self.num_samples,
+                    samples_per_image=self.config.num_samples,
                 )
                 print("val_ds")
                 val_ds = PatchDataset(
                     data=self.val_files,
                     transform=val_transforms,
                     patch_func=sample_loader,
-                    samples_per_image=self.num_samples,
+                    samples_per_image=self.config.num_samples,
                 )
 
             else:
-                load_single_images = Compose(
+                load_whole_images = Compose(
                     [
                         LoadImaged(keys=["image", "label"]),
                         EnsureChannelFirstd(keys=["image", "label"]),
@@ -1195,29 +1195,29 @@ class TrainingWorker(GeneratorWorker):
                 print("Cache dataset : train")
                 train_ds = CacheDataset(
                     data=self.train_files,
-                    transform=Compose(load_single_images, train_transforms),
+                    transform=Compose(load_whole_images, train_transforms),
                 )
                 print("Cache dataset : val")
                 val_ds = CacheDataset(
-                    data=self.val_files, transform=load_single_images
+                    data=self.val_files, transform=load_whole_images
                 )
             print("Dataloader")
             train_loader = DataLoader(
                 train_ds,
-                batch_size=self.batch_size,
+                batch_size=self.config.batch_size,
                 shuffle=True,
                 num_workers=2,
                 collate_fn=pad_list_data_collate,
             )
 
             val_loader = DataLoader(
-                val_ds, batch_size=self.batch_size, num_workers=2
+                val_ds, batch_size=self.config.batch_size, num_workers=2
             )
             print("\nDone")
 
             print("Optimizer")
             optimizer = torch.optim.Adam(
-                model.parameters(), self.learning_rate
+                model.parameters(), self.config.learning_rate
             )
             dice_metric = DiceMetric(include_background=True, reduction="mean")
 
@@ -1226,20 +1226,21 @@ class TrainingWorker(GeneratorWorker):
 
             # time = utils.get_date_time()
             print("Weights")
-            if self.weights_path is not None:
-                if self.weights_path == "use_pretrained":
+
+            if weights_config.path is not None:
+                if weights_config.use_pretrained:
                     weights_file = model_class.get_weights_file()
                     self.downloader.download_weights(model_name, weights_file)
                     weights = os.path.join(WEIGHTS_DIR, weights_file)
-                    self.weights_path = weights
+                    weights_config.path = weights
                 else:
-                    weights = os.path.join(self.weights_path)
+                    weights = os.path.join(weights_config.path)
 
                 try:
                     model.load_state_dict(
                         torch.load(
                             weights,
-                            map_location=self.device,
+                            map_location=self.config.device,
                         )
                     )
                 except RuntimeError as e:
@@ -1252,7 +1253,7 @@ class TrainingWorker(GeneratorWorker):
                     self.warn(warn)
                     self._weight_error = True
 
-            if self.device.type == "cuda":
+            if self.config.device.type == "cuda":
                 self.log("\nUsing GPU :")
                 self.log(torch.cuda.get_device_name(0))
             else:
@@ -1260,11 +1261,13 @@ class TrainingWorker(GeneratorWorker):
 
             self.log_parameters()
 
-            for epoch in range(self.max_epochs):
+            device = self.config.device
+
+            for epoch in range(self.config.max_epochs):
                 # self.log("\n")
                 self.log("-" * 10)
-                self.log(f"Epoch {epoch + 1}/{self.max_epochs}")
-                if self.device.type == "cuda":
+                self.log(f"Epoch {epoch + 1}/{self.config.max_epochs}")
+                if device.type == "cuda":
                     self.log("Memory Usage:")
                     alloc_mem = round(
                         torch.cuda.memory_allocated(0) / 1024**3, 1
@@ -1281,13 +1284,13 @@ class TrainingWorker(GeneratorWorker):
                 for batch_data in train_loader:
                     step += 1
                     inputs, labels = (
-                        batch_data["image"].to(self.device),
-                        batch_data["label"].to(self.device),
+                        batch_data["image"].to(device),
+                        batch_data["label"].to(device),
                     )
                     optimizer.zero_grad()
                     outputs = model_class.get_output(model, inputs)
                     # print(f"OUT : {outputs.shape}")
-                    loss = self.loss_function(outputs, labels)
+                    loss = self.config.loss_function(outputs, labels)
                     loss.backward()
                     optimizer.step()
                     epoch_loss += loss.detach().item()
@@ -1301,13 +1304,13 @@ class TrainingWorker(GeneratorWorker):
                 epoch_loss_values.append(epoch_loss)
                 self.log(f"Epoch: {epoch + 1}, Average loss: {epoch_loss:.4f}")
 
-                if (epoch + 1) % self.val_interval == 0:
+                if (epoch + 1) % self.config.validation_interval == 0:
                     model.eval()
                     with torch.no_grad():
                         for val_data in val_loader:
                             val_inputs, val_labels = (
-                                val_data["image"].to(self.device),
-                                val_data["label"].to(self.device),
+                                val_data["image"].to(device),
+                                val_data["label"].to(device),
                             )
 
                             val_outputs = model_class.get_validation(
@@ -1363,7 +1366,7 @@ class TrainingWorker(GeneratorWorker):
                             torch.save(
                                 model.state_dict(),
                                 os.path.join(
-                                    self.results_path, weights_filename
+                                    self.config.results_path, weights_filename
                                 ),
                             )
                             self.log("Saving complete")

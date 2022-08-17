@@ -16,7 +16,7 @@ from napari_cellseg3d.models import model_TRAILMAP_MS as TRAILMAP_MS
 from napari_cellseg3d.model_instance_seg import binary_connected
 from napari_cellseg3d.model_instance_seg import binary_watershed
 
-# TODO DOCUMENT !!!
+# TODO DOCUMENT !!! and add default values
 
 MODEL_LIST = {
     "VNet": VNet,
@@ -100,6 +100,9 @@ class SlidingWindowConfig:
     window_size: int = None
     window_overlap: float = 0.25
 
+    def is_enabled(self):
+        return self.window_size is noty None
+
 
 @dataclass
 class InfererConfig:
@@ -122,31 +125,37 @@ class InferenceWorkerConfig:
     results_path: str
     filetype: str
     keep_on_cpu: bool
-    stats_csv: bool
+    compute_stats: bool
     post_process_config: PostProcessConfig
     sliding_window_config: SlidingWindowConfig = SlidingWindowConfig()
 
     images_filepaths: str = None
     layer: napari.layers.Layer = None
 
+
 ################
 # Training configs
+
 
 @dataclass
 class DeterministicConfig:
     """Class to record deterministic config"""
+
     enabled: bool = False
     seed: int = 23498
+
 
 @dataclass
 class TrainerConfig:
     """Class to record trainer plugin config"""
+
     save_as_zip: bool = False
 
 
 @dataclass
 class TrainingWorkerConfig:
     """Class to record config for Trainer plugin"""
+
     device: str = "cpu"
     model_info: ModelInfo = None
     weights_info: WeightsInfo = None
@@ -157,11 +166,9 @@ class TrainingWorkerConfig:
     learning_rate: np.float64 = 1e-3
     validation_interval: int = 2
     batch_size: int = 1
-    results_path: str = None
+    results_path_folder: str = None
     sampling: bool = False
     num_samples: int = 2
     sample_size: List[int] = None
     do_augmentation: bool = True
     deterministic_config: DeterministicConfig = DeterministicConfig()
-
-

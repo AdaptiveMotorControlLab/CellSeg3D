@@ -11,6 +11,7 @@ from qtpy.QtWidgets import QProgressBar
 from qtpy.QtWidgets import QSizePolicy
 
 # local
+from napari_cellseg3d import config
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
 from napari_cellseg3d.log_utility import Log
@@ -46,7 +47,7 @@ class ModelFramework(BasePluginFolder):
         # self.model_path = "" # TODO add custom models
         # """str: path to custom model defined by user"""
 
-        self.weights_info = WeightsInfo()
+        self.weights_info = config.WeightsInfo()
         self.weights_path = ""  # TODO remove
         """str : path to custom weights defined by user"""
 
@@ -58,7 +59,7 @@ class ModelFramework(BasePluginFolder):
         ]
         """Update defaults from PluginBaseFolder with model_path"""
 
-        self.available_models = MODEL_LIST
+        self.available_models = config.MODEL_LIST
 
         """dict: dictionary of available models, with string as key for name in widget display"""
 
@@ -257,7 +258,7 @@ class ModelFramework(BasePluginFolder):
     @staticmethod
     def get_available_models():
         """Getter for module (class and functions) associated to currently selected model"""
-        return MODEL_LIST
+        return config.MODEL_LIST
 
     def load_model_path(self):
         """Show file dialog to set :py:attr:`model_path`"""
@@ -303,7 +304,7 @@ class ModelFramework(BasePluginFolder):
             for path in [
                 os.path.dirname(self.images_filepaths[0]),
                 os.path.dirname(self.labels_filepaths[0]),
-                self.model_path,
+                # self.model_path,
                 self.results_path,
             ]
             if (path != [""] and path != "")
