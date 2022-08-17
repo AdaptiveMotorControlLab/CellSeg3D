@@ -101,7 +101,7 @@ class SlidingWindowConfig:
     window_overlap: float = 0.25
 
     def is_enabled(self):
-        return self.window_size is noty None
+        return self.window_size is not None
 
 
 @dataclass
