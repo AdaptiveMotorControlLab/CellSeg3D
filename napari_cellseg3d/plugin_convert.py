@@ -384,13 +384,13 @@ class ConvertUtils(BasePluginFolder):
 
     def check_ready_folder(self):  # TODO add color change
         """Check if results and source folders are correctly set"""
-        if self.results_path == "":
+        if self.results_path is None:
             err = "ERROR : please set results folder"
             print(err)
             self.lbl_error.setText(err)
             self.lbl_error.setVisible(True)
             return False
-        if self.labels_filepaths != [""]:
+        if self.labels_filepaths != []:
             self.lbl_error.setVisible(False)
             return True
 
@@ -402,7 +402,7 @@ class ConvertUtils(BasePluginFolder):
 
     def check_ready_layer(self):  # TODO add color change
         """Check if results and layer are selected"""
-        if self.results_path == "":
+        if self.results_path is None:
             err = "ERROR : please set results folder"
             print(err)
             self.lbl_error.setText(err)
@@ -423,7 +423,7 @@ class ConvertUtils(BasePluginFolder):
         print(self.results_path)
         print(path)
 
-        if self.results_path != "":
+        if self.results_path is not None:
             imwrite(
                 path,
                 image,

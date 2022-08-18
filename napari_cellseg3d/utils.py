@@ -1,9 +1,7 @@
 import os
 import warnings
 from datetime import datetime
-from dataclasses import dataclass
 from pathlib import Path
-from typing import List
 
 
 import cv2
@@ -381,18 +379,18 @@ def parse_default_path(possible_paths):
     Returns: the chosen default path
 
     """
-
+    default_paths = []
     # print("paths :")
     # print(default_paths)
     # print(default_path)
-
+    if any(path is not None for path in possible_paths):
+        default_paths = [p for p in possible_paths if p is not None]
     default_paths = [
-        p for p in possible_paths if (p != "" and p != [""] and len(p) >= 3)
+        path for path in default_paths if path is not None and path != []
     ]
     if len(default_paths) == 0:
-        default_path = os.path.expanduser("~")
-    else:
-        default_path = max(default_paths)
+        return os.path.expanduser("~")
+    default_path = max(default_paths)
     return default_path
 
 

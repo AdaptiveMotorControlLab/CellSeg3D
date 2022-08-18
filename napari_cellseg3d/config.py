@@ -38,7 +38,7 @@ class ModelInfo:
     - name (str): name of the model"""
 
     name: str
-    model_input_size: Optional[List[int]]
+    model_input_size: Optional[List[int]] = None
 
     def get_model(self):
         try:
@@ -55,7 +55,7 @@ class ModelInfo:
 
 @dataclass
 class WeightsInfo:
-    path: str = ""
+    path: str = None
     custom: bool = False
     use_pretrained: Optional[bool] = False
 

@@ -618,7 +618,7 @@ def add_blank(widget, layout=None):
 
 def open_file_dialog(
     widget,
-    possible_paths: list = [""],
+    possible_paths: list = [],
     load_as_folder: bool = False,
     filetype: str = "Image file (*.tif *.tiff)",
 ):

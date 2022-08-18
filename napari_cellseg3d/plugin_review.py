@@ -175,7 +175,7 @@ class Reviewer(BasePluginSingleImage):
             self.image_path, self.filetype, self.as_folder
         )
         if (
-            self.label_path == ""  # TODO check if it works
+            self.label_path is None  # TODO check if it works
         ):  # saves empty images of the same size as original images
             if self.as_folder:
                 labels = np.zeros_like(images.compute())  # dask to numpy

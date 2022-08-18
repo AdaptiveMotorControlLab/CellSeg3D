@@ -73,8 +73,8 @@ class Datamanager(QWidget):
         # self.setMaximumHeight(GUI_MAXIMUM_HEIGHT)
         # self.setMaximumWidth(GUI_MAXIMUM_WIDTH)
 
-        self.df = ""
-        self.csv_path = ""
+        self.df = None
+        self.csv_path = None
         self.slice_num = 0
         self.filetype = ""
         self.filename = None

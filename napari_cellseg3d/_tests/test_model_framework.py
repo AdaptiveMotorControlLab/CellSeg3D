@@ -5,8 +5,8 @@ def test_update_default(make_napari_viewer):
     view = make_napari_viewer()
     widget = model_framework.ModelFramework(view)
 
-    widget.images_filepaths = [""]
-    widget.results_path = ""
+    widget.images_filepaths = []
+    widget.results_path = None
 
     widget.update_default()
 
@@ -21,7 +21,7 @@ def test_update_default(make_napari_viewer):
         "C:/data/labels/lab2.tif",
     ]
     widget.results_path = "D:/dataset/res"
-    widget.model_path = ""
+    widget.model_path = None
 
     widget.update_default()
 

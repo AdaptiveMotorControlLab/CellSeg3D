@@ -308,12 +308,8 @@ class Inferer(ModelFramework):
 
     def check_ready(self):
         """Checks if the paths to the files are properly set"""
-        if (
-            self.images_filepaths != [""]
-            and self.images_filepaths != []
-            and self.results_path != ""
-        ) or (
-            self.results_path != ""
+        if (self.results_path is not None) or (
+            self.results_path is not None
             and self._viewer.layers.selection.active is not None
         ):
             return True
@@ -721,6 +717,7 @@ class Inferer(ModelFramework):
         self.btn_close.setVisible(True)
 
         self.worker = None
+        self.worker_config = None
         self.empty_cuda_cache()
 
     def on_finish(self):
@@ -732,6 +729,7 @@ class Inferer(ModelFramework):
         self.btn_close.setVisible(True)
 
         self.worker = None
+        self.worker_config = None
         self.empty_cuda_cache()
 
     @staticmethod
@@ -764,7 +762,10 @@ class Inferer(ModelFramework):
 
         widget.progress.setValue(100 * pbar_value)
 
-        if widget.config.show_results and image_id <= widget.config.show_results_count:
+        if (
+            widget.config.show_results
+            and image_id <= widget.config.show_results_count
+        ):
 
             zoom = widget.worker_config.post_process_config.zoom.zoom_values
 
@@ -794,22 +795,30 @@ class Inferer(ModelFramework):
             if result.instance_labels is not None:
 
                 labels = result.instance_labels
-                method = widget.worker_config.post_process_config.instance.method
+                method = (
+                    widget.worker_config.post_process_config.instance.method
+                )
                 number_cells = np.amax(labels)
 
                 name = f"({number_cells} objects)_{method}_instance_labels_{image_id}"
 
                 instance_layer = viewer.add_labels(labels, name=name)
 
-                data_dict = result.stats
+                stats = result.stats
 
-                if widget.worker_config.compute_stats and data_dict is not None:
+                if widget.worker_config.compute_stats and stats is not None:
 
-                    numeric_data = pd.DataFrame(data_dict)
+                    stats_dict = stats.get_dict()
+                    stats_df = pd.DataFrame(stats_dict)
+
+                    widget.print_and_log(
+                        f"Number of instances : {stats.number_objects}"
+                    )
 
                     csv_name = f"/{method}_seg_results_{image_id}_{utils.get_date_time()}.csv"
-                    numeric_data.to_csv(
-                        widget.worker_config.results_path + csv_name, index=False
+                    stats_df.to_csv(
+                        widget.worker_config.results_path + csv_name,
+                        index=False,
                     )
 
                     # widget.log.print_and_log(

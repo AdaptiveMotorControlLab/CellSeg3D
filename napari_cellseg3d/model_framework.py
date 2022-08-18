@@ -48,7 +48,7 @@ class ModelFramework(BasePluginFolder):
         # """str: path to custom model defined by user"""
 
         self.weights_info = config.WeightsInfo()
-        self.weights_path = ""  # TODO remove
+        self.weights_path = None  # TODO remove
         """str : path to custom weights defined by user"""
 
         self._default_path = [  # TODO update
@@ -263,9 +263,9 @@ class ModelFramework(BasePluginFolder):
     def load_model_path(self):
         """Show file dialog to set :py:attr:`model_path`"""
         dir = ui.open_file_dialog(self, self._default_path)
-        if dir != "" and type(dir) is str and os.path.isdir(dir):
+        if dir is not None and type(dir) is str and os.path.isdir(dir):
             self.model_path = dir
-            self.lbl_model_path.setText(self.results_path)
+            self.lbl_model_path.setText(self.model_path)
             # self.update_default()
 
     def load_weights_path(self):
@@ -299,15 +299,29 @@ class ModelFramework(BasePluginFolder):
 
     def update_default(self):
         """Update default path for smoother file dialogs, here with :py:attr:`~model_path` included"""
+        if len(self.images_filepaths) != 0:
+            from_images = os.path.dirname(self.images_filepaths[0])
+        else:
+            from_images = []
+
+        if len(self.labels_filepaths) != 0:
+            from_labels = os.path.dirname(self.labels_filepaths[0])
+        else:
+            from_labels = []
+
         self._default_path = [
             path
             for path in [
-                os.path.dirname(self.images_filepaths[0]),
-                os.path.dirname(self.labels_filepaths[0]),
+                from_images,
+                from_labels,
                 # self.model_path,
                 self.results_path,
             ]
-            if (path != [""] and path != "")
+            if (
+                path != []
+                and path is not None
+                and (self.images_filepaths and self.labels_filepaths) != []
+            )
         ]
 
     def build(self):

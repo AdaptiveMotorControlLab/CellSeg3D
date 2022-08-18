@@ -205,8 +205,8 @@ class Cropping(BasePluginSingleImage):
 
     def check_ready(self):
 
-        if self.image_path == "" or (
-            self.crop_labels and self.label_path == ""
+        if self.image_path is None or (
+            self.crop_labels and self.label_path is None
         ):
             warnings.warn("Please set all required paths correctly")
             return False

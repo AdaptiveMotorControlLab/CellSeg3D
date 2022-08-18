@@ -29,6 +29,7 @@ from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
 from napari_cellseg3d.model_framework import ModelFramework
 from napari_cellseg3d.model_workers import TrainingWorker
+from napari_cellseg3d.model_workers import TrainingReport
 
 NUMBER_TABS = 3
 DEFAULT_PATCH_SIZE = 64
@@ -115,9 +116,9 @@ class Trainer(ModelFramework):
         self._viewer = viewer
         """napari.viewer.Viewer: viewer in which the widget is displayed"""
 
-        self.data_path = ""
-        self.label_path = ""
-        self.results_path = ""
+        self.data_path = None
+        self.label_path = None
+        self.results_path = None
         """Path to the folder inside the results path that contains all results"""
 
         self.config = config.TrainerConfig()
@@ -146,7 +147,7 @@ class Trainer(ModelFramework):
         """Data dictionary containing file paths"""
         self.stop_requested = False
         """Whether the worker should stop or not"""
-        self.start_time = ""
+        self.start_time = None
 
         self.loss_dict = {
             "Dice loss": DiceLoss(sigmoid=True),
@@ -187,6 +188,7 @@ class Trainer(ModelFramework):
         self.epoch_choice = ui.IntIncrementCounter(
             min=2, max=1000, default=default.max_epochs
         )
+
         self.lbl_epoch_choice = ui.make_label("Number of epochs : ", self)
 
         self.loss_choice = ui.DropdownMenu(
@@ -215,6 +217,8 @@ class Trainer(ModelFramework):
         self.lbl_val_interv_choice = ui.make_label(
             "Validation interval : ", self
         )
+        self.epoch_choice.valueChanged.connect(self.update_validation_choice)
+        self.val_interval_choice.valueChanged.connect(self.update_validation_choice)
 
         learning_rate_vals = [
             "1e-2",
@@ -336,6 +340,16 @@ class Trainer(ModelFramework):
         set_tooltips()
         self.build()
 
+    def update_validation_choice(self):
+        validation = self.val_interval_choice
+        max_epoch = self.epoch_choice.value()
+
+        if validation.value() > max_epoch:
+            self.val_interval_choice.setValue(max_epoch)
+            self.val_interval_choice.setMaximum(max_epoch)
+        elif validation.maximum() < max_epoch:
+            self.val_interval_choice.setMaximum(max_epoch)
+
     def get_loss(self, key):
         """Getter for loss function selected by user"""
         return self.loss_dict[key]
@@ -372,12 +386,12 @@ class Trainer(ModelFramework):
 
         Returns:
 
-            * True if paths are set correctly (!=[""])
+            * True if paths are set correctly
 
             * False and displays a warning if not
 
         """
-        if self.images_filepaths != [""] and self.labels_filepaths != [""]:
+        if self.images_filepaths != [] and self.labels_filepaths != []:
             return True
         else:
             warnings.formatwarning = utils.format_Warning
@@ -449,13 +463,13 @@ class Trainer(ModelFramework):
             ],
         )
 
-        if self.data_path != "":
+        if self.data_path is not None:
             self.lbl_image_files.setText(self.data_path)
 
-        if self.label_path != "":
+        if self.label_path is not None:
             self.lbl_label_files.setText(self.label_path)
 
-        if self.results_path != "":
+        if self.results_path is not None:
             self.lbl_result_path.setText(self.results_path)
 
         data_group.setLayout(data_layout)
@@ -796,7 +810,7 @@ class Trainer(ModelFramework):
             model_config = config.ModelInfo(
                 name=self.model_choice.currentText()
             )
-            weight_config = config.WeightsInfo(
+            weights_config = config.WeightsInfo(
                 path=self.weights_path,
                 custom=self.custom_weights_choice.isChecked(),
                 use_pretrained=self.use_transfer_choice.isChecked(),
@@ -821,7 +835,7 @@ class Trainer(ModelFramework):
             self.worker_config = config.TrainingWorkerConfig(
                 device=self.get_device(),
                 model_info=model_config,
-                weights_info=weight_config,
+                weights_info=weights_config,
                 train_data_dict=self.data,
                 validation_percent=validation_percent,
                 max_epochs=self.epoch_choice.value(),
@@ -837,11 +851,15 @@ class Trainer(ModelFramework):
                 deterministic_config=deterministic_config,
             )  # FIXME continue
 
+            self.config = config.TrainerConfig(
+                save_as_zip=self.zip_choice.isChecked()
+            )
+
             self.log.print_and_log(
                 f"Saving results to : {results_path_folder}"
             )
 
-            self.worker = TrainingWorker(config=self.config)
+            self.worker = TrainingWorker(config=self.worker_config)
             self.worker.set_download_log(self.log)
 
             [btn.setVisible(False) for btn in self.close_buttons]
@@ -885,7 +903,9 @@ class Trainer(ModelFramework):
         self.log.print_and_log("*" * 20)
         self.log.print_and_log(f"\nWorker finished at {utils.get_time()}")
 
-        self.log.print_and_log(f"Saving in {self.worker_config.results_path_folder}")
+        self.log.print_and_log(
+            f"Saving in {self.worker_config.results_path_folder}"
+        )
         self.log.print_and_log(f"Saving last loss plot")
 
         if self.canvas is not None:
@@ -908,13 +928,15 @@ class Trainer(ModelFramework):
         self.btn_start.setText("Start")
         [btn.setVisible(True) for btn in self.close_buttons]
 
-        del self.worker
+        # del self.worker
         self.worker = None
-        self.empty_cuda_cache()
+        # self.empty_cuda_cache()
 
-        if self.save_as_zip:
+        if self.config.save_as_zip:
             shutil.make_archive(
-                self.worker_config.results_path_folder, "zip", self.worker_config.results_path_folder
+                self.worker_config.results_path_folder,
+                "zip",
+                self.worker_config.results_path_folder,
             )
 
         # if zipfile.is_zipfile(self.results_path_folder+".zip"):
@@ -932,30 +954,35 @@ class Trainer(ModelFramework):
         """Catches errored signal from worker"""
         self.log.print_and_log(f"WORKER ERRORED at {utils.get_time()}")
         self.worker = None
-        self.empty_cuda_cache()
+        # self.empty_cuda_cache()
         # self.clean_cache()
 
     @staticmethod
-    def on_yield(data, widget):
+    def on_yield(report: TrainingReport, widget):
         # print(
         #     f"\nCatching results : for epoch {data['epoch']},
         #     loss is {data['losses']} and validation is {data['val_metrics']}"
         # )
-        if data["plot"]:
+        if report == TrainingReport():
+            return
+
+        if report.show_plot:
             widget.progress.setValue(
-                100 * (data["epoch"] + 1) // widget.max_epochs
+                100 * (report.epoch + 1) // widget.worker_config.max_epochs
             )
 
-            widget.update_loss_plot(data["losses"], data["val_metrics"])
-            widget.loss_values = data["losses"]
-            widget.validation_values = data["val_metrics"]
+            widget.update_loss_plot(
+                report.loss_values, report.validation_metric
+            )
+            widget.loss_values = report.loss_values
+            widget.validation_values = report.validation_metric
 
         if widget.stop_requested:
             widget.log.print_and_log(
                 "Saving weights from aborted training in results folder"
             )
             torch.save(
-                data["weights"],
+                report.weights,
                 os.path.join(
                     widget.results_path_folder,
                     f"latest_weights_aborted_training_{utils.get_time_filepath()}.pth",
@@ -980,7 +1007,7 @@ class Trainer(ModelFramework):
 
     def make_csv(self):
 
-        size_column = range(1, self.max_epochs + 1)
+        size_column = range(1, self.worker_config.max_epochs + 1)
 
         if len(self.loss_values) == 0 or self.loss_values is None:
             warnings.warn("No loss values to add to csv !")
@@ -991,11 +1018,15 @@ class Trainer(ModelFramework):
                 "epoch": size_column,
                 "loss": self.loss_values,
                 "validation": utils.fill_list_in_between(
-                    self.validation_values, self.val_interval - 1, ""
+                    self.validation_values,
+                    self.worker_config.validation_interval - 1,
+                    "",
                 )[: len(size_column)],
             }
         )
-        path = os.path.join(self.results_path_folder, "training.csv")
+        path = os.path.join(
+            self.worker_config.results_path_folder, "training.csv"
+        )
         self.df.to_csv(path, index=False)
 
     def plot_loss(self, loss, dice_metric):
@@ -1011,10 +1042,15 @@ class Trainer(ModelFramework):
             # self.train_loss_plot.set_ylim(0, 1)
 
             # update metrics
-            x = [self.val_interval * (i + 1) for i in range(len(dice_metric))]
+            x = [
+                self.worker_config.validation_interval * (i + 1)
+                for i in range(len(dice_metric))
+            ]
             y = dice_metric
 
-            epoch_min = (np.argmax(y) + 1) * self.val_interval
+            epoch_min = (
+                np.argmax(y) + 1
+            ) * self.worker_config.validation_interval
             dice_min = np.max(y)
 
             self.dice_metric_plot.plot(x, y, zorder=1)
@@ -1037,7 +1073,7 @@ class Trainer(ModelFramework):
             )
             self.canvas.draw_idle()
 
-            plot_path = self.results_path_folder + "/Loss_plots"
+            plot_path = self.worker_config.results_path_folder + "/Loss_plots"
             os.makedirs(plot_path, exist_ok=True)
 
             if self.canvas is not None:
@@ -1060,9 +1096,9 @@ class Trainer(ModelFramework):
         """
 
         epoch = len(loss)
-        if epoch < self.val_interval * 2:
+        if epoch < self.worker_config.validation_interval * 2:
             return
-        elif epoch == self.val_interval * 2:
+        elif epoch == self.worker_config.validation_interval * 2:
             bckgrd_color = (0, 0, 0, 0)  # '#262930'
             with plt.style.context("dark_background"):
 

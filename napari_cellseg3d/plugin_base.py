@@ -36,13 +36,13 @@ class BasePluginSingleImage(QTabWidget):
 
         self.docked_widgets = []
 
-        self.image_path = ""
+        self.image_path = None
         """str: path to image folder"""
 
-        self.label_path = ""
+        self.label_path = None
         """str: path to label folder"""
 
-        self.results_path = ""
+        self.results_path = None
         """str: path to results folder"""
 
         self.filetype = ""
@@ -177,11 +177,11 @@ class BasePluginFolder(QTabWidget):
         self._viewer = viewer
         """Viewer to display the widget in"""
 
-        self.images_filepaths = [""]
+        self.images_filepaths = []
         """array(str): paths to images for training or inference"""
-        self.labels_filepaths = [""]
+        self.labels_filepaths = []
         """array(str): paths to labels for training"""
-        self.results_path = ""
+        self.results_path = None
         """str: path to output folder,to save results in"""
 
         self._default_path = [
@@ -262,7 +262,7 @@ class BasePluginFolder(QTabWidget):
         """Show file dialog to set :py:attr:`~images_filepaths`"""
         filenames = self.load_dataset_paths()
         # print(filenames)
-        if filenames != "" and filenames != [""] and filenames != []:
+        if filenames:
             self.images_filepaths = sorted(filenames)
             # print(filenames)
             path = os.path.dirname(filenames[0])
@@ -273,7 +273,7 @@ class BasePluginFolder(QTabWidget):
     def load_label_dataset(self):
         """Show file dialog to set :py:attr:`~labels_filepaths`"""
         filenames = self.load_dataset_paths()
-        if filenames != "" and filenames != [""] and filenames != []:
+        if filenames:
             self.labels_filepaths = sorted(filenames)
             path = os.path.dirname(filenames[0])
             self.lbl_label_files.setText(path)
@@ -284,6 +284,7 @@ class BasePluginFolder(QTabWidget):
         dir = ui.open_file_dialog(self, self._default_path, True)
         if dir != "" and type(dir) is str and os.path.isdir(dir):
             self.results_path = dir
+            print(f"Results path : {self.results_path}")
             self.lbl_result_path.setText(self.results_path)
             self.update_default()
 
@@ -299,7 +300,7 @@ class BasePluginFolder(QTabWidget):
                 os.path.dirname(self.labels_filepaths[0]),
                 self.results_path,
             ]
-            if (path != [""] and path != "")
+            if (path != [] and path is not None)
         ]
 
     def remove_docked_widgets(self):

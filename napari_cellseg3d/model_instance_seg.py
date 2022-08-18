@@ -32,6 +32,21 @@ class ImageStats:
     filling_ratio: float
     number_objects: int
 
+    def get_dict(self):
+        return {
+            "Volume": self.volume,
+            "Centroid x": self.centroid_x,
+            "Centroid y": self.centroid_y,
+            "Centroid z": self.centroid_z,
+            # "Sphericity (volume/area)": sphericity_va,
+            "Sphericity (axes)": self.sphericity_ax,
+            "Image size": self.image_size,
+            "Total image volume": self.total_image_volume,
+            "Total object volume (pixels)": self.total_filled_volume,
+            "Filling ratio": self.filling_ratio,
+            "Number objects": self.number_objects,
+        }
+
 
 def binary_connected(
     volume, thres=0.5, thres_small=3, scale_factors=(1.0, 1.0, 1.0)

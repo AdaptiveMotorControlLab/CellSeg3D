@@ -1,12 +1,13 @@
 from napari_cellseg3d import plugin_model_training as train
+from napari_cellseg3d import config
 
 
 def test_check_ready(make_napari_viewer):
     view = make_napari_viewer()
     widget = train.Trainer(view)
 
-    widget.images_filepath = [""]
-    widget.labels_filepaths = [""]
+    widget.images_filepath = None
+    widget.labels_filepaths = None
 
     res = widget.check_ready()
     assert not res
@@ -22,7 +23,9 @@ def test_update_loss_plot(make_napari_viewer):
     view = make_napari_viewer()
     widget = train.Trainer(view)
 
-    widget.val_interval = 1
+    widget.worker_config = config.TrainingWorkerConfig()
+    widget.worker_config.validation_interval = 1
+    widget.worker_config.results_path_folder = "."
 
     epoch_loss_values = [1]
     metric_values = []
@@ -32,7 +35,7 @@ def test_update_loss_plot(make_napari_viewer):
     assert widget.dice_metric_plot is None
     assert widget.train_loss_plot is None
 
-    widget.val_interval = 2
+    widget.worker_config.validation_interval = 2
 
     epoch_loss_values = [0, 1]
     metric_values = [0.2]
