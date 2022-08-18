@@ -552,7 +552,7 @@ class InferenceWorker(GeneratorWorker):
         time = utils.get_date_time()
 
         file_path = (
-            self.config.results_path_folder
+            self.config.results_path
             + "/"
             + f"Prediction_{i+1}"
             + original_filename
@@ -608,7 +608,7 @@ class InferenceWorker(GeneratorWorker):
         instance_labels = method(to_instance)
 
         instance_filepath = (
-            self.config.results_path_folder
+            self.config.results_path
             + "/"
             + f"Instance_seg_labels_{image_id}_"
             + original_filename
@@ -685,7 +685,7 @@ class InferenceWorker(GeneratorWorker):
 
         instance_labels, stats = self.get_instance_result(out, from_layer=True)
 
-        return self.create_result_dict(  # TODO refactor
+        return self.create_result_dict(
             semantic_labels=out,
             instance_labels=instance_labels,
             from_layer=True,
