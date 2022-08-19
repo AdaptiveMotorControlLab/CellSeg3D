@@ -218,7 +218,9 @@ class Trainer(ModelFramework):
             "Validation interval : ", self
         )
         self.epoch_choice.valueChanged.connect(self.update_validation_choice)
-        self.val_interval_choice.valueChanged.connect(self.update_validation_choice)
+        self.val_interval_choice.valueChanged.connect(
+            self.update_validation_choice
+        )
 
         learning_rate_vals = [
             "1e-2",
