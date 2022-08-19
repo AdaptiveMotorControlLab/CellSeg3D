@@ -811,7 +811,7 @@ class Inferer(ModelFramework):
                     stats_dict = stats.get_dict()
                     stats_df = pd.DataFrame(stats_dict)
 
-                    widget.print_and_log(
+                    widget.log.print_and_log(
                         f"Number of instances : {stats.number_objects}"
                     )
 
