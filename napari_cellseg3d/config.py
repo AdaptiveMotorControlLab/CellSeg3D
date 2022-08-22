@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 from typing import List
 from typing import Optional
 import warnings
@@ -31,6 +32,14 @@ INSTANCE_SEGMENTATION_METHOD_LIST = {
     "Connected components": binary_connected,
 }
 
+WEIGHTS_DIR = str(Path(__file__).parent.resolve() / Path("models/pretrained"))
+
+@dataclass
+class ReviewConfig:
+
+
+################
+# Model & weights
 
 @dataclass
 class ModelInfo:
@@ -55,7 +64,7 @@ class ModelInfo:
 
 @dataclass
 class WeightsInfo:
-    path: str = None
+    path: str = WEIGHTS_DIR
     custom: bool = False
     use_pretrained: Optional[bool] = False
 

@@ -1,4 +1,3 @@
-import os
 import platform
 from pathlib import Path
 import importlib.util
@@ -68,9 +67,8 @@ a custom worker function."""
 # https://www.pythoncentral.io/pysidepyqt-tutorial-creating-your-own-signals-and-slots/
 # https://napari-staging-site.github.io/guides/stable/threading.html
 
-WEIGHTS_DIR = os.path.dirname(os.path.realpath(__file__)) + str(
-    Path("/models/pretrained")
-)
+PLUGIN_DIR = Path(__file__).parent.resolve()
+WEIGHTS_DIR = PLUGIN_DIR / Path("/models/pretrained")
 
 
 class WeightsDownloader:
@@ -101,20 +99,15 @@ class WeightsDownloader:
         def show_progress(count, block_size, total_size):
             pbar.update(block_size)
 
-        cellseg3d_path = os.path.split(
-            importlib.util.find_spec("napari_cellseg3d").origin
-        )[0]
-        pretrained_folder_path = os.path.join(
-            cellseg3d_path, "models", "pretrained"
-        )
-        json_path = os.path.join(
-            pretrained_folder_path, "pretrained_model_urls.json"
+        pretrained_folder_path = WEIGHTS_DIR
+        json_path = Path(pretrained_folder_path) / Path(
+            "pretrained_model_urls.json"
         )
 
-        check_path = os.path.join(
-            pretrained_folder_path, model_weights_filename
+        check_path = Path(pretrained_folder_path) / Path(
+            model_weights_filename
         )
-        if os.path.exists(check_path):
+        if Path(check_path).is_dir():
             message = f"Weight file {model_weights_filename} already exists, skipping download"
             if self.log_widget is not None:
                 self.log_widget.print_and_log(message, printing=False)
@@ -515,7 +508,7 @@ class InferenceWorker(GeneratorWorker):
         )
 
     def get_original_filename(self, i):
-        return os.path.basename(self.images_filepaths[i]).split(".")[0]
+        return Path(self.config.images_filepaths[i]).stem
 
     def get_instance_result(self, semantic_labels, from_layer=False, i=-1):
 
@@ -561,7 +554,7 @@ class InferenceWorker(GeneratorWorker):
             + self.config.filetype
         )
         imwrite(file_path, image)
-        filename = os.path.split(file_path)[1]
+        filename = Path(file_path).stem
 
         if from_layer:
             self.log(f"\nLayer prediction saved as : {filename}")
@@ -622,7 +615,7 @@ class InferenceWorker(GeneratorWorker):
         self.log(
             f"Instance segmentation results for image n°{image_id} have been saved as:"
         )
-        self.log(os.path.split(instance_filepath)[1])
+        self.log(Path(instance_filepath).name)
         return instance_labels
 
     def inference_on_folder(self, inf_data, i, model, post_process_transforms):
@@ -792,8 +785,8 @@ class InferenceWorker(GeneratorWorker):
                     model_name,
                     model_class.get_weights_file(),
                 )
-                weights = os.path.join(
-                    WEIGHTS_DIR, model_class.get_weights_file()
+                weights = Path(WEIGHTS_DIR) / Path(
+                    model_class.get_weights_file()
                 )
 
             model.load_state_dict(
@@ -942,19 +935,21 @@ class TrainingWorker(GeneratorWorker):
         self.log(
             f"Percentage of dataset used for validation : {self.config.validation_percent * 100}%"
         )
+
         self.log("-" * 10)
         self.log("Training files :\n")
         [
-            self.log(f"{os.path.basename(str(train_file)[:-2])}\n")
+            self.log(f"{Path(train_file['image']).name}\n")
             for train_file in self.train_files
         ]
         self.log("-" * 10)
         self.log("Validation files :\n")
         [
-            self.log(f"{os.path.basename(str(val_file)[:-2])}\n")
+            self.log(f"{Path(val_file['image']).name}\n")
             for val_file in self.val_files
         ]
         self.log("-" * 10)
+
         if self.config.deterministic_config.enabled:
             self.log(f"Deterministic training is enabled")
             self.log(f"Seed is {self.config.deterministic_config.seed}")
@@ -1232,10 +1227,10 @@ class TrainingWorker(GeneratorWorker):
                 if weights_config.use_pretrained:
                     weights_file = model_class.get_weights_file()
                     self.downloader.download_weights(model_name, weights_file)
-                    weights = os.path.join(WEIGHTS_DIR, weights_file)
+                    weights = WEIGHTS_DIR / Path(weights_file)
                     weights_config.path = weights
                 else:
-                    weights = os.path.join(weights_config.path)
+                    weights = Path(weights_config.path)
 
                 try:
                     model.load_state_dict(
@@ -1369,8 +1364,8 @@ class TrainingWorker(GeneratorWorker):
                             self.log("Saving best metric model")
                             torch.save(
                                 model.state_dict(),
-                                os.path.join(
-                                    self.config.results_path_folder,
+                                Path(self.config.results_path_folder)
+                                / Path(
                                     weights_filename,
                                 ),
                             )

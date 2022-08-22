@@ -283,8 +283,8 @@ class Trainer(ModelFramework):
 
         self.btn_start = ui.Button("Start training", self.start)
 
-        self.btn_model_path.setVisible(False)
-        self.lbl_model_path.setVisible(False)
+        # self.btn_model_path.setVisible(False)
+        # self.lbl_model_path.setVisible(False)
 
         ############################
         ############################
@@ -739,19 +739,19 @@ class Trainer(ModelFramework):
     def show_dialog_lab(self):
         """Shows the  dialog to load label files in a path, loads them (see :doc:model_framework) and changes the widget
         label :py:attr:`self.lbl_label` accordingly"""
-        f_name = ui.open_file_dialog(self, self._default_path)
+        folder = ui.open_folder_dialog(self, self._default_path)
 
-        if f_name:
-            self.label_path = f_name
+        if folder:
+            self.label_path = folder
             self.lbl_label.setText(self.label_path)
 
     def show_dialog_dat(self):
         """Shows the  dialog to load images files in a path, loads them (see :doc:model_framework) and changes the
         widget label :py:attr:`self.lbl_dat` accordingly"""
-        f_name = ui.open_file_dialog(self, self._default_path)
+        folder = ui.open_folder_dialog(self, self._default_path)
 
-        if f_name:
-            self.data_path = f_name
+        if folder:
+            self.data_path = folder
             self.lbl_dat.setText(self.data_path)
 
     def send_log(self, text):
@@ -813,7 +813,7 @@ class Trainer(ModelFramework):
                 name=self.model_choice.currentText()
             )
             weights_config = config.WeightsInfo(
-                path=self.weights_path,
+                path=self.weights_info.path,
                 custom=self.custom_weights_choice.isChecked(),
                 use_pretrained=self.use_transfer_choice.isChecked(),
             )

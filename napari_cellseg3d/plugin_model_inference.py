@@ -236,7 +236,7 @@ class Inferer(ModelFramework):
 
         # hide unused widgets from parent class
         self.label_filewidget.setVisible(False)
-        self.model_filewidget.setVisible(False)
+        # self.model_filewidget.setVisible(False)
 
         def set_tooltips():
             ##################
@@ -597,7 +597,8 @@ class Inferer(ModelFramework):
             )
 
             weights_config = config.WeightsInfo(
-                self.weights_path, self.custom_weights_choice.isChecked()
+                self.weights_filewidget.get_text_field(),
+                self.custom_weights_choice.isChecked(),
             )
 
             zoom_config = config.Zoom(

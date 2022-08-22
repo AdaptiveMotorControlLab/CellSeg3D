@@ -50,7 +50,7 @@ class Datamanager(QWidget):
         self.time_label.setVisible(False)
 
         self.pause_box = ui.CheckBox(
-            "Pause", self.pause_timer, parent=self, fixed=True
+            "Pause timer", self.pause_timer, parent=self, fixed=True
         )
 
         io_panel = ui.ContainerWidget()

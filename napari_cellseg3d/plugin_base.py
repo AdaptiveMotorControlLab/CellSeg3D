@@ -1,5 +1,5 @@
 import glob
-import os
+from pathlib import Path
 import warnings
 
 import napari
@@ -35,6 +35,7 @@ class BasePluginSingleImage(QTabWidget):
         """napari.viewer.Viewer: viewer in which the widget is displayed"""
 
         self.docked_widgets = []
+        self.container_docked = False
 
         self.image_path = None
         """str: path to image folder"""
@@ -69,7 +70,7 @@ class BasePluginSingleImage(QTabWidget):
         self.filetype_choice = ui.DropdownMenu([".png", ".tif"])
 
         self.file_handling_box = ui.CheckBox(
-            "Load as folder ?", self.show_filetype_choice
+            "Load folder as stack ?", self.show_filetype_choice
         )
         """Checkbox to choose single file or directory loader handling"""
 
@@ -95,16 +96,18 @@ class BasePluginSingleImage(QTabWidget):
 
     def show_file_dialog(self):
         """Open file dialog and process path depending on single file/folder loading behaviour"""
-        f_or_dir_name = ui.open_file_dialog(
-            self, self._default_path, self.file_handling_box.isChecked()
-        )
-        if not self.file_handling_box.isChecked():
-            f_or_dir_name = str(f_or_dir_name[0])
-            self.filetype = os.path.splitext(f_or_dir_name)[1]
-
-        print(f_or_dir_name)
-
-        return f_or_dir_name
+        if self.file_handling_box.isChecked():
+            folder = ui.open_folder_dialog(
+                self,
+                self._default_path,
+                filetype=f"Image file (*{self.filetype_choice.currentText()})",
+            )
+            return folder
+        else:
+            f_name = ui.open_file_dialog(self, self._default_path)
+            f_name = str(f_name[0])
+            self.filetype = str(Path(f_name).suffix)
+            return f_name
 
     def show_dialog_images(self):
         """Show file dialog and set image path"""
@@ -124,9 +127,9 @@ class BasePluginSingleImage(QTabWidget):
 
     def load_results_path(self):
         """Show file dialog to set :py:attr:`~results_path`"""
-        dir = ui.open_file_dialog(self, self._default_path, True)
-        if dir != "" and type(dir) is str and os.path.isdir(dir):
-            self.results_path = dir
+        folder = ui.open_folder_dialog(self, self._default_path)
+        if folder != "" and type(folder) is folder and Path(folder).is_dir():
+            self.results_path = folder
             self.lbl_result_path.setText(self.results_path)
             self.update_default()
 
@@ -184,11 +187,8 @@ class BasePluginFolder(QTabWidget):
         self.results_path = None
         """str: path to output folder,to save results in"""
 
-        self._default_path = [
-            self.images_filepaths,
-            self.labels_filepaths,
-            self.results_path,
-        ]
+        self._default_folder = [None]
+        """Update defaults from PluginBaseFolder with model_path"""
 
         self.docked_widgets = []
         """List of docked widgets (returned by :py:func:`viewer.window.add_dock_widget())`,
@@ -247,44 +247,43 @@ class BasePluginFolder(QTabWidget):
            array(str): all loaded file paths
         """
         filetype = self.filetype_choice.currentText()
-        directory = ui.open_file_dialog(self, self._default_path, True)
-        # print(directory)
-        file_paths = sorted(glob.glob(os.path.join(directory, "*" + filetype)))
+        directory = ui.open_folder_dialog(self, self._default_folder)
+
+        file_paths = sorted(Path(directory).glob("*" + filetype))
         if len(file_paths) == 0:
             warnings.warn(
                 f"The folder does not contain any compatible {filetype} files.\n"
                 f"Please check the validity of the folder and images."
             )
-        # print(file_paths)
+
         return file_paths
 
     def load_image_dataset(self):
         """Show file dialog to set :py:attr:`~images_filepaths`"""
         filenames = self.load_dataset_paths()
-        # print(filenames)
+
         if filenames:
             self.images_filepaths = sorted(filenames)
-            # print(filenames)
-            path = os.path.dirname(filenames[0])
+
+            path = str(Path(filenames[0]).parent)
             self.lbl_image_files.setText(path)
-            # print(path)
-            self._default_path[0] = path
+            self.update_default()
 
     def load_label_dataset(self):
         """Show file dialog to set :py:attr:`~labels_filepaths`"""
         filenames = self.load_dataset_paths()
         if filenames:
             self.labels_filepaths = sorted(filenames)
-            path = os.path.dirname(filenames[0])
+            path = str(Path(filenames[0]).parent)
             self.lbl_label_files.setText(path)
             self.update_default()
 
     def load_results_path(self):
         """Show file dialog to set :py:attr:`~results_path`"""
-        dir = ui.open_file_dialog(self, self._default_path, True)
-        if dir != "" and type(dir) is str and os.path.isdir(dir):
-            self.results_path = dir
-            print(f"Results path : {self.results_path}")
+        folder = ui.open_folder_dialog(self, self._default_folder)
+        if folder != "" and type(folder) is str and Path(folder).is_dir():
+            self.results_path = folder
+            # print(f"Results path : {self.results_path}")
             self.lbl_result_path.setText(self.results_path)
             self.update_default()
 
@@ -293,11 +292,21 @@ class BasePluginFolder(QTabWidget):
 
     def update_default(self):
         """Update default path for smoother file dialogs"""
-        self._default_path = [
+        if len(self.images_filepaths) != 0:
+            from_images = str(Path(self.images_filepaths[0]).parent)
+        else:
+            from_images = None
+
+        if len(self.labels_filepaths) != 0:
+            from_labels = str(Path(self.labels_filepaths[0]).parent)
+        else:
+            from_labels = None
+
+        self._default_folder = [
             path
             for path in [
-                os.path.dirname(self.images_filepaths[0]),
-                os.path.dirname(self.labels_filepaths[0]),
+                from_images,
+                from_labels,
                 self.results_path,
             ]
             if (path != [] and path is not None)

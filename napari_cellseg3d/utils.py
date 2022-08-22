@@ -1,4 +1,3 @@
-import os
 import warnings
 from datetime import datetime
 from pathlib import Path
@@ -260,9 +259,7 @@ def annotation_to_input(label_ermito):
 
 
 def check_csv(project_path, ext):
-    if not os.path.isfile(
-        os.path.join(project_path, os.path.basename(project_path) + ".csv")
-    ):
+    if not Path(Path(project_path) / Path(project_path).name).is_file():
         cols = [
             "project",
             "type",
@@ -279,14 +276,14 @@ def check_csv(project_path, ext):
             "notes",
         ]
         df = DataFrame(index=[], columns=cols)
-        filename_pattern_original = os.path.join(
-            project_path, f"dataset/Original_size/Original/*{ext}"
+        filename_pattern_original = Path(project_path) / Path(
+            f"dataset/Original_size/Original/*{ext}"
         )
         images_original = dask_imread(filename_pattern_original)
         z, y, x = images_original.shape
         record = Series(
             [
-                os.path.basename(project_path),
+                Path(project_path).name,
                 "dataset",
                 ".tif",
                 0,
@@ -297,28 +294,26 @@ def check_csv(project_path, ext):
                 x,
                 datetime.datetime.now(),
                 "",
-                os.path.join(project_path, "dataset/Original_size/Original"),
+                Path(project_path) / Path("dataset/Original_size/Original"),
                 "",
             ],
             index=df.columns,
         )
         df = df.append(record, ignore_index=True)
-        df.to_csv(
-            os.path.join(project_path, os.path.basename(project_path) + ".csv")
-        )
+        df.to_csv(Path(project_path) / Path(project_path).name)
     else:
         pass
 
 
-def check_annotations_dir(project_path):
-    if not os.path.isdir(
-        os.path.join(project_path, "annotations/Original_size/master")
-    ):
-        os.makedirs(
-            os.path.join(project_path, "annotations/Original_size/master")
-        )
-    else:
-        pass
+# def check_annotations_dir(project_path):
+#     if not Path(
+#         Path(project_path) / Path("annotations/Original_size/master")
+#     ).is_dir():
+#         os.makedirs(
+#             os.path.join(project_path, "annotations/Original_size/master")
+#         )
+#     else:
+#         pass
 
 
 def fill_list_in_between(lst, n, elem):
@@ -347,27 +342,27 @@ def fill_list_in_between(lst, n, elem):
             return new_list
 
 
-def check_zarr(project_path, ext):
-    if not len(
-        list(
-            (Path(project_path) / "dataset" / "Original_size").glob("./*.zarr")
-        )
-    ):
-        filename_pattern_original = os.path.join(
-            project_path, f"dataset/Original_size/Original/*{ext}"
-        )
-        images_original = dask_imread(filename_pattern_original)
-        images_original.to_zarr(
-            os.path.join(project_path, f"dataset/Original_size/Original.zarr")
-        )
-    else:
-        pass
+# def check_zarr(project_path, ext):
+#     if not len(
+#         list(
+#             (Path(project_path) / "dataset" / "Original_size").glob("./*.zarr")
+#         )
+#     ):
+#         filename_pattern_original = os.path.join(
+#             project_path, f"dataset/Original_size/Original/*{ext}"
+#         )
+#         images_original = dask_imread(filename_pattern_original)
+#         images_original.to_zarr(
+#             os.path.join(project_path, f"dataset/Original_size/Original.zarr")
+#         )
+#     else:
+#         pass
 
 
-def check(project_path, ext):
-    check_csv(project_path, ext)
-    check_zarr(project_path, ext)
-    check_annotations_dir(project_path)
+# def check(project_path, ext):
+#     check_csv(project_path, ext)
+#     check_zarr(project_path, ext)
+#     check_annotations_dir(project_path)
 
 
 def parse_default_path(possible_paths):
@@ -384,14 +379,17 @@ def parse_default_path(possible_paths):
     # print(default_paths)
     # print(default_path)
     if any(path is not None for path in possible_paths):
-        default_paths = [p for p in possible_paths if p is not None]
-    default_paths = [
-        path for path in default_paths if path is not None and path != []
-    ]
+        default_paths = [
+            p for p in possible_paths if p is not None and len(p) > 2
+        ]
+    # default_paths = [
+    #     path for path in default_paths if path is not None and path != []
+    # ]
+    print(default_paths)
     if len(default_paths) == 0:
-        return os.path.expanduser("~")
+        return str(Path.home())
     default_path = max(default_paths)
-    return default_path
+    return str(default_path)
 
 
 def get_date_time():
@@ -433,10 +431,10 @@ def load_images(dir_or_path, filetype="", as_folder: bool = False):
     """
 
     if not as_folder:
-        filename_pattern_original = os.path.join(dir_or_path)
+        filename_pattern_original = Path(dir_or_path)
         # print(filename_pattern_original)
     elif as_folder and filetype != "":
-        filename_pattern_original = os.path.join(dir_or_path + "/*" + filetype)
+        filename_pattern_original = Path(dir_or_path + "/*" + filetype)
         # print(filename_pattern_original)
     else:
         raise ValueError("If loading as a folder, filetype must be specified")
@@ -487,80 +485,81 @@ def save_stack(images, out_path, filetype=".png", check_warnings=False):
         out_path: path to the directory for saving
     """
     num = images.shape[0]
-    os.makedirs(out_path, exist_ok=True)
+    p = Path(out_path)
+    p.mkdir(out_path, exist_ok=True)
     for i in range(num):
         label = images[i]
         io.imsave(
-            os.path.join(out_path, str(i).zfill(4) + filetype),
+            Path(out_path) / Path(str(i).zfill(4) + filetype),
             label,
             check_contrast=check_warnings,
         )
 
 
-def load_X_gray(folder_path):
-    image_files = []
-    for file in os.listdir(folder_path):
-        base, ext = os.path.splitext(file)
-        if ext == ".png":
-            image_files.append(file)
-        else:
-            pass
+# def load_X_gray(folder_path):
+#     image_files = []
+#     for file in os.listdir(folder_path):
+#         base, ext = os.path.splitext(file)
+#         if ext == ".png":
+#             image_files.append(file)
+#         else:
+#             pass
+#
+#     image_files.sort()
+#
+#     img = cv2.imread(
+#         folder_path + os.sep + image_files[0], cv2.IMREAD_GRAYSCALE
+#     )
+#
+#     images = np.zeros(
+#         (len(image_files), img.shape[0], img.shape[1], 1), np.float32
+#     )
+#     for i, image_file in tqdm(enumerate(image_files)):
+#         image = cv2.imread(
+#             folder_path + os.sep + image_file, cv2.IMREAD_GRAYSCALE
+#         )
+#         image = image[:, :, np.newaxis]
+#         images[i] = normalize_x(image)
+#
+#     print(images.shape)
+#
+#     return images, image_files
 
-    image_files.sort()
 
-    img = cv2.imread(
-        folder_path + os.sep + image_files[0], cv2.IMREAD_GRAYSCALE
-    )
-
-    images = np.zeros(
-        (len(image_files), img.shape[0], img.shape[1], 1), np.float32
-    )
-    for i, image_file in tqdm(enumerate(image_files)):
-        image = cv2.imread(
-            folder_path + os.sep + image_file, cv2.IMREAD_GRAYSCALE
-        )
-        image = image[:, :, np.newaxis]
-        images[i] = normalize_x(image)
-
-    print(images.shape)
-
-    return images, image_files
-
-
-def load_Y_gray(folder_path, thresh=None, normalize=False):
-    image_files = []
-    for file in os.listdir(folder_path):
-        base, ext = os.path.splitext(file)
-        if ext == ".png":
-            image_files.append(file)
-        else:
-            pass
-
-    image_files.sort()
-
-    img = cv2.imread(
-        folder_path + os.sep + image_files[0], cv2.IMREAD_GRAYSCALE
-    )
-
-    images = np.zeros(
-        (len(image_files), img.shape[0], img.shape[1], 1), np.float32
-    )
-
-    for i, image_file in tqdm(enumerate(image_files)):
-        image = cv2.imread(
-            folder_path + os.sep + image_file, cv2.IMREAD_GRAYSCALE
-        )
-        if thresh:
-            ret, image = cv2.threshold(image, thresh, 255, cv2.THRESH_BINARY)
-        image = image[:, :, np.newaxis]
-        if normalize:
-            images[i] = normalize_y(image)
-        else:
-            images[i] = image
-
-    print(images.shape)
-
-    return images, image_files
+# def load_Y_gray(folder_path, thresh=None, normalize=False):
+#     image_files = []
+#     for file in os.listdir(folder_path):
+#         base, ext = os.path.splitext(file)
+#         if ext == ".png":
+#             image_files.append(file)
+#         else:
+#             pass
+#
+#     image_files.sort()
+#
+#     img = cv2.imread(
+#         folder_path + os.sep + image_files[0], cv2.IMREAD_GRAYSCALE
+#     )
+#
+#     images = np.zeros(
+#         (len(image_files), img.shape[0], img.shape[1], 1), np.float32
+#     )
+#
+#     for i, image_file in tqdm(enumerate(image_files)):
+#         image = cv2.imread(
+#             folder_path + os.sep + image_file, cv2.IMREAD_GRAYSCALE
+#         )
+#         if thresh:
+#             ret, image = cv2.threshold(image, thresh, 255, cv2.THRESH_BINARY)
+#         image = image[:, :, np.newaxis]
+#         if normalize:
+#             images[i] = normalize_y(image)
+#         else:
+#             images[i] = image
+#
+#     print(images.shape)
+#
+#     return images, image_files
 
 
 def select_train_data(dataframe, ori_imgs, label_imgs, ori_filenames):

@@ -619,7 +619,6 @@ def add_blank(widget, layout=None):
 def open_file_dialog(
     widget,
     possible_paths: list = [],
-    load_as_folder: bool = False,
     filetype: str = "Image file (*.tif *.tiff)",
 ):
     """Opens a window to choose a file directory using QFileDialog.
@@ -634,17 +633,25 @@ def open_file_dialog(
     """
 
     default_path = utils.parse_default_path(possible_paths)
-    if not load_as_folder:
-        f_name = QFileDialog.getOpenFileName(
-            widget, "Choose file", default_path, filetype
-        )
-        return f_name
-    else:
-        print(default_path)
-        filenames = QFileDialog.getExistingDirectory(
-            widget, "Open directory", default_path
-        )
-        return filenames
+
+    f_name = QFileDialog.getOpenFileName(
+        widget, "Choose file", default_path, filetype
+    )
+    return f_name
+
+
+def open_folder_dialog(
+    widget,
+    possible_paths: list = [],
+    filetype: str = "Image file (*.tif *.tiff)",
+):
+    default_path = utils.parse_default_path(possible_paths)
+
+    print(f"Default : {default_path}")
+    filenames = QFileDialog.getExistingDirectory(
+        widget, "Open directory", default_path
+    )
+    return filenames
 
 
 def make_label(name, parent=None):  # TODO update to child class

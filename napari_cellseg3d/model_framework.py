@@ -1,6 +1,4 @@
-from dataclasses import dataclass
-import os
-from typing import Optional, List
+from pathlib import Path
 import warnings
 
 import napari
@@ -48,16 +46,10 @@ class ModelFramework(BasePluginFolder):
         # """str: path to custom model defined by user"""
 
         self.weights_info = config.WeightsInfo()
-        self.weights_path = None  # TODO remove
         """str : path to custom weights defined by user"""
 
-        self._default_path = [  # TODO update
-            self.images_filepaths,
-            self.labels_filepaths,
-            self.weights_path,
-            self.results_path,
-        ]
-        """Update defaults from PluginBaseFolder with model_path"""
+        self._default_weights_folder = self.weights_info.path
+        """Default path for plugin weights"""
 
         self.available_models = config.MODEL_LIST
 
@@ -70,12 +62,12 @@ class ModelFramework(BasePluginFolder):
         # interface
 
         # TODO : implement custom model
-        self.model_filewidget = ui.FilePathWidget(
-            "Model path", self.load_model_path, self
-        )
+        # self.model_filewidget = ui.FilePathWidget(
+        #     "Model path", self.load_model_path, self
+        # )
 
-        self.btn_model_path = self.model_filewidget.get_button()
-        self.lbl_model_path = self.model_filewidget.get_text_field()
+        # self.btn_model_path = self.model_filewidget.get_button()
+        # self.lbl_model_path = self.model_filewidget.get_text_field()
 
         self.model_choice = ui.DropdownMenu(
             sorted(self.available_models.keys()), label="Model name"
@@ -236,11 +228,11 @@ class ModelFramework(BasePluginFolder):
 
         print("Images :\n")
         for file in self.images_filepaths:
-            print(os.path.basename(file).split(".")[0])
+            print(Path(file).name)
         print("*" * 10)
         print("\nLabels :\n")
         for file in self.labels_filepaths:
-            print(os.path.basename(file).split(".")[0])
+            print(Path(file).name)
 
         data_dicts = [
             {"image": image_name, "label": label_name}
@@ -260,24 +252,28 @@ class ModelFramework(BasePluginFolder):
         """Getter for module (class and functions) associated to currently selected model"""
         return config.MODEL_LIST
 
-    def load_model_path(self):
-        """Show file dialog to set :py:attr:`model_path`"""
-        dir = ui.open_file_dialog(self, self._default_path)
-        if dir is not None and type(dir) is str and os.path.isdir(dir):
-            self.model_path = dir
-            self.lbl_model_path.setText(self.model_path)
-            # self.update_default()
+    # def load_model_path(self):
+    #     """Show file dialog to set :py:attr:`model_path`"""
+    #     folder = ui.open_folder_dialog(self, self._default_folder)
+    #     if folder is not None and type(folder) is str and os.path.isdir(folder):
+    #         self.model_path = folder
+    #         self.lbl_model_path.setText(self.model_path)
+    #         # self.update_default()
 
     def load_weights_path(self):
         """Show file dialog to set :py:attr:`model_path`"""
+
+        # print(self._default_weights_folder)
+
         file = ui.open_file_dialog(
-            self, self._default_path, filetype="Weights file (*.pth)"
+            self,
+            [self._default_weights_folder],
+            filetype="Weights file (*.pth)",
         )
-        if file != "":
-            self.weights_path = file[0]  # TODO remove
+        if file != "" and file is not None:
             self.weights_info.path = file[0]
-            self.lbl_weights_path.setText(self.weights_path)
-            self.update_default()
+            self.lbl_weights_path.setText(file[0])
+            self._default_weights_folder = str(Path(file[0]).parent)
 
     @staticmethod
     def get_device(show=True):
@@ -293,36 +289,35 @@ class ModelFramework(BasePluginFolder):
     def empty_cuda_cache(self):
         """Empties the cuda cache if the device is a cuda device"""
         if self.get_device(show=False).type == "cuda":
-            print("Empyting cache...")
+            print("Emptying cache...")
             torch.cuda.empty_cache()
             print("Cache emptied")
 
-    def update_default(self):
-        """Update default path for smoother file dialogs, here with :py:attr:`~model_path` included"""
-        if len(self.images_filepaths) != 0:
-            from_images = os.path.dirname(self.images_filepaths[0])
-        else:
-            from_images = []
-
-        if len(self.labels_filepaths) != 0:
-            from_labels = os.path.dirname(self.labels_filepaths[0])
-        else:
-            from_labels = []
-
-        self._default_path = [
-            path
-            for path in [
-                from_images,
-                from_labels,
-                # self.model_path,
-                self.results_path,
-            ]
-            if (
-                path != []
-                and path is not None
-                and (self.images_filepaths and self.labels_filepaths) != []
-            )
-        ]
+    # def update_default(self):
+    #     """Update default path for smoother file dialogs, here with :py:attr:`~model_path` included"""
+    #
+    #     if len(self.images_filepaths) != 0:
+    #         from_images = str(Path(self.images_filepaths[0]).parent)
+    #     else:
+    #         from_images = None
+    #
+    #     if len(self.labels_filepaths) != 0:
+    #         from_labels = str(Path(self.labels_filepaths[0]).parent)
+    #     else:
+    #         from_labels = None
+    #
+    #     possible_paths = [
+    #         path
+    #         for path in [
+    #             from_images,
+    #             from_labels,
+    #             # self.model_path,
+    #             self.results_path,
+    #         ]
+    #         if path is not None
+    #     ]
+    #     self._default_folder = possible_paths
+    # update if model_path is used again
 
     def build(self):
         raise NotImplementedError("Should be defined in children classes")
