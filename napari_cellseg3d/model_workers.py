@@ -103,11 +103,6 @@ class WeightsDownloader:
 
         check_path = pretrained_folder_path / Path(model_weights_filename)
 
-        print("DOWNLOAD PATH")
-        print(pretrained_folder_path)
-        print(json_path)
-        print(check_path)
-
         if Path(check_path).is_file():
             message = f"Weight file {model_weights_filename} already exists, skipping download"
             if self.log_widget is not None:
@@ -778,7 +773,6 @@ class InferenceWorker(GeneratorWorker):
                 )
 
             self.log("\nLoading weights...")
-            self.log(f"CONFIG : {weights_config.path}")
             if weights_config.custom:
                 weights = weights_config.path
             else:
@@ -789,7 +783,6 @@ class InferenceWorker(GeneratorWorker):
                 weights = str(
                     WEIGHTS_DIR / Path(model_class.get_weights_file())
                 )
-            self.log(f"WEIGHTS PATH : {weights}")
             model.load_state_dict(
                 torch.load(
                     weights,
