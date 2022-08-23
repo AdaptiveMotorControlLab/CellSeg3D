@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 import shutil
 import warnings
 
@@ -812,11 +812,11 @@ class Trainer(ModelFramework):
             model_config = config.ModelInfo(
                 name=self.model_choice.currentText()
             )
-            weights_config = config.WeightsInfo(
-                path=self.weights_info.path,
-                custom=self.custom_weights_choice.isChecked(),
-                use_pretrained=self.use_transfer_choice.isChecked(),
-            )
+
+            self.weights_config.path=self.weights_config.path,
+            self.weights_config.custom=self.custom_weights_choice.isChecked(),
+            self.weights_config.use_pretrained=self.use_transfer_choice.isChecked(),
+
             deterministic_config = config.DeterministicConfig(
                 enabled=self.use_deterministic_choice.isChecked(),
                 seed=self.box_seed.value(),
@@ -824,11 +824,11 @@ class Trainer(ModelFramework):
 
             validation_percent = self.validation_percent_choice.value() / 100
 
-            results_path_folder = (
+            results_path_folder = Path(
                 self.results_path
                 + f"/{model_config.name}_{utils.get_date_time()}"
             )
-            os.makedirs(
+            Path(self.results_path).mkdir(
                 results_path_folder, exist_ok=False
             )  # avoid overwrite where possible
 
@@ -837,7 +837,7 @@ class Trainer(ModelFramework):
             self.worker_config = config.TrainingWorkerConfig(
                 device=self.get_device(),
                 model_info=model_config,
-                weights_info=weights_config,
+                weights_info=self.weights_config,
                 train_data_dict=self.data,
                 validation_percent=validation_percent,
                 max_epochs=self.epoch_choice.value(),
@@ -985,8 +985,8 @@ class Trainer(ModelFramework):
             )
             torch.save(
                 report.weights,
-                os.path.join(
-                    widget.results_path_folder,
+                Path(
+                    widget.results_path_folder) / Path(
                     f"latest_weights_aborted_training_{utils.get_time_filepath()}.pth",
                 ),
             )
@@ -1026,8 +1026,8 @@ class Trainer(ModelFramework):
                 )[: len(size_column)],
             }
         )
-        path = os.path.join(
-            self.worker_config.results_path_folder, "training.csv"
+        path = Path(
+            self.worker_config.results_path_folder) / Path( "training.csv"
         )
         self.df.to_csv(path, index=False)
 
@@ -1076,7 +1076,7 @@ class Trainer(ModelFramework):
             self.canvas.draw_idle()
 
             plot_path = self.worker_config.results_path_folder + "/Loss_plots"
-            os.makedirs(plot_path, exist_ok=True)
+            Path(self.worker_config.results_path_folder).mkdir(plot_path, exist_ok=True)
 
             if self.canvas is not None:
                 self.canvas.figure.savefig(

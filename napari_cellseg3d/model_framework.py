@@ -45,10 +45,10 @@ class ModelFramework(BasePluginFolder):
         # self.model_path = "" # TODO add custom models
         # """str: path to custom model defined by user"""
 
-        self.weights_info = config.WeightsInfo()
+        self.weights_config = config.WeightsInfo()
         """str : path to custom weights defined by user"""
 
-        self._default_weights_folder = self.weights_info.path
+        self._default_weights_folder = self.weights_config.path
         """Default path for plugin weights"""
 
         self.available_models = config.MODEL_LIST
@@ -198,6 +198,11 @@ class ModelFramework(BasePluginFolder):
                 area="left",
                 allowed_areas=["left"],
             )
+
+            # activity_log = self._viewer.window._qt_window._activity_dialog
+            # activity_layout = activity_log._activityLayout
+            # activity_layout.addWidget(self.container_report)
+
             self.docked_widgets.append(report_dock)
             self.container_docked = True
 
@@ -270,10 +275,13 @@ class ModelFramework(BasePluginFolder):
             [self._default_weights_folder],
             filetype="Weights file (*.pth)",
         )
-        if file != "" and file is not None:
-            self.weights_info.path = file[0]
-            self.lbl_weights_path.setText(file[0])
-            self._default_weights_folder = str(Path(file[0]).parent)
+        if file[0] == self._default_weights_folder:
+            return
+        if file is not None:
+            if file[0] != "":
+                self.weights_config.path = file[0]
+                self.lbl_weights_path.setText(file[0])
+                self._default_weights_folder = str(Path(file[0]).parent)
 
     @staticmethod
     def get_device(show=True):

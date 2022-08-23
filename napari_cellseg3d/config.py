@@ -34,12 +34,27 @@ INSTANCE_SEGMENTATION_METHOD_LIST = {
 
 WEIGHTS_DIR = str(Path(__file__).parent.resolve() / Path("models/pretrained"))
 
+
+################
+# Review
+
+
 @dataclass
 class ReviewConfig:
+    images: np.array
+    labels: np.array
+    labels_raw: np.array
+    csv_path: str
+    model_name: str
+    new_csv: bool
+    filetype: str
+    as_stack: bool
+    zoom_factor: List[int]
 
 
 ################
 # Model & weights
+
 
 @dataclass
 class ModelInfo:

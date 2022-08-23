@@ -780,7 +780,8 @@ class ContainerWidget(QWidget):  # TODO convert calls
             self.layout = QHBoxLayout(self)
 
         self.layout.setContentsMargins(l, t, r, b)
-        self.layout.setSizeConstraint(QLayout.SetFixedSize)
+        if fixed:
+            self.layout.setSizeConstraint(QLayout.SetFixedSize)
 
 
 def add_widgets(layout, widgets, alignment=LEFT_AL):

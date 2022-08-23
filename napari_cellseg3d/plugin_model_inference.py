@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-from typing import List
 import warnings
 
 import napari
@@ -596,10 +594,7 @@ class Inferer(ModelFramework):
                 model_input_size=self.model_input_size.value(),
             )
 
-            weights_config = config.WeightsInfo(
-                self.weights_filewidget.get_text_field(),
-                self.custom_weights_choice.isChecked(),
-            )
+            self.weights_config.custom = self.custom_weights_choice.isChecked()
 
             zoom_config = config.Zoom(
                 enabled=self.anisotropy_wdgt.is_enabled(),
@@ -642,7 +637,7 @@ class Inferer(ModelFramework):
             self.worker_config = config.InferenceWorkerConfig(
                 device=self.get_device(),
                 model_info=self.model_info,
-                weights_config=weights_config,
+                weights_config=self.weights_config,
                 results_path=self.results_path,
                 filetype=self.filetype_choice.currentText(),
                 keep_on_cpu=self.keep_data_on_cpu_box.isChecked(),

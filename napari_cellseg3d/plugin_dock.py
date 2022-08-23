@@ -1,4 +1,3 @@
-import os
 import warnings
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -137,8 +136,9 @@ class Datamanager(QWidget):
         self.as_folder = as_folder
 
         if not self.as_folder:
-            self.filename = os.path.split(label_dir)[1]
-            label_dir = os.path.split(label_dir)[0]
+            p = Path(label_dir)
+            self.filename = p.name
+            label_dir = p.parent
             print("Loading single image")
             print(self.filename)
             print(label_dir)
@@ -165,7 +165,7 @@ class Datamanager(QWidget):
         #     label_dir = os.path.dirname(label_dir)
         print("label dir")
         print(label_dir)
-        csvs = sorted(list(Path(label_dir).glob(f"{model_type}*.csv")))
+        csvs = sorted(list(Path(str(label_dir)).glob(f"{model_type}*.csv")))
         if len(csvs) == 0:
             df, csv_path = self.create_csv(
                 label_dir, model_type
@@ -178,7 +178,7 @@ class Datamanager(QWidget):
                     csv_path.split("_train")[0]
                     + "_train"
                     + str(
-                        int(os.path.splitext(csv_path.split("_train")[1])[0])
+                        int(Path(csv_path.split("_train")[1]).parent)
                         + 1
                     )
                     + ".csv"
@@ -211,7 +211,7 @@ class Datamanager(QWidget):
             labels = sorted(
                 list(
                     path.name
-                    for path in Path(label_dir).glob("./*" + self.filetype)
+                    for path in Path(str(label_dir)).glob("./*" + self.filetype)
                 )
             )
         else:
@@ -231,7 +231,7 @@ class Datamanager(QWidget):
         )
         df.at[0, "time"] = "00:00:00"
 
-        csv_path = os.path.join(label_dir, f"{model_type}_train0.csv")
+        csv_path = str(Path(label_dir) / Path(f"{model_type}_train0.csv"))
         print("csv path for create")
         print(csv_path)
         df.to_csv(csv_path)

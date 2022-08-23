@@ -67,8 +67,7 @@ a custom worker function."""
 # https://www.pythoncentral.io/pysidepyqt-tutorial-creating-your-own-signals-and-slots/
 # https://napari-staging-site.github.io/guides/stable/threading.html
 
-PLUGIN_DIR = Path(__file__).parent.resolve()
-WEIGHTS_DIR = PLUGIN_DIR / Path("/models/pretrained")
+WEIGHTS_DIR = Path(__file__).parent.resolve() / Path("models/pretrained")
 
 
 class WeightsDownloader:
@@ -100,14 +99,20 @@ class WeightsDownloader:
             pbar.update(block_size)
 
         pretrained_folder_path = WEIGHTS_DIR
-        json_path = Path(pretrained_folder_path) / Path(
+        json_path = pretrained_folder_path / Path(
             "pretrained_model_urls.json"
         )
 
-        check_path = Path(pretrained_folder_path) / Path(
+        check_path = pretrained_folder_path / Path(
             model_weights_filename
         )
-        if Path(check_path).is_dir():
+
+        print("DOWNLOAD PATH")
+        print(pretrained_folder_path)
+        print(json_path)
+        print(check_path)
+
+        if Path(check_path).is_file():
             message = f"Weight file {model_weights_filename} already exists, skipping download"
             if self.log_widget is not None:
                 self.log_widget.print_and_log(message, printing=False)
@@ -777,7 +782,7 @@ class InferenceWorker(GeneratorWorker):
                 )
 
             self.log("\nLoading weights...")
-
+            self.log(f"CONFIG : {weights_config.path}")
             if weights_config.custom:
                 weights = weights_config.path
             else:
@@ -785,10 +790,10 @@ class InferenceWorker(GeneratorWorker):
                     model_name,
                     model_class.get_weights_file(),
                 )
-                weights = Path(WEIGHTS_DIR) / Path(
+                weights = str(WEIGHTS_DIR / Path(
                     model_class.get_weights_file()
-                )
-
+                ))
+            self.log(f"WEIGHTS PATH : {weights}")
             model.load_state_dict(
                 torch.load(
                     weights,
@@ -1230,7 +1235,7 @@ class TrainingWorker(GeneratorWorker):
                     weights = WEIGHTS_DIR / Path(weights_file)
                     weights_config.path = weights
                 else:
-                    weights = Path(weights_config.path)
+                    weights = str(Path(weights_config.path))
 
                 try:
                     model.load_state_dict(

@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 import warnings
 
 import napari
@@ -11,6 +11,7 @@ from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QSizePolicy
 
 # local
+from napari_cellseg3d import config
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
 from napari_cellseg3d.launch_review import launch_review
@@ -41,10 +42,10 @@ class Reviewer(BasePluginSingleImage):
 
         # self._viewer = viewer
 
-        self.textbox = QLineEdit(self)
-        self.textbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.csv_textbox = QLineEdit(self)
+        self.csv_textbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-        self.checkBox = ui.CheckBox("Create new dataset ?")
+        self.new_csv_choice = ui.CheckBox("Create new dataset ?")
 
         self.btn_start = ui.Button("Start reviewing", self.run_review, self)
 
@@ -63,8 +64,8 @@ class Reviewer(BasePluginSingleImage):
 
         ###########################
         # tooltips
-        self.textbox.setToolTip("Name of the csv results file")
-        self.checkBox.setToolTip(
+        self.csv_textbox.setToolTip("Name of the csv results file")
+        self.new_csv_choice.setToolTip(
             "Ignore any pre-existing csv with the specified name and create a new one"
         )
         ###########################
@@ -88,7 +89,7 @@ class Reviewer(BasePluginSingleImage):
             [
                 ui.combine_blocks(
                     self.filetype_choice,
-                    self.file_handling_box,
+                    self.load_stack_choice,
                     horizontal=False,
                 ),
                 ui.combine_blocks(self.btn_image, self.lbl_image),
@@ -113,7 +114,7 @@ class Reviewer(BasePluginSingleImage):
             csv_param_l,
             [
                 ui.combine_blocks(
-                    self.textbox,
+                    self.csv_textbox,
                     self.lbl_mod,
                     horizontal=False,
                     l=5,
@@ -121,7 +122,7 @@ class Reviewer(BasePluginSingleImage):
                     r=5,
                     b=5,
                 ),
-                self.checkBox,
+                self.new_csv_choice,
             ],
         )
 
@@ -163,7 +164,7 @@ class Reviewer(BasePluginSingleImage):
         self.reset()
 
         self.filetype = self.filetype_choice.currentText()
-        self.as_folder = self.file_handling_box.isChecked()
+        self.as_folder = self.load_stack_choice.isChecked()
         if self.anisotropy_widgets.is_enabled():
             zoom = self.anisotropy_widgets.get_anisotropy_resolution_zyx(
                 as_factors=True
@@ -179,16 +180,16 @@ class Reviewer(BasePluginSingleImage):
         ):  # saves empty images of the same size as original images
             if self.as_folder:
                 labels = np.zeros_like(images.compute())  # dask to numpy
-            self.label_path = os.path.join(
-                os.path.dirname(self.image_path), self.textbox.text()
+            self.label_path = Path(
+                Path(self.image_path).parent / self.csv_textbox.text()
             )
-            os.makedirs(self.label_path, exist_ok=True)
+            self.label_path.mkdir(exist_ok=True)
+            self.label_path = str(self.label_path)
 
             for i in range(len(labels)):
                 io.imsave(
-                    os.path.join(
-                        self.label_path, str(i).zfill(4) + self.filetype
-                    ),
+                    Path(self.label_path)
+                    / Path(str(i).zfill(4) + self.filetype),
                     labels[i],
                 )
         else:
@@ -209,16 +210,21 @@ class Reviewer(BasePluginSingleImage):
 
         print("New review session\n" + "*" * 20)
         previous_viewer = self._viewer
+
+        review_config = config.ReviewConfig(
+            images=images,
+            labels=labels,
+            labels_raw=labels_raw,
+            csv_path=self.label_path,
+            model_name=self.csv_textbox.text(),
+            new_csv=self.new_csv_choice.isChecked(),
+            filetype=self.filetype,
+            as_stack=self.as_folder,
+            zoom_factor=zoom,
+        )
+
         self._viewer, self.docked_widgets = launch_review(
-            images,
-            labels,
-            labels_raw,
-            self.label_path,
-            self.textbox.text(),
-            self.checkBox.isChecked(),
-            self.filetype,
-            self.as_folder,
-            zoom,
+            review_config=review_config
         )
         previous_viewer.close()
 

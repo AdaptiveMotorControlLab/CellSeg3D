@@ -103,7 +103,7 @@ class Cropping(BasePluginSingleImage):
                 ui.combine_blocks(self.btn_image, self.lbl_image),
                 self.crop_label_choice,  # whether to crop labels or no
                 ui.combine_blocks(self.btn_label, self.lbl_label),
-                self.file_handling_box,
+                self.load_stack_choice,
                 self.filetype_choice,
                 self.aniso_widgets,
             ],
@@ -224,7 +224,7 @@ class Cropping(BasePluginSingleImage):
         and adds control widgets to the napari Viewer for moving the cropped volume.
         """
 
-        self.as_folder = self.file_handling_box.isChecked()
+        self.as_folder = self.load_stack_choice.isChecked()
         self.filetype = self.filetype_choice.currentText()
         self.crop_labels = self.crop_label_choice.isChecked()
 

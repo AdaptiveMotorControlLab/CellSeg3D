@@ -13,21 +13,12 @@ from qtpy.QtWidgets import QSizePolicy
 from scipy import ndimage
 from tifffile import imwrite
 
+from napari_cellseg3d import config
 from napari_cellseg3d import utils
 from napari_cellseg3d.plugin_dock import Datamanager
 
 
-def launch_review(
-    original,
-    base,
-    raw,
-    r_path,
-    model_type,
-    checkbox,
-    filetype,
-    as_folder,
-    zoom_factor,
-):
+def launch_review(review_config: config.ReviewConfig):
     """Launch the review process, loading the original image, the labels & the raw labels (from prediction)
     in the viewer.
 
@@ -69,8 +60,8 @@ def launch_review(
 
     Returns : list of all docked widgets
     """
-    images_original = original
-    base_label = base
+    images_original = review_config.images
+    base_label = review_config.labels
 
     viewer = napari.Viewer()
 
@@ -81,17 +72,21 @@ def launch_review(
         name="volume",
         colormap="inferno",
         contrast_limits=[200, 1000],
-        scale=zoom_factor,
+        scale=review_config.zoom_factor,
     )  # anything bigger than 255 will get mapped to 255... they did it like this because it must have rgb images
-    viewer.add_labels(base_label, name="labels", seed=0.6, scale=zoom_factor)
+    viewer.add_labels(
+        base_label, name="labels", seed=0.6, scale=review_config.zoom_factor
+    )
 
-    if raw is not None:  # raw labels is from the prediction
+    if (
+        review_config.labels_raw is not None
+    ):  # raw labels is from the prediction
         viewer.add_image(
-            ndimage.gaussian_filter(raw, sigma=3),
+            ndimage.gaussian_filter(review_config.labels_raw, sigma=3),
             colormap="magenta",
             name="low_confident",
             blending="additive",
-            scale=zoom_factor,
+            scale=review_config.zoom_factor,
         )
     else:
         pass
@@ -152,19 +147,19 @@ def launch_review(
         # call_button_2="Save & quit",
     )
     def file_widget(
-        dirname=Path(r_path),
+        dirname=Path(review_config.csv_path),
     ):  # file name where to save annotations
         # """Take a filename and do something with it."""
         # print("The filename is:", dirname)
 
-        dirname = Path(r_path)
+        dirname = Path(review_config.csv_path)
         # def saver():
         out_dir = file_widget.dirname.value
 
         # print("The directory is:", out_dir)
 
         def quicksave():
-            if not as_folder:
+            if not review_config.as_stack:
                 if viewer.layers["labels"] is not None:
                     name = os.path.join(str(out_dir), "labels_reviewed.tif")
                     dat = viewer.layers["labels"].data
@@ -174,7 +169,9 @@ def launch_review(
                 if viewer.layers["labels"] is not None:
                     dir_name = os.path.join(str(out_dir), "labels_reviewed")
                     dat = viewer.layers["labels"].data
-                    utils.save_stack(dat, dir_name, filetype=filetype)
+                    utils.save_stack(
+                        dat, dir_name, filetype=review_config.filetype
+                    )
 
         # def quicksave_quit():
         #     quicksave()
@@ -239,7 +236,7 @@ def launch_review(
                         cursor_position[2],
                     ],
                     viewer.layers["volume"],
-                    zoom_factor,
+                    review_config.zoom_factor,
                 )
 
                 ##########
@@ -268,7 +265,13 @@ def launch_review(
 
     # Qt widget defined in docker.py
     dmg = Datamanager(parent=viewer)
-    dmg.prepare(r_path, filetype, model_type, checkbox, as_folder)
+    dmg.prepare(
+        review_config.csv_path,
+        review_config.filetype,
+        review_config.model_name,
+        review_config.new_csv,
+        review_config.as_stack,
+    )
     viewer.window.add_dock_widget(dmg, name=" ", area="left")
 
     def update_button(axis_event):
@@ -307,7 +310,7 @@ def launch_review(
             )
         )
 
-        if as_folder:
+        if review_config.as_stack:
             crop_temp = volume[crop_slice].persist().compute()
         else:
             crop_temp = volume[crop_slice]

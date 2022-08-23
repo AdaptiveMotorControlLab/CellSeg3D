@@ -69,12 +69,12 @@ class BasePluginSingleImage(QTabWidget):
 
         self.filetype_choice = ui.DropdownMenu([".png", ".tif"])
 
-        self.file_handling_box = ui.CheckBox(
+        self.load_stack_choice = ui.CheckBox(
             "Load folder as stack ?", self.show_filetype_choice
         )
         """Checkbox to choose single file or directory loader handling"""
 
-        self.file_handling_box.setSizePolicy(
+        self.load_stack_choice.setSizePolicy(
             QSizePolicy.Fixed, QSizePolicy.Fixed
         )
 
@@ -89,14 +89,14 @@ class BasePluginSingleImage(QTabWidget):
 
     def show_filetype_choice(self):
         """Method to show/hide the filetype choice when "loading as folder" is (de)selected"""
-        show = self.file_handling_box.isChecked()
+        show = self.load_stack_choice.isChecked()
         if show is not None:
             self.filetype_choice.setVisible(show)
             # self.lbl_ft.setVisible(show)
 
     def show_file_dialog(self):
         """Open file dialog and process path depending on single file/folder loading behaviour"""
-        if self.file_handling_box.isChecked():
+        if self.load_stack_choice.isChecked():
             folder = ui.open_folder_dialog(
                 self,
                 self._default_path,
