@@ -813,9 +813,13 @@ class Trainer(ModelFramework):
                 name=self.model_choice.currentText()
             )
 
-            self.weights_config.path=self.weights_config.path,
-            self.weights_config.custom=self.custom_weights_choice.isChecked(),
-            self.weights_config.use_pretrained=self.use_transfer_choice.isChecked(),
+            self.weights_config.path = (self.weights_config.path,)
+            self.weights_config.custom = (
+                self.custom_weights_choice.isChecked(),
+            )
+            self.weights_config.use_pretrained = (
+                self.use_transfer_choice.isChecked(),
+            )
 
             deterministic_config = config.DeterministicConfig(
                 enabled=self.use_deterministic_choice.isChecked(),
@@ -985,8 +989,8 @@ class Trainer(ModelFramework):
             )
             torch.save(
                 report.weights,
-                Path(
-                    widget.results_path_folder) / Path(
+                Path(widget.results_path_folder)
+                / Path(
                     f"latest_weights_aborted_training_{utils.get_time_filepath()}.pth",
                 ),
             )
@@ -1026,8 +1030,8 @@ class Trainer(ModelFramework):
                 )[: len(size_column)],
             }
         )
-        path = Path(
-            self.worker_config.results_path_folder) / Path( "training.csv"
+        path = Path(self.worker_config.results_path_folder) / Path(
+            "training.csv"
         )
         self.df.to_csv(path, index=False)
 
@@ -1076,7 +1080,9 @@ class Trainer(ModelFramework):
             self.canvas.draw_idle()
 
             plot_path = self.worker_config.results_path_folder + "/Loss_plots"
-            Path(self.worker_config.results_path_folder).mkdir(plot_path, exist_ok=True)
+            Path(self.worker_config.results_path_folder).mkdir(
+                plot_path, exist_ok=True
+            )
 
             if self.canvas is not None:
                 self.canvas.figure.savefig(

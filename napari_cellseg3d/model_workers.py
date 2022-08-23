@@ -99,13 +99,9 @@ class WeightsDownloader:
             pbar.update(block_size)
 
         pretrained_folder_path = WEIGHTS_DIR
-        json_path = pretrained_folder_path / Path(
-            "pretrained_model_urls.json"
-        )
+        json_path = pretrained_folder_path / Path("pretrained_model_urls.json")
 
-        check_path = pretrained_folder_path / Path(
-            model_weights_filename
-        )
+        check_path = pretrained_folder_path / Path(model_weights_filename)
 
         print("DOWNLOAD PATH")
         print(pretrained_folder_path)
@@ -790,9 +786,9 @@ class InferenceWorker(GeneratorWorker):
                     model_name,
                     model_class.get_weights_file(),
                 )
-                weights = str(WEIGHTS_DIR / Path(
-                    model_class.get_weights_file()
-                ))
+                weights = str(
+                    WEIGHTS_DIR / Path(model_class.get_weights_file())
+                )
             self.log(f"WEIGHTS PATH : {weights}")
             model.load_state_dict(
                 torch.load(

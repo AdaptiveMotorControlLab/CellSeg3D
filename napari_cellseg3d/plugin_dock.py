@@ -177,10 +177,7 @@ class Datamanager(QWidget):
                 csv_path = (
                     csv_path.split("_train")[0]
                     + "_train"
-                    + str(
-                        int(Path(csv_path.split("_train")[1]).parent)
-                        + 1
-                    )
+                    + str(int(Path(csv_path.split("_train")[1]).parent) + 1)
                     + ".csv"
                 )  # adds 1 to current csv name number
                 df.to_csv(csv_path)
@@ -211,7 +208,9 @@ class Datamanager(QWidget):
             labels = sorted(
                 list(
                     path.name
-                    for path in Path(str(label_dir)).glob("./*" + self.filetype)
+                    for path in Path(str(label_dir)).glob(
+                        "./*" + self.filetype
+                    )
                 )
             )
         else:
