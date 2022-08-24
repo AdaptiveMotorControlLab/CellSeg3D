@@ -53,7 +53,7 @@ class MetricsUtils(BasePluginFolder):
 
         self.lbl_threshold_box = ui.make_label("Score threshold", self)
         self.threshold_box = ui.DoubleIncrementCounter(
-            min=0.1, max=1, default=DEFAULT_THRESHOLD, step=0.1
+            lower=0.1, upper=1, default=DEFAULT_THRESHOLD, step=0.1
         )
 
         self.btn_result_path.setVisible(False)

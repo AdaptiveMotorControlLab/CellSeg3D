@@ -55,7 +55,7 @@ class ConvertUtils(BasePluginFolder):
             "Remove small in layer", func=self.layer_remove_small
         )
         self.small_object_thresh_choice = ui.IntIncrementCounter(
-            min=1, max=1000, default=15
+            lower=1, upper=1000, default=15
         )
 
         # convert anisotropy

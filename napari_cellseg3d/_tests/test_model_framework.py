@@ -2,8 +2,10 @@ from napari_cellseg3d import model_framework
 
 from pathlib import Path
 
+
 def pth(path):
     return str(Path(path))
+
 
 def test_update_default(make_napari_viewer):
     view = make_napari_viewer()

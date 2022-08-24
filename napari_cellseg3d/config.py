@@ -91,7 +91,7 @@ class WeightsInfo:
 @dataclass
 class Thresholding:
     enabled: bool = True
-    threshold_value: float = 1.0
+    threshold_value: float = 0.8
 
 
 @dataclass
@@ -104,8 +104,10 @@ class Zoom:
 class InstanceSegConfig:
     enabled: bool = False
     method: str = None
-    threshold: Thresholding = Thresholding()
-    small_object_removal_threshold: Thresholding = Thresholding()
+    threshold: Thresholding = Thresholding(enabled=False, threshold_value=0.85)
+    small_object_removal_threshold: Thresholding = Thresholding(
+        enabled=True, threshold_value=20
+    )
 
 
 @dataclass

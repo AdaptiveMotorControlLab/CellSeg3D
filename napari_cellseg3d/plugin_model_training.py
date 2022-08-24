@@ -181,15 +181,20 @@ class Trainer(ModelFramework):
 
         self.zip_choice = ui.CheckBox("Compress results")
 
-        self.validation_percent_choice = ui.IntIncrementCounter(
-            10, 90, default=80, step=1, parent=self
+        self.validation_percent_choice = ui.SliderContainer(
+            lower=10,
+            upper=90,
+            default=default.validation_interval,
+            step=5,
+            parent=self,
         )
 
         self.epoch_choice = ui.IntIncrementCounter(
-            min=2, max=1000, default=default.max_epochs
+            lower=2,
+            upper=200,
+            default=default.max_epochs,
+            label="Number of epochs : ",
         )
-
-        self.lbl_epoch_choice = ui.make_label("Number of epochs : ", self)
 
         self.loss_choice = ui.DropdownMenu(
             sorted(self.loss_dict.keys()), label="Loss function"
@@ -197,26 +202,27 @@ class Trainer(ModelFramework):
         self.lbl_loss_choice = self.loss_choice.label
         self.loss_choice.setCurrentIndex(0)
 
-        self.sample_choice = ui.IntIncrementCounter(
-            min=2, max=50, default=default.num_samples
+        self.sample_choice_slider = ui.SliderContainer(
+            lower=2,
+            upper=50,
+            default=default.num_samples,
+            text_label="Number of patches per image : ",
         )
-        self.lbl_sample_choice = ui.make_label(
-            "Number of patches per image : ", self
-        )
-        self.sample_choice.setVisible(False)
-        self.lbl_sample_choice.setVisible(False)
 
-        self.batch_choice = ui.IntIncrementCounter(
-            min=1, max=10, default=default.batch_size
+        self.sample_choice_slider.setVisible(False)
+
+        self.batch_choice = ui.SliderContainer(
+            lower=1,
+            upper=10,
+            default=default.batch_size,
+            text_label="Batch size : ",
         )
-        self.lbl_batch_choice = ui.make_label("Batch size : ", self)
 
         self.val_interval_choice = ui.IntIncrementCounter(
-            default=default.validation_interval
+            default=default.validation_interval,
+            label="Validation interval : ",
         )
-        self.lbl_val_interv_choice = ui.make_label(
-            "Validation interval : ", self
-        )
+
         self.epoch_choice.valueChanged.connect(self.update_validation_choice)
         self.val_interval_choice.valueChanged.connect(
             self.update_validation_choice
@@ -271,7 +277,7 @@ class Trainer(ModelFramework):
             "Deterministic training", func=self.toggle_deterministic_param
         )
         self.box_seed = ui.IntIncrementCounter(
-            max=10000000, default=default.deterministic_config.seed
+            upper=10000000, default=default.deterministic_config.seed
         )
         self.lbl_seed = ui.make_label("Seed", self)
         self.container_seed = ui.combine_blocks(
@@ -293,23 +299,23 @@ class Trainer(ModelFramework):
             self.zip_choice.setToolTip(
                 "Checking this will save a copy of the results as a zip folder"
             )
-            self.validation_percent_choice.setToolTip(
+            self.validation_percent_choice.set_all_tooltips(
                 "Choose the proportion of images to retain for training.\nThe remaining images will be used for validation"
             )
-            self.epoch_choice.setToolTip(
+            self.epoch_choice.set_all_tooltips(
                 "The number of epochs to train for.\nThe more you train, the better the model will fit the training data"
             )
             self.loss_choice.setToolTip(
                 "The loss function to use for training.\nSee the list in the inference guide for more info"
             )
-            self.sample_choice.setToolTip(
+            self.sample_choice_slider.set_all_tooltips(
                 "The number of samples to extract per image"
             )
-            self.batch_choice.setToolTip(
+            self.batch_choice.set_all_tooltips(
                 "The batch size to use for training.\n A larger value will feed more images per iteration to the model,\n"
                 " which is faster and possibly improves performance, but uses more memory"
             )
-            self.val_interval_choice.setToolTip(
+            self.val_interval_choice.set_all_tooltips(
                 "The number of epochs to perform before validating data.\n "
                 "The lower the value, the more often the score of the model will be computed and the more often the weights will be saved."
             )
@@ -347,10 +353,10 @@ class Trainer(ModelFramework):
         max_epoch = self.epoch_choice.value()
 
         if validation.value() > max_epoch:
-            self.val_interval_choice.setValue(max_epoch)
-            self.val_interval_choice.setMaximum(max_epoch)
+            validation.setValue(max_epoch)
+            validation.setMaximum(max_epoch)
         elif validation.maximum() < max_epoch:
-            self.val_interval_choice.setMaximum(max_epoch)
+            validation.setMaximum(max_epoch)
 
     def get_loss(self, key):
         """Getter for loss function selected by user"""
@@ -360,14 +366,12 @@ class Trainer(ModelFramework):
         if self.patch_choice.isChecked():
             [w.setVisible(True) for w in self.patch_size_widgets]
             [l.setVisible(True) for l in self.patch_size_lbl]
-            self.sample_choice.setVisible(True)
-            self.lbl_sample_choice.setVisible(True)
+            self.sample_choice_slider.setVisible(True)
             self.sampling_container.setVisible(True)
         else:
             [w.setVisible(False) for w in self.patch_size_widgets]
             [l.setVisible(False) for l in self.patch_size_lbl]
-            self.sample_choice.setVisible(False)
-            self.lbl_sample_choice.setVisible(False)
+            self.sample_choice_slider.setVisible(False)
             self.sampling_container.setVisible(False)
 
     def toggle_transfer_param(self):
@@ -542,8 +546,7 @@ class Trainer(ModelFramework):
         ui.add_widgets(
             sampling_l,
             [
-                self.lbl_sample_choice,
-                self.sample_choice,  # number of samples
+                self.sample_choice_slider,  # number of samples
             ],
         )
         sampling_w.setLayout(sampling_l)
@@ -629,16 +632,7 @@ class Trainer(ModelFramework):
         ui.add_widgets(
             train_param_group_l,
             [
-                ui.combine_blocks(
-                    self.batch_choice,
-                    self.lbl_batch_choice,
-                    min_spacing=spacing,
-                    horizontal=False,
-                    l=5,
-                    t=5,
-                    r=5,
-                    b=5,
-                ),  # batch size
+                self.batch_choice,  # batch size
                 ui.combine_blocks(
                     self.learning_rate_choice,
                     self.lbl_learning_rate_choice,
@@ -649,26 +643,10 @@ class Trainer(ModelFramework):
                     r=5,
                     b=5,
                 ),  # learning rate
-                ui.combine_blocks(
-                    self.epoch_choice,
-                    self.lbl_epoch_choice,
-                    min_spacing=spacing,
-                    horizontal=False,
-                    l=5,
-                    t=5,
-                    r=5,
-                    b=5,
-                ),  # epochs
-                ui.combine_blocks(
-                    self.val_interval_choice,
-                    self.lbl_val_interv_choice,
-                    min_spacing=spacing,
-                    horizontal=False,
-                    l=5,
-                    t=5,
-                    r=5,
-                    b=5,
-                ),  # validation interval
+                self.epoch_choice.label,  # epochs
+                self.epoch_choice,
+                self.val_interval_choice.label,
+                self.val_interval_choice,  # validation interval
             ],
             None,
         )
@@ -826,13 +804,17 @@ class Trainer(ModelFramework):
                 seed=self.box_seed.value(),
             )
 
-            validation_percent = self.validation_percent_choice.value() / 100
+            validation_percent = (
+                self.validation_percent_choice.get_value() / 100
+            )
 
             results_path_folder = Path(
                 self.results_path
                 + f"/{model_config.name}_{utils.get_date_time()}"
             )
-            Path(results_path_folder).mkdir(parents=True, exist_ok=False)  # avoid overwrite where possible
+            Path(results_path_folder).mkdir(
+                parents=True, exist_ok=False
+            )  # avoid overwrite where possible
 
             patch_size = [w.value() for w in self.patch_size_widgets]
 
@@ -846,10 +828,10 @@ class Trainer(ModelFramework):
                 loss_function=self.get_loss(self.loss_choice.currentText()),
                 learning_rate=float(self.learning_rate_choice.currentText()),
                 validation_interval=self.val_interval_choice.value(),
-                batch_size=self.batch_choice.value(),
+                batch_size=self.batch_choice.get_value(),
                 results_path_folder=results_path_folder,
                 sampling=self.patch_choice.isChecked(),
-                num_samples=self.sample_choice.value(),
+                num_samples=self.sample_choice_slider.get_value(),
                 sample_size=patch_size,
                 do_augmentation=self.augment_choice.isChecked(),
                 deterministic_config=deterministic_config,

@@ -1,3 +1,4 @@
+import warnings
 from typing import Optional
 from typing import List
 
@@ -18,6 +19,7 @@ from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QScrollArea
 from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QSlider
 from qtpy.QtWidgets import QSpinBox
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
@@ -47,6 +49,7 @@ BOTT_AL = Qt.AlignmentFlag.AlignBottom
 dark_red = "#72071d"  # crimson red
 default_cyan = "#8dd3c7"  # turquoise cyan (default matplotlib line color under dark background context)
 napari_grey = "#262930"  # napari background color (grey)
+napari_param_grey = "#414851"  # napari parameters menu color (lighter gray)
 ###############
 
 
@@ -164,6 +167,154 @@ class CheckBox(QCheckBox):
             self.toggled.connect(func)
 
 
+class Slider(QSlider):
+    """Shortcut class to create a Slider widget"""
+
+    def __init__(
+        self,
+        lower: int = 0,
+        upper: int = 100,
+        step: int = 1,
+        default: int = 0,
+        divide_factor: float = 1.0,
+        parent=None,
+        orientation=Qt.Horizontal,
+        text_label: str = None,
+    ):
+
+        super().__init__(orientation, parent)
+
+        self.setMaximum(upper)
+        self.setMinimum(lower)
+        self.setSingleStep(step)
+
+        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        self.text_label = None
+
+        self._divide_factor = divide_factor
+        self._value_label = make_label(
+            self.get_value_str(), parent=self
+        )  # TODO refacto to LineEdit for user input
+        self._value_label.setStyleSheet(
+            f"background-color: {napari_param_grey};"
+            f"border-radius: 10px;"
+            "min - height: 20px;"
+            "min - width: 20px;"
+        )
+
+        if text_label is not None:
+            self.text_label = make_label(text_label, parent=self)
+
+        if default < lower:
+            self._warn_outside_bounds(default)
+            default = lower
+        elif default > upper:
+            self._warn_outside_bounds(default)
+            default = upper
+
+        self.valueChanged.connect(self._update_value_label)
+
+        self.set_value(default)
+
+    def _warn_outside_bounds(self, default):
+        warnings.warn(
+            f"Default value {default} was outside of the ({self.minimum()}:{self.maximum()}) range"
+        )
+
+    def _update_value_label(self):
+        """Update label, to connect to when slider is dragged"""
+        self._value_label.setText(str(self.get_value_str()))
+
+    def set_all_tooltips(self, tooltip: str):
+        self.setToolTip(tooltip)
+        self._value_label.setToolTip(tooltip)
+
+        if self.text_label is not None:
+            self.text_label.setToolTip(tooltip)
+
+    def get_value(self):
+        """Get value of the slider divided by self._divide_factor to implement floats in Slider"""
+        if self._divide_factor == 1.0:
+            return self.value()
+
+        try:
+            return self.value() / self._divide_factor
+        except ZeroDivisionError as e:
+            raise ZeroDivisionError(
+                f"Divide factor cannot be 0 for Slider : {e}"
+            )
+
+    def get_value_str(self):
+        """Get value of the slide bar as string"""
+        return str(self.get_value())
+
+    def set_value(self, value: int):
+        """Set a value (int) divided by self._divide_factor"""
+        if value < self.minimum() or value > self.maximum():
+            raise ValueError(
+                f"The value for the slider ({value}) cannot be out of ({self.minimum()};{self.maximum()}) "
+            )
+
+        self.setValue(value)
+
+        divided = value / self._divide_factor
+        if self._divide_factor == 1.0:
+            divided = int(divided)
+        self._value_label.setText(str(divided))
+
+
+class SliderContainer(ContainerWidget):  # TODO use layouts in Slider instead
+    def __init__(
+        self,
+        lower: int = 0,
+        upper: int = 100,
+        step: int = 1,
+        default: int = 0,
+        divide_factor: float = 1.0,
+        parent=None,
+        orientation=Qt.Horizontal,
+        text_label: str = None,
+    ):
+
+        super().__init__(b=0, vertical=True)
+
+        self.slider = Slider(
+            lower,
+            upper,
+            step,
+            default,
+            divide_factor,
+            parent,
+            orientation,
+            text_label,
+        )
+        self.label = self.slider.text_label
+
+        if self.label is not None:
+            add_widgets(
+                self.layout,
+                [
+                    self.label,
+                    combine_blocks(self.slider._value_label, self.slider, b=0),
+                ],
+            )
+        else:
+            add_widgets(
+                self.layout,
+                [combine_blocks(self.slider._value_label, self.slider, b=0)],
+            )
+
+    def get_value(self):
+        return self.slider.get_value()
+
+    def set_value(self, value: int):
+        self.slider.set_value(value)
+
+    def set_all_tooltips(self, tooltip: str):
+        self.slider.set_all_tooltips(tooltip)
+
+
 class AnisotropyWidgets(QWidget):
     """Class that creates widgets for anisotropy handling. Includes :
     - A checkbox to hides or shows the controls
@@ -196,7 +347,7 @@ class AnisotropyWidgets(QWidget):
         )
 
         self.box_widgets = DoubleIncrementCounter.make_n(
-            n=3, min=1.0, max=1000.0, default=1.0, step=0.5
+            n=3, lower=1.0, upper=1000.0, default=1.0, step=0.5
         )
         self.box_widgets[0].setValue(default_x)
         self.box_widgets[1].setValue(default_y)
@@ -295,7 +446,9 @@ class AnisotropyWidgets(QWidget):
         self.checkbox.setVisible(False)
 
 
-class FilePathWidget(QWidget):  # TODO upgrade logic, include load as folder
+class FilePathWidget(
+    QWidget
+):  # TODO upgrade logic, include load as folder, add layer handling
     """Widget to handle the choice of file paths for data throughout the plugin. Provides the following elements :
     - An "Open" button to show a file dialog (defined externally)
     - A QLineEdit in read only to display the chosen path/file"""
@@ -507,8 +660,8 @@ class DoubleIncrementCounter(QDoubleSpinBox):
 
     def __init__(
         self,
-        min: Optional[float] = 0.0,
-        max: Optional[float] = 10.0,
+        lower: Optional[float] = 0.0,
+        upper: Optional[float] = 10.0,
         default: Optional[float] = 0.0,
         step: Optional[float] = 1.0,
         parent: Optional[QWidget] = None,
@@ -516,8 +669,8 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         label: Optional[str] = None,
     ):
         """Args:
-        min (Optional[float]): minimum value, defaults to 0
-        max (Optional[float]): maximum value, defaults to 10
+        lower (Optional[float]): minimum value, defaults to 0
+        upper (Optional[float]): maximum value, defaults to 10
         default (Optional[float]): default value, defaults to 0
         step (Optional[float]): step value, defaults to 1
         parent: parent widget, defaults to None
@@ -525,7 +678,9 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         label (Optional[str]): if provided, creates a label with the chosen title to use with the counter"""
 
         super().__init__(parent)
-        set_spinbox(self, min, max, default, step, fixed)
+        set_spinbox(self, lower, upper, default, step, fixed)
+
+        self.layout = None
 
         if label is not None:
             self.label = make_label(name=label)
@@ -536,10 +691,6 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         if self.label is not None:
             self.label.setToolTip(tooltip)
 
-    def get_with_label(self, horizontal=True):
-        """Returns a widget containing both the counter and its label in a single widget"""
-        return add_label(self, self.label, horizontal=horizontal)
-
     def set_precision(self, decimals):
         """Sets the precision of the box to the specified number of decimals"""
         self.setDecimals(decimals)
@@ -548,14 +699,16 @@ class DoubleIncrementCounter(QDoubleSpinBox):
     def make_n(
         cls,
         n: int = 2,
-        min: float = 0,
-        max: float = 10,
+        lower: float = 0,
+        upper: float = 10,
         default: float = 0,
         step: float = 1,
         parent: Optional[QWidget] = None,
         fixed: Optional[bool] = True,
     ):
-        return make_n_spinboxes(cls, n, min, max, default, step, parent, fixed)
+        return make_n_spinboxes(
+            cls, n, lower, upper, default, step, parent, fixed
+        )
 
 
 class IntIncrementCounter(QSpinBox):
@@ -563,8 +716,8 @@ class IntIncrementCounter(QSpinBox):
 
     def __init__(
         self,
-        min=0,
-        max=10,
+        lower=0,
+        upper=10,
         default=0,
         step=1,
         parent: Optional[QWidget] = None,
@@ -572,31 +725,40 @@ class IntIncrementCounter(QSpinBox):
         label: Optional[str] = None,
     ):
         """Args:
-        min (Optional[int]): minimum value, defaults to 0
-        max (Optional[int]): maximum value, defaults to 10
+        lower (Optional[int]): minimum value, defaults to 0
+        upper (Optional[int]): maximum value, defaults to 10
         default (Optional[int]): default value, defaults to 0
         step (Optional[int]): step value, defaults to 1
         parent: parent widget, defaults to None
         fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed"""
 
         super().__init__(parent)
-        set_spinbox(self, min, max, default, step, fixed)
+        set_spinbox(self, lower, upper, default, step, fixed)
+
         self.label = None
+        self.container = None
+
         if label is not None:
-            self.label = make_label(label, self)
+            self.label = make_label(name=label)
+
+    def set_all_tooltips(self, tooltip):
+        self.setToolTip(tooltip)
+        self.label.setToolTip(tooltip)
 
     @classmethod
     def make_n(
         cls,
         n: int = 2,
-        min: int = 0,
-        max: int = 10,
+        lower: int = 0,
+        upper: int = 10,
         default: int = 0,
         step: int = 1,
         parent: Optional[QWidget] = None,
         fixed: Optional[bool] = True,
     ):
-        return make_n_spinboxes(cls, n, min, max, default, step, parent, fixed)
+        return make_n_spinboxes(
+            cls, n, lower, upper, default, step, parent, fixed
+        )
 
 
 def add_blank(widget, layout=None):

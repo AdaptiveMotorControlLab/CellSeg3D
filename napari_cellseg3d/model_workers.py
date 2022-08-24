@@ -313,7 +313,7 @@ class InferenceWorker(GeneratorWorker):
 
         check = data_check["image"].shape
 
-        self.log("\nChecking dimensions...")
+        # self.log("\nChecking dimensions...")
         pad = utils.get_padding_dim(check)
 
         # dims = self.model_dict["model_input_size"]
@@ -388,9 +388,9 @@ class InferenceWorker(GeneratorWorker):
         volume = np.swapaxes(
             volume, 0, 2
         )  # for anisotropy to be monai-like, i.e. zyx # FIXME rotation not always correct
-        print("Loading layer\n")
+        self.log("Loading layer\n")
         dims_check = volume.shape
-        self.log("\nChecking dimensions...")
+        # self.log("\nChecking dimensions...")
         pad = utils.get_padding_dim(dims_check)
 
         # print(volume.shape)
@@ -450,6 +450,15 @@ class InferenceWorker(GeneratorWorker):
         window_size = self.config.sliding_window_config.window_size
         window_overlap = self.config.sliding_window_config.window_overlap
 
+        # FIXME
+        # import sys
+
+        # old_stdout = sys.stdout
+        # old_stderr = sys.stderr
+
+        # sys.stdout = self.downloader.log_widget
+        # sys.stdout = self.downloader.log_widget
+
         outputs = sliding_window_inference(
             inputs,
             roi_size=window_size,
@@ -460,6 +469,9 @@ class InferenceWorker(GeneratorWorker):
             overlap=window_overlap,
             progress=True,
         )
+
+        # sys.stdout = old_stdout
+        # sys.stderr = old_stderr
 
         out = outputs.detach().cpu()
 
@@ -580,7 +592,7 @@ class InferenceWorker(GeneratorWorker):
         )
         method_name = self.config.post_process_config.instance.method
 
-        if method_name == "Watershed":
+        if method_name == "Watershed":  # FIXME use dict in config instead
 
             def method(image):
                 return binary_watershed(image, threshold, size_small)

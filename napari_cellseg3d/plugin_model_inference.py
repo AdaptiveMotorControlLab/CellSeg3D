@@ -85,10 +85,9 @@ class Inferer(ModelFramework):
             "View results in napari", self.toggle_display_number
         )
 
-        self.display_number_choice = ui.IntIncrementCounter(
-            min=1, default=self.config.show_results_count
+        self.display_number_choice = ui.SliderContainer(
+            lower=1, upper=10, default=5, text_label="How many ? "
         )
-        self.lbl_display_number = ui.make_label("How many ? (max. 10)", self)
 
         self.show_original_checkbox = ui.CheckBox("Show originals")
 
@@ -96,7 +95,7 @@ class Inferer(ModelFramework):
         ######################
         # TODO : better way to handle SegResNet size reqs ?
         self.model_input_size = ui.IntIncrementCounter(
-            min=1, max=1024, default=128, label="Model input size"
+            lower=1, upper=1024, default=128, label="Model input size"
         )
         self.model_choice.currentIndexChanged.connect(
             self.toggle_display_model_input_size
@@ -124,12 +123,13 @@ class Inferer(ModelFramework):
             "Perform thresholding", self.toggle_display_thresh
         )
 
-        self.thresholding_count = ui.DoubleIncrementCounter(
-            max=1, default=0.7, step=0.05
+        self.thresholding_slider = ui.SliderContainer(
+            lower=1,
+            default=config.PostProcessConfig().thresholding.threshold_value
+            * 100,
+            divide_factor=100.0,
+            parent=self,
         )
-
-        self.thresholding_container = ui.ContainerWidget(t=7, parent=self)
-        self.thresh_layout = self.thresholding_container.layout
 
         self.window_infer_box = ui.CheckBox("Use window inference")
 
@@ -152,13 +152,11 @@ class Inferer(ModelFramework):
         )
         self.lbl_window_size_choice = self.window_size_choice.label
 
-        self.window_overlap_counter = ui.DoubleIncrementCounter(
-            min=0,
-            max=1,
-            default=config.SlidingWindowConfig().window_overlap,
-            step=0.05,
+        self.window_overlap_slider = ui.SliderContainer(
+            default=config.SlidingWindowConfig.window_overlap * 100,
+            divide_factor=100.0,
             parent=self,
-            label="Overlap %",
+            text_label="Overlap %",
         )
         self.keep_data_on_cpu_box = ui.CheckBox("Keep data on CPU")
 
@@ -167,16 +165,14 @@ class Inferer(ModelFramework):
             self.lbl_window_size_choice,
             horizontal=False,
         )
-        # self.window_infer_params = ui.combine_blocks(
-        #     self.window_overlap,
-        #     self.window_infer_params,
-        #     horizontal=False,
-        # )
 
-        self.window_infer_params = ui.combine_blocks(
-            window_size_widgets,
-            self.window_overlap_counter.get_with_label(horizontal=False),
-            horizontal=False,
+        self.window_infer_params = ui.ContainerWidget(parent=self)
+        ui.add_widgets(
+            self.window_infer_params.layout,
+            [
+                window_size_widgets,
+                self.window_overlap_slider,
+            ],
         )
 
         ##################
@@ -190,23 +186,24 @@ class Inferer(ModelFramework):
             config.INSTANCE_SEGMENTATION_METHOD_LIST.keys()
         )
 
-        self.instance_prob_thresh = ui.DoubleIncrementCounter(
-            max=0.99, default=0.7, step=0.05
-        )
-        self.instance_prob_thresh_lbl = ui.make_label(
-            "Probability threshold :", self
-        )
-        self.instance_prob_t_container = ui.combine_blocks(
-            right_or_below=self.instance_prob_thresh,
-            left_or_above=self.instance_prob_thresh_lbl,
-            horizontal=False,
+        self.instance_prob_thresh_slider = ui.SliderContainer(
+            lower=1,
+            upper=99,
+            default=config.PostProcessConfig().instance.threshold.threshold_value
+            * 100,
+            divide_factor=100.0,
+            step=5,
+            text_label="Probability threshold :",
         )
 
         self.instance_small_object_thresh = ui.IntIncrementCounter(
-            max=100, default=10, step=5
+            upper=100,
+            default=10,
+            step=5,
+            label="Small object removal (pxs) :",
         )
-        self.instance_small_object_thresh_lbl = ui.make_label(
-            "Small object removal threshold :", self
+        self.instance_small_object_thresh_lbl = (
+            self.instance_small_object_thresh.label
         )
         self.instance_small_object_t_container = ui.combine_blocks(
             right_or_below=self.instance_small_object_thresh,
@@ -288,7 +285,7 @@ class Inferer(ModelFramework):
                 "Requires the model to surround objects in a gradient;"
                 " can possibly correctly separate unique but touching/adjacent objects."
             )
-            self.instance_prob_thresh.setToolTip(
+            self.instance_prob_thresh_slider.set_all_tooltips(
                 "All objects below this probability will be ignored (set to 0)"
             )
             self.instance_small_object_thresh.setToolTip(
@@ -334,7 +331,7 @@ class Inferer(ModelFramework):
     def toggle_display_thresh(self):
         """Shows the choices for thresholding results depending on whether :py:attr:`self.thresholding_checkbox` is checked"""
         ui.toggle_visibility(
-            self.thresholding_checkbox, self.thresholding_container
+            self.thresholding_checkbox, self.thresholding_slider
         )
 
     def toggle_display_instance(self):
@@ -353,7 +350,7 @@ class Inferer(ModelFramework):
             self.view_results_container.layout,
             [
                 self.view_checkbox,
-                self.lbl_display_number,
+                self.display_number_choice.label,
                 self.display_number_choice,
                 self.show_original_checkbox,
             ],
@@ -366,20 +363,11 @@ class Inferer(ModelFramework):
 
         self.anisotropy_wdgt.build()
 
-        self.thresh_layout.addWidget(
-            self.thresholding_count, alignment=ui.LEFT_AL
-        )
-        # ui.add_blank(self.thresholding_container, thresh_layout)
-        self.thresholding_container.setLayout(
-            self.thresh_layout
-        )  # thresholding
-        self.thresholding_container.setVisible(False)
-
         ui.add_widgets(
             self.instance_layout,
             [
                 self.instance_method_choice,
-                self.instance_prob_t_container,
+                self.instance_prob_thresh_slider,
                 self.instance_small_object_t_container,
                 self.save_stats_to_csv_box,
             ],
@@ -479,19 +467,21 @@ class Inferer(ModelFramework):
             "Post-processing", parent=self
         )
 
+        self.thresholding_slider.setVisible(False)
+
         ui.add_widgets(
             post_proc_layout,
             [
                 self.anisotropy_wdgt,  # anisotropy
                 self.thresholding_checkbox,
-                self.thresholding_container,  # thresholding
+                self.thresholding_slider,  # thresholding
                 self.instance_box,
                 self.instance_param_container,  # instance segmentation
             ],
         )
 
         self.anisotropy_wdgt.container.setVisible(False)
-        self.thresholding_container.setVisible(False)
+        self.thresholding_slider.setVisible(False)
         self.instance_param_container.setVisible(False)
 
         post_proc_group.setLayout(post_proc_layout)
@@ -604,11 +594,11 @@ class Inferer(ModelFramework):
             )
             thresholding_config = config.Thresholding(
                 enabled=self.thresholding_checkbox.isChecked(),
-                threshold_value=self.thresholding_count.value(),
+                threshold_value=self.thresholding_slider.get_value(),
             )
 
             instance_thresh_config = config.Thresholding(
-                threshold_value=self.instance_prob_thresh.value()
+                threshold_value=self.instance_prob_thresh_slider.get_value()
             )
             instance_small_object_thresh_config = config.Thresholding(
                 threshold_value=self.instance_small_object_thresh.value()
@@ -629,7 +619,7 @@ class Inferer(ModelFramework):
             if self.window_infer_box.isChecked():
                 window_config = config.SlidingWindowConfig(
                     window_size=int(self.window_size_choice.currentText()),
-                    window_overlap=self.window_overlap_counter.value(),
+                    window_overlap=self.window_overlap_slider.value(),
                 )
             else:
                 window_config = config.SlidingWindowConfig()
