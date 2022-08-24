@@ -259,7 +259,7 @@ class ModelFramework(BasePluginFolder):
 
     # def load_model_path(self):
     #     """Show file dialog to set :py:attr:`model_path`"""
-    #     folder = ui.open_folder_dialog(self, self._default_folder)
+    #     folder = ui.open_folder_dialog(self, self._default_folders)
     #     if folder is not None and type(folder) is str and os.path.isdir(folder):
     #         self.model_path = folder
     #         self.lbl_model_path.setText(self.model_path)
@@ -324,7 +324,7 @@ class ModelFramework(BasePluginFolder):
     #         ]
     #         if path is not None
     #     ]
-    #     self._default_folder = possible_paths
+    #     self._default_folders = possible_paths
     # update if model_path is used again
 
     def build(self):

@@ -832,9 +832,7 @@ class Trainer(ModelFramework):
                 self.results_path
                 + f"/{model_config.name}_{utils.get_date_time()}"
             )
-            Path(self.results_path).mkdir(
-                results_path_folder, exist_ok=False
-            )  # avoid overwrite where possible
+            Path(results_path_folder).mkdir(parents=True, exist_ok=False)  # avoid overwrite where possible
 
             patch_size = [w.value() for w in self.patch_size_widgets]
 
@@ -1080,9 +1078,7 @@ class Trainer(ModelFramework):
             self.canvas.draw_idle()
 
             plot_path = self.worker_config.results_path_folder + "/Loss_plots"
-            Path(self.worker_config.results_path_folder).mkdir(
-                plot_path, exist_ok=True
-            )
+            Path(plot_path).mkdir(parents=True, exist_ok=True)
 
             if self.canvas is not None:
                 self.canvas.figure.savefig(

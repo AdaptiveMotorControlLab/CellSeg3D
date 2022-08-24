@@ -458,6 +458,7 @@ class InferenceWorker(GeneratorWorker):
             sw_device=self.config.device,
             device=dataset_device,
             overlap=window_overlap,
+            progress=True,
         )
 
         out = outputs.detach().cpu()

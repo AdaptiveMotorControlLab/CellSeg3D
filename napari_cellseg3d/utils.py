@@ -486,7 +486,7 @@ def save_stack(images, out_path, filetype=".png", check_warnings=False):
     """
     num = images.shape[0]
     p = Path(out_path)
-    p.mkdir(out_path, exist_ok=True)
+    p.mkdir(exist_ok=True)
     for i in range(num):
         label = images[i]
         io.imsave(

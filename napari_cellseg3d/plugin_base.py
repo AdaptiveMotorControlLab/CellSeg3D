@@ -187,7 +187,7 @@ class BasePluginFolder(QTabWidget):
         self.results_path = None
         """str: path to output folder,to save results in"""
 
-        self._default_folder = [None]
+        self._default_folders = [None]
         """Update defaults from PluginBaseFolder with model_path"""
 
         self.docked_widgets = []
@@ -247,7 +247,7 @@ class BasePluginFolder(QTabWidget):
            array(str): all loaded file paths
         """
         filetype = self.filetype_choice.currentText()
-        directory = ui.open_folder_dialog(self, self._default_folder)
+        directory = ui.open_folder_dialog(self, self._default_folders)
 
         file_paths = sorted(Path(directory).glob("*" + filetype))
         if len(file_paths) == 0:
@@ -280,7 +280,7 @@ class BasePluginFolder(QTabWidget):
 
     def load_results_path(self):
         """Show file dialog to set :py:attr:`~results_path`"""
-        folder = ui.open_folder_dialog(self, self._default_folder)
+        folder = ui.open_folder_dialog(self, self._default_folders)
         if folder != "" and type(folder) is str and Path(folder).is_dir():
             self.results_path = folder
             # print(f"Results path : {self.results_path}")
@@ -302,7 +302,7 @@ class BasePluginFolder(QTabWidget):
         else:
             from_labels = None
 
-        self._default_folder = [
+        self._default_folders = [
             path
             for path in [
                 from_images,
