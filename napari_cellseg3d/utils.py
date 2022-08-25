@@ -2,7 +2,6 @@ import warnings
 from datetime import datetime
 from pathlib import Path
 
-
 import cv2
 import numpy as np
 from dask_image.imread import imread as dask_imread
@@ -466,14 +465,6 @@ def load_saved_masks(mod_mask_dir, filetype, as_folder: bool):
     if as_folder:
         images_label = images_label.compute()
     base_label = images_label
-    return base_label
-
-
-def load_raw_masks(raw_mask_dir, filetype):
-    images_raw = load_images(raw_mask_dir, filetype)
-    # TODO : check that there is no problem with compute when loading as single file
-    images_raw = images_raw.compute()
-    base_label = np.where((126 < images_raw) & (images_raw < 171), 255, 0)
     return base_label
 
 

@@ -1,8 +1,10 @@
 from __future__ import division
 from __future__ import print_function
+
 from dataclasses import dataclass
-import numpy as np
 from typing import List
+
+import numpy as np
 
 # from skimage.measure import marching_cubes
 # from skimage.measure import mesh_surface_area

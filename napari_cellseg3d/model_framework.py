@@ -1,5 +1,5 @@
-from pathlib import Path
 import warnings
+from pathlib import Path
 
 import napari
 import torch
@@ -77,8 +77,8 @@ class ModelFramework(BasePluginFolder):
         self.weights_filewidget = ui.FilePathWidget(
             "Weights path", self.load_weights_path, self
         )
-        self.btn_weights_path = self.weights_filewidget.get_button()
-        self.lbl_weights_path = self.weights_filewidget.get_text_field()
+        self.btn_weights_path = self.weights_filewidget.button()
+        self.lbl_weights_path = self.weights_filewidget.text_field()
 
         self.weights_path_container = ui.combine_blocks(
             self.btn_weights_path, self.lbl_weights_path, b=0
@@ -92,25 +92,25 @@ class ModelFramework(BasePluginFolder):
         ###################################################
         # status report docked widget
 
-        self.container_report = ui.ContainerWidget(l=10, t=5, r=5, b=5)
+        self.report_container = ui.ContainerWidget(l=10, t=5, r=5, b=5)
 
-        self.container_report.setSizePolicy(
+        self.report_container.setSizePolicy(
             QSizePolicy.Fixed, QSizePolicy.Minimum
         )
         self.container_docked = False  # check if already docked
 
-        self.progress = QProgressBar(self.container_report)
+        self.progress = QProgressBar(self.report_container)
         self.progress.setVisible(False)
         """Widget for the progress bar"""
 
-        self.log = Log(self.container_report)
+        self.log = Log(self.report_container)
         self.log.setVisible(False)
         """Read-only display for process-related info. Use only for info destined to user."""
 
         self.btn_save_log = ui.Button(
             "Save log in results folder",
             func=self.save_log,
-            parent=self.container_report,
+            parent=self.report_container,
             fixed=False,
         )
         self.btn_save_log.setVisible(False)
@@ -185,15 +185,15 @@ class ModelFramework(BasePluginFolder):
         elif not self.container_docked:
 
             ui.add_widgets(
-                self.container_report.layout,
+                self.report_container.layout,
                 [self.progress, self.log, self.btn_save_log],
                 alignment=None,
             )
 
-            self.container_report.setLayout(self.container_report.layout)
+            self.report_container.setLayout(self.report_container.layout)
 
             report_dock = self._viewer.window.add_dock_widget(
-                self.container_report,
+                self.report_container,
                 name="Status report",
                 area="left",
                 allowed_areas=["left"],
@@ -257,7 +257,7 @@ class ModelFramework(BasePluginFolder):
         """Getter for module (class and functions) associated to currently selected model"""
         return config.MODEL_LIST
 
-    # def load_model_path(self):
+    # def load_model_path(self): # TODO add custom models
     #     """Show file dialog to set :py:attr:`model_path`"""
     #     folder = ui.open_folder_dialog(self, self._default_folders)
     #     if folder is not None and type(folder) is str and os.path.isdir(folder):
@@ -301,7 +301,7 @@ class ModelFramework(BasePluginFolder):
             torch.cuda.empty_cache()
             print("Cache emptied")
 
-    # def update_default(self):
+    # def update_default(self): # TODO add custom models
     #     """Update default path for smoother file dialogs, here with :py:attr:`~model_path` included"""
     #
     #     if len(self.images_filepaths) != 0:

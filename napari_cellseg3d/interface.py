@@ -1,8 +1,9 @@
 import warnings
-from typing import Optional
+from functools import partial
 from typing import List
+from typing import Optional
 
-
+import napari
 from qtpy.QtCore import Qt
 from qtpy.QtCore import QUrl
 from qtpy.QtGui import QDesktopServices
@@ -17,6 +18,7 @@ from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLayout
 from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QRadioButton
 from qtpy.QtWidgets import QScrollArea
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QSlider
@@ -82,6 +84,12 @@ def add_label(widget, label, label_before=True, horizontal=True):
         return combine_blocks(widget, label, horizontal=horizontal)
     else:
         return combine_blocks(label, widget, horizontal=horizontal)
+
+
+class RadioButton(QRadioButton):
+    def __init__(self, text: str = None, parent=None):
+
+        super().__init__(text, parent)
 
 
 class Button(QPushButton):
@@ -191,10 +199,13 @@ class Slider(QSlider):
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         self.text_label = None
+        self.container = ContainerWidget(
+            # parent=self.parent
+        )  # FIXME add build method
 
         self._divide_factor = divide_factor
-        self._value_label = make_label(
-            self.get_value_str(), parent=self
+        self._value_label = QLineEdit(
+            self.value_text, parent=self
         )  # TODO refacto to LineEdit for user input
         self._value_label.setStyleSheet(
             f"background-color: {napari_param_grey};"
@@ -214,26 +225,64 @@ class Slider(QSlider):
             default = upper
 
         self.valueChanged.connect(self._update_value_label)
+        self._value_label.textChangedc.connect(self._update_slider)
 
-        self.set_value(default)
+        self.slider_value = default
+
+        self._build_container()
+
+    def _build_container(self):
+        self.container.layout
+
+        if self.text_label is not None:
+            add_widgets(
+                self.container.layout,
+                [
+                    self.text_label,
+                    combine_blocks(self._value_label, self.slider, b=0),
+                ],
+            )
+        else:
+            add_widgets(
+                self.container.layout,
+                [combine_blocks(self._value_label, self.slider, b=0)],
+            )
 
     def _warn_outside_bounds(self, default):
         warnings.warn(
             f"Default value {default} was outside of the ({self.minimum()}:{self.maximum()}) range"
         )
 
+    def _update_slider(self):
+        """Update slider when value is changed"""
+        value = float(self._value_label.text()) * self._divide_factor
+        if value < self.minimum():
+            self.slider_value = self.minimum()
+            return
+        if value > self.maximum():
+            self.slider_value = self.maximum()
+            return
+
+        self.slider_value = value
+
     def _update_value_label(self):
         """Update label, to connect to when slider is dragged"""
-        self._value_label.setText(str(self.get_value_str()))
+        self._value_label.setText(str(self.value_text()))
 
-    def set_all_tooltips(self, tooltip: str):
+    @property
+    def tooltips(self):
+        return self.toolTip()
+
+    @tooltips.setter
+    def tooltips(self, tooltip: str):
         self.setToolTip(tooltip)
         self._value_label.setToolTip(tooltip)
 
         if self.text_label is not None:
             self.text_label.setToolTip(tooltip)
 
-    def get_value(self):
+    @property
+    def slider_value(self):
         """Get value of the slider divided by self._divide_factor to implement floats in Slider"""
         if self._divide_factor == 1.0:
             return self.value()
@@ -245,11 +294,13 @@ class Slider(QSlider):
                 f"Divide factor cannot be 0 for Slider : {e}"
             )
 
-    def get_value_str(self):
+    @property
+    def value_text(self):
         """Get value of the slide bar as string"""
-        return str(self.get_value())
+        return str(self.slider_value())
 
-    def set_value(self, value: int):
+    @slider_value.setter
+    def slider_value(self, value: int):
         """Set a value (int) divided by self._divide_factor"""
         if value < self.minimum() or value > self.maximum():
             raise ValueError(
@@ -262,57 +313,6 @@ class Slider(QSlider):
         if self._divide_factor == 1.0:
             divided = int(divided)
         self._value_label.setText(str(divided))
-
-
-class SliderContainer(ContainerWidget):  # TODO use layouts in Slider instead
-    def __init__(
-        self,
-        lower: int = 0,
-        upper: int = 100,
-        step: int = 1,
-        default: int = 0,
-        divide_factor: float = 1.0,
-        parent=None,
-        orientation=Qt.Horizontal,
-        text_label: str = None,
-    ):
-
-        super().__init__(b=0, vertical=True)
-
-        self.slider = Slider(
-            lower,
-            upper,
-            step,
-            default,
-            divide_factor,
-            parent,
-            orientation,
-            text_label,
-        )
-        self.label = self.slider.text_label
-
-        if self.label is not None:
-            add_widgets(
-                self.layout,
-                [
-                    self.label,
-                    combine_blocks(self.slider._value_label, self.slider, b=0),
-                ],
-            )
-        else:
-            add_widgets(
-                self.layout,
-                [combine_blocks(self.slider._value_label, self.slider, b=0)],
-            )
-
-    def get_value(self):
-        return self.slider.get_value()
-
-    def set_value(self, value: int):
-        self.slider.set_value(value)
-
-    def set_all_tooltips(self, tooltip: str):
-        self.slider.set_all_tooltips(tooltip)
 
 
 class AnisotropyWidgets(QWidget):
@@ -375,7 +375,7 @@ class AnisotropyWidgets(QWidget):
         self.build()
 
         if always_visible:
-            self.toggle_permanent_visibility()
+            self._toggle_permanent_visibility()
 
     def _toggle_display_aniso(self):
         """Shows the choices for correcting anisotropy
@@ -396,30 +396,22 @@ class AnisotropyWidgets(QWidget):
         add_widgets(self._layout, [self.checkbox, self.container])
         self.setLayout(self._layout)
 
-    def get_anisotropy_resolution_xyz(self, as_factors=True):
-        """
-        Args :
-            as_factors: if True, returns zoom factors, otherwise returns the input resolution
+    def resolution_xyz(self):
+        """The resolution selected for each of the three dimensions. XYZ order"""
+        return [w.value() for w in self.box_widgets]
 
-        Returns : the resolution in microns for each of the three dimensions. ZYX order suitable for napari scale"""
+    def scaling_xyz(self):
+        """The scaling factors for each of the three dimensions. XYZ order"""
+        return self.anisotropy_zoom_factor(self.resolution_xyz())
 
-        resolution = [w.value() for w in self.box_widgets]
-        if as_factors:
-            return self.anisotropy_zoom_factor(resolution)
+    def resolution_zyx(self):
+        """The resolution selected for each of the three dimensions. ZYX order"""
+        res = self.resolution_xyz()
+        return [res[2], res[1], res[0]]
 
-        return resolution
-
-    def get_anisotropy_resolution_zyx(self, as_factors=True):
-        """
-        Args :
-            as_factors: if True, returns zoom factors, otherwise returns the input resolution
-
-        Returns : the resolution in microns for each of the three dimensions. XYZ order suitable for MONAI"""
-        resolution = [w.value() for w in self.box_widgets]
-        if as_factors:
-            resolution = self.anisotropy_zoom_factor(resolution)
-
-        return [resolution[2], resolution[1], resolution[0]]
+    def scaling_zyx(self):
+        """The scaling factors for each of the three dimensions. XYZ order"""
+        return self.anisotropy_zoom_factor(self.resolution_zyx())
 
     @staticmethod
     def anisotropy_zoom_factor(aniso_res):
@@ -436,19 +428,87 @@ class AnisotropyWidgets(QWidget):
         zoom_factors = [base / res for res in aniso_res]
         return zoom_factors
 
-    def is_enabled(self):
+    def enabled(self):
         """Returns : whether anisotropy correction has been enabled or not"""
         return self.checkbox.isChecked()
 
-    def toggle_permanent_visibility(self):
+    def _toggle_permanent_visibility(self):
         """Hides the checkbox and always display resolution spinboxes"""
         self.checkbox.toggle()
         self.checkbox.setVisible(False)
 
 
-class FilePathWidget(
-    QWidget
-):  # TODO upgrade logic, include load as folder, add layer handling
+class LayerSelecter(QWidget):
+    def __init__(
+        self, viewer, name="Layer", layer_type=napari.layers.Layer, parent=None
+    ):
+
+        super().__init__(parent)
+        self._viewer = viewer
+
+        self.image = None
+        self.layer_type = layer_type
+
+        self._container = ContainerWidget(fixed=False)
+
+        self.layer_list = DropdownMenu(parent=self, label=name, fixed=False)
+        # self.layer_list.setSizeAdjustPolicy(QComboBox.AdjustToContents) # use tooltip instead ?
+
+        self._viewer.layers.events.inserted.connect(partial(self._add_layer))
+        self._viewer.layers.events.removed.connect(partial(self._remove_layer))
+
+        self.layer_list.currentIndexChanged.connect(self._update_tooltip)
+
+        add_widgets(
+            self._container.layout, [self.layer_list.label, self.layer_list]
+        )
+        self._check_for_layers()
+
+    def _check_for_layers(self):
+
+        for layer in self._viewer.layers:
+            if isinstance(layer, self.layer_type):
+                self.layer_list.addItem(layer.name)
+
+    def _update_tooltip(self):
+
+        self.layer_list.setToolTip(self.layer_list.currentText())
+
+    def _add_layer(self, event):
+
+        inserted_layer = event.value
+
+        if isinstance(inserted_layer, self.layer_type):
+            self.layer_list.addItem(inserted_layer.name)
+
+    def _remove_layer(self, event):
+
+        removed_layer = event.value
+
+        if isinstance(
+            removed_layer, self.layer_type
+        ) and removed_layer.name in [
+            self.layer_list.itemText(i) for i in range(self.layer_list.count())
+        ]:
+
+            index = self.layer_list.findText(removed_layer.name)
+            self.layer_list.removeItem(index)
+
+    def container(self):
+        return self._container
+
+    def layer_name(self):
+        return self.layer_list.currentText()
+
+    def layer_data(self):
+        if self.layer_list.count() < 1:
+            warnings.warn("Please select a valid layer !")
+            return
+
+        return self._viewer.layers[self.layer_name()].data
+
+
+class FilePathWidget(QWidget):  # TODO include load as folder
     """Widget to handle the choice of file paths for data throughout the plugin. Provides the following elements :
     - An "Open" button to show a file dialog (defined externally)
     - A QLineEdit in read only to display the chosen path/file"""
@@ -459,6 +519,7 @@ class FilePathWidget(
         file_function: callable,
         parent: Optional[QWidget] = None,
         required: Optional[bool] = True,
+        default: Optional[str] = None,
     ):
         """Creates a FilePathWidget.
         Args:
@@ -473,26 +534,38 @@ class FilePathWidget(
         self._layout.setContentsMargins(0, 0, 0, 0)
 
         self._initial_desc = description
-        self.text_field = QLineEdit(description, self)
+        self._text_field = QLineEdit(description, self)
 
-        self.button = Button("Open", file_function, parent=self, fixed=True)
+        self._button = Button("Open", file_function, parent=self, fixed=True)
 
-        self.text_field.setReadOnly(True)
+        self._text_field.setReadOnly(True)  # for user only
+        if default is not None:
+            self._text_field.setText(default)
 
-        self.set_required(required)
+        self._required = required
+
+        self.build()
 
     def build(self):
         """Builds the layout of the widget"""
         add_widgets(self._layout, [self.text_field, self.button])
         self.setLayout(self._layout)
 
-    def get_text_field(self):
+    @property
+    def text_field(self):
         """Get text field with file path"""
-        return self.text_field
+        return self._text_field
 
-    def get_button(self):
+    @text_field.setter
+    def text_field(self, text: str):
+        """Sets the initial description in the text field"""
+        self._initial_desc = text
+        self._text_field.setText(text)
+
+    @property
+    def button(self):
         """Get "Open" button"""
-        return self.button
+        return self._button
 
     def check_ready(self):
         """Check if a path is correctly set"""
@@ -504,24 +577,25 @@ class FilePathWidget(
             self.update_field_color("black")
             return True
 
-    def set_required(self, is_required):
+    @property
+    def required(self):
+        return self._required
+
+    @required.setter
+    def required(self, is_required):
         """If set to True, will be colored red if incorrectly set"""
         if is_required:
             self.text_field.textChanged.connect(self.check_ready)
         else:
             self.text_field.textChanged.disconnect(self.check_ready)
         self.check_ready()
+        self._required = is_required
 
     def update_field_color(self, color: str):
         """Updates the background of the text field"""
         self.text_field.setStyleSheet(f"background-color : {color}")
         self.text_field.style().unpolish(self.text_field)
         self.text_field.style().polish(self.text_field)
-
-    def set_description(self, text: str):
-        """Sets the initial description ins the text field"""
-        self._initial_desc = text
-        self.text_field.setText(text)
 
 
 class ScrollArea(QScrollArea):
@@ -685,13 +759,23 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         if label is not None:
             self.label = make_label(name=label)
 
-    def set_all_tooltips(self, tooltip: str):
+    @property
+    def tooltips(self):
+        return self.toolTip()
+
+    @tooltips.setter
+    def tooltips(self, tooltip: str):
         """Sets the tooltip of both the DoubleIncrementCounter and its label"""
         self.setToolTip(tooltip)
         if self.label is not None:
             self.label.setToolTip(tooltip)
 
-    def set_precision(self, decimals):
+    @property
+    def precision(self):
+        return self.decimals()
+
+    @precision.setter
+    def precision(self, decimals: int):
         """Sets the precision of the box to the specified number of decimals"""
         self.setDecimals(decimals)
 
@@ -741,7 +825,12 @@ class IntIncrementCounter(QSpinBox):
         if label is not None:
             self.label = make_label(name=label)
 
-    def set_all_tooltips(self, tooltip):
+    @property
+    def tooltips(self):
+        return self.toolTip()
+
+    @tooltips.setter
+    def tooltips(self, tooltip):
         self.setToolTip(tooltip)
         self.label.setToolTip(tooltip)
 
@@ -805,7 +894,6 @@ def open_file_dialog(
 def open_folder_dialog(
     widget,
     possible_paths: list = [],
-    filetype: str = "Image file (*.tif *.tiff)",
 ):
     default_path = utils.parse_default_path(possible_paths)
 
@@ -832,47 +920,20 @@ def make_label(name, parent=None):  # TODO update to child class
         return QLabel(name)
 
 
-def add_to_group(
-    title, widget, layout, L=7, T=20, R=7, B=11
-):  # TODO remove and use GroupedWidget instead
-    """Adds a single widget to a layout as a named group with margins specified.
-
-    Args:
-        title: title of the group
-        widget: widget to add in the group
-        layout: layout to add the group in
-        L: left margin (in pixels)
-        T: top margin (in pixels)
-        R: right margin (in pixels)
-        B: bottom margin (in pixels)
-
-    """
-    group, layout_internal = make_group(title, L, T, R, B)
-    layout_internal.addWidget(widget)
-    group.setLayout(layout_internal)
-    layout.addWidget(group)
-
-
-def make_group(title, L=7, T=20, R=7, B=11, parent=None):  # TODO : child class
+def make_group(title, l=7, t=20, r=7, b=11, parent=None):
     """Creates a group widget and layout, with a header (`title`) and content margins for top/left/right/bottom `L, T, R, B` (in pixels)
     Group widget and layout returned will have a Fixed size policy.
 
     Args:
         title (str): Title of the group
-        L (int): left margin
-        T (int): top margin
-        R (int): right margin
-        B (int): bottom margin
+        l (int): left margin
+        t (int): top margin
+        r (int): right margin
+        b (int): bottom margin
         parent (QWidget) : parent widget. If None, no parent is set
     """
-    if parent is None:
-        group = QGroupBox(title)
-    else:
-        group = QGroupBox(title, parent=parent)
-    group.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-    layout = QVBoxLayout()
-    layout.setContentsMargins(L, T, R, B)
-    layout.setSizeConstraint(QLayout.SetFixedSize)
+    group = GroupedWidget(title, l, t, r, b, parent=parent)
+    layout = group.layout
 
     return group, layout
 
@@ -883,23 +944,19 @@ class GroupedWidget(QGroupBox):
     def __init__(self, title, l=7, t=20, r=7, b=11, parent=None):
         super().__init__(title, parent)
 
-        self.setSizePolicy(QSizePolicy.Fixed)
+        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(l, t, r, b)
         self.layout.setSizeConstraint(QLayout.SetFixedSize)
 
-    @property
-    def layout(self) -> "QLayout":
-        return self.layout
-
     @classmethod
     def create_single_widget_group(
         cls, title, widget, layout, l=7, t=20, r=7, b=11
     ):
-        group, group_layout = cls(title, l, t, r, b)
-        group_layout.addWidget(widget)
-        group.setLayout(group_layout)
+        group = cls(title, l, t, r, b)
+        group.layout.addWidget(widget)
+        group.setLayout(group.layout)
         layout.addWidget(group)
 
 

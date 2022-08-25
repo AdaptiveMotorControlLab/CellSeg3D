@@ -1,6 +1,6 @@
-from pathlib import Path
 import shutil
 import warnings
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import napari
@@ -28,8 +28,8 @@ from napari_cellseg3d import config
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
 from napari_cellseg3d.model_framework import ModelFramework
-from napari_cellseg3d.model_workers import TrainingWorker
 from napari_cellseg3d.model_workers import TrainingReport
+from napari_cellseg3d.model_workers import TrainingWorker
 
 NUMBER_TABS = 3
 DEFAULT_PATCH_SIZE = 64
@@ -181,10 +181,10 @@ class Trainer(ModelFramework):
 
         self.zip_choice = ui.CheckBox("Compress results")
 
-        self.validation_percent_choice = ui.SliderContainer(
+        self.validation_percent_choice = ui.Slider(
             lower=10,
             upper=90,
-            default=default.validation_interval,
+            default=default.validation_percent,
             step=5,
             parent=self,
         )
@@ -202,16 +202,16 @@ class Trainer(ModelFramework):
         self.lbl_loss_choice = self.loss_choice.label
         self.loss_choice.setCurrentIndex(0)
 
-        self.sample_choice_slider = ui.SliderContainer(
+        self.sample_choice_slider = ui.Slider(
             lower=2,
             upper=50,
             default=default.num_samples,
             text_label="Number of patches per image : ",
         )
 
-        self.sample_choice_slider.setVisible(False)
+        self.sample_choice_slider.container.setVisible(False)
 
-        self.batch_choice = ui.SliderContainer(
+        self.batch_choice = ui.Slider(
             lower=1,
             upper=10,
             default=default.batch_size,
@@ -299,23 +299,23 @@ class Trainer(ModelFramework):
             self.zip_choice.setToolTip(
                 "Checking this will save a copy of the results as a zip folder"
             )
-            self.validation_percent_choice.set_all_tooltips(
+            self.validation_percent_choice.tooltips(
                 "Choose the proportion of images to retain for training.\nThe remaining images will be used for validation"
             )
-            self.epoch_choice.set_all_tooltips(
+            self.epoch_choice.tooltips(
                 "The number of epochs to train for.\nThe more you train, the better the model will fit the training data"
             )
             self.loss_choice.setToolTip(
                 "The loss function to use for training.\nSee the list in the inference guide for more info"
             )
-            self.sample_choice_slider.set_all_tooltips(
+            self.sample_choice_slider.tooltips(
                 "The number of samples to extract per image"
             )
-            self.batch_choice.set_all_tooltips(
+            self.batch_choice.tooltips(
                 "The batch size to use for training.\n A larger value will feed more images per iteration to the model,\n"
                 " which is faster and possibly improves performance, but uses more memory"
             )
-            self.val_interval_choice.set_all_tooltips(
+            self.val_interval_choice.tooltips(
                 "The number of epochs to perform before validating data.\n "
                 "The lower the value, the more often the score of the model will be computed and the more often the weights will be saved."
             )
@@ -366,12 +366,12 @@ class Trainer(ModelFramework):
         if self.patch_choice.isChecked():
             [w.setVisible(True) for w in self.patch_size_widgets]
             [l.setVisible(True) for l in self.patch_size_lbl]
-            self.sample_choice_slider.setVisible(True)
+            self.sample_choice_slider.container.setVisible(True)
             self.sampling_container.setVisible(True)
         else:
             [w.setVisible(False) for w in self.patch_size_widgets]
             [l.setVisible(False) for l in self.patch_size_lbl]
-            self.sample_choice_slider.setVisible(False)
+            self.sample_choice_slider.container.setVisible(False)
             self.sampling_container.setVisible(False)
 
     def toggle_transfer_param(self):
@@ -502,9 +502,9 @@ class Trainer(ModelFramework):
         ################
         ui.add_blank(self, data_tab.layout)
         ################
-        ui.add_to_group(
+        ui.GroupedWidget.create_single_widget_group(
             "Validation (%)",
-            self.validation_percent_choice,
+            self.validation_percent_choice.container,
             data_tab.layout,
         )
         ################
@@ -546,7 +546,7 @@ class Trainer(ModelFramework):
         ui.add_widgets(
             sampling_l,
             [
-                self.sample_choice_slider,  # number of samples
+                self.sample_choice_slider.container,  # number of samples
             ],
         )
         sampling_w.setLayout(sampling_l)
@@ -561,13 +561,15 @@ class Trainer(ModelFramework):
             right_or_below=self.sampling_container,
             horizontal=False,
         )
-        ui.add_to_group("Sampling", sampling, augment_tab_l, B=0, T=11)
+        ui.GroupedWidget.create_single_widget_group(
+            "Sampling", sampling, augment_tab_l, B=0, T=11
+        )
         #######################
         #######################
         ui.add_blank(augment_tab_w, augment_tab_l)
         #######################
         #######################
-        ui.add_to_group(
+        ui.GroupedWidget.create_single_widget_group(
             "Augmentation",
             self.augment_choice,
             augment_tab_l,
@@ -602,7 +604,7 @@ class Trainer(ModelFramework):
         # solo groups for loss and model
         ui.add_blank(train_tab, train_tab.layout)
 
-        ui.add_to_group(
+        ui.GroupedWidget.create_single_widget_group(
             "Model",
             self.model_choice,
             train_tab.layout,
@@ -610,7 +612,7 @@ class Trainer(ModelFramework):
         self.lbl_model_choice.setVisible(False)
 
         ui.add_blank(train_tab, train_tab.layout)
-        ui.add_to_group(
+        ui.GroupedWidget.create_single_widget_group(
             "Loss",
             self.loss_choice,
             train_tab.layout,
@@ -624,7 +626,7 @@ class Trainer(ModelFramework):
         # training params group
 
         train_param_group_w, train_param_group_l = ui.make_group(
-            "Training parameters", R=1, B=5, T=11
+            "Training parameters", r=1, b=5, t=11
         )
 
         spacing = 20
@@ -632,7 +634,7 @@ class Trainer(ModelFramework):
         ui.add_widgets(
             train_param_group_l,
             [
-                self.batch_choice,  # batch size
+                self.batch_choice.container,  # batch size
                 ui.combine_blocks(
                     self.learning_rate_choice,
                     self.lbl_learning_rate_choice,
@@ -659,7 +661,7 @@ class Trainer(ModelFramework):
         ##################
         # deterministic choice group
         seed_w, seed_l = ui.make_group(
-            "Deterministic training", R=1, B=5, T=11
+            "Deterministic training", r=1, b=5, t=11
         )
         ui.add_widgets(
             seed_l,
@@ -805,7 +807,7 @@ class Trainer(ModelFramework):
             )
 
             validation_percent = (
-                self.validation_percent_choice.get_value() / 100
+                self.validation_percent_choice.slider_value / 100
             )
 
             results_path_folder = Path(
@@ -816,7 +818,7 @@ class Trainer(ModelFramework):
                 parents=True, exist_ok=False
             )  # avoid overwrite where possible
 
-            patch_size = [w.value() for w in self.patch_size_widgets]
+            patch_size = [w.slider_value() for w in self.patch_size_widgets]
 
             self.worker_config = config.TrainingWorkerConfig(
                 device=self.get_device(),
@@ -828,10 +830,10 @@ class Trainer(ModelFramework):
                 loss_function=self.get_loss(self.loss_choice.currentText()),
                 learning_rate=float(self.learning_rate_choice.currentText()),
                 validation_interval=self.val_interval_choice.value(),
-                batch_size=self.batch_choice.get_value(),
+                batch_size=self.batch_choice.slider_value,
                 results_path_folder=results_path_folder,
                 sampling=self.patch_choice.isChecked(),
-                num_samples=self.sample_choice_slider.get_value(),
+                num_samples=self.sample_choice_slider.slider_value,
                 sample_size=patch_size,
                 do_augmentation=self.augment_choice.isChecked(),
                 deterministic_config=deterministic_config,

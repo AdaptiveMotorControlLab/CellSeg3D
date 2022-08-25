@@ -103,7 +103,7 @@ class Cropping(BasePluginSingleImage):
                 ui.combine_blocks(self.btn_image, self.lbl_image),
                 self.crop_label_choice,  # whether to crop labels or no
                 ui.combine_blocks(self.btn_label, self.lbl_label),
-                self.load_stack_choice,
+                self.load_as_stack_choice,
                 self.filetype_choice,
                 self.aniso_widgets,
             ],
@@ -224,14 +224,12 @@ class Cropping(BasePluginSingleImage):
         and adds control widgets to the napari Viewer for moving the cropped volume.
         """
 
-        self.as_folder = self.load_stack_choice.isChecked()
+        self.as_folder = self.load_as_stack_choice.isChecked()
         self.filetype = self.filetype_choice.currentText()
         self.crop_labels = self.crop_label_choice.isChecked()
 
-        if self.aniso_widgets.is_enabled():
-            self.aniso_factors = (
-                self.aniso_widgets.get_anisotropy_resolution_zyx()
-            )
+        if self.aniso_widgets.enabled():
+            self.aniso_factors = self.aniso_widgets.scaling_zyx()
 
         if not self.check_ready():
             return
@@ -295,7 +293,7 @@ class Cropping(BasePluginSingleImage):
         image_stack = np.array(self.image)
 
         self._crop_size_x, self._crop_size_y, self._crop_size_z = [
-            box.value() for box in self.box_widgets
+            box.slider_value() for box in self.box_widgets
         ]
 
         self._x = 0

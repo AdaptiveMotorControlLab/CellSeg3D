@@ -42,8 +42,8 @@ class MetricsUtils(BasePluginFolder):
         # interface
 
         # set new descriptions for Filewidgets
-        self.image_filewidget.set_description("Ground truth")
-        self.label_filewidget.set_description("Prediction")
+        self.image_filewidget.description = "Ground truth"
+        self.label_filewidget.description = "Prediction"
 
         self.btn_compute_dice = ui.Button("Compute Dice", self.compute_dice)
 

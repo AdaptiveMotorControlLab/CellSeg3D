@@ -1,5 +1,6 @@
-from pathlib import Path
+from functools import partial
 import warnings
+from pathlib import Path
 
 import napari
 import numpy as np
@@ -40,7 +41,13 @@ class Reviewer(BasePluginSingleImage):
 
         super().__init__(viewer)
 
-        # self._viewer = viewer
+        # self._viewer = viewer # should not be needed
+        self.config = config.ReviewConfig()
+
+        #######################
+        # UI
+        self.layer_choice.setText("New review")
+        self.folder_choice.setText("Existing review")
 
         self.csv_textbox = QLineEdit(self)
         self.csv_textbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -72,6 +79,15 @@ class Reviewer(BasePluginSingleImage):
 
         self.build()
 
+        self.image_filewidget.text_field.textChanged.connect(
+            self._update_results_path
+        )
+
+    def _update_results_path(self):
+        p = self.image_filewidget.text_field.text()
+        if p is not None and p != "" and Path(p).is_file():
+            self.results_filewidget.text_field.setText(Path(p).parent)
+
     def build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
 
@@ -82,29 +98,14 @@ class Reviewer(BasePluginSingleImage):
 
         # ui.add_blank(self, layout)
         ###########################
-        data_group_w, data_group_l = ui.make_group("Data")
-
-        ui.add_widgets(
-            data_group_l,
-            [
-                ui.combine_blocks(
-                    self.filetype_choice,
-                    self.load_stack_choice,
-                    horizontal=False,
-                ),
-                ui.combine_blocks(self.btn_image, self.lbl_image),
-                ui.combine_blocks(self.btn_label, self.lbl_label),
-            ],
-        )
-
         self.filetype_choice.setVisible(False)
-
-        data_group_w.setLayout(data_group_l)
-        layout.addWidget(data_group_w)
+        layout.addWidget(self.data_panel)
         ###########################
         ui.add_blank(self, layout)
         ###########################
-        ui.add_to_group("Image parameters", self.anisotropy_widgets, layout)
+        ui.GroupedWidget.create_single_widget_group(
+            "Image parameters", self.anisotropy_widgets, layout
+        )
         ###########################
         ui.add_blank(self, layout)
         ###########################
@@ -123,7 +124,12 @@ class Reviewer(BasePluginSingleImage):
                     b=5,
                 ),
                 self.new_csv_choice,
+                self.results_filewidget,
             ],
+        )
+
+        self.results_filewidget.text_field.setText(
+            str(Path.home() / Path("cellseg3d_review"))
         )
 
         csv_param_w.setLayout(csv_param_l)
@@ -144,6 +150,46 @@ class Reviewer(BasePluginSingleImage):
         # self.show()
         # self._viewer.window.add_dock_widget(self, name="Reviewer", area="right")
 
+    def check_image_data(self):
+        cfg = self.config
+
+        if cfg.image is None:
+            raise ValueError("Review requires at least one image")
+
+        if cfg.labels is not None:
+            if cfg.image.shape != cfg.labels.shape:
+                warnings.warn(
+                    "Image and label dimensions do not match ! Please load matching images"
+                )
+
+    def prepare_data(self):
+
+        if self.layer_choice.isChecked():
+            self.config.image = self.image_layer_loader.layer_data()
+            self.config.labels = self.label_layer_loader.layer_data()
+        else:
+            self.config.image = utils.load_images(
+                self.image_filewidget.text_field.text()
+            )
+            self.config.labels = utils.load_images(
+                self.label_filewidget.text_field.text()
+            )
+
+        self.check_image_data()
+
+        self.config.csv_path = self.results_filewidget.text_field.text()
+        self.config.model_name = self.csv_textbox.text()
+
+        self.config.new_csv = self.new_csv_choice.isChecked()
+        self.config.filetype = self.filetype_choice.currentText()
+        self.config.as_stack = self.load_as_stack_choice.isChecked()
+
+        if self.anisotropy_widgets.enabled:
+            zoom = self.anisotropy_widgets.scaling_zyx()
+        else:
+            zoom = [1, 1, 1]
+        self.config.zoom_factor = zoom
+
     def run_review(self):
 
         """Launches review process by loading the files from the chosen folders,
@@ -161,73 +207,21 @@ class Reviewer(BasePluginSingleImage):
             napari.viewer.Viewer: self.viewer
         """
 
-        self.reset()
-
-        self.filetype = self.filetype_choice.currentText()
-        self.as_folder = self.load_stack_choice.isChecked()
-        if self.anisotropy_widgets.is_enabled():
-            zoom = self.anisotropy_widgets.get_anisotropy_resolution_zyx(
-                as_factors=True
-            )
-        else:
-            zoom = [1, 1, 1]
-
-        images = utils.load_images(
-            self.image_path, self.filetype, self.as_folder
-        )
-        if (
-            self.label_path is None  # TODO check if it works
-        ):  # saves empty images of the same size as original images
-            if self.as_folder:
-                labels = np.zeros_like(images.compute())  # dask to numpy
-            self.label_path = Path(
-                Path(self.image_path).parent / self.csv_textbox.text()
-            )
-            self.label_path.mkdir(exist_ok=True)
-            self.label_path = str(self.label_path)
-
-            for i in range(len(labels)):
-                io.imsave(
-                    Path(self.label_path)
-                    / Path(str(i).zfill(4) + self.filetype),
-                    labels[i],
-                )
-        else:
-            labels = utils.load_saved_masks(
-                self.label_path,
-                self.filetype,
-                self.as_folder,
-            )
-        try:
-            labels_raw = utils.load_raw_masks(
-                self.label_path + "_raw", self.filetype
-            )
-        except pims.UnknownFormatError:
-            labels_raw = None
-        except FileNotFoundError:
-            # TODO : might not work, test with predi labels later
-            labels_raw = None
-
         print("New review session\n" + "*" * 20)
         previous_viewer = self._viewer
+        try:
 
-        review_config = config.ReviewConfig(
-            images=images,
-            labels=labels,
-            labels_raw=labels_raw,
-            csv_path=self.label_path,
-            model_name=self.csv_textbox.text(),
-            new_csv=self.new_csv_choice.isChecked(),
-            filetype=self.filetype,
-            as_stack=self.as_folder,
-            zoom_factor=zoom,
-        )
+            self.prepare_data()
 
-        self._viewer, self.docked_widgets = launch_review(
-            review_config=review_config
-        )
-        previous_viewer.close()
+            self._viewer, self.docked_widgets = launch_review(
+                review_config=self.config
+            )
+            self.reset()
+            previous_viewer.close()
+        except ValueError as e:
+            warnings.warn(
+                f"An exception occurred : {e}. Please ensure you have entered all required parameters."
+            )
 
     def reset(self):
-        self._viewer.layers.clear()
         self.remove_docked_widgets()

@@ -1,15 +1,12 @@
-import platform
-from pathlib import Path
 import importlib.util
+import platform
+from dataclasses import dataclass
+from pathlib import Path
 from typing import List
 from typing import Optional
 
-from dataclasses import dataclass
-
 import numpy as np
-from tifffile import imwrite
 import torch
-from tqdm import tqdm
 
 # MONAI
 from monai.data import CacheDataset
@@ -46,10 +43,12 @@ from napari.qt.threading import WorkerBaseSignals
 
 # Qt
 from qtpy.QtCore import Signal
+from tifffile import imwrite
+from tqdm import tqdm
 
-from napari_cellseg3d import utils
 from napari_cellseg3d import config
 from napari_cellseg3d import log_utility
+from napari_cellseg3d import utils
 
 # local
 from napari_cellseg3d.model_instance_seg import binary_connected

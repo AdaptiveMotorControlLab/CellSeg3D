@@ -8,16 +8,12 @@ import pandas as pd
 from qtpy.QtWidgets import QSizePolicy
 
 # local
+from napari_cellseg3d import config
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
-
-from napari_cellseg3d import config
-
-
 from napari_cellseg3d.model_framework import ModelFramework
 from napari_cellseg3d.model_workers import InferenceResult
 from napari_cellseg3d.model_workers import InferenceWorker
-
 
 # TODO for layer inference : button behaviour/visibility, error if no layer selected, test all funcs
 
@@ -73,7 +69,7 @@ class Inferer(ModelFramework):
         self.model_info: config.ModelInfo = None
 
         self.config = config.InfererConfig()
-        self.worker_config = None
+        self.worker_config: config.InferenceWorkerConfig = None
         self.instance_config = config.InstanceSegConfig()
         self.post_process_config = config.PostProcessConfig()
 
@@ -85,7 +81,7 @@ class Inferer(ModelFramework):
             "View results in napari", self.toggle_display_number
         )
 
-        self.display_number_choice = ui.SliderContainer(
+        self.display_number_choice_slider = ui.Slider(
             lower=1, upper=10, default=5, text_label="How many ? "
         )
 
@@ -123,7 +119,7 @@ class Inferer(ModelFramework):
             "Perform thresholding", self.toggle_display_thresh
         )
 
-        self.thresholding_slider = ui.SliderContainer(
+        self.thresholding_slider = ui.Slider(
             lower=1,
             default=config.PostProcessConfig().thresholding.threshold_value
             * 100,
@@ -152,7 +148,7 @@ class Inferer(ModelFramework):
         )
         self.lbl_window_size_choice = self.window_size_choice.label
 
-        self.window_overlap_slider = ui.SliderContainer(
+        self.window_overlap_slider = ui.Slider(
             default=config.SlidingWindowConfig.window_overlap * 100,
             divide_factor=100.0,
             parent=self,
@@ -171,7 +167,7 @@ class Inferer(ModelFramework):
             self.window_infer_params.layout,
             [
                 window_size_widgets,
-                self.window_overlap_slider,
+                self.window_overlap_slider.container,
             ],
         )
 
@@ -186,7 +182,7 @@ class Inferer(ModelFramework):
             config.INSTANCE_SEGMENTATION_METHOD_LIST.keys()
         )
 
-        self.instance_prob_thresh_slider = ui.SliderContainer(
+        self.instance_prob_thresh_slider = ui.Slider(
             lower=1,
             upper=99,
             default=config.PostProcessConfig().instance.threshold.threshold_value
@@ -238,7 +234,7 @@ class Inferer(ModelFramework):
             ##################
             # tooltips
             self.view_checkbox.setToolTip("Show results in the napari viewer")
-            self.display_number_choice.setToolTip(
+            self.display_number_choice_slider.tooltips = (
                 "Choose how many results to display once the work is done.\n"
                 "Maximum is 10 for clarity"
             )
@@ -285,7 +281,7 @@ class Inferer(ModelFramework):
                 "Requires the model to surround objects in a gradient;"
                 " can possibly correctly separate unique but touching/adjacent objects."
             )
-            self.instance_prob_thresh_slider.set_all_tooltips(
+            self.instance_prob_thresh_slider.tooltips(
                 "All objects below this probability will be ignored (set to 0)"
             )
             self.instance_small_object_thresh.setToolTip(
@@ -331,7 +327,7 @@ class Inferer(ModelFramework):
     def toggle_display_thresh(self):
         """Shows the choices for thresholding results depending on whether :py:attr:`self.thresholding_checkbox` is checked"""
         ui.toggle_visibility(
-            self.thresholding_checkbox, self.thresholding_slider
+            self.thresholding_checkbox, self.thresholding_slider.container
         )
 
     def toggle_display_instance(self):
@@ -350,8 +346,7 @@ class Inferer(ModelFramework):
             self.view_results_container.layout,
             [
                 self.view_checkbox,
-                self.display_number_choice.label,
-                self.display_number_choice,
+                self.display_number_choice_slider.container,
                 self.show_original_checkbox,
             ],
             alignment=None,
@@ -367,7 +362,7 @@ class Inferer(ModelFramework):
             self.instance_layout,
             [
                 self.instance_method_choice,
-                self.instance_prob_thresh_slider,
+                self.instance_prob_thresh_slider.container,
                 self.instance_small_object_t_container,
                 self.save_stats_to_csv_box,
             ],
@@ -402,7 +397,7 @@ class Inferer(ModelFramework):
                 ),  # out folder
             ],
         )
-        self.image_filewidget.set_required(False)
+        self.image_filewidget.required = False
         self.image_filewidget.update_field_color("black")
 
         io_group.setLayout(io_layout)
@@ -467,21 +462,21 @@ class Inferer(ModelFramework):
             "Post-processing", parent=self
         )
 
-        self.thresholding_slider.setVisible(False)
+        self.thresholding_slider.container.setVisible(False)
 
         ui.add_widgets(
             post_proc_layout,
             [
                 self.anisotropy_wdgt,  # anisotropy
                 self.thresholding_checkbox,
-                self.thresholding_slider,  # thresholding
+                self.thresholding_slider.container,  # thresholding
                 self.instance_box,
                 self.instance_param_container,  # instance segmentation
             ],
         )
 
         self.anisotropy_wdgt.container.setVisible(False)
-        self.thresholding_slider.setVisible(False)
+        self.thresholding_slider.container.setVisible(False)
         self.instance_param_container.setVisible(False)
 
         post_proc_group.setLayout(post_proc_layout)
@@ -587,18 +582,16 @@ class Inferer(ModelFramework):
             self.weights_config.custom = self.custom_weights_choice.isChecked()
 
             zoom_config = config.Zoom(
-                enabled=self.anisotropy_wdgt.is_enabled(),
-                zoom_values=self.anisotropy_wdgt.get_anisotropy_resolution_xyz(
-                    as_factors=True
-                ),
+                enabled=self.anisotropy_wdgt.enabled(),
+                zoom_values=self.anisotropy_wdgt.scaling_xyz,
             )
             thresholding_config = config.Thresholding(
                 enabled=self.thresholding_checkbox.isChecked(),
-                threshold_value=self.thresholding_slider.get_value(),
+                threshold_value=self.thresholding_slider.slider_value,
             )
 
             instance_thresh_config = config.Thresholding(
-                threshold_value=self.instance_prob_thresh_slider.get_value()
+                threshold_value=self.instance_prob_thresh_slider.slider_value
             )
             instance_small_object_thresh_config = config.Thresholding(
                 threshold_value=self.instance_small_object_thresh.value()
@@ -619,7 +612,7 @@ class Inferer(ModelFramework):
             if self.window_infer_box.isChecked():
                 window_config = config.SlidingWindowConfig(
                     window_size=int(self.window_size_choice.currentText()),
-                    window_overlap=self.window_overlap_slider.value(),
+                    window_overlap=self.window_overlap_slider.slider_value,
                 )
             else:
                 window_config = config.SlidingWindowConfig()
@@ -684,11 +677,9 @@ class Inferer(ModelFramework):
         self.config = config.InfererConfig(
             model_info=self.model_info,
             show_results=self.view_checkbox.isChecked(),
-            show_results_count=self.display_number_choice.value(),
+            show_results_count=self.display_number_choice_slider.slider_value,
             show_original=self.show_original_checkbox.isChecked(),
-            anisotropy_resolution=self.anisotropy_wdgt.get_anisotropy_resolution_xyz(
-                as_factors=False
-            ),
+            anisotropy_resolution=self.anisotropy_wdgt.resolution_xyz,
         )
 
         self.log.print_and_log(f"Worker started at {utils.get_time()}")

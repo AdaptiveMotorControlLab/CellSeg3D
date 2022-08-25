@@ -60,8 +60,11 @@ def launch_review(review_config: config.ReviewConfig):
 
     Returns : list of all docked widgets
     """
-    images_original = review_config.images
-    base_label = review_config.labels
+    images_original = review_config.image
+    if review_config.labels is not None:
+        base_label = review_config.labels
+    else:
+        base_label = np.zeros_like(images_original)
 
     viewer = napari.Viewer()
 
@@ -77,69 +80,6 @@ def launch_review(review_config: config.ReviewConfig):
     viewer.add_labels(
         base_label, name="labels", seed=0.6, scale=review_config.zoom_factor
     )
-
-    if (
-        review_config.labels_raw is not None
-    ):  # raw labels is from the prediction
-        viewer.add_image(
-            ndimage.gaussian_filter(review_config.labels_raw, sigma=3),
-            colormap="magenta",
-            name="low_confident",
-            blending="additive",
-            scale=review_config.zoom_factor,
-        )
-    else:
-        pass
-
-    # def label_and_sort(base_label):  # assigns a different id for every different cell ?
-    #     labeled = ndimage.label(base_label, structure=np.ones((3, 3, 3)))[0]
-    #
-    #     mks, nums = np.unique(labeled, return_counts=True)
-    #
-    #     idx_list = list(np.argsort(nums[1:]))
-    #     nums = np.sort(nums[1:])
-    #     labeled_sorted = np.zeros_like(labeled)
-    #     for i, idx in enumerate(idx_list):
-    #         labeled_sorted = np.where(labeled == mks[1:][idx], i + 1, labeled_sorted)
-    #     return labeled_sorted, nums
-    #
-    # def label_ct(labeled_array, nums, value):
-    #     labeled_temp = copy.copy(labeled_array)
-    #     idx = np.abs(nums - value).argmin()
-    #     labeled_temp = np.where((labeled_temp < idx) & (labeled_temp != 0), 255, 0)
-    #     return labeled_temp
-
-    # def show_so_layer(args):
-    #     labeled_c, labeled_sorted, nums = args
-    #     so_layer = viewer.add_image(labeled_c, colormap='cyan', name='small_object', blending='additive')
-    #
-    #     object_slider = QSlider(Qt.Horizontal)
-    #     object_slider.setMinimum(0)
-    #     object_slider.setMaximum(500)
-    #     object_slider.setSingleStep(10)
-    #     object_slider.setValue(10)
-    #
-    #     object_slider.valueChanged[int].connect(lambda value=object_slider: calc_object_callback(so_layer, value,
-    #                                                                                              labeled_sorted, nums))
-    #
-    #     lbl = QLabel('object size')
-    #
-    #     slider_widget = utils.combine_blocks(lbl, object_slider)
-    #
-    #     viewer.window.add_dock_widget(slider_widget, name='object_size_slider', area='left')
-    #
-    #     def calc_object_callback(t_layer, value, labeled_array, nums):
-    #         t_layer.data = label_ct(labeled_array, nums, value)
-
-    # @thread_worker(connect={"returned": show_so_layer})
-    # def create_label():
-    #     labeled_sorted, nums = label_and_sort(base_label)
-    #     labeled_c = label_ct(labeled_sorted, nums, 10)
-    #     return labeled_c, labeled_sorted, nums
-    #
-    # worker = create_label()
-    # if not as_folder:
-    #     r_path = os.path.dirname(r_path)
 
     @magicgui(
         dirname={"mode": "d", "label": "Save labels in... "},
@@ -173,24 +113,9 @@ def launch_review(review_config: config.ReviewConfig):
                         dat, dir_name, filetype=review_config.filetype
                     )
 
-        # def quicksave_quit():
-        #     quicksave()
-        #     viewer.window.close()
-
-        return dirname, quicksave()  # , quicksave_quit()
-
-    # gui = file_widget.show(run=True)  # dirpicker.show(run=True)
+        return dirname, quicksave()
 
     viewer.window.add_dock_widget(file_widget, name=" ", area="bottom")
-
-    # @magicgui(call_button="Save")
-
-    # gui2 = saver.show(run=True)  # saver.show(run=True)
-    # viewer.window.add_dock_widget(gui2, name=" ", area="bottom")
-
-    # viewer.window._qt_window.tabifyDockWidget(gui, gui2) #not with FunctionGui ?
-
-    # draw canvas
 
     with plt.style.context("dark_background"):
         canvas = FigureCanvas(Figure(figsize=(3, 15)))

@@ -2,7 +2,8 @@ import os
 
 import napari
 import numpy as np
-from tifffile import imwrite, imread
+from tifffile import imread
+from tifffile import imwrite
 
 import napari_cellseg3d.interface as ui
 from napari_cellseg3d import utils
@@ -76,7 +77,7 @@ class ConvertUtils(BasePluginFolder):
         self.lbl_image_files.setVisible(False)
 
         # self.results_filewidget.set_required(True)
-        self.label_filewidget.set_required(False)
+        self.label_filewidget.required = False
         # TODO improve not ready check for labels since optional until using folder conversion
         ###############################
         # tooltips
@@ -141,7 +142,7 @@ class ConvertUtils(BasePluginFolder):
             min_spacing=70,
         )
 
-        ui.add_to_group(
+        ui.GroupedWidget.create_single_widget_group(
             "Results",
             results_widget,
             layout,
@@ -354,7 +355,7 @@ class ConvertUtils(BasePluginFolder):
             return
 
         name = self._viewer.layers.selection.active.name
-        zoom_factor = self.anisotropy_converter.get_anisotropy_resolution_zyx()
+        zoom_factor = self.anisotropy_converter.scaling_zyx()
 
         vol = np.array(
             self._viewer.layers.selection.active.data, dtype=np.int16
@@ -374,7 +375,7 @@ class ConvertUtils(BasePluginFolder):
         if not self.check_ready_folder():
             return
 
-        zoom_factor = self.anisotropy_converter.get_anisotropy_resolution_zyx()
+        zoom_factor = self.anisotropy_converter.scaling_zyx()
         images = [
             utils.resize(imread(file), zoom_factor)
             for file in self.labels_filepaths

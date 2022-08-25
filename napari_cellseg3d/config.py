@@ -1,23 +1,24 @@
+import datetime
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 from typing import Optional
-import warnings
 
 import napari
 import numpy as np
 
-from napari_cellseg3d.models import model_SegResNet as SegResNet
-from napari_cellseg3d.models import model_SwinUNetR as SwinUNetR
-
-# from napari_cellseg3d.models import model_TRAILMAP as TRAILMAP
-from napari_cellseg3d.models import model_VNet as VNet
-from napari_cellseg3d.models import model_TRAILMAP_MS as TRAILMAP_MS
-
 from napari_cellseg3d.model_instance_seg import binary_connected
 from napari_cellseg3d.model_instance_seg import binary_watershed
 
+# from napari_cellseg3d.models import model_TRAILMAP as TRAILMAP
+from napari_cellseg3d.models import model_SegResNet as SegResNet
+from napari_cellseg3d.models import model_SwinUNetR as SwinUNetR
+from napari_cellseg3d.models import model_TRAILMAP_MS as TRAILMAP_MS
+from napari_cellseg3d.models import model_VNet as VNet
+
 # TODO DOCUMENT !!! and add default values
+# TODO add JSON load/save
 
 MODEL_LIST = {
     "VNet": VNet,
@@ -41,15 +42,24 @@ WEIGHTS_DIR = str(Path(__file__).parent.resolve() / Path("models/pretrained"))
 
 @dataclass
 class ReviewConfig:
-    images: np.array
-    labels: np.array
-    labels_raw: np.array
+    image: np.array = None
+    labels: np.array = None
+    csv_path: str = Path.home() / Path("cellseg3d_review")
+    model_name: str = ""
+    new_csv: bool = True
+    filetype: str = ".tif"
+    as_stack: bool = False
+    zoom_factor: List[int] = None
+
+
+@dataclass  # TODO create custom reader for JSON to load project
+class ReviewSession:
+    project_name: str
+    image_path: str
+    labels_path: str
     csv_path: str
-    model_name: str
-    new_csv: bool
-    filetype: str
-    as_stack: bool
-    zoom_factor: List[int]
+    aniso_zoom: List[int]
+    time_taken: datetime.timedelta
 
 
 ################

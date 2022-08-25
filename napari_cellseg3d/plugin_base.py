@@ -1,6 +1,6 @@
-import glob
-from pathlib import Path
+from functools import partial
 import warnings
+from pathlib import Path
 
 import napari
 from qtpy.QtWidgets import QSizePolicy
@@ -13,21 +13,9 @@ class BasePluginSingleImage(QTabWidget):
     """A basic plugin template for working with **single images**"""
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
-        """Creates a Base plugin with several buttons pre-defined but not added to a layout :
+        """Creates a Base plugin with several buttons pre-defined"""
 
-        * Open file prompt to select images directory
-
-        * Open file prompt to select labels directory
-
-        * A checkbox to choose whether to load a folder of images or a single 3D file
-          If toggled, shows a filetype option to select the extension
-
-        * A close button that closes the widget
-
-        * A dropdown menu with a choice of png or tif filetypes
-        """
-
-        super().__init__()
+        super().__init__(parent)
 
         self.parent = parent
         """Parent widget"""
@@ -46,57 +34,137 @@ class BasePluginSingleImage(QTabWidget):
         self.results_path = None
         """str: path to results folder"""
 
-        self.filetype = ""
-        """str: filetype, .tif or .png"""
-        self.as_folder = False
-        """bool: Whether to load a single file or a folder as a stack"""
-
         self._default_path = [self.image_path, self.label_path]
 
+        ################
+        self.layer_choice = ui.RadioButton("Layer", parent=self)
+        self.folder_choice = ui.RadioButton("Folder", parent=self)
+        ################
+        # Image widgets
         self.image_filewidget = ui.FilePathWidget(
             "Image path", self.show_dialog_images, self
         )
-        self.btn_image = self.image_filewidget.get_button()
+        self.btn_image = self.image_filewidget.button
         """Button to load image folder"""
-        self.lbl_image = self.image_filewidget.get_text_field()
+        self.lbl_image = self.image_filewidget.text_field
+
+        self.image_layer_loader = ui.LayerSelecter(
+            self._viewer,
+            name="Image :",
+            layer_type=napari.layers.Image,
+            parent=self,
+        )
+
+        ################
+        # Label widgets
 
         self.label_filewidget = ui.FilePathWidget(
-            "Label path", self.show_dialog_labels, self
+            "Label path", self.show_dialog_labels, parent=self
         )
-        self.lbl_label = self.label_filewidget.get_text_field()
-        self.btn_label = self.label_filewidget.get_button()
+        self.lbl_label = self.label_filewidget.text_field
+        self.btn_label = self.label_filewidget.button
         """Button to load label folder"""
 
-        self.filetype_choice = ui.DropdownMenu([".png", ".tif"])
+        self.label_layer_loader = ui.LayerSelecter(
+            self._viewer,
+            name="Labels :",
+            layer_type=napari.layers.Labels,
+            parent=self,
+        )
+        ################
 
-        self.load_stack_choice = ui.CheckBox(
+        self.results_filewidget = ui.FilePathWidget(
+            "Saving path", self.load_results_path, parent=self
+        )
+
+        self.filetype_choice = ui.DropdownMenu([".tif"])
+
+        self.load_as_stack_choice = ui.CheckBox(
             "Load folder as stack ?", self.show_filetype_choice
         )
-        """Checkbox to choose single file or directory loader handling"""
+        """Checkbox to choose single image or stack folder handling"""
 
-        self.load_stack_choice.setSizePolicy(
+        self.load_as_stack_choice.setSizePolicy(
             QSizePolicy.Fixed, QSizePolicy.Fixed
         )
 
         self.btn_close = ui.Button("Close", self.remove_from_viewer, self)
 
-        # self.lbl_ft = QLabel("Filetype :", self)
-        # self.lbl_ft2 = QLabel("(Folders of .png or single .tif files)", self)
+        ################
+        self.data_panel = self.build_io_panel()
+        ###############
+
+    def build_io_panel(self):
+
+        io_panel = ui.GroupedWidget("Data", parent=self.parent)
+        ui.add_widgets(
+            io_panel.layout,
+            [
+                ui.combine_blocks(self.folder_choice, self.layer_choice),
+                self.image_layer_loader.container(),
+                self.label_layer_loader.container(),
+                self.filetype_choice,
+                self.image_filewidget,
+                self.label_filewidget,
+            ],
+        )
+        io_panel.setLayout(io_panel.layout)
+
+        ##################
+        # Show when layer is selected
+        self.layer_choice.toggled.connect(
+            partial(
+                ui.toggle_visibility,
+                self.layer_choice,
+                self.image_layer_loader.container(),
+            )
+        )
+        self.layer_choice.toggled.connect(
+            partial(
+                ui.toggle_visibility,
+                self.layer_choice,
+                self.label_layer_loader.container(),
+            )
+        )
+
+        ##################
+        # Show when folder is selected
+
+        self.folder_choice.toggled.connect(
+            partial(
+                ui.toggle_visibility, self.folder_choice, self.filetype_choice
+            )
+        )
+        self.folder_choice.toggled.connect(
+            partial(
+                ui.toggle_visibility, self.folder_choice, self.image_filewidget
+            )
+        )
+        self.folder_choice.toggled.connect(
+            partial(
+                ui.toggle_visibility, self.folder_choice, self.label_filewidget
+            )
+        )
+
+        self.folder_choice.toggle()
+        self.layer_choice.toggle()
+
+        return io_panel
 
     def build(self):
         """Method to be defined by children classes"""
-        raise NotImplementedError
+        raise NotImplementedError("To be defined in child classes")
 
     def show_filetype_choice(self):
         """Method to show/hide the filetype choice when "loading as folder" is (de)selected"""
-        show = self.load_stack_choice.isChecked()
+        show = self.load_as_stack_choice.isChecked()
         if show is not None:
             self.filetype_choice.setVisible(show)
             # self.lbl_ft.setVisible(show)
 
     def show_file_dialog(self):
         """Open file dialog and process path depending on single file/folder loading behaviour"""
-        if self.load_stack_choice.isChecked():
+        if self.load_as_stack_choice.isChecked():
             folder = ui.open_folder_dialog(
                 self,
                 self._default_path,
@@ -120,7 +188,7 @@ class BasePluginSingleImage(QTabWidget):
     def show_dialog_labels(self):
         """Show file dialog and set label path"""
         f_name = self.show_file_dialog()
-        if type(f_name) is str and f_name != "":
+        if isinstance(f_name, str) and f_name != "":
             self.label_path = f_name
             self.lbl_label.setText(self.label_path)
             self.update_default()
@@ -128,9 +196,9 @@ class BasePluginSingleImage(QTabWidget):
     def load_results_path(self):
         """Show file dialog to set :py:attr:`~results_path`"""
         folder = ui.open_folder_dialog(self, self._default_path)
-        if folder != "" and type(folder) is folder and Path(folder).is_dir():
+        if folder != "" and isinstance(folder, str) and Path(folder).is_dir():
             self.results_path = folder
-            self.lbl_result_path.setText(self.results_path)
+            self.results_filewidget.text_field.setText(self.results_path)
             self.update_default()
 
     def update_default(self):
@@ -157,12 +225,14 @@ class BasePluginSingleImage(QTabWidget):
                     for w in self.docked_widgets
                     if w is not None
                 ]
+            self.docked_widgets = []
+            self.container_docked = False
             return True
         except LookupError:
             return False
 
 
-class BasePluginFolder(QTabWidget):
+class BasePluginFolder(BasePluginSingleImage):
     """A basic plugin template for working with **folders of images**"""
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
@@ -175,7 +245,7 @@ class BasePluginFolder(QTabWidget):
         * A button to set a results folder
 
         * A dropdown menu to select the file extension to be loaded from the folders"""
-        super().__init__()
+        super().__init__(parent)
         self.parent = parent
         self._viewer = viewer
         """Viewer to display the widget in"""
@@ -199,14 +269,14 @@ class BasePluginFolder(QTabWidget):
         self.image_filewidget = ui.FilePathWidget(
             "Images directory", self.load_image_dataset, self
         )
-        self.btn_image_files = self.image_filewidget.get_button()
-        self.lbl_image_files = self.image_filewidget.get_text_field()
+        self.btn_image_files = self.image_filewidget.button()
+        self.lbl_image_files = self.image_filewidget.text_field()
 
         self.label_filewidget = ui.FilePathWidget(
             "Labels directory", self.load_label_dataset, self
         )
-        self.btn_label_files = self.label_filewidget.get_button()
-        self.lbl_label_files = self.label_filewidget.get_text_field()
+        self.btn_label_files = self.label_filewidget.button()
+        self.lbl_label_files = self.label_filewidget.text_field()
 
         self.filetype_choice = ui.DropdownMenu(
             [".tif", ".tiff"], label="File format"
@@ -217,8 +287,8 @@ class BasePluginFolder(QTabWidget):
         self.results_filewidget = ui.FilePathWidget(
             "Results directory", self.load_results_path, self
         )
-        self.btn_result_path = self.results_filewidget.get_button()
-        self.lbl_result_path = self.results_filewidget.get_text_field()
+        self.btn_result_path = self.results_filewidget.button()
+        self.lbl_result_path = self.results_filewidget.text_field()
         #######################################################
 
     def make_close_button(self):
@@ -280,15 +350,14 @@ class BasePluginFolder(QTabWidget):
 
     def load_results_path(self):
         """Show file dialog to set :py:attr:`~results_path`"""
-        folder = ui.open_folder_dialog(self, self._default_folders)
+        folder = ui.open_folder_dialog(
+            self, self._default_folders
+        )
         if folder != "" and type(folder) is str and Path(folder).is_dir():
             self.results_path = folder
             # print(f"Results path : {self.results_path}")
             self.lbl_result_path.setText(self.results_path)
             self.update_default()
-
-    def build(self):
-        raise NotImplementedError("Should be defined in children classes")
 
     def update_default(self):
         """Update default path for smoother file dialogs"""
@@ -312,21 +381,3 @@ class BasePluginFolder(QTabWidget):
             if (path != [] and path is not None)
         ]
 
-    def remove_docked_widgets(self):
-        """Removes docked widgets and resets checks for status report"""
-        if len(self.docked_widgets) != 0:
-            [
-                self._viewer.window.remove_dock_widget(w)
-                for w in self.docked_widgets
-                if w is not None
-            ]
-            self.docked_widgets = []
-            self.container_docked = False
-
-    def remove_from_viewer(self):
-        """Close the widget and the docked widgets, if any"""
-        self.remove_docked_widgets()
-        if self.parent is not None:
-            self.parent.remove_from_viewer()
-            return
-        self._viewer.window.remove_dock_widget(self)

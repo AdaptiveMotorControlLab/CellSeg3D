@@ -1,5 +1,5 @@
-from napari_cellseg3d import plugin_model_training as train
 from napari_cellseg3d import config
+from napari_cellseg3d import plugin_model_training as train
 
 
 def test_check_ready(make_napari_viewer):
