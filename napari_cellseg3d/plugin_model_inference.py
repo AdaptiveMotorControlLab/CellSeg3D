@@ -17,7 +17,6 @@ from napari_cellseg3d.model_workers import InferenceResult
 from napari_cellseg3d.model_workers import InferenceWorker
 
 
-
 class Inferer(ModelFramework):
     """A plugin to run already trained models in evaluation mode to preform inference and output a label on all
     given volumes."""
@@ -669,12 +668,8 @@ class Inferer(ModelFramework):
             self.worker.started.connect(self.on_start)
             self.worker.log_signal.connect(self.log.print_and_log)
             self.worker.warn_signal.connect(self.log.warn)
-            self.worker.yielded.connect(
-                partial(self.on_yield)
-            )  #
-            self.worker.errored.connect(
-                partial(self.on_yield)
-            )
+            self.worker.yielded.connect(partial(self.on_yield))  #
+            self.worker.errored.connect(partial(self.on_yield))
             self.worker.finished.connect(self.on_finish)
 
             if self.get_device(show=False) == "cuda":
@@ -795,9 +790,7 @@ class Inferer(ModelFramework):
             if result.instance_labels is not None:
 
                 labels = result.instance_labels
-                method = (
-                    self.worker_config.post_process_config.instance.method
-                )
+                method = self.worker_config.post_process_config.instance.method
                 number_cells = np.amax(labels)
 
                 name = f"({number_cells} objects)_{method}_instance_labels_{image_id}"

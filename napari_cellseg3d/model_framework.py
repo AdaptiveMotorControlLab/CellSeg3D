@@ -151,7 +151,9 @@ class ModelFramework(BasePluginFolder):
         """
 
         log = self.log.toPlainText()
-        path = str(Path(path) / Path(f"Log_report_{utils.get_date_time()}.txt"))
+        path = str(
+            Path(path) / Path(f"Log_report_{utils.get_date_time()}.txt")
+        )
 
         if len(log) != 0:
             with open(

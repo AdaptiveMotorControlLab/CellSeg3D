@@ -1316,7 +1316,10 @@ class TrainingWorker(GeneratorWorker):
 
                 checkpoint_output = []
 
-                if (epoch + 1) % self.config.validation_interval == 0:
+                if (
+                    (epoch + 1) % self.config.validation_interval == 0
+                    or epoch + 1 == self.config.max_epochs
+                ):
                     model.eval()
                     with torch.no_grad():
                         for val_data in val_loader:
@@ -1351,7 +1354,15 @@ class TrainingWorker(GeneratorWorker):
                             # print(len(val_labels))
 
                             dice_metric(y_pred=val_outputs, y=val_labels)
-                            checkpoint_output.append(val_outputs.detach().cpu())
+                            checkpoint_output.append(
+                                [res.detach().cpu() for res in val_outputs]
+                            )
+
+                        checkpoint_output = [
+                            item.numpy()
+                            for batch in checkpoint_output
+                            for item in batch
+                        ]
 
                         metric = dice_metric.aggregate().detach().item()
                         dice_metric.reset()
@@ -1364,7 +1375,7 @@ class TrainingWorker(GeneratorWorker):
                             loss_values=epoch_loss_values,
                             validation_metric=val_metric_values,
                             weights=model.state_dict(),
-                            images=checkpoint_output
+                            images=checkpoint_output,
                         )
 
                         yield train_report

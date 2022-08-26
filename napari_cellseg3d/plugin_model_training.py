@@ -169,6 +169,8 @@ class Trainer(ModelFramework):
         """Plot for dice metric"""
         self.plot_dock = None
         """Docked widget with plots"""
+        self.result_layers = []
+        """Layers to display checkpoint"""
 
         self.df = None
         self.loss_values = []
@@ -730,12 +732,13 @@ class Trainer(ModelFramework):
 
         self._hide_unused()
 
-        default_results_path = config.TrainingWorkerConfig().results_path_folder
+        default_results_path = (
+            config.TrainingWorkerConfig().results_path_folder
+        )
         self.results_filewidget.text_field.setText(default_results_path)
         self.results_filewidget.check_ready()
         self.check_results_path(default_results_path)
         self.results_path = default_results_path
-
 
     def show_dialog_lab(self):
         """Shows the  dialog to load label files in a path, loads them (see :doc:model_framework) and changes the widget
@@ -807,7 +810,9 @@ class Trainer(ModelFramework):
 
             self.weights_config.path = self.weights_config.path
             self.weights_config.custom = self.custom_weights_choice.isChecked()
-            self.weights_config.use_pretrained = not self.use_transfer_choice.isChecked()
+            self.weights_config.use_pretrained = (
+                not self.use_transfer_choice.isChecked()
+            )
 
             deterministic_config = config.DeterministicConfig(
                 enabled=self.use_deterministic_choice.isChecked(),
@@ -865,9 +870,7 @@ class Trainer(ModelFramework):
 
             self.worker.started.connect(self.on_start)
 
-            self.worker.yielded.connect(
-                partial(self.on_yield)
-            )
+            self.worker.yielded.connect(partial(self.on_yield))
             self.worker.finished.connect(self.on_finish)
 
             self.worker.errored.connect(self.on_error)
@@ -904,12 +907,12 @@ class Trainer(ModelFramework):
         )
         self.log.print_and_log(f"Saving last loss plot")
 
+        plot_name = self.worker_config.results_path_folder / Path(
+            f"final_metric_plots_{utils.get_time_filepath()}.png"
+        )
         if self.canvas is not None:
             self.canvas.figure.savefig(
-                (
-                    self.worker_config.results_path_folder
-                    + f"/final_metric_plots_{utils.get_time_filepath()}.png"
-                ),
+                plot_name,
                 format="png",
             )
 
@@ -925,7 +928,7 @@ class Trainer(ModelFramework):
         [btn.setVisible(True) for btn in self.close_buttons]
 
         # del self.worker
-        self.worker = None
+
         # self.empty_cuda_cache()
 
         if self.config.save_as_zip:
@@ -935,6 +938,7 @@ class Trainer(ModelFramework):
                 self.worker_config.results_path_folder,
             )
 
+        self.worker = None
         # if zipfile.is_zipfile(self.results_path_folder+".zip"):
 
         # if not shutil.rmtree.avoids_symlink_attacks:
@@ -963,21 +967,32 @@ class Trainer(ModelFramework):
 
         if report.show_plot:
 
-            layer_name = "Training_checkpoint_"
-            rge = range(len(report.images))
-            if report.epoch == self.worker_config.validation_interval:
-                [self._viewer.add_image(report.images[i], name=layer_name + str(i)) for i in rge]
-            else:
-                for i in rge:
-                    self._viewer.layers[f"{layer_name + str(i)}"] = report.image[i]
+            try:
+                layer_name = "Training_checkpoint_"
+                rge = range(len(report.images))
+
+                self.log.print_and_log(len(report.images))
+
+                if report.epoch + 1 == self.worker_config.validation_interval:
+                    for i in rge:
+                        layer = self._viewer.add_image(
+                            report.images[i],
+                            name=layer_name + str(i),
+                            colormap="twilight",
+                        )
+                        self.result_layers.append(layer)
+                else:
+                    for i in rge:
+                        self.result_layers[i].data = report.images[i]
+                        self.result_layers[i].refresh()
+            except Exception as e:
+                print(e)
 
             self.progress.setValue(
                 100 * (report.epoch + 1) // self.worker_config.max_epochs
             )
 
-            self.update_loss_plot(
-                report.loss_values, report.validation_metric
-            )
+            self.update_loss_plot(report.loss_values, report.validation_metric)
             self.loss_values = report.loss_values
             self.validation_values = report.validation_metric
 
@@ -987,7 +1002,7 @@ class Trainer(ModelFramework):
             )
             torch.save(
                 report.weights,
-                Path(self.results_path_folder)
+                Path(self.worker_config.results_path_folder)
                 / Path(
                     f"latest_weights_aborted_training_{utils.get_time_filepath()}.pth",
                 ),
@@ -1077,14 +1092,16 @@ class Trainer(ModelFramework):
             )
             self.canvas.draw_idle()
 
-            plot_path = self.worker_config.results_path_folder + "/Loss_plots"
+            plot_path = self.worker_config.results_path_folder / Path(
+                "Loss_plots"
+            )
             Path(plot_path).mkdir(parents=True, exist_ok=True)
 
             if self.canvas is not None:
                 self.canvas.figure.savefig(
-                    (
+                    str(
                         plot_path
-                        + f"/checkpoint_metric_plots_{utils.get_date_time()}.png"
+                        / f"checkpoint_metric_plots_{utils.get_date_time()}.png"
                     ),
                     format="png",
                 )

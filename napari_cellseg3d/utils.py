@@ -374,9 +374,6 @@ def parse_default_path(possible_paths):
 
     """
     default_paths = []
-    # print("paths :")
-    # print(default_paths)
-    # print(default_path)
     if any(path is not None for path in possible_paths):
         default_paths = [
             p for p in possible_paths if p is not None and len(p) > 2
@@ -387,7 +384,7 @@ def parse_default_path(possible_paths):
     print(default_paths)
     if len(default_paths) == 0:
         return str(Path.home())
-    default_path = max(default_paths)
+    default_path = max(default_paths, key=len)
     return str(default_path)
 
 
