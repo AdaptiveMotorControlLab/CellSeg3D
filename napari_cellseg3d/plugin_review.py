@@ -1,11 +1,7 @@
-from functools import partial
 import warnings
 from pathlib import Path
 
 import napari
-import numpy as np
-import pims
-import skimage.io as io
 
 # Qt
 from qtpy.QtWidgets import QLineEdit
@@ -158,6 +154,8 @@ class Reviewer(BasePluginSingleImage):
         self.setMinimumSize(180, 100)
         # self.show()
         # self._viewer.window.add_dock_widget(self, name="Reviewer", area="right")
+        self.results_filewidget.check_ready()
+        self.results_path = self.results_filewidget.text_field.text()
 
     def check_image_data(self):
         cfg = self.config
