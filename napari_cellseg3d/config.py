@@ -44,7 +44,7 @@ WEIGHTS_DIR = str(Path(__file__).parent.resolve() / Path("models/pretrained"))
 class ReviewConfig:
     image: np.array = None
     labels: np.array = None
-    csv_path: str = Path.home() / Path("cellseg3d_review")
+    csv_path: str = Path.home() / Path("cellseg3d/review")
     model_name: str = ""
     new_csv: bool = True
     filetype: str = ".tif"
@@ -71,7 +71,7 @@ class ModelInfo:
     """Dataclass recording model info :
     - name (str): name of the model"""
 
-    name: str
+    name: str = next(iter(MODEL_LIST))
     model_input_size: Optional[List[int]] = None
 
     def get_model(self):
@@ -155,14 +155,14 @@ class InfererConfig:
 class InferenceWorkerConfig:
     """Class to record configuration for Inference job"""
 
-    device: str
-    model_info: ModelInfo
-    weights_config: WeightsInfo
-    results_path: str
-    filetype: str
-    keep_on_cpu: bool
-    compute_stats: bool
-    post_process_config: PostProcessConfig
+    device: str = "cpu"
+    model_info: ModelInfo = ModelInfo()
+    weights_config: WeightsInfo = WeightsInfo()
+    results_path: str = str(Path.home() / Path("cellseg3d/inference"))
+    filetype: str = ".tif"
+    keep_on_cpu: bool = False
+    compute_stats: bool = False
+    post_process_config: PostProcessConfig = PostProcessConfig()
     sliding_window_config: SlidingWindowConfig = SlidingWindowConfig()
 
     images_filepaths: str = None
@@ -202,7 +202,7 @@ class TrainingWorkerConfig:
     learning_rate: np.float64 = 1e-3
     validation_interval: int = 2
     batch_size: int = 1
-    results_path_folder: str = None
+    results_path_folder: str = str(Path.home() / Path("cellseg3d/training"))
     sampling: bool = False
     num_samples: int = 2
     sample_size: List[int] = None

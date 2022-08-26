@@ -52,6 +52,7 @@ dark_red = "#72071d"  # crimson red
 default_cyan = "#8dd3c7"  # turquoise cyan (default matplotlib line color under dark background context)
 napari_grey = "#262930"  # napari background color (grey)
 napari_param_grey = "#414851"  # napari parameters menu color (lighter gray)
+napari_param_darkgrey = "#202228"  # napari default LineEdit color
 ###############
 
 
@@ -201,17 +202,25 @@ class Slider(QSlider):
         self.text_label = None
         self.container = ContainerWidget(
             # parent=self.parent
-        )  # FIXME add build method
+        )
 
         self._divide_factor = divide_factor
-        self._value_label = QLineEdit(
-            self.value_text, parent=self
-        )  # TODO refacto to LineEdit for user input
+        self._value_label = QLineEdit(self.value_text, parent=self)
+
+        if self._divide_factor == 1:
+            self._value_label.setFixedWidth(20)
+        else:
+            self._value_label.setFixedWidth(30)
+        self._value_label.setAlignment(Qt.AlignCenter)
+        self._value_label.setSizePolicy(
+            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed
+        )
+
         self._value_label.setStyleSheet(
             f"background-color: {napari_param_grey};"
-            f"border-radius: 10px;"
-            "min - height: 20px;"
-            "min - width: 20px;"
+            f"border-radius: 5px;"
+            "min - height: 12px;"
+            "min - width: 12px;"
         )
 
         if text_label is not None:
@@ -225,7 +234,7 @@ class Slider(QSlider):
             default = upper
 
         self.valueChanged.connect(self._update_value_label)
-        self._value_label.textChangedc.connect(self._update_slider)
+        self._value_label.textChanged.connect(self._update_slider)
 
         self.slider_value = default
 
@@ -239,13 +248,13 @@ class Slider(QSlider):
                 self.container.layout,
                 [
                     self.text_label,
-                    combine_blocks(self._value_label, self.slider, b=0),
+                    combine_blocks(self._value_label, self, b=0),
                 ],
             )
         else:
             add_widgets(
                 self.container.layout,
-                [combine_blocks(self._value_label, self.slider, b=0)],
+                [combine_blocks(self._value_label, self, b=0)],
             )
 
     def _warn_outside_bounds(self, default):
@@ -255,7 +264,11 @@ class Slider(QSlider):
 
     def _update_slider(self):
         """Update slider when value is changed"""
+        if self._value_label.text() == "":
+            return
+
         value = float(self._value_label.text()) * self._divide_factor
+
         if value < self.minimum():
             self.slider_value = self.minimum()
             return
@@ -267,7 +280,7 @@ class Slider(QSlider):
 
     def _update_value_label(self):
         """Update label, to connect to when slider is dragged"""
-        self._value_label.setText(str(self.value_text()))
+        self._value_label.setText(str(self.value_text))
 
     @property
     def tooltips(self):
@@ -297,7 +310,7 @@ class Slider(QSlider):
     @property
     def value_text(self):
         """Get value of the slide bar as string"""
-        return str(self.slider_value())
+        return str(self.slider_value)
 
     @slider_value.setter
     def slider_value(self, value: int):
@@ -545,6 +558,7 @@ class FilePathWidget(QWidget):  # TODO include load as folder
         self._required = required
 
         self.build()
+        self.check_ready()
 
     def build(self):
         """Builds the layout of the widget"""
@@ -558,7 +572,7 @@ class FilePathWidget(QWidget):  # TODO include load as folder
 
     @text_field.setter
     def text_field(self, text: str):
-        """Sets the initial description in the text field"""
+        """Sets the initial description in the text field, makes it the new default path"""
         self._initial_desc = text
         self._text_field.setText(text)
 
@@ -574,7 +588,7 @@ class FilePathWidget(QWidget):  # TODO include load as folder
             self.text_field.setToolTip("Mandatory field !")
             return False
         else:
-            self.update_field_color("black")
+            self.update_field_color(f"{napari_param_darkgrey}")
             return True
 
     @property
@@ -587,7 +601,10 @@ class FilePathWidget(QWidget):  # TODO include load as folder
         if is_required:
             self.text_field.textChanged.connect(self.check_ready)
         else:
-            self.text_field.textChanged.disconnect(self.check_ready)
+            try:
+                self.text_field.textChanged.disconnect(self.check_ready)
+            except TypeError:
+                return
         self.check_ready()
         self._required = is_required
 

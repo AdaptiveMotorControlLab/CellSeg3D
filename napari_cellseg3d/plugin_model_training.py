@@ -1,3 +1,4 @@
+from functools import partial
 import shutil
 import warnings
 from pathlib import Path
@@ -184,7 +185,7 @@ class Trainer(ModelFramework):
         self.validation_percent_choice = ui.Slider(
             lower=10,
             upper=90,
-            default=default.validation_percent,
+            default=default.validation_percent * 100,
             step=5,
             parent=self,
         )
@@ -299,23 +300,19 @@ class Trainer(ModelFramework):
             self.zip_choice.setToolTip(
                 "Checking this will save a copy of the results as a zip folder"
             )
-            self.validation_percent_choice.tooltips(
-                "Choose the proportion of images to retain for training.\nThe remaining images will be used for validation"
-            )
-            self.epoch_choice.tooltips(
-                "The number of epochs to train for.\nThe more you train, the better the model will fit the training data"
-            )
+            self.validation_percent_choice.tooltips = "Choose the proportion of images to retain for training.\nThe remaining images will be used for validation"
+            self.epoch_choice.tooltips = "The number of epochs to train for.\nThe more you train, the better the model will fit the training data"
             self.loss_choice.setToolTip(
                 "The loss function to use for training.\nSee the list in the inference guide for more info"
             )
-            self.sample_choice_slider.tooltips(
+            self.sample_choice_slider.tooltips = (
                 "The number of samples to extract per image"
             )
-            self.batch_choice.tooltips(
+            self.batch_choice.tooltips = (
                 "The batch size to use for training.\n A larger value will feed more images per iteration to the model,\n"
                 " which is faster and possibly improves performance, but uses more memory"
             )
-            self.val_interval_choice.tooltips(
+            self.val_interval_choice.tooltips = (
                 "The number of epochs to perform before validating data.\n "
                 "The lower the value, the more often the score of the model will be computed and the more often the weights will be saved."
             )
@@ -347,6 +344,18 @@ class Trainer(ModelFramework):
         ############################
         set_tooltips()
         self.build()
+
+    def _hide_unused(self):
+
+        [
+            self._hide_io_element(w)
+            for w in [
+                self.layer_choice,
+                self.folder_choice,
+                self.label_layer_loader,
+                self.image_layer_loader,
+            ]
+        ]
 
     def update_validation_choice(self):
         validation = self.val_interval_choice
@@ -453,30 +462,33 @@ class Trainer(ModelFramework):
             data_layout,
             [
                 ui.combine_blocks(
-                    self.filetype_choice, self.lbl_filetype
+                    self.filetype_choice, self.filetype_choice.label
                 ),  # file extension
                 ui.combine_blocks(
-                    self.btn_image_files, self.lbl_image_files
+                    self.image_filewidget.button,
+                    self.image_filewidget.text_field,
                 ),  # volumes
                 ui.combine_blocks(
-                    self.btn_label_files, self.lbl_label_files
+                    self.labels_filewidget.button,
+                    self.labels_filewidget.text_field,
                 ),  # labels
                 ui.combine_blocks(
-                    self.btn_result_path, self.lbl_result_path
+                    self.results_filewidget.button,
+                    self.results_filewidget.text_field,
                 ),  # results folder
-                # ui.combine_blocks(self.model_choice, self.lbl_model_choice),  # model choice  # TODO : add custom model choice
+                # ui.combine_blocks(self.model_choice, self.model_choice.label),  # model choice  # TODO : add custom model choice
                 self.zip_choice,  # save as zip
             ],
         )
 
         if self.data_path is not None:
-            self.lbl_image_files.setText(self.data_path)
+            self.image_filewidget.text_field.setText(self.data_path)
 
         if self.label_path is not None:
-            self.lbl_label_files.setText(self.label_path)
+            self.labels_filewidget.text_field.setText(self.label_path)
 
         if self.results_path is not None:
-            self.lbl_result_path.setText(self.results_path)
+            self.results_filewidget.text_field.setText(self.results_path)
 
         data_group.setLayout(data_layout)
         data_tab.layout.addWidget(data_group, alignment=ui.LEFT_AL)
@@ -562,7 +574,7 @@ class Trainer(ModelFramework):
             horizontal=False,
         )
         ui.GroupedWidget.create_single_widget_group(
-            "Sampling", sampling, augment_tab_l, B=0, T=11
+            "Sampling", sampling, augment_tab_l, b=0, t=11
         )
         #######################
         #######################
@@ -609,7 +621,7 @@ class Trainer(ModelFramework):
             self.model_choice,
             train_tab.layout,
         )  # model choice
-        self.lbl_model_choice.setVisible(False)
+        self.model_choice.label.setVisible(False)
 
         ui.add_blank(train_tab, train_tab.layout)
         ui.GroupedWidget.create_single_widget_group(
@@ -716,23 +728,23 @@ class Trainer(ModelFramework):
         self.addTab(train_tab, "Training")
         self.setMinimumSize(220, 100)
 
+        self._hide_unused()
+
+        default_results_path = config.TrainingWorkerConfig().results_path_folder
+        self.results_filewidget.text_field.setText(default_results_path)
+        self.results_filewidget.check_ready()
+        self.check_results_path(default_results_path)
+        self.results_path = default_results_path
+
+
     def show_dialog_lab(self):
         """Shows the  dialog to load label files in a path, loads them (see :doc:model_framework) and changes the widget
-        label :py:attr:`self.lbl_label` accordingly"""
+        label :py:attr:`self.label_filewidget.text_field` accordingly"""
         folder = ui.open_folder_dialog(self, self._default_path)
 
         if folder:
             self.label_path = folder
-            self.lbl_label.setText(self.label_path)
-
-    def show_dialog_dat(self):
-        """Shows the  dialog to load images files in a path, loads them (see :doc:model_framework) and changes the
-        widget label :py:attr:`self.lbl_dat` accordingly"""
-        folder = ui.open_folder_dialog(self, self._default_path)
-
-        if folder:
-            self.data_path = folder
-            self.lbl_dat.setText(self.data_path)
+            self.labels_filewidget.text_field.setText(self.label_path)
 
     def send_log(self, text):
         self.log.print_and_log(text)
@@ -793,13 +805,9 @@ class Trainer(ModelFramework):
                 name=self.model_choice.currentText()
             )
 
-            self.weights_config.path = (self.weights_config.path,)
-            self.weights_config.custom = (
-                self.custom_weights_choice.isChecked(),
-            )
-            self.weights_config.use_pretrained = (
-                self.use_transfer_choice.isChecked(),
-            )
+            self.weights_config.path = self.weights_config.path
+            self.weights_config.custom = self.custom_weights_choice.isChecked()
+            self.weights_config.use_pretrained = not self.use_transfer_choice.isChecked()
 
             deterministic_config = config.DeterministicConfig(
                 enabled=self.use_deterministic_choice.isChecked(),
@@ -818,7 +826,7 @@ class Trainer(ModelFramework):
                 parents=True, exist_ok=False
             )  # avoid overwrite where possible
 
-            patch_size = [w.slider_value() for w in self.patch_size_widgets]
+            patch_size = [w.value() for w in self.patch_size_widgets]
 
             self.worker_config = config.TrainingWorkerConfig(
                 device=self.get_device(),
@@ -858,7 +866,7 @@ class Trainer(ModelFramework):
             self.worker.started.connect(self.on_start)
 
             self.worker.yielded.connect(
-                lambda data: self.on_yield(data, widget=self)
+                partial(self.on_yield)
             )
             self.worker.finished.connect(self.on_finish)
 
@@ -945,8 +953,7 @@ class Trainer(ModelFramework):
         # self.empty_cuda_cache()
         # self.clean_cache()
 
-    @staticmethod
-    def on_yield(report: TrainingReport, widget):
+    def on_yield(self, report: TrainingReport):
         # print(
         #     f"\nCatching results : for epoch {data['epoch']},
         #     loss is {data['losses']} and validation is {data['val_metrics']}"
@@ -955,29 +962,38 @@ class Trainer(ModelFramework):
             return
 
         if report.show_plot:
-            widget.progress.setValue(
-                100 * (report.epoch + 1) // widget.worker_config.max_epochs
+
+            layer_name = "Training_checkpoint_"
+            rge = range(len(report.images))
+            if report.epoch == self.worker_config.validation_interval:
+                [self._viewer.add_image(report.images[i], name=layer_name + str(i)) for i in rge]
+            else:
+                for i in rge:
+                    self._viewer.layers[f"{layer_name + str(i)}"] = report.image[i]
+
+            self.progress.setValue(
+                100 * (report.epoch + 1) // self.worker_config.max_epochs
             )
 
-            widget.update_loss_plot(
+            self.update_loss_plot(
                 report.loss_values, report.validation_metric
             )
-            widget.loss_values = report.loss_values
-            widget.validation_values = report.validation_metric
+            self.loss_values = report.loss_values
+            self.validation_values = report.validation_metric
 
-        if widget.stop_requested:
-            widget.log.print_and_log(
+        if self.stop_requested:
+            self.log.print_and_log(
                 "Saving weights from aborted training in results folder"
             )
             torch.save(
                 report.weights,
-                Path(widget.results_path_folder)
+                Path(self.results_path_folder)
                 / Path(
                     f"latest_weights_aborted_training_{utils.get_time_filepath()}.pth",
                 ),
             )
-            widget.log.print_and_log("Saving complete")
-            widget.stop_requested = False
+            self.log.print_and_log("Saving complete")
+            self.stop_requested = False
 
     # def clean_cache(self):
     #     """Attempts to clear memory after training"""

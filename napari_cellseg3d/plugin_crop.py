@@ -45,8 +45,8 @@ class Cropping(BasePluginSingleImage):
         self.crop_label_choice = ui.CheckBox(
             "Crop labels simultaneously", self.toggle_label_path
         )
-        self.lbl_label.setVisible(False)
-        self.btn_label.setVisible(False)
+        self.labels_filewidget.text_field.setVisible(False)
+        self.labels_filewidget.button.setVisible(False)
 
         self.box_widgets = ui.IntIncrementCounter.make_n(
             3, 1, 1000, DEFAULT_CROP_SIZE
@@ -83,11 +83,11 @@ class Cropping(BasePluginSingleImage):
 
     def toggle_label_path(self):
         if self.crop_label_choice.isChecked():
-            self.lbl_label.setVisible(True)
-            self.btn_label.setVisible(True)
+            self.labels_filewidget.text_field.setVisible(True)
+            self.labels_filewidget.button.setVisible(True)
         else:
-            self.lbl_label.setVisible(False)
-            self.btn_label.setVisible(False)
+            self.labels_filewidget.text_field.setVisible(False)
+            self.labels_filewidget.button.setVisible(False)
 
     def build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
@@ -100,9 +100,15 @@ class Cropping(BasePluginSingleImage):
         ui.add_widgets(
             data_group_l,
             [
-                ui.combine_blocks(self.btn_image, self.lbl_image),
+                ui.combine_blocks(
+                    self.image_filewidget.button,
+                    self.image_filewidget.text_field,
+                ),
                 self.crop_label_choice,  # whether to crop labels or no
-                ui.combine_blocks(self.btn_label, self.lbl_label),
+                ui.combine_blocks(
+                    self.labels_filewidget.button,
+                    self.labels_filewidget.text_field,
+                ),
                 self.load_as_stack_choice,
                 self.filetype_choice,
                 self.aniso_widgets,
@@ -136,7 +142,7 @@ class Cropping(BasePluginSingleImage):
             layout,
             [
                 self.btn_start,
-                self.btn_close,
+                self.make_close_button(),
             ],
         )
 

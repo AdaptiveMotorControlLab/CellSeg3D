@@ -1,4 +1,4 @@
-import importlib.util
+from functools import partial
 import platform
 from dataclasses import dataclass
 from pathlib import Path
@@ -97,6 +97,7 @@ class WeightsDownloader:
         def show_progress(count, block_size, total_size):
             pbar.update(block_size)
 
+        print("*" * 20)
         pretrained_folder_path = WEIGHTS_DIR
         json_path = pretrained_folder_path / Path("pretrained_model_urls.json")
 
@@ -372,8 +373,8 @@ class InferenceWorker(GeneratorWorker):
         return inference_loader
 
     def load_layer(self):
-
-        data = np.squeeze(self.config.layer.data)
+        self.log("Loading layer\n")
+        data = np.squeeze(self.config.layer)
 
         volume = np.array(data, dtype=np.int16)
 
@@ -387,7 +388,7 @@ class InferenceWorker(GeneratorWorker):
         volume = np.swapaxes(
             volume, 0, 2
         )  # for anisotropy to be monai-like, i.e. zyx # FIXME rotation not always correct
-        self.log("Loading layer\n")
+
         dims_check = volume.shape
         # self.log("\nChecking dimensions...")
         pad = utils.get_padding_dim(dims_check)
@@ -421,7 +422,6 @@ class InferenceWorker(GeneratorWorker):
                 log_stats=True,
             )
 
-        self.log("\nLoading dataset...")
         input_image = load_transforms(volume)
         self.log("Done")
         return input_image
@@ -440,6 +440,11 @@ class InferenceWorker(GeneratorWorker):
         model_output = lambda inputs: post_process_transforms(
             self.config.model_info.get_model().get_output(model, inputs)
         )
+
+        def model_output(inputs):
+            return post_process_transforms(
+                self.config.model_info.get_model().get_output(model, inputs)
+            )
 
         if self.config.keep_on_cpu:
             dataset_device = "cpu"
@@ -461,7 +466,7 @@ class InferenceWorker(GeneratorWorker):
         outputs = sliding_window_inference(
             inputs,
             roi_size=window_size,
-            sw_batch_size=1,
+            sw_batch_size=1,  # TODO add param
             predictor=model_output,
             sw_device=self.config.device,
             device=dataset_device,
@@ -857,6 +862,7 @@ class TrainingReport:
     loss_values: List = None
     validation_metric: List = None
     weights: np.array = None
+    images: List[np.array] = None
 
 
 class TrainingWorker(GeneratorWorker):
@@ -978,7 +984,7 @@ class TrainingWorker(GeneratorWorker):
         if self.config.do_augmentation:
             self.log("Data augmentation is enabled")
 
-        if self.config.weights_info.path is not None:
+        if not self.config.weights_info.use_pretrained:
             self.log(f"Using weights from : {self.config.weights_info.path}")
             if self._weight_error:
                 self.log(
@@ -1308,6 +1314,8 @@ class TrainingWorker(GeneratorWorker):
                 epoch_loss_values.append(epoch_loss)
                 self.log(f"Epoch: {epoch + 1}, Average loss: {epoch_loss:.4f}")
 
+                checkpoint_output = []
+
                 if (epoch + 1) % self.config.validation_interval == 0:
                     model.eval()
                     with torch.no_grad():
@@ -1343,6 +1351,7 @@ class TrainingWorker(GeneratorWorker):
                             # print(len(val_labels))
 
                             dice_metric(y_pred=val_outputs, y=val_labels)
+                            checkpoint_output.append(val_outputs.detach().cpu())
 
                         metric = dice_metric.aggregate().detach().item()
                         dice_metric.reset()
@@ -1355,6 +1364,7 @@ class TrainingWorker(GeneratorWorker):
                             loss_values=epoch_loss_values,
                             validation_metric=val_metric_values,
                             weights=model.state_dict(),
+                            images=checkpoint_output
                         )
 
                         yield train_report

@@ -25,7 +25,7 @@ class Reviewer(BasePluginSingleImage):
     """A plugin for selecting volumes and labels file and launching the review process.
     Inherits from : :doc:`plugin_base`"""
 
-    def __init__(self, viewer: "napari.viewer.Viewer"):
+    def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
         """Creates a Reviewer plugin with several buttons :
 
         * Open file prompt to select volumes directory
@@ -39,7 +39,13 @@ class Reviewer(BasePluginSingleImage):
         * A button to launch the review process (see :doc:`launch_review`)
         """
 
-        super().__init__(viewer)
+        super().__init__(
+            viewer,
+            parent,
+            loads_images=True,
+            loads_labels=True,
+            has_results=True,
+        )
 
         # self._viewer = viewer # should not be needed
         self.config = config.ReviewConfig()
@@ -99,7 +105,7 @@ class Reviewer(BasePluginSingleImage):
         # ui.add_blank(self, layout)
         ###########################
         self.filetype_choice.setVisible(False)
-        layout.addWidget(self.data_panel)
+        layout.addWidget(self.build_io_panel())
         ###########################
         ui.add_blank(self, layout)
         ###########################
@@ -128,6 +134,9 @@ class Reviewer(BasePluginSingleImage):
             ],
         )
 
+        # self._hide_io_element(self.results_filewidget, self.folder_choice)
+        # self._show_io_element(self.results_filewidget)
+
         self.results_filewidget.text_field.setText(
             str(Path.home() / Path("cellseg3d_review"))
         )
@@ -138,7 +147,7 @@ class Reviewer(BasePluginSingleImage):
         ui.add_blank(self, layout)
         ###########################
 
-        ui.add_widgets(layout, [self.btn_start, self.btn_close])
+        ui.add_widgets(layout, [self.btn_start, self.make_close_button()])
 
         ui.ScrollArea.make_scrollable(
             contained_layout=layout, parent=tab, min_wh=[190, 300]
@@ -172,10 +181,11 @@ class Reviewer(BasePluginSingleImage):
                 self.image_filewidget.text_field.text()
             )
             self.config.labels = utils.load_images(
-                self.label_filewidget.text_field.text()
+                self.labels_filewidget.text_field.text()
             )
 
         self.check_image_data()
+        self.check_results_path(self.results_filewidget.text_field.text())
 
         self.config.csv_path = self.results_filewidget.text_field.text()
         self.config.model_name = self.csv_textbox.text()

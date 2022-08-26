@@ -43,7 +43,7 @@ class MetricsUtils(BasePluginFolder):
 
         # set new descriptions for Filewidgets
         self.image_filewidget.description = "Ground truth"
-        self.label_filewidget.description = "Prediction"
+        self.labels_filewidget.description = "Prediction"
 
         self.btn_compute_dice = ui.Button("Compute Dice", self.compute_dice)
 
@@ -56,8 +56,8 @@ class MetricsUtils(BasePluginFolder):
             lower=0.1, upper=1, default=DEFAULT_THRESHOLD, step=0.1
         )
 
-        self.btn_result_path.setVisible(False)
-        self.lbl_result_path.setVisible(False)
+        self.results_filewidget.button.setVisible(False)
+        self.results_filewidget.text_field.setVisible(False)
 
         self.rotate_choice.setToolTip(
             "This will rotate and flip your images to find the orientation with the best Dice coefficient.\n"
@@ -73,7 +73,7 @@ class MetricsUtils(BasePluginFolder):
     def build(self):
         """Builds the layout of the widget."""
 
-        self.lbl_filetype.setVisible(False)
+        self.filetype_choice.label.setVisible(False)
 
         w = ui.ContainerWidget()
         self.layout = w.layout
@@ -84,13 +84,13 @@ class MetricsUtils(BasePluginFolder):
             metrics_group_l,
             [
                 ui.combine_blocks(
-                    right_or_below=self.btn_image_files,
-                    left_or_above=self.lbl_image_files,
+                    right_or_below=self.image_filewidget.button,
+                    left_or_above=self.image_filewidget.text_field,
                     min_spacing=70,
                 ),  # images -> ground truth
                 ui.combine_blocks(
-                    right_or_below=self.btn_label_files,
-                    left_or_above=self.lbl_label_files,
+                    right_or_below=self.labels_filewidget.button,
+                    left_or_above=self.labels_filewidget.text_field,
                     min_spacing=70,
                 ),  # labels -> prediction
             ],

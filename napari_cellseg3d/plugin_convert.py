@@ -73,11 +73,11 @@ class ConvertUtils(BasePluginFolder):
         self.lbl_error = ui.make_label("", self)
         self.lbl_error.setVisible(False)
 
-        self.btn_image_files.setVisible(False)
-        self.lbl_image_files.setVisible(False)
+        self.image_filewidget.button.setVisible(False)
+        self.image_filewidget.text_field.setVisible(False)
 
         # self.results_filewidget.set_required(True)
-        self.label_filewidget.required = False
+        self.labels_filewidget.required = False
         # TODO improve not ready check for labels since optional until using folder conversion
         ###############################
         # tooltips
@@ -137,8 +137,8 @@ class ConvertUtils(BasePluginFolder):
         layout = w.layout
 
         results_widget = ui.combine_blocks(
-            right_or_below=self.btn_result_path,
-            left_or_above=self.lbl_result_path,
+            right_or_below=self.results_filewidget.button,
+            left_or_above=self.results_filewidget.text_field,
             min_spacing=70,
         )
 
@@ -215,8 +215,8 @@ class ConvertUtils(BasePluginFolder):
 
         folder_group_l.addWidget(
             ui.combine_blocks(
-                right_or_below=self.btn_label_files,
-                left_or_above=self.lbl_label_files,
+                right_or_below=self.labels_filewidget.button,
+                left_or_above=self.labels_filewidget.text_field,
                 min_spacing=70,
             )
         )

@@ -21,7 +21,14 @@ warnings.formatwarning = utils.format_Warning
 class ModelFramework(BasePluginFolder):
     """A framework with buttons to use for loading images, labels, models, etc. for both inference and training"""
 
-    def __init__(self, viewer: "napari.viewer.Viewer"):
+    def __init__(
+        self,
+        viewer: "napari.viewer.Viewer",
+        parent=None,
+        loads_images=True,
+        loads_labels=True,
+        has_results=True,
+    ):
         """Creates a plugin framework with the following elements :
 
         * A button to choose an image folder containing the images of a dataset (e.g. dataset/images)
@@ -37,7 +44,9 @@ class ModelFramework(BasePluginFolder):
         Args:
             viewer (napari.viewer.Viewer): viewer to load the widget in
         """
-        super().__init__(viewer)
+        super().__init__(
+            viewer, parent, loads_images, loads_labels, has_results
+        )
 
         self._viewer = viewer
         """Viewer to display the widget in"""
@@ -66,22 +75,18 @@ class ModelFramework(BasePluginFolder):
         #     "Model path", self.load_model_path, self
         # )
 
-        # self.btn_model_path = self.model_filewidget.get_button()
-        # self.lbl_model_path = self.model_filewidget.get_text_field()
-
         self.model_choice = ui.DropdownMenu(
             sorted(self.available_models.keys()), label="Model name"
         )
-        self.lbl_model_choice = self.model_choice.label
 
         self.weights_filewidget = ui.FilePathWidget(
             "Weights path", self.load_weights_path, self
         )
-        self.btn_weights_path = self.weights_filewidget.button()
-        self.lbl_weights_path = self.weights_filewidget.text_field()
 
         self.weights_path_container = ui.combine_blocks(
-            self.btn_weights_path, self.lbl_weights_path, b=0
+            self.weights_filewidget.button,
+            self.weights_filewidget.text_field,
+            b=0,
         )
         self.weights_path_container.setVisible(False)
 
@@ -146,10 +151,11 @@ class ModelFramework(BasePluginFolder):
         """
 
         log = self.log.toPlainText()
+        path = str(Path(path) / Path(f"Log_report_{utils.get_date_time()}.txt"))
 
         if len(log) != 0:
             with open(
-                path + f"/Log_report_{utils.get_date_time()}.txt",
+                path,
                 "x",
             ) as f:
                 f.write(log)
@@ -280,7 +286,7 @@ class ModelFramework(BasePluginFolder):
         if file is not None:
             if file[0] != "":
                 self.weights_config.path = file[0]
-                self.lbl_weights_path.setText(file[0])
+                self.weights_filewidget.text_field.setText(file[0])
                 self._default_weights_folder = str(Path(file[0]).parent)
 
     @staticmethod
