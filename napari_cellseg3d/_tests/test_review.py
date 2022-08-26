@@ -15,10 +15,6 @@ def test_launch_review(make_napari_viewer):
     widget.image_path = im_path
     widget.label_path = im_path
 
-    print(widget.image_path)
-    print(widget.label_path)
-    print(widget.as_folder)
-    print(widget.filetype)
     widget.run_review()
     widget._viewer.close()
 
