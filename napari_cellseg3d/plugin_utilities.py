@@ -9,6 +9,7 @@ from napari_cellseg3d.plugin_convert import ConvertUtils
 # local
 from napari_cellseg3d.plugin_crop import Cropping
 from napari_cellseg3d.plugin_metrics import MetricsUtils
+from napari_cellseg3d.plugin_base import BasePluginFolder
 
 
 class Utilities(QTabWidget):
@@ -35,7 +36,14 @@ class Utilities(QTabWidget):
         self.convert_tab.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         self.setBaseSize(230, 550)
-        self.setMinimumSize(230, 100)
+        self.setMinimumSize(230, 100) # TODO needed ?
 
     def remove_from_viewer(self):
         self._viewer.window.remove_dock_widget(self)
+
+
+
+
+
+
+

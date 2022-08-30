@@ -8,6 +8,7 @@ from qtpy.QtGui import QPixmap
 # Qt
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
+from qtpy.QtWidgets import QMenu
 
 # local
 from napari_cellseg3d import interface as ui
@@ -57,6 +58,34 @@ class Helper(QWidget):
 
         self.build()
 
+
+        from qtpy.QtGui import QCursor
+
+
+
+        @viewer.mouse_drag_callbacks.append
+        def update_canvas_canvas(viewer, event):
+            print(event.modifiers)
+
+            if event.button ==2 and "control" in event.modifiers:
+                yield
+                # on move
+                pos = self.parent().parent().mapFromGlobal(QCursor.pos())
+                self.show_menu(pos)
+                while event.type == 'mouse_move':
+                    yield
+                return
+
+    def show_menu(self, event):
+
+        print(self.parent().parent())
+        menu = QMenu(self.parent().parent())
+
+        quitAction = menu.addAction("Quit")
+        action = menu.exec_(event)
+        if action == quitAction:
+            print("ACTION")
+
     def build(self):
         vbox = QVBoxLayout()
 
@@ -74,3 +103,5 @@ class Helper(QWidget):
 
     def remove_from_viewer(self):
         self._viewer.window.remove_dock_widget(self)
+
+

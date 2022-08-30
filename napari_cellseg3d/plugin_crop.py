@@ -1,4 +1,4 @@
-import os
+from functools import partial
 import warnings
 
 import napari
@@ -19,7 +19,7 @@ from napari_cellseg3d.plugin_base import BasePluginSingleImage
 DEFAULT_CROP_SIZE = 64
 
 
-class Cropping(BasePluginSingleImage):
+class Cropping:
     """A utility plugin for cropping 3D volumes."""
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent):
@@ -39,14 +39,22 @@ class Cropping(BasePluginSingleImage):
         """
 
         super().__init__(viewer, parent)
+        self._viewer = viewer
 
-        self.btn_start = ui.Button("Start", self.start, self)
+        self.btn_start = ui.Button("Start", self.start)
+
+        self.layer_selection1 = ui.LayerSelecter(self._viewer, "Image 1")
+        self.layer_selection2 = ui.LayerSelecter(self._viewer, "Image 2")
 
         self.crop_label_choice = ui.CheckBox(
-            "Crop labels simultaneously", self.toggle_label_path
+            "Crop another image simultaneously", self.toggle_label_path
         )
-        self.labels_filewidget.text_field.setVisible(False)
-        self.labels_filewidget.button.setVisible(False)
+        self.crop_label_choice.toggled.connect(
+            partial(
+                ui.toggle_visibility, self.crop_label_choice, self.layer_selection2.container()
+            )
+        )
+
 
         self.box_widgets = ui.IntIncrementCounter.make_n(
             3, 1, 1000, DEFAULT_CROP_SIZE
@@ -81,51 +89,21 @@ class Cropping(BasePluginSingleImage):
 
         self.build()
 
-    def toggle_label_path(self):
-        if self.crop_label_choice.isChecked():
-            self.labels_filewidget.text_field.setVisible(True)
-            self.labels_filewidget.button.setVisible(True)
-        else:
-            self.labels_filewidget.text_field.setVisible(False)
-            self.labels_filewidget.button.setVisible(False)
-
     def build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
 
         w = ui.ContainerWidget(0, 0, 1, 11)
         layout = w.layout
 
-        data_group_w, data_group_l = ui.make_group("Data")
-
-        ui.add_widgets(
-            data_group_l,
-            [
-                ui.combine_blocks(
-                    self.image_filewidget.button,
-                    self.image_filewidget.text_field,
-                ),
-                self.crop_label_choice,  # whether to crop labels or no
-                ui.combine_blocks(
-                    self.labels_filewidget.button,
-                    self.labels_filewidget.text_field,
-                ),
-                self.load_as_stack_choice,
-                self.filetype_choice,
-                self.aniso_widgets,
-            ],
-        )
-
         self.crop_label_choice.toggle()
         self.toggle_label_path()
 
-        self.filetype_choice.setVisible(False)
-
-        data_group_w.setLayout(data_group_l)
-        layout.addWidget(data_group_w)
         ######################
         ui.add_blank(self, layout)
         ######################
         dim_group_w, dim_group_l = ui.make_group("Dimensions")
+
+        dim_group_l.addWidget(self.aniso_widgets)
         [
             dim_group_l.addWidget(widget, alignment=ui.LEFT_AL)
             for list in zip(self.box_lbl, self.box_widgets)
@@ -211,12 +189,25 @@ class Cropping(BasePluginSingleImage):
 
     def check_ready(self):
 
-        if self.image_path is None or (
-            self.crop_labels and self.label_path is None
-        ):
-            warnings.warn("Please set all required paths correctly")
-            return False
-        return True
+        if self.layer_choice.isChecked():
+            if isinstance(self.image_layer_loader.layer_data(), list):
+                if (
+                    self.crop_label_choice.isChecked()
+                    and isinstance(self.label_layer_loader.layer_data(), list)
+                ):
+                    return True
+                else:
+                    warnings.warn("Please set all required paths correctly")
+                    return False
+            return True
+        if self.folder_choice.isChecked():
+            if self.image_path is None or (
+                self.crop_labels and self.label_path is None
+            ):
+                warnings.warn("Please set all required paths correctly")
+                return False
+            else:
+                return True
 
     def reset(self):
         """Resets all layers and docked widgets"""
@@ -240,19 +231,24 @@ class Cropping(BasePluginSingleImage):
         if not self.check_ready():
             return
 
-        self.reset()
+        if self.folder_choice.isChecked():
+            self.image = utils.load_images(
+                self.image_path, self.filetype, self.as_folder
+            )
 
-        self.image = utils.load_images(
-            self.image_path, self.filetype, self.as_folder
-        )
+        else:
+            self.image = self.image_layer_loader.layer_data()
 
         if len(self.image.shape) > 3:
             self.image = np.squeeze(self.image)
 
         if self.crop_labels:
-            self.label = utils.load_images(
-                self.label_path, self.filetype, self.as_folder
-            )
+            if self.folder_choice.isChecked():
+                self.label = utils.load_images(
+                    self.label_path, self.filetype, self.as_folder
+                )
+            else:
+                self.label = self.label_layer_loader.layer_data()
 
             if len(self.label.shape) > 3:
                 self.label = np.squeeze(
@@ -265,6 +261,12 @@ class Cropping(BasePluginSingleImage):
         vw.scale_bar.visible = True
 
         # add image and labels
+        if self.folder_choice.isChecked():
+            self.reset()
+        else:
+            for layer in vw.layers:
+                layer.visible = False
+
         self.image_layer = vw.add_image(
             self.image,
             colormap="inferno",
@@ -299,7 +301,7 @@ class Cropping(BasePluginSingleImage):
         image_stack = np.array(self.image)
 
         self._crop_size_x, self._crop_size_y, self._crop_size_z = [
-            box.slider_value() for box in self.box_widgets
+            box.value() for box in self.box_widgets
         ]
 
         self._x = 0
@@ -333,7 +335,7 @@ class Cropping(BasePluginSingleImage):
             name="cropped",
             blending="additive",
             colormap="twilight_shifted",
-            scale=self.image_layer.scale,
+            scale=self.aniso_factors,
         )
 
         if self.crop_labels:
@@ -341,7 +343,7 @@ class Cropping(BasePluginSingleImage):
             self.labels_crop_layer = vw.add_labels(
                 self.label[:cropx, :cropy, :cropz],
                 name="cropped_labels",
-                scale=self.label_layer.scale,
+                scale=self.aniso_factors,
             )
 
         def set_slice(

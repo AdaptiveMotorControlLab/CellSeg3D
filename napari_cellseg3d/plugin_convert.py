@@ -12,6 +12,7 @@ from napari_cellseg3d.model_instance_seg import to_instance
 from napari_cellseg3d.model_instance_seg import to_semantic
 from napari_cellseg3d.plugin_base import BasePluginFolder
 
+# TODO break down into multiple mini-widgets
 
 class ConvertUtils(BasePluginFolder):
     """Utility widget that allows to convert labels from instance to semantic and the reverse."""
@@ -146,10 +147,10 @@ class ConvertUtils(BasePluginFolder):
             "Results",
             results_widget,
             layout,
-            L=3,
-            T=11,
-            R=3,
-            B=3,
+            l=3,
+            t=11,
+            r=3,
+            b=3,
         )
         ###############################
         ui.add_blank(layout=layout, widget=self)

@@ -2,7 +2,6 @@ import warnings
 from datetime import datetime
 from pathlib import Path
 
-import cv2
 import numpy as np
 from dask_image.imread import imread as dask_imread
 from pandas import DataFrame
@@ -10,7 +9,6 @@ from pandas import Series
 from skimage import io
 from skimage.filters import gaussian
 from tifffile import imread as tfl_imread
-from tqdm import tqdm
 
 """
 utils.py
@@ -482,72 +480,6 @@ def save_stack(images, out_path, filetype=".png", check_warnings=False):
             label,
             check_contrast=check_warnings,
         )
-
-
-# def load_X_gray(folder_path):
-#     image_files = []
-#     for file in os.listdir(folder_path):
-#         base, ext = os.path.splitext(file)
-#         if ext == ".png":
-#             image_files.append(file)
-#         else:
-#             pass
-#
-#     image_files.sort()
-#
-#     img = cv2.imread(
-#         folder_path + os.sep + image_files[0], cv2.IMREAD_GRAYSCALE
-#     )
-#
-#     images = np.zeros(
-#         (len(image_files), img.shape[0], img.shape[1], 1), np.float32
-#     )
-#     for i, image_file in tqdm(enumerate(image_files)):
-#         image = cv2.imread(
-#             folder_path + os.sep + image_file, cv2.IMREAD_GRAYSCALE
-#         )
-#         image = image[:, :, np.newaxis]
-#         images[i] = normalize_x(image)
-#
-#     print(images.shape)
-#
-#     return images, image_files
-
-
-# def load_Y_gray(folder_path, thresh=None, normalize=False):
-#     image_files = []
-#     for file in os.listdir(folder_path):
-#         base, ext = os.path.splitext(file)
-#         if ext == ".png":
-#             image_files.append(file)
-#         else:
-#             pass
-#
-#     image_files.sort()
-#
-#     img = cv2.imread(
-#         folder_path + os.sep + image_files[0], cv2.IMREAD_GRAYSCALE
-#     )
-#
-#     images = np.zeros(
-#         (len(image_files), img.shape[0], img.shape[1], 1), np.float32
-#     )
-#
-#     for i, image_file in tqdm(enumerate(image_files)):
-#         image = cv2.imread(
-#             folder_path + os.sep + image_file, cv2.IMREAD_GRAYSCALE
-#         )
-#         if thresh:
-#             ret, image = cv2.threshold(image, thresh, 255, cv2.THRESH_BINARY)
-#         image = image[:, :, np.newaxis]
-#         if normalize:
-#             images[i] = normalize_y(image)
-#         else:
-#             images[i] = image
-#
-#     print(images.shape)
-#
-#     return images, image_files
 
 
 def select_train_data(dataframe, ori_imgs, label_imgs, ori_filenames):

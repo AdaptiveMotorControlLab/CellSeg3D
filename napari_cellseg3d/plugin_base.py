@@ -246,7 +246,7 @@ class BasePluginSingleImage(QTabWidget):
 
     def load_results_path(self):
         """Show file dialog to set :py:attr:`~results_path`"""
-        folder = ui.open_folder_dialog(self, self._default_folders)
+        folder = ui.open_folder_dialog(self, self._default_path)
 
         if self.check_results_path(folder):
             self.results_path = folder

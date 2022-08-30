@@ -983,6 +983,15 @@ class Trainer(ModelFramework):
                         self.result_layers.append(layer)
                 else:
                     for i in rge:
+                        if layer_name + str(i) not in [
+                            layer.name for layer in self.result_layers
+                        ]:
+                            new_layer = self._viewer.add_image(
+                                report.images[i],
+                                name=layer_name + str(i),
+                                colormap="twilight",
+                            )
+                            self.result_layers.append(new_layer)
                         self.result_layers[i].data = report.images[i]
                         self.result_layers[i].refresh()
             except Exception as e:

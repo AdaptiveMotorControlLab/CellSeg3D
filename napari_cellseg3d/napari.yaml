@@ -17,11 +17,11 @@ contributions:
     python_name: napari_cellseg3d.plugins:Utilities
 
   - id: napari-cellseg3d.infer
-    title: Create Inferer
+    title: Create Inference widget
     python_name: napari_cellseg3d.plugins:Inferer
 
   - id: napari-cellseg3d.train
-    title: Create Trainer
+    title: Create Trainer widget
     python_name: napari_cellseg3d.plugins:Trainer
 
 
