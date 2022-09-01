@@ -36,14 +36,7 @@ class Utilities(QTabWidget):
         self.convert_tab.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         self.setBaseSize(230, 550)
-        self.setMinimumSize(230, 100) # TODO needed ?
+        self.setMinimumSize(230, 100)  # TODO needed ?
 
     def remove_from_viewer(self):
         self._viewer.window.remove_dock_widget(self)
-
-
-
-
-
-
-

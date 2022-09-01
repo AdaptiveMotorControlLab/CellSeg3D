@@ -58,33 +58,43 @@ class Helper(QWidget):
 
         self.build()
 
-
         from qtpy.QtGui import QCursor
 
-
-
         @viewer.mouse_drag_callbacks.append
-        def update_canvas_canvas(viewer, event):
-            print(event.modifiers)
+        def context_menu_call(viewer, event):
+            # print(event.modifiers)
 
-            if event.button ==2 and "control" in event.modifiers:
+            if event.button == 2 and "control" in event.modifiers:
                 yield
                 # on move
                 pos = self.parent().parent().mapFromGlobal(QCursor.pos())
                 self.show_menu(pos)
-                while event.type == 'mouse_move':
+                while event.type == "mouse_move":
                     yield
-                return
+                # yield
 
     def show_menu(self, event):
+        from napari_cellseg3d.plugin_crop import Cropping
+        from napari_cellseg3d.plugin_convert import AnisoUtils
+        from napari_cellseg3d.plugin_convert import RemoveSmallUtils
 
-        print(self.parent().parent())
+        # print(self.parent().parent())
+
         menu = QMenu(self.parent().parent())
 
-        quitAction = menu.addAction("Quit")
+        crop_action = menu.addAction("Utilities : Crop")
+        aniso_action = menu.addAction("Utilities: Correct anisotropy")
+        clear_small_action = menu.addAction("Utilities : Remove small objects")
+
         action = menu.exec_(event)
-        if action == quitAction:
-            print("ACTION")
+        if action == crop_action:
+            self._viewer.window.add_dock_widget(Cropping(self._viewer))
+
+        if action == aniso_action:
+            self._viewer.window.add_dock_widget(AnisoUtils(self._viewer))
+
+        if action == clear_small_action:
+            self._viewer.window.add_dock_widget(RemoveSmallUtils(self._viewer))
 
     def build(self):
         vbox = QVBoxLayout()
@@ -103,5 +113,3 @@ class Helper(QWidget):
 
     def remove_from_viewer(self):
         self._viewer.window.remove_dock_widget(self)
-
-

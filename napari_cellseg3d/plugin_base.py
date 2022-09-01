@@ -31,8 +31,6 @@ class BasePluginSingleImage(QTabWidget):
             has_results: whether to show results IO widgets
         """
         super().__init__(parent)
-
-        self.parent = parent
         """Parent widget"""
         self._viewer = viewer
         """napari.viewer.Viewer: viewer in which the widget is displayed"""
@@ -104,7 +102,7 @@ class BasePluginSingleImage(QTabWidget):
 
     def build_io_panel(self):
 
-        io_panel = ui.GroupedWidget("Data", parent=self.parent)
+        io_panel = ui.GroupedWidget("Data")
         ui.add_widgets(
             io_panel.layout,
             [
@@ -256,7 +254,11 @@ class BasePluginSingleImage(QTabWidget):
 
     def update_default(self):
         """Updates default path for smoother navigation when opening file dialogs"""
-        self._default_path = [self.image_path, self.label_path]
+        self._default_path = [
+            self.image_path,
+            self.label_path,
+            self.results_path,
+        ]
 
     def make_close_button(self):
         btn = ui.Button("Close", self.remove_from_viewer)

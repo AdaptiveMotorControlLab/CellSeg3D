@@ -1,4 +1,5 @@
 from functools import partial
+from pathlib import Path
 import warnings
 
 import napari
@@ -9,20 +10,19 @@ from magicgui.widgets import Slider
 
 # Qt
 from qtpy.QtWidgets import QSizePolicy
-from tifffile import imwrite
+from qtpy.QtWidgets import QWidget
 
 # local
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
-from napari_cellseg3d.plugin_base import BasePluginSingleImage
 
 DEFAULT_CROP_SIZE = 64
 
 
-class Cropping:
+class Cropping(QWidget):
     """A utility plugin for cropping 3D volumes."""
 
-    def __init__(self, viewer: "napari.viewer.Viewer", parent):
+    def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
         """Creates a Cropping plugin with several buttons :
 
         * Open file prompt to select volumes directory
@@ -38,35 +38,47 @@ class Cropping:
         * A button to close the widget
         """
 
-        super().__init__(viewer, parent)
+        super().__init__(parent)
         self._viewer = viewer
+        self.docked_widgets = []  # TODO add remove on close
+        self.results_path = Path.home() / Path("cellseg3d/cropped")
 
-        self.btn_start = ui.Button("Start", self.start)
+        self.btn_start = ui.Button("Start", self._start)
 
         self.layer_selection1 = ui.LayerSelecter(self._viewer, "Image 1")
         self.layer_selection2 = ui.LayerSelecter(self._viewer, "Image 2")
 
-        self.crop_label_choice = ui.CheckBox(
-            "Crop another image simultaneously", self.toggle_label_path
+        self.crop_second_image_choice = ui.CheckBox(
+            "Crop another image simultaneously",
         )
-        self.crop_label_choice.toggled.connect(
+        self.crop_second_image_choice.toggled.connect(
             partial(
-                ui.toggle_visibility, self.crop_label_choice, self.layer_selection2.container()
+                ui.toggle_visibility,
+                self.crop_second_image_choice,
+                self.layer_selection2.container(),
             )
         )
+        self.crop_second_image_choice.toggled.connect(self._check_image_list)
+        self._viewer.layers.events.inserted.connect(self._check_image_list)
 
+        self.results_filewidget = ui.FilePathWidget(
+            "Results path",
+            self._load_results_path,
+            default=str(self.results_path),
+        )
+        self.results_filewidget.tooltips = str(self.results_path)
 
-        self.box_widgets = ui.IntIncrementCounter.make_n(
+        self.crop_size_widgets = ui.IntIncrementCounter.make_n(
             3, 1, 1000, DEFAULT_CROP_SIZE
         )
-        self.box_lbl = [
+        self.crop_size_labels = [
             ui.make_label("Size in " + axis + " of cropped volume :", self)
             for axis in "xyz"
         ]
 
         self.aniso_widgets = ui.AnisotropyWidgets(self)
         ###########
-        for box in self.box_widgets:
+        for box in self.crop_size_widgets:
             box.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self._x = 0
         self._y = 0
@@ -77,27 +89,50 @@ class Cropping:
 
         self.aniso_factors = [1, 1, 1]
 
-        self.image = None
-        self.image_layer = None
-        self.label = None
-        self.label_layer = None
+        self.image_layer1 = None
+        self.image_layer2 = None
 
-        self.highres_crop_layer = None
-        self.labels_crop_layer = None
+        self.im1_crop_layer = None
+        self.im2_crop_layer = None
 
-        self.crop_labels = False
+        self.crop_second_image = False
 
-        self.build()
+        self._build()
 
-    def build(self):
+    def _check_image_list(self):
+
+        l1 = self.layer_selection1.layer_list
+        l2 = self.layer_selection2.layer_list
+
+        if l1.currentText() == l2.currentText():
+            try:
+                for i in range(l1.count()):
+                    if l1.itemText(i) != l2.currentText():
+                        l2.setCurrentIndex(i)
+            except IndexError:
+                return
+
+    def _build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
 
         w = ui.ContainerWidget(0, 0, 1, 11)
         layout = w.layout
 
-        self.crop_label_choice.toggle()
-        self.toggle_label_path()
+        data_group_w, data_group_l = ui.make_group("Images")
 
+        ui.add_widgets(
+            data_group_l,
+            [
+                self.layer_selection1.container(),
+                self.crop_second_image_choice,
+                self.layer_selection2.container(),
+                self.results_filewidget,
+            ],
+        )
+        self.layer_selection2.container().setVisible(False)
+
+        data_group_w.setLayout(data_group_l)
+        layout.addWidget(data_group_w)
         ######################
         ui.add_blank(self, layout)
         ######################
@@ -105,8 +140,8 @@ class Cropping:
 
         dim_group_l.addWidget(self.aniso_widgets)
         [
-            dim_group_l.addWidget(widget, alignment=ui.LEFT_AL)
-            for list in zip(self.box_lbl, self.box_widgets)
+            dim_group_l.addWidget(widget, alignment=ui.ABS_AL)
+            for list in zip(self.crop_size_labels, self.crop_size_widgets)
             for widget in list
         ]
         dim_group_w.setLayout(dim_group_l)
@@ -120,11 +155,29 @@ class Cropping:
             layout,
             [
                 self.btn_start,
-                self.make_close_button(),
             ],
         )
 
         ui.ScrollArea.make_scrollable(layout, self, min_wh=[180, 100])
+
+    def _check_results_path(self, folder):
+        if folder != "" and isinstance(folder, str):
+            if not Path(folder).is_dir():
+                Path(folder).mkdir(parents=True, exist_ok=True)
+                if not Path(folder).is_dir():
+                    return False
+                print(f"Created missing results folder : {folder}")
+            return True
+        return False
+
+    def _load_results_path(self):
+        """Show file dialog to set :py:attr:`~results_path`"""
+        folder = ui.open_folder_dialog(self, str(self.results_path))
+
+        if self._check_results_path(folder):
+            self.results_path = Path(folder)
+            # print(f"Results path : {self.results_path}")
+            self.results_filewidget.text_field.setText(str(self.results_path))
 
     def quicksave(self):
         """Quicksaves the cropped volume in the folder from which they originate, with their original file extension.
@@ -136,123 +189,67 @@ class Cropping:
 
         viewer = self._viewer
 
+        self._check_results_path(str(self.results_path))
         time = utils.get_date_time()
-        if not self.as_folder:
-            if self.image is not None:
-                im_filename = os.path.basename(self.image_path).split(".")[0]
-                # print(im_filename)
-                im_dir = os.path.split(self.image_path)[0] + "/cropped"
-                # print(im_dir)
-                os.makedirs(im_dir, exist_ok=True)
-                viewer.layers["cropped"].save(
-                    im_dir + "/" + im_filename + "_cropped_" + time + ".tif"
-                )
 
-            # print(self.label)
-            if self.label is not None:
-                im_filename = os.path.basename(self.label_path).split(".")[0]
-                # print(im_filename)
-                im_dir = os.path.split(self.label_path)[0] + "/cropped"
-                # print(im_dir)
-                name = (
-                    im_dir
-                    + "/"
-                    + im_filename
-                    + "_labels_cropped_"
-                    + time
-                    + ".tif"
-                )
-                dat = viewer.layers["cropped_labels"].data
-                os.makedirs(im_dir, exist_ok=True)
-                imwrite(name, data=dat)
+        im1_path = str(
+            self.results_path
+            / Path("cropped_" + self.image_layer1.name + time)
+        )
 
-        else:
-            if self.image is not None:
+        viewer.layers[f"cropped_{self.image_layer1.name}"].save(im1_path)
 
-                # im_filename = os.path.basename(self.image_path).split(".")[0]
-                im_dir = os.path.split(self.image_path)[0]
+        print(f"Image 1 saved as: {im1_path}")
 
-                dat = viewer.layers["cropped"].data
-                dir_name = im_dir + "/volume_cropped_" + time
-                utils.save_stack(dat, dir_name, filetype=self.filetype)
+        if self.crop_second_image:
+            im2_path = str(
+                self.results_path
+                / Path("cropped_" + self.image_layer2.name + time)
+            )
 
-            # print(self.label)
-            if self.label is not None:
+            viewer.layers[f"cropped_{self.image_layer2.name}"].save(im2_path)
 
-                # im_filename = os.path.basename(self.image_path).split(".")[0]
-                im_dir = os.path.split(self.label_path)[0]
-
-                dir_name = im_dir + "/labels_cropped_" + time
-                # print(f"dir name {dir_name}")
-                dat = viewer.layers["cropped_labels"].data
-                utils.save_stack(dat, dir_name, filetype=self.filetype)
+            print(f"Image 2 saved as: {im2_path}")
 
     def check_ready(self):
 
-        if self.layer_choice.isChecked():
-            if isinstance(self.image_layer_loader.layer_data(), list):
-                if (
-                    self.crop_label_choice.isChecked()
-                    and isinstance(self.label_layer_loader.layer_data(), list)
-                ):
+        if self.layer_selection1.layer_data() is not None:
+            if self.crop_second_image:
+                if self.layer_selection2.layer_data() is not None:
                     return True
                 else:
-                    warnings.warn("Please set all required paths correctly")
                     return False
             return True
-        if self.folder_choice.isChecked():
-            if self.image_path is None or (
-                self.crop_labels and self.label_path is None
-            ):
-                warnings.warn("Please set all required paths correctly")
-                return False
-            else:
-                return True
+        return False
 
-    def reset(self):
-        """Resets all layers and docked widgets"""
-
-        self._viewer.layers.clear()
-
-        self.remove_docked_widgets()
-
-    def start(self):
+    def _start(self):
         """Launches cropping process by loading the files from the chosen folders,
         and adds control widgets to the napari Viewer for moving the cropped volume.
         """
+        if not self.check_ready():
+            warnings.warn("Please select at least one valid layer !")
+            return
 
-        self.as_folder = self.load_as_stack_choice.isChecked()
-        self.filetype = self.filetype_choice.currentText()
-        self.crop_labels = self.crop_label_choice.isChecked()
+        self._viewer.window.remove_dock_widget(self.parent())
+
+        self.results_path = Path(self.results_filewidget.text_field.text())
+
+        self.crop_second_image = self.crop_second_image_choice.isChecked()
 
         if self.aniso_widgets.enabled():
             self.aniso_factors = self.aniso_widgets.scaling_zyx()
 
-        if not self.check_ready():
-            return
+        self.image_layer1 = self.layer_selection1.layer()
 
-        if self.folder_choice.isChecked():
-            self.image = utils.load_images(
-                self.image_path, self.filetype, self.as_folder
-            )
+        if len(self.image_layer1.data) > 3:
+            self.image_layer1.data = np.squeeze(self.image_layer1.data)
 
-        else:
-            self.image = self.image_layer_loader.layer_data()
+        if self.crop_second_image:
+            self.image_layer2 = self.layer_selection2.layer()
 
-        if len(self.image.shape) > 3:
-            self.image = np.squeeze(self.image)
-
-        if self.crop_labels:
-            if self.folder_choice.isChecked():
-                self.label = utils.load_images(
-                    self.label_path, self.filetype, self.as_folder
-                )
-            else:
-                self.label = self.label_layer_loader.layer_data()
-
-            if len(self.label.shape) > 3:
-                self.label = np.squeeze(
-                    self.label
+            if len(self.image_layer2.data.shape) > 3:
+                self.image_layer2.data = np.squeeze(
+                    self.image_layer2.data
                 )  # if channel/batch remnants from MONAI
 
         vw = self._viewer
@@ -260,25 +257,29 @@ class Cropping:
         vw.dims.ndisplay = 3
         vw.scale_bar.visible = True
 
-        # add image and labels
-        if self.folder_choice.isChecked():
-            self.reset()
-        else:
+        if self.aniso_widgets.enabled():
             for layer in vw.layers:
                 layer.visible = False
+                # hide other layers, because of anisotropy
 
-        self.image_layer = vw.add_image(
-            self.image,
-            colormap="inferno",
-            contrast_limits=[200, 1000],
-            opacity=0.7,
-            scale=self.aniso_factors,
-        )
+            self.image_layer1 = self.add_isotropic_layer(self.image_layer1)
 
-        if self.crop_labels:
-            self.label_layer = vw.add_labels(
-                self.label, scale=self.aniso_factors, visible=False
-            )
+            if self.crop_second_image:
+                self.image_layer2 = self.add_isotropic_layer(
+                    self.image_layer2, visible=False
+                )
+        else:
+            self.image_layer1.opacity = 0.7
+            self.image_layer1.colormap = "inferno"
+            self.image_layer1.contrast_limits = [200, 1000]
+
+            self.image_layer1.refresh()
+
+            if self.crop_second_image:
+                self.image_layer2.opacity = 0.7
+                self.image_layer2.visible = False
+
+                self.image_layer2.refresh()
 
         @magicgui(call_button="Quicksave")
         def save_widget():
@@ -289,19 +290,76 @@ class Cropping:
         )
         self.docked_widgets.append(save)
 
-        self.add_crop_sliders()
+        self._add_crop_sliders()
 
-    def add_crop_sliders(
+    def add_isotropic_layer(
+        self,
+        layer,
+        colormap="inferno",
+        contrast_lim=[200, 1000],  # TODO generalize ?
+        opacity=0.7,
+        visible=True,
+    ):
+        print(layer.name)
+
+        if isinstance(layer, napari.layers.Image):
+            layer = self._viewer.add_image(
+                layer.data,
+                name=f"Scaled_{layer.name}",
+                colormap=colormap,
+                contrast_limits=contrast_lim,
+                opacity=opacity,
+                scale=self.aniso_factors,
+                visible=visible,
+            )
+            print("image")
+        elif isinstance(layer, napari.layers.Labels):
+            layer = self._viewer.add_labels(
+                layer.data,
+                name=f"Scaled_{layer.name}",
+                opacity=opacity,
+                scale=self.aniso_factors,
+                visible=visible,
+            )
+            print("label")
+        else:
+            raise ValueError(
+                f"Please select a valid layer type, {type(layer)} is not compatible"
+            )
+        return layer
+
+    def _add_crop_layer(self, layer, cropx, cropy, cropz):
+        if isinstance(layer, napari.layers.Image):
+            new_layer = self._viewer.add_image(
+                layer.data[:cropx, :cropy, :cropz],
+                name=f"cropped_{layer.name}",
+                blending="additive",
+                colormap="twilight_shifted",
+                scale=self.aniso_factors,
+            )
+        elif isinstance(layer, napari.layers.Labels):
+            new_layer = self._viewer.add_labels(
+                layer.data[:cropx, :cropy, :cropz],
+                name=f"cropped_{layer.name}",
+                scale=self.aniso_factors,
+            )
+        else:
+            raise ValueError(
+                f"Please select a valid layer type, {type(layer)} is not compatible"
+            )
+        return new_layer
+
+    def _add_crop_sliders(
         self,
     ):
         # modified version of code posted by Juan Nunez Iglesias here :
         # https://forum.image.sc/t/napari-viewing-3d-image-of-large-tif-stack-cropping-image-w-general-shape/55500/2
         vw = self._viewer
 
-        image_stack = np.array(self.image)
+        im1_stack = self.image_layer1.data
 
         self._crop_size_x, self._crop_size_y, self._crop_size_z = [
-            box.value() for box in self.box_widgets
+            box.value() for box in self.crop_size_widgets
         ]
 
         self._x = 0
@@ -309,41 +367,33 @@ class Cropping:
         self._z = 0
 
         # print(f"Crop variables")
-        # print(image_stack.shape)
+        # print(im1_stack.shape)
 
         # define crop sizes and boundaries for the image
         crop_sizes = [self._crop_size_x, self._crop_size_y, self._crop_size_z]
         for i in range(len(crop_sizes)):
-            if crop_sizes[i] > image_stack.shape[i]:
-                crop_sizes[i] = image_stack.shape[i]
+            if crop_sizes[i] > im1_stack.shape[i]:
+                crop_sizes[i] = im1_stack.shape[i]
                 warnings.warn(
-                    f"WARNING : Crop dimension in axis {i} was too large at {crop_sizes[i]}, it was set to {image_stack.shape[i]}"
+                    f"WARNING : Crop dimension in axis {i} was too large at {crop_sizes[i]}, it was set to {im1_stack.shape[i]}"
                 )
         cropx, cropy, cropz = crop_sizes
-        # shapez, shapey, shapex = image_stack.shape
-        ends = np.asarray(image_stack.shape) - np.asarray(crop_sizes) + 1
+        ends = np.asarray(im1_stack.shape) - np.asarray(crop_sizes) + 1
 
         stepsizes = ends // 100
 
         # print(crop_sizes)
-
         # print(ends)
         # print(stepsizes)
 
-        self.highres_crop_layer = vw.add_image(
-            image_stack[:cropx, :cropy, :cropz],
-            name="cropped",
-            blending="additive",
-            colormap="twilight_shifted",
-            scale=self.aniso_factors,
+        self.im1_crop_layer = self._add_crop_layer(
+            self.image_layer1, cropx, cropy, cropz
         )
 
-        if self.crop_labels:
-            label_stack = self.label
-            self.labels_crop_layer = vw.add_labels(
-                self.label[:cropx, :cropy, :cropz],
-                name="cropped_labels",
-                scale=self.aniso_factors,
+        if self.crop_second_image:
+            im2_stack = self.image_layer2.data
+            self.im2_crop_layer = self._add_crop_layer(
+                self.image_layer2, cropx, cropy, cropz
             )
 
         def set_slice(
@@ -366,14 +416,14 @@ class Cropping:
             cropy = self._crop_size_y
             cropz = self._crop_size_z
 
-            highres_crop_layer.data = image_stack[
+            highres_crop_layer.data = im1_stack[
                 i : i + cropx, j : j + cropy, k : k + cropz
             ]
             highres_crop_layer.translate = scale * izyx
             highres_crop_layer.refresh()
 
             if crop_lbls and labels_crop_layer is not None:
-                labels_crop_layer.data = label_stack[
+                labels_crop_layer.data = im2_stack[
                     i : i + cropx, j : j + cropy, k : k + cropz
                 ]
                 labels_crop_layer.translate = scale * izyx
@@ -383,7 +433,7 @@ class Cropping:
             self._y = j
             self._z = k
 
-            # spinbox = SpinBox(name="crop_dims", min=1, value=self._crop_size, max=max(image_stack.shape), step=1)
+            # spinbox = SpinBox(name="crop_dims", min=1, value=self._crop_size, max=max(im1_stack.shape), step=1)
             # spinbox.changed.connect(lambda event : change_size(event))
 
         sliders = [
@@ -395,9 +445,9 @@ class Cropping:
                 lambda event, axis=axis: set_slice(
                     axis,
                     event,
-                    self.highres_crop_layer,
-                    self.labels_crop_layer,
-                    self.crop_labels,
+                    self.im1_crop_layer,
+                    self.im2_crop_layer,
+                    self.crop_second_image,
                 )
             )
         container_widget = Container(layout="vertical")
@@ -420,11 +470,11 @@ class Cropping:
         #     cropx = value
         #     cropy = value
         #     cropz = value
-        #     highres_crop_layer.data = image_stack[
+        #     highres_crop_layer.data = im1_stack[
         #         i : i + cropz, j : j + cropy, k : k + cropx
         #     ]
         #     highres_crop_layer.refresh()
-        #     labels_crop_layer.data = label_stack[
+        #     labels_crop_layer.data = im2_stack[
         #         i : i + cropz, j : j + cropy, k : k + cropx
         #     ]
         #     labels_crop_layer.refresh()
@@ -459,18 +509,18 @@ class Cropping:
 #                     self._crop_size_z = cropz
 
 
-#                     highres_crop_layer.data = image_stack[
+#                     highres_crop_layer.data = im1_stack[
 #                         i : i + cropz, j : j + cropy, k : k + cropx
 #                     ]
 #                     highres_crop_layer.refresh()
-#                     labels_crop_layer.data = label_stack[
+#                     labels_crop_layer.data = im2_stack[
 #                         i : i + cropz, j : j + cropy, k : k + cropx
 #                     ]
 #                     labels_crop_layer.refresh()
 
 
 #         # @spinbox.changed.connect
-#         # spinbox = SpinBox(name=crop_dims, min=1, max=max(image_stack.shape), step=1)
+#         # spinbox = SpinBox(name=crop_dims, min=1, max=max(im1_stack.shape), step=1)
 #         # spinbox.changed.connect(lambda event : change_size(event))
 
 
@@ -485,7 +535,7 @@ class Cropping:
 
 #         spinboxes = [
 #             SpinBox(name=axes+" crop size", min=1, value=self._crop_size_init, max=end, step=1)
-#             for axes, end in zip("zyx", image_stack.shape)
+#             for axes, end in zip("zyx", im1_stack.shape)
 #         ]
 #         for axes, box in enumerate(spinboxes):
 #             box.changed.connect(

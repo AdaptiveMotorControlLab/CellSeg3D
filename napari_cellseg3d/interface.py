@@ -410,20 +410,20 @@ class AnisotropyWidgets(QWidget):
         self.setLayout(self._layout)
 
     def resolution_xyz(self):
-        """The resolution selected for each of the three dimensions. XYZ order"""
+        """The resolution selected for each of the three dimensions. XYZ order (for MONAI)"""
         return [w.value() for w in self.box_widgets]
 
     def scaling_xyz(self):
-        """The scaling factors for each of the three dimensions. XYZ order"""
+        """The scaling factors for each of the three dimensions. XYZ order (for MONAI)"""
         return self.anisotropy_zoom_factor(self.resolution_xyz())
 
     def resolution_zyx(self):
-        """The resolution selected for each of the three dimensions. ZYX order"""
+        """The resolution selected for each of the three dimensions. ZYX order (for napari)"""
         res = self.resolution_xyz()
         return [res[2], res[1], res[0]]
 
     def scaling_zyx(self):
-        """The scaling factors for each of the three dimensions. XYZ order"""
+        """The scaling factors for each of the three dimensions. ZYX order (for napari)"""
         return self.anisotropy_zoom_factor(self.resolution_zyx())
 
     @staticmethod
@@ -510,6 +510,9 @@ class LayerSelecter(QWidget):
     def container(self):
         return self._container
 
+    def layer(self):
+        return self._viewer.layers[self.layer_name()]
+
     def layer_name(self):
         return self.layer_list.currentText()
 
@@ -562,8 +565,21 @@ class FilePathWidget(QWidget):  # TODO include load as folder
 
     def build(self):
         """Builds the layout of the widget"""
-        add_widgets(self._layout, [self.text_field, self.button])
+        add_widgets(
+            self._layout,
+            [combine_blocks(self.button, self.text_field, min_spacing=5)],
+            ABS_AL,
+        )
         self.setLayout(self._layout)
+
+    @property
+    def tooltips(self):
+        return self._text_field.toolTip()
+
+    @tooltips.setter
+    def tooltips(self, tooltip: str):
+        self._text_field.setToolTip(tooltip)
+        self._button.setToolTip(tooltip)
 
     @property
     def text_field(self):
@@ -574,6 +590,7 @@ class FilePathWidget(QWidget):  # TODO include load as folder
     def text_field(self, text: str):
         """Sets the initial description in the text field, makes it the new default path"""
         self._initial_desc = text
+        self.tooltips = text
         self._text_field.setText(text)
 
     @property
