@@ -91,7 +91,9 @@ class Helper(QWidget):
 
         # print(self.parent().parent())
 
-        menu = QMenu(self.parent().parent())
+        # menu = QMenu(self.parent().parent())
+        menu = QMenu(self.window())
+        menu.setStyleSheet( f"background-color: {ui.napari_grey}; color: white;")
 
         crop_action = menu.addAction("Utilities : Crop")
         aniso_action = menu.addAction("Utilities: Correct anisotropy")
