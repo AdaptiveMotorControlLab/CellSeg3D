@@ -67,7 +67,8 @@ class Helper(QWidget):
             if event.button == 2 and "control" in event.modifiers:
                 yield
                 # on move
-                pos = self.parent().parent().mapFromGlobal(QCursor.pos())
+                # pos = self.parent().parent().mapFromGlobal(QCursor.pos())
+                pos = QCursor.pos()
                 self.show_menu(pos)
                 while event.type == "mouse_move":
                     yield
