@@ -451,7 +451,7 @@ class ToInstanceUtils(BasePluginFolder):
         elif self.folder_choice.isChecked():
             if len(self.images_filepaths) != 0:
                 images = [
-                    to_semantic(file, is_file_path=True)
+                    self.instance_widgets.get_method(imread(file))
                     for file in self.images_filepaths
                 ]
                 save_folder(
@@ -460,18 +460,6 @@ class ToInstanceUtils(BasePluginFolder):
                     images,
                     self.images_filepaths,
                 )
-
-
-class ThresholdUtils(RemoveSmallUtils):
-    def __init__(self, viewer, parent=None):
-
-        super().__init__(viewer, parent)
-
-        self.size_for_removal_counter = ui.DoubleIncrementCounter(
-            upper=100000.0, default=10.0, label="Threshold value:"
-        )
-        self.container.layout.addWidget(self.size_for_removal_counter)
-        # self._build()
 
 
 class ThresholdUtils(BasePluginFolder):
@@ -545,7 +533,7 @@ class ThresholdUtils(BasePluginFolder):
         elif self.folder_choice.isChecked():
             if len(self.images_filepaths) != 0:
                 images = [
-                    clear_small_objects(file, remove_size, is_file_path=True)
+                    self.function(imread(file), remove_size)
                     for file in self.images_filepaths
                 ]
                 save_folder(
@@ -572,13 +560,9 @@ class ConvertUtils(BasePluginFolder):
         """
 
         super().__init__(viewer, parent)
-
         self._viewer = viewer
-
-        # FIXME test
-        viewer.window.add_dock_widget(AnisoUtils(viewer, self))
-
-
+        pass
+# TODO add dropwdown menu with all utils listed
 #
 #         ########################
 #         # interface

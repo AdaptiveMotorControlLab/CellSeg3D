@@ -124,22 +124,6 @@ class Trainer(ModelFramework):
 
         self.config = config.TrainerConfig()
 
-        # self.save_as_zip = False
-        # """Whether to zip results folder once done. Creates a zipped copy of the results folder."""
-        #
-        # # recover default values
-        # self.num_samples = samples
-        # """Number of samples to extract"""
-        # self.batch_size = batch
-        # """Batch size"""
-        # self.max_epochs = epochs
-        # """Epochs"""
-        # self.val_interval = val_interval
-        # """At which epochs to perform validation. E.g. if 2, will run validation on epochs 2,4,6..."""
-        # self.patch_size = []
-        # """The size of samples to be extracted from images"""
-        # self.learning_rate = 1e-3
-
         self.model = None  # TODO : custom model loading ?
         self.worker = None
         """Training worker for multithreading, should be a TrainingWorker instance from :doc:model_workers.py"""
@@ -268,16 +252,16 @@ class Trainer(ModelFramework):
         self.sampling_container = ui.ContainerWidget()
 
         self.patch_choice = ui.CheckBox(
-            "Extract patches from images", func=self.toggle_patch_dims
+            "Extract patches from images", func=self._toggle_patch_dims
         )
-        self.patch_choice.clicked.connect(self.toggle_patch_dims)
+        self.patch_choice.clicked.connect(self._toggle_patch_dims)
 
         self.use_transfer_choice = ui.CheckBox(
-            "Transfer weights", self.toggle_transfer_param
+            "Transfer weights", self._toggle_transfer_param
         )
 
         self.use_deterministic_choice = ui.CheckBox(
-            "Deterministic training", func=self.toggle_deterministic_param
+            "Deterministic training", func=self._toggle_deterministic_param
         )
         self.box_seed = ui.IntIncrementCounter(
             upper=10000000, default=default.deterministic_config.seed
@@ -347,8 +331,8 @@ class Trainer(ModelFramework):
         set_tooltips()
         self.build()
 
-    def _hide_unused(self):
 
+    def _hide_unused(self):
         [
             self._hide_io_element(w)
             for w in [
@@ -373,7 +357,7 @@ class Trainer(ModelFramework):
         """Getter for loss function selected by user"""
         return self.loss_dict[key]
 
-    def toggle_patch_dims(self):
+    def _toggle_patch_dims(self):
         if self.patch_choice.isChecked():
             [w.setVisible(True) for w in self.patch_size_widgets]
             [l.setVisible(True) for l in self.patch_size_lbl]
@@ -385,13 +369,13 @@ class Trainer(ModelFramework):
             self.sample_choice_slider.container.setVisible(False)
             self.sampling_container.setVisible(False)
 
-    def toggle_transfer_param(self):
+    def _toggle_transfer_param(self):
         if self.use_transfer_choice.isChecked():
             self.custom_weights_choice.setVisible(True)
         else:
             self.custom_weights_choice.setVisible(False)
 
-    def toggle_deterministic_param(self):
+    def _toggle_deterministic_param(self):
         if self.use_deterministic_choice.isChecked():
             self.container_seed.setVisible(True)
         else:

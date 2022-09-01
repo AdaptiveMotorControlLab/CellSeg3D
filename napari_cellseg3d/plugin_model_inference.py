@@ -80,6 +80,8 @@ class Inferer(ModelFramework):
 
         ###########################
         # interface
+        # self.data_panel = None
+
         self.view_results_container = ui.ContainerWidget(t=7, b=0, parent=self)
         self.view_results_panel = None
 
@@ -230,7 +232,7 @@ class Inferer(ModelFramework):
         # self._hide_unused_widgets()
 
         self.build()
-        # self._set_io_visibility()
+        self._set_io_visibility()
         self.folder_choice.toggled.connect(
             partial(
                 self._show_io_element,
@@ -240,6 +242,8 @@ class Inferer(ModelFramework):
         )
         self.folder_choice.toggle()
         self.layer_choice.toggle()
+
+        self._remove_unused()
 
     def _set_tooltips(self):
         ##################
@@ -409,7 +413,9 @@ class Inferer(ModelFramework):
             self.worker_config.results_path
         )
         self.results_filewidget.check_ready()
-        tab.layout.addWidget(self.build_io_panel())
+
+        self.data_panel = self.build_io_panel()
+        tab.layout.addWidget(self.data_panel)
         #################################
         #################################
         ui.add_blank(tab, tab.layout)

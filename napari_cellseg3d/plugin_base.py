@@ -67,10 +67,8 @@ class BasePluginSingleImage(QTabWidget):
             layer_type=napari.layers.Image,
             parent=self,
         )
-
         ################
         # Label widgets
-
         self.labels_filewidget = ui.FilePathWidget(
             "Label path", self.show_dialog_labels, parent=self
         )
@@ -81,8 +79,8 @@ class BasePluginSingleImage(QTabWidget):
             layer_type=napari.layers.Labels,
             parent=self,
         )
-
         ################
+        # Results widget
         self.results_filewidget = ui.FilePathWidget(
             "Saving path", self.load_results_path, parent=self
         )
@@ -91,17 +89,7 @@ class BasePluginSingleImage(QTabWidget):
             [".tif", ".tiff"], label="File format"
         )
 
-        self.load_as_stack_choice = ui.CheckBox(
-            "Load folder as stack ?", self.show_filetype_choice
-        )
-        """Checkbox to choose single image or stack folder handling"""
-
-        self.load_as_stack_choice.setSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.Fixed
-        )
-
     def build_io_panel(self):
-
         io_panel = ui.GroupedWidget("Data")
         ui.add_widgets(
             io_panel.layout,
@@ -117,8 +105,10 @@ class BasePluginSingleImage(QTabWidget):
         )
         io_panel.setLayout(io_panel.layout)
 
-        self._set_io_visibility()
+        # self._set_io_visibility()
+        return io_panel
 
+    def _remove_unused(self):
         if not self.show_label_io:
             self.labels_filewidget = None
             self.label_layer_loader = None
@@ -130,10 +120,7 @@ class BasePluginSingleImage(QTabWidget):
         if not self.show_results_io:
             self.results_filewidget = None
 
-        return io_panel
-
     def _set_io_visibility(self):
-
         ##################
         # Show when layer is selected
         if self.show_image_io:
@@ -380,6 +367,7 @@ class BasePluginFolder(BasePluginSingleImage):
         # )
         """Allows to choose which file will be loaded from folder"""
         #######################################################
+        # self._set_io_visibility()
 
     def load_dataset_paths(self):
         """Loads all image paths (as str) in a given folder for which the extension matches the set filetype
