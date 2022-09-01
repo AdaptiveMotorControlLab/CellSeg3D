@@ -12,6 +12,7 @@ from napari_cellseg3d import config
 import napari_cellseg3d.interface as ui
 from napari_cellseg3d import utils
 from napari_cellseg3d.model_instance_seg import clear_small_objects
+from napari_cellseg3d.model_instance_seg import threshold
 from napari_cellseg3d.model_instance_seg import to_instance
 from napari_cellseg3d.model_instance_seg import to_semantic
 from napari_cellseg3d.plugin_base import BasePluginFolder
@@ -45,7 +46,7 @@ def show_result(viewer, layer, image, name):
     if isinstance(layer, napari.layers.Image):
         viewer.add_image(image, name=name)
     elif isinstance(layer, napari.layers.Labels):
-        viewer.add_image(image, name=name)
+        viewer.add_labels(image, name=name)
     else:
         warnings.warn(
             f"Results not shown, unsupported layer type {type(layer)}"
@@ -58,15 +59,13 @@ class AnisoUtils(BasePluginFolder):
         super().__init__(
             viewer,
             parent,
-            loads_images=True,
             loads_labels=False,
-            has_results=True,
         )
 
         self.data_panel = self.build_io_panel()
 
         self.image_layer_loader.layer_list.label.setText("Layer :")
-        self.image_layer_loader.layer_type = napari.layers.Layer
+        self.image_layer_loader.set_layer_type(napari.layers.Layer)
 
         self.aniso_widgets = ui.AnisotropyWidgets(self, always_visible=True)
         self.start_btn = ui.Button("Start", self._start)
@@ -140,15 +139,13 @@ class RemoveSmallUtils(BasePluginFolder):
         super().__init__(
             viewer,
             parent,
-            loads_images=True,
             loads_labels=False,
-            has_results=True,
         )
 
         self.data_panel = self.build_io_panel()
 
         self.image_layer_loader.layer_list.label.setText("Layer :")
-        self.image_layer_loader.layer_type = napari.layers.Layer
+        self.image_layer_loader.set_layer_type(napari.layers.Layer)
 
         self.start_btn = ui.Button("Start", self._start)
         self.size_for_removal_counter = ui.IntIncrementCounter(
@@ -162,7 +159,9 @@ class RemoveSmallUtils(BasePluginFolder):
         self.results_filewidget.text_field.setText(str(self.results_path))
         self.results_filewidget.check_ready()
 
-        self._build()
+        self.container = self._build()
+
+        self.function = clear_small_objects
 
     def _build(self):
 
@@ -180,6 +179,8 @@ class RemoveSmallUtils(BasePluginFolder):
 
         ui.ScrollArea.make_scrollable(container.layout, self)
 
+        return container
+
     def _start(self):
         self.results_path.mkdir(exist_ok=True)
         remove_size = self.size_for_removal_counter.value()
@@ -189,7 +190,7 @@ class RemoveSmallUtils(BasePluginFolder):
                 layer = self.image_layer_loader.layer()
 
                 data = np.array(layer.data, dtype=np.int16)
-                removed = clear_small_objects(data, remove_size)
+                removed = self.function(data, remove_size)
 
                 save_layer(
                     self.results_path,
@@ -220,8 +221,6 @@ class ToSemanticUtils(BasePluginFolder):
             viewer,
             parent,
             loads_images=False,
-            loads_labels=True,
-            has_results=True,
         )
 
         self.data_panel = self.build_io_panel()
@@ -252,8 +251,8 @@ class ToSemanticUtils(BasePluginFolder):
         self.results_path.mkdir(exist_ok=True)
 
         if self.layer_choice:
-            if self.image_layer_loader.layer_data() is not None:
-                layer = self.image_layer_loader.layer()
+            if self.label_layer_loader.layer_data() is not None:
+                layer = self.label_layer_loader.layer()
 
                 data = np.array(layer.data, dtype=np.int16)
                 semantic = to_semantic(data)
@@ -279,95 +278,132 @@ class ToSemanticUtils(BasePluginFolder):
                     self.images_filepaths,
                 )
 
-class InstanceWidgets(QWidget):
 
-    def __init__(self, parent = None):
+class InstanceWidgets(QWidget):
+    def __init__(self, parent=None):
 
         super().__init__(parent)
 
         self.method_choice = ui.DropdownMenu(
             config.INSTANCE_SEGMENTATION_METHOD_LIST.keys()
         )
-        self.method = config.INSTANCE_SEGMENTATION_METHOD_LIST[self.method_choice.currentText()]
+        self._method = config.INSTANCE_SEGMENTATION_METHOD_LIST[
+            self.method_choice.currentText()
+        ]
+
+        self.method_choice.currentTextChanged.connect(self._show_connected)
+        self.method_choice.currentTextChanged.connect(self._show_watershed)
 
         self.threshold_slider1 = ui.Slider(
-            lower=1,
-            upper=99,
-            default=config.PostProcessConfig().instance.threshold.threshold_value
-            * 100,
+            lower=0,
+            upper=100,
+            default=50,
             divide_factor=100.0,
             step=5,
             text_label="Probability threshold :",
         )
         self.threshold_slider2 = ui.Slider(
-            lower=1,
-            upper=99,
-            default=config.PostProcessConfig().instance.threshold.threshold_value
-                    * 100,
+            lower=0,
+            upper=100,
+            default=90,
             divide_factor=100.0,
             step=5,
-            text_label="Probability threshold :",
+            text_label="Probability threshold (seeding) :",
         )
 
         self.counter1 = ui.IntIncrementCounter(
             upper=100,
-            default=30,
+            default=10,
             step=5,
             label="Small object removal (pxs) :",
         )
         self.counter2 = ui.IntIncrementCounter(
             upper=100,
-            default=10,
+            default=3,
             step=5,
             label="Small seed removal (pxs) :",
         )
 
+        self._build()
+
+    def get_method(self, volume):
+        return self._method(
+            volume,
+            self.threshold_slider1.slider_value,
+            self.counter1.value(),
+            self.threshold_slider2.slider_value,
+            self.counter2.value(),
+        )
+
+    def _build(self):
+
+        group = ui.GroupedWidget("Instance segmentation")
+
+        ui.add_widgets(
+            group.layout,
+            [
+                self.method_choice,
+                self.threshold_slider1.container,
+                self.threshold_slider2.container,
+                self.counter1.label,
+                self.counter1,
+                self.counter2.label,
+                self.counter2,
+            ],
+        )
+
+        self.setLayout(group.layout)
+
     def _show_watershed(self):
-        name = config.INSTANCE_SEGMENTATION_METHOD_LIST.keys()[0]
+        name = "Watershed"
         if self.method_choice.currentText() == name:
 
-            self.threshold_slider1.container.setVisible(True)
-            self.threshold_slider2.container.setVisible(True)
-            self.counter1.setVisible(True)
-            self.counter2.setVisible(True)
+            self._show_slider1()
+            self._show_slider2()
+            self._show_counter1()
+            self._show_counter2()
 
-            self.method = config.INSTANCE_SEGMENTATION_METHOD_LIST[name]
+            self._method = config.INSTANCE_SEGMENTATION_METHOD_LIST[name]
 
     def _show_connected(self):
-        name = config.INSTANCE_SEGMENTATION_METHOD_LIST.keys()[1]
+        name = "Connected components"
         if self.method_choice.currentText() == name:
 
-            self.threshold_slider1.container.setVisible(True)
-            self.threshold_slider2.container.setVisible(False)
-            self.counter1.setVisible(True)
-            self.counter2.setVisible(False)
+            self._show_slider1()
+            self._show_slider2(False)
+            self._show_counter1()
+            self._show_counter2(False)
 
-            self.method = config.INSTANCE_SEGMENTATION_METHOD_LIST[name]
+            self._method = config.INSTANCE_SEGMENTATION_METHOD_LIST[name]
 
-    def _show_slider1(self, is_visible:bool = True):
+    def _show_slider1(self, is_visible: bool = True):
         self.threshold_slider1.container.setVisible(is_visible)
 
-    def _show_slider2(self, is_visible:bool = True):
+    def _show_slider2(self, is_visible: bool = True):
         self.threshold_slider2.container.setVisible(is_visible)
 
-    def _show_counter1(self, is_visible:bool = True):
+    def _show_counter1(self, is_visible: bool = True):
         self.counter1.setVisible(is_visible)
         self.counter1.label.setVisible(is_visible)
 
+    def _show_counter2(self, is_visible: bool = True):
+        self.counter2.setVisible(is_visible)
+        self.counter2.label.setVisible(is_visible)
+
 
 class ToInstanceUtils(BasePluginFolder):
-
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
 
         super().__init__(
             viewer,
             parent,
             loads_images=False,
-            loads_labels=True,
-            has_results=True,
         )
 
         self.data_panel = self.build_io_panel()
+        self.label_layer_loader.set_layer_type(napari.layers.Layer)
+
+        self.instance_widgets = InstanceWidgets()
 
         self.start_btn = ui.Button("Start", self._start)
 
@@ -382,12 +418,14 @@ class ToInstanceUtils(BasePluginFolder):
         container = ui.ContainerWidget()
 
         ui.add_widgets(
-            self.data_panel.layout,
+            container.layout,
             [
-                self.start_btn,
+                self.data_panel,
+                self.instance_widgets,
             ],
         )
-        container.layout.addWidget(self.data_panel)
+
+        ui.add_widgets(self.instance_widgets.layout(), [self.start_btn])
 
         ui.ScrollArea.make_scrollable(container.layout, self)
 
@@ -395,20 +433,21 @@ class ToInstanceUtils(BasePluginFolder):
         self.results_path.mkdir(exist_ok=True)
 
         if self.layer_choice:
-            if self.image_layer_loader.layer_data() is not None:
-                layer = self.image_layer_loader.layer()
+            if self.label_layer_loader.layer_data() is not None:
+                layer = self.label_layer_loader.layer()
 
                 data = np.array(layer.data, dtype=np.int16)
-                semantic = to_semantic(data)
+                instance = self.instance_widgets.get_method(data)
 
                 save_layer(
                     self.results_path,
-                    f"semantic_{layer.name}_{utils.get_date_time()}.tif",
-                    semantic,
+                    f"instance_{layer.name}_{utils.get_date_time()}.tif",
+                    instance,
                 )
-                show_result(
-                    self._viewer, layer, semantic, f"semantic_{layer.name}"
+                self._viewer.add_labels(
+                    instance, name=f"instance_{layer.name}"
                 )
+
         elif self.folder_choice.isChecked():
             if len(self.images_filepaths) != 0:
                 images = [
@@ -417,14 +456,104 @@ class ToInstanceUtils(BasePluginFolder):
                 ]
                 save_folder(
                     self.results_path,
-                    f"semantic_results_{utils.get_date_time()}",
+                    f"instance_results_{utils.get_date_time()}",
                     images,
                     self.images_filepaths,
                 )
 
 
+class ThresholdUtils(RemoveSmallUtils):
+    def __init__(self, viewer, parent=None):
+
+        super().__init__(viewer, parent)
+
+        self.size_for_removal_counter = ui.DoubleIncrementCounter(
+            upper=100000.0, default=10.0, label="Threshold value:"
+        )
+        self.container.layout.addWidget(self.size_for_removal_counter)
+        # self._build()
+
+
 class ThresholdUtils(BasePluginFolder):
-    pass
+    def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
+
+        super().__init__(
+            viewer,
+            parent,
+            loads_labels=False,
+        )
+
+        self.data_panel = self.build_io_panel()
+
+        self.image_layer_loader.layer_list.label.setText("Layer :")
+        self.image_layer_loader.set_layer_type(napari.layers.Layer)
+
+        self.start_btn = ui.Button("Start", self._start)
+        self.binarize_counter = ui.DoubleIncrementCounter(
+            lower=0.0,
+            upper=100000.0,
+            step=0.5,
+            default=10.0,
+            label="Remove all smaller than (value):",
+        )
+
+        self.results_path = Path.home() / Path("cellseg3d/threshold")
+        self.results_filewidget.text_field.setText(str(self.results_path))
+        self.results_filewidget.check_ready()
+
+        self.container = self._build()
+
+        self.function = threshold
+
+    def _build(self):
+
+        container = ui.ContainerWidget()
+
+        ui.add_widgets(
+            self.data_panel.layout,
+            [
+                self.binarize_counter.label,
+                self.binarize_counter,
+                self.start_btn,
+            ],
+        )
+        container.layout.addWidget(self.data_panel)
+
+        ui.ScrollArea.make_scrollable(container.layout, self)
+
+        return container
+
+    def _start(self):
+        self.results_path.mkdir(exist_ok=True)
+        remove_size = self.binarize_counter.value()
+
+        if self.layer_choice:
+            if self.image_layer_loader.layer_data() is not None:
+                layer = self.image_layer_loader.layer()
+
+                data = np.array(layer.data, dtype=np.int16)
+                removed = self.function(data, remove_size)
+
+                save_layer(
+                    self.results_path,
+                    f"threshold_{layer.name}_{utils.get_date_time()}.tif",
+                    removed,
+                )
+                show_result(
+                    self._viewer, layer, removed, f"threshold{layer.name}"
+                )
+        elif self.folder_choice.isChecked():
+            if len(self.images_filepaths) != 0:
+                images = [
+                    clear_small_objects(file, remove_size, is_file_path=True)
+                    for file in self.images_filepaths
+                ]
+                save_folder(
+                    self.results_path,
+                    f"threshold_results_{utils.get_date_time()}",
+                    images,
+                    self.images_filepaths,
+                )
 
 
 class ConvertUtils(BasePluginFolder):

@@ -60,9 +60,7 @@ class Inferer(ModelFramework):
         super().__init__(
             viewer,
             parent,
-            loads_images=True,
             loads_labels=False,
-            has_results=True,
         )
 
         self._viewer = viewer
@@ -232,7 +230,7 @@ class Inferer(ModelFramework):
         # self._hide_unused_widgets()
 
         self.build()
-        self._set_io_visibility()
+        # self._set_io_visibility()
         self.folder_choice.toggled.connect(
             partial(
                 self._show_io_element,

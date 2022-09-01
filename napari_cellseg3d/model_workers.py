@@ -575,13 +575,17 @@ class InferenceWorker(GeneratorWorker):
             self.log(f"\nFile n°{i+1} saved as : {filename}")
 
     def aniso_transform(self, image):
-        zoom = self.config.post_process_config.zoom.zoom_values
-        anisotropic_transform = Zoom(
-            zoom=zoom,
-            keep_size=False,
-            padding_mode="empty",
-        )
-        return anisotropic_transform(image[0])
+
+        if self.config.post_process_config.zoom.enabled:
+            zoom = self.config.post_process_config.zoom.zoom_values
+            anisotropic_transform = Zoom(
+                zoom=zoom,
+                keep_size=False,
+                padding_mode="empty",
+            )
+            return anisotropic_transform(image[0])
+        else:
+            return image
 
     def instance_seg(self, to_instance, image_id=0, original_filename="layer"):
 

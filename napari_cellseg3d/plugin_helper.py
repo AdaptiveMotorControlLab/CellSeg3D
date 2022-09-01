@@ -65,19 +65,29 @@ class Helper(QWidget):
             # print(event.modifiers)
 
             if event.button == 2 and "control" in event.modifiers:
+                print("mouse down")
+                dragged = False
                 yield
                 # on move
-                # pos = self.parent().parent().mapFromGlobal(QCursor.pos())
-                pos = QCursor.pos()
-                self.show_menu(pos)
                 while event.type == "mouse_move":
+                    print(event.position)
+                    dragged = True
                     yield
-                # yield
+                # on release
+                if dragged:
+                    print("drag end")
+                else:
+                    print("clicked!")
+                    pos = QCursor.pos()
+                    self.show_menu(pos)
 
     def show_menu(self, event):
         from napari_cellseg3d.plugin_crop import Cropping
         from napari_cellseg3d.plugin_convert import AnisoUtils
         from napari_cellseg3d.plugin_convert import RemoveSmallUtils
+        from napari_cellseg3d.plugin_convert import ToInstanceUtils
+        from napari_cellseg3d.plugin_convert import ToSemanticUtils
+        from napari_cellseg3d.plugin_convert import ThresholdUtils
 
         # print(self.parent().parent())
 
@@ -86,6 +96,13 @@ class Helper(QWidget):
         crop_action = menu.addAction("Utilities : Crop")
         aniso_action = menu.addAction("Utilities: Correct anisotropy")
         clear_small_action = menu.addAction("Utilities : Remove small objects")
+        to_instance_action = menu.addAction(
+            "Utilities : Convert to instance labels"
+        )
+        to_semantic_action = menu.addAction(
+            "Utilities : Convert to semantic labels"
+        )
+        thresh_action = menu.addAction("Utilities : Binarize")
 
         action = menu.exec_(event)
         if action == crop_action:
@@ -96,6 +113,15 @@ class Helper(QWidget):
 
         if action == clear_small_action:
             self._viewer.window.add_dock_widget(RemoveSmallUtils(self._viewer))
+
+        if action == to_instance_action:
+            self._viewer.window.add_dock_widget(ToInstanceUtils(self._viewer))
+
+        if action == to_semantic_action:
+            self._viewer.window.add_dock_widget(ToSemanticUtils(self._viewer))
+
+        if action == thresh_action:
+            self._viewer.window.add_dock_widget(ThresholdUtils(self._viewer))
 
     def build(self):
         vbox = QVBoxLayout()

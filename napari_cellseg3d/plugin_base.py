@@ -81,8 +81,8 @@ class BasePluginSingleImage(QTabWidget):
             layer_type=napari.layers.Labels,
             parent=self,
         )
-        ################
 
+        ################
         self.results_filewidget = ui.FilePathWidget(
             "Saving path", self.load_results_path, parent=self
         )
@@ -118,6 +118,17 @@ class BasePluginSingleImage(QTabWidget):
         io_panel.setLayout(io_panel.layout)
 
         self._set_io_visibility()
+
+        if not self.show_label_io:
+            self.labels_filewidget = None
+            self.label_layer_loader = None
+
+        if not self.show_image_io:
+            self.image_layer_loader = None
+            self.image_filewidget = None
+
+        if not self.show_results_io:
+            self.results_filewidget = None
 
         return io_panel
 

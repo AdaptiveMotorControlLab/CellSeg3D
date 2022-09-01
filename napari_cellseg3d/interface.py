@@ -507,6 +507,11 @@ class LayerSelecter(QWidget):
             index = self.layer_list.findText(removed_layer.name)
             self.layer_list.removeItem(index)
 
+    def set_layer_type(self, type):  # no @property due to Qt constraint
+        self.layer_type = type
+        [self.layer_list.removeItem(i) for i in range(self.layer_list.count())]
+        self._check_for_layers()
+
     def container(self):
         return self._container
 
