@@ -795,7 +795,7 @@ class Inferer(ModelFramework):
 
                 labels = result.instance_labels
                 method = self.worker_config.post_process_config.instance.method
-                number_cells = np.amax(labels)
+                number_cells = np.unique(labels.flatten()).size - 1 # remove background
 
                 name = f"({number_cells} objects)_{method}_instance_labels_{image_id}"
 
