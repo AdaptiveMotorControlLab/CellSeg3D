@@ -83,7 +83,7 @@ class ModelInfo:
 
     @staticmethod
     def get_model_name_list():
-        print(f"Model list :\n" + [f"{name}\n" for name in MODEL_LIST.keys()])
+        print(f"Model list :\n" + str(f"{name}\n" for name in MODEL_LIST.keys()))
         return MODEL_LIST.keys()
 
 
