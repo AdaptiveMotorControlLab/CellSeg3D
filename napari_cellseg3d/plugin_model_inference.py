@@ -232,7 +232,7 @@ class Inferer(ModelFramework):
         # self._hide_unused_widgets()
 
         self.build()
-        self._set_io_visibility()
+        self.set_io_visibility()
         self.folder_choice.toggled.connect(
             partial(
                 self._show_io_element,
@@ -632,8 +632,9 @@ class Inferer(ModelFramework):
             )
 
             if self.window_infer_box.isChecked():
+                size = int(self.window_size_choice.currentText())
                 window_config = config.SlidingWindowConfig(
-                    window_size=int(self.window_size_choice.currentText()),
+                    window_size=size,
                     window_overlap=self.window_overlap_slider.slider_value,
                 )
             else:
@@ -795,7 +796,9 @@ class Inferer(ModelFramework):
 
                 labels = result.instance_labels
                 method = self.worker_config.post_process_config.instance.method
-                number_cells = np.unique(labels.flatten()).size - 1 # remove background
+                number_cells = (
+                    np.unique(labels.flatten()).size - 1
+                )  # remove background
 
                 name = f"({number_cells} objects)_{method}_instance_labels_{image_id}"
 

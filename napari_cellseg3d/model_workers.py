@@ -284,6 +284,13 @@ class InferenceWorker(GeneratorWorker):
             status = "disabled"
 
         self.log(f"Window inference is {status}\n")
+        if status == "enabled":
+            self.log(
+                f"Window size is {self.config.sliding_window_config.window_size}"
+            )
+            self.log(
+                f"Window overlap is {self.config.sliding_window_config.window_overlap}"
+            )
 
         if config.keep_on_cpu:
             self.log(f"Dataset loaded to CPU")
@@ -465,7 +472,7 @@ class InferenceWorker(GeneratorWorker):
 
         outputs = sliding_window_inference(
             inputs,
-            roi_size=window_size,
+            roi_size=[window_size, window_size, window_size],
             sw_batch_size=1,  # TODO add param
             predictor=model_output,
             sw_device=self.config.device,

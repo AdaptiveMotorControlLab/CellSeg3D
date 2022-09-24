@@ -26,7 +26,7 @@ class MetricsUtils(BasePluginFolder):
             viewer: viewer to display the widget in
             parent : parent widget
         """
-        super().__init__(viewer, parent)
+        super().__init__(viewer, parent, has_results=False)
 
         self._viewer = viewer
         """Viewer to display widget in"""
@@ -40,6 +40,7 @@ class MetricsUtils(BasePluginFolder):
 
         ######################################
         # interface
+        self.io_panel = self.build_io_panel()
 
         # set new descriptions for Filewidgets
         self.image_filewidget.description = "Ground truth"

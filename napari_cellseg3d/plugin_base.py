@@ -120,7 +120,7 @@ class BasePluginSingleImage(QTabWidget):
         if not self.show_results_io:
             self.results_filewidget = None
 
-    def _set_io_visibility(self):
+    def set_io_visibility(self):
         ##################
         # Show when layer is selected
         if self.show_image_io:

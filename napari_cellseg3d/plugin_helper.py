@@ -88,42 +88,58 @@ class Helper(QWidget):
         from napari_cellseg3d.plugin_convert import ToInstanceUtils
         from napari_cellseg3d.plugin_convert import ToSemanticUtils
         from napari_cellseg3d.plugin_convert import ThresholdUtils
+        from napari_cellseg3d.plugin_utilities import UTILITIES_WIDGETS
 
         # print(self.parent().parent())
+        # TODO create mapping for name:widget
 
         # menu = QMenu(self.parent().parent())
         menu = QMenu(self.window())
-        menu.setStyleSheet( f"background-color: {ui.napari_grey}; color: white;")
+        menu.setStyleSheet(
+            f"background-color: {ui.napari_grey}; color: white;"
+        )
 
-        crop_action = menu.addAction("Utilities : Crop")
-        aniso_action = menu.addAction("Utilities: Correct anisotropy")
-        clear_small_action = menu.addAction("Utilities : Remove small objects")
-        to_instance_action = menu.addAction(
-            "Utilities : Convert to instance labels"
-        )
-        to_semantic_action = menu.addAction(
-            "Utilities : Convert to semantic labels"
-        )
-        thresh_action = menu.addAction("Utilities : Binarize")
+        actions = []
+        for title in UTILITIES_WIDGETS.keys():
+            a = menu.addAction(f"Utilities : {title}")
+            actions.append(a)
+
+        # crop_action = menu.addAction("Utilities : Crop")
+        # aniso_action = menu.addAction("Utilities: Correct anisotropy")
+        # clear_small_action = menu.addAction("Utilities : Remove small objects")
+        # to_instance_action = menu.addAction(
+        #     "Utilities : Convert to instance labels"
+        # )
+        # to_semantic_action = menu.addAction(
+        #     "Utilities : Convert to semantic labels"
+        # )
+        # thresh_action = menu.addAction("Utilities : Binarize")
 
         action = menu.exec_(event)
-        if action == crop_action:
-            self._viewer.window.add_dock_widget(Cropping(self._viewer))
 
-        if action == aniso_action:
-            self._viewer.window.add_dock_widget(AnisoUtils(self._viewer))
+        for possible_action in actions:
+            if action == possible_action:
+                text = possible_action.text().split(": ")[1]
+                widget = UTILITIES_WIDGETS[text](self._viewer)
+                self._viewer.window.add_dock_widget(widget)
 
-        if action == clear_small_action:
-            self._viewer.window.add_dock_widget(RemoveSmallUtils(self._viewer))
-
-        if action == to_instance_action:
-            self._viewer.window.add_dock_widget(ToInstanceUtils(self._viewer))
-
-        if action == to_semantic_action:
-            self._viewer.window.add_dock_widget(ToSemanticUtils(self._viewer))
-
-        if action == thresh_action:
-            self._viewer.window.add_dock_widget(ThresholdUtils(self._viewer))
+        # if action == crop_action:
+        #     self._viewer.window.add_dock_widget(Cropping(self._viewer))
+        #
+        # if action == aniso_action:
+        #     self._viewer.window.add_dock_widget(AnisoUtils(self._viewer))
+        #
+        # if action == clear_small_action:
+        #     self._viewer.window.add_dock_widget(RemoveSmallUtils(self._viewer))
+        #
+        # if action == to_instance_action:
+        #     self._viewer.window.add_dock_widget(ToInstanceUtils(self._viewer))
+        #
+        # if action == to_semantic_action:
+        #     self._viewer.window.add_dock_widget(ToSemanticUtils(self._viewer))
+        #
+        # if action == thresh_action:
+        #     self._viewer.window.add_dock_widget(ThresholdUtils(self._viewer))
 
     def build(self):
         vbox = QVBoxLayout()

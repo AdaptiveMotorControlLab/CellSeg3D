@@ -331,7 +331,6 @@ class Trainer(ModelFramework):
         set_tooltips()
         self.build()
 
-
     def _hide_unused(self):
         [
             self._hide_io_element(w)
