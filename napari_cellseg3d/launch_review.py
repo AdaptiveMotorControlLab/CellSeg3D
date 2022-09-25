@@ -99,19 +99,19 @@ def launch_review(review_config: config.ReviewConfig):
         # print("The directory is:", out_dir)
 
         def quicksave():
-            if not review_config.as_stack:
-                if viewer.layers["labels"] is not None:
-                    name = os.path.join(str(out_dir), "labels_reviewed.tif")
-                    dat = viewer.layers["labels"].data
-                    imwrite(name, data=dat)
+            # if not review_config.as_stack:
+            if viewer.layers["labels"] is not None:
+                name = os.path.join(str(out_dir), "labels_reviewed.tif")
+                dat = viewer.layers["labels"].data
+                imwrite(name, data=dat)
 
-            else:
-                if viewer.layers["labels"] is not None:
-                    dir_name = os.path.join(str(out_dir), "labels_reviewed")
-                    dat = viewer.layers["labels"].data
-                    utils.save_stack(
-                        dat, dir_name, filetype=review_config.filetype
-                    )
+            # else:
+            #     if viewer.layers["labels"] is not None:
+            #         dir_name = os.path.join(str(out_dir), "labels_reviewed")
+            #         dat = viewer.layers["labels"].data
+            #         utils.save_stack(
+            #             dat, dir_name, filetype=review_config.filetype
+            #         )
 
         return dirname, quicksave()
 
