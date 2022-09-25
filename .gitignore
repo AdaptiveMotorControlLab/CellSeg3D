@@ -102,3 +102,4 @@ venv/
 /Loss_plots/
 notebooks/csv_cell_plot.html
 notebooks/full_plot.html
+*.csv

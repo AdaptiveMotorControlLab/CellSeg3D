@@ -22,6 +22,7 @@ from napari_cellseg3d.plugin_base import BasePluginFolder
 MAX_W = 200
 MAX_H = 400
 
+
 def save_folder(results_path, folder_name, images, image_paths):
 
     results_folder = results_path / Path(folder_name)
@@ -92,7 +93,9 @@ class AnisoUtils(BasePluginFolder):
         )
 
         ui.ScrollArea.make_scrollable(
-            container.layout, self, max_wh=[MAX_W,MAX_H]  # , min_wh=[100, 200], base_wh=[100, 200]
+            container.layout,
+            self,
+            max_wh=[MAX_W, MAX_H],  # , min_wh=[100, 200], base_wh=[100, 200]
         )
 
         self.set_io_visibility()
@@ -181,7 +184,9 @@ class RemoveSmallUtils(BasePluginFolder):
         )
         container.layout.addWidget(self.data_panel)
 
-        ui.ScrollArea.make_scrollable(container.layout, self, max_wh=[MAX_W,MAX_H])
+        ui.ScrollArea.make_scrollable(
+            container.layout, self, max_wh=[MAX_W, MAX_H]
+        )
         self.set_io_visibility()
 
         return container
@@ -250,7 +255,9 @@ class ToSemanticUtils(BasePluginFolder):
         )
         container.layout.addWidget(self.data_panel)
 
-        ui.ScrollArea.make_scrollable(container.layout, self, max_wh=[MAX_W,MAX_H])
+        ui.ScrollArea.make_scrollable(
+            container.layout, self, max_wh=[MAX_W, MAX_H]
+        )
         self.set_io_visibility()
 
     def _start(self):
@@ -433,7 +440,9 @@ class ToInstanceUtils(BasePluginFolder):
 
         ui.add_widgets(self.instance_widgets.layout(), [self.start_btn])
 
-        ui.ScrollArea.make_scrollable(container.layout, self, max_wh=[MAX_W,MAX_H])
+        ui.ScrollArea.make_scrollable(
+            container.layout, self, max_wh=[MAX_W, MAX_H]
+        )
         self.set_io_visibility()
 
     def _start(self):
@@ -515,7 +524,9 @@ class ThresholdUtils(BasePluginFolder):
         )
         container.layout.addWidget(self.data_panel)
 
-        ui.ScrollArea.make_scrollable(container.layout, self, max_wh=[MAX_W,MAX_H])
+        ui.ScrollArea.make_scrollable(
+            container.layout, self, max_wh=[MAX_W, MAX_H]
+        )
         self.set_io_visibility()
 
         return container

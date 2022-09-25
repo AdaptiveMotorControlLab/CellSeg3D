@@ -48,6 +48,8 @@ class Reviewer(BasePluginSingleImage):
 
         #######################
         # UI
+        self.io_panel = self.build_io_panel()
+
         self.layer_choice.setText("New review")
         self.folder_choice.setText("Existing review")
 
@@ -88,7 +90,7 @@ class Reviewer(BasePluginSingleImage):
     def _update_results_path(self):
         p = self.image_filewidget.text_field.text()
         if p is not None and p != "" and Path(p).is_file():
-            self.results_filewidget.text_field.setText(Path(p).parent)
+            self.results_filewidget.text_field.setText(str(Path(p).parent))
 
     def build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
@@ -101,7 +103,7 @@ class Reviewer(BasePluginSingleImage):
         # ui.add_blank(self, layout)
         ###########################
         self.filetype_choice.setVisible(False)
-        layout.addWidget(self.build_io_panel())
+        layout.addWidget(self.io_panel)
         ###########################
         ui.add_blank(self, layout)
         ###########################
@@ -190,7 +192,6 @@ class Reviewer(BasePluginSingleImage):
 
         self.config.new_csv = self.new_csv_choice.isChecked()
         self.config.filetype = self.filetype_choice.currentText()
-        self.config.as_stack = self.load_as_stack_choice.isChecked()
 
         if self.anisotropy_widgets.enabled:
             zoom = self.anisotropy_widgets.scaling_zyx()

@@ -15,7 +15,7 @@ def test_prepare(make_napari_viewer):
     viewer.add_image(image)
     widget = Datamanager(viewer)
 
-    widget.prepare(path_image, ".tif", "", False, False)
+    widget.prepare(path_image, ".tif", "", False)
 
     assert widget.filetype == ".tif"
     assert widget.as_folder == False

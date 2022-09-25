@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 from napari_cellseg3d import plugin_review as rev
 
@@ -10,10 +10,11 @@ def test_launch_review(make_napari_viewer):
 
     # widget.filetype_choice.setCurrentIndex(0)
 
-    im_path = os.path.dirname(os.path.realpath(__file__)) + "/res/test.tif"
+    im_path = str(Path(__file__).resolve().parent / "res/test.tif")
 
-    widget.image_path = im_path
-    widget.label_path = im_path
+    widget.folder_choice.setChecked(True)
+    widget.image_filewidget.text_field = im_path
+    widget.labels_filewidget.text_field = im_path
 
     widget.run_review()
     widget._viewer.close()

@@ -195,7 +195,6 @@ def launch_review(review_config: config.ReviewConfig):
         review_config.filetype,
         review_config.model_name,
         review_config.new_csv,
-        review_config.as_stack,
     )
     viewer.window.add_dock_widget(dmg, name=" ", area="left")
 

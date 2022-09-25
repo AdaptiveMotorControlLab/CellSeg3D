@@ -48,7 +48,6 @@ class ReviewConfig:
     model_name: str = ""
     new_csv: bool = True
     filetype: str = ".tif"
-    as_stack: bool = False
     zoom_factor: List[int] = None
 
 

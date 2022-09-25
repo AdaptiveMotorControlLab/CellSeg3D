@@ -118,7 +118,7 @@ class Datamanager(QWidget):
         self.df.at[0, "time"] = str_time
         self.df.to_csv(self.csv_path)
 
-    def prepare(self, label_dir, filetype, model_type, checkbox, as_folder):
+    def prepare(self, label_dir, filetype, model_type, checkbox):
         """Initialize the Datamanager, which loads the csv file and updates it
         with the index of the current slice.
 
@@ -134,7 +134,6 @@ class Datamanager(QWidget):
         print("csv path try :")
         print(label_dir)
         self.filetype = filetype
-        self.as_folder = as_folder
 
         if not self.as_folder:
             p = Path(label_dir)
