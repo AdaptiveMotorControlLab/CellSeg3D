@@ -15,6 +15,7 @@ from napari_cellseg3d import utils
 from napari_cellseg3d.model_framework import ModelFramework
 from napari_cellseg3d.model_workers import InferenceResult
 from napari_cellseg3d.model_workers import InferenceWorker
+from napari_cellseg3d.plugin_convert import  InstanceWidgets
 
 
 class Inferer(ModelFramework):
@@ -181,46 +182,48 @@ class Inferer(ModelFramework):
         ##################
         ##################
         # instance segmentation widgets
-        self.instance_box = ui.CheckBox(
+        self.instance_widgets = InstanceWidgets(self)
+
+        self.use_instance_choice = ui.CheckBox(
             "Run instance segmentation", func=self._toggle_display_instance
         )
-
-        self.instance_method_choice = ui.DropdownMenu(
-            config.INSTANCE_SEGMENTATION_METHOD_LIST.keys()
-        )
-
-        self.instance_prob_thresh_slider = ui.Slider(
-            lower=1,
-            upper=99,
-            default=config.PostProcessConfig().instance.threshold.threshold_value
-            * 100,
-            divide_factor=100.0,
-            step=5,
-            text_label="Probability threshold :",
-        )
-
-        self.instance_small_object_thresh = ui.IntIncrementCounter(
-            upper=100,
-            default=10,
-            step=5,
-            label="Small object removal (pxs) :",
-        )
-        self.instance_small_object_thresh_lbl = (
-            self.instance_small_object_thresh.label
-        )
-        self.instance_small_object_t_container = ui.combine_blocks(
-            right_or_below=self.instance_small_object_thresh,
-            left_or_above=self.instance_small_object_thresh_lbl,
-            horizontal=False,
-        )
+        #
+        # self.instance_method_choice = ui.DropdownMenu(
+        #     config.INSTANCE_SEGMENTATION_METHOD_LIST.keys()
+        # )
+        #
+        # self.instance_prob_thresh_slider = ui.Slider(
+        #     lower=1,
+        #     upper=99,
+        #     default=config.PostProcessConfig().instance.threshold.threshold_value
+        #     * 100,
+        #     divide_factor=100.0,
+        #     step=5,
+        #     text_label="Probability threshold :",
+        # )
+        #
+        # self.instance_small_object_thresh = ui.IntIncrementCounter(
+        #     upper=100,
+        #     default=10,
+        #     step=5,
+        #     label="Small object removal (pxs) :",
+        # )
+        # self.instance_small_object_thresh_lbl = (
+        #     self.instance_small_object_thresh.label
+        # )
+        # self.instance_small_object_t_container = ui.combine_blocks(
+        #     right_or_below=self.instance_small_object_thresh,
+        #     left_or_above=self.instance_small_object_thresh_lbl,
+        #     horizontal=False,
+        # )
         self.save_stats_to_csv_box = ui.CheckBox(
             "Save stats to csv", parent=self
         )
-
-        self.instance_param_container = ui.ContainerWidget(
-            t=7, b=0, parent=self
-        )
-        self.instance_layout = self.instance_param_container.layout
+        #
+        # self.instance_param_container = ui.ContainerWidget(
+        #     t=7, b=0, parent=self
+        # )
+        # self.instance_layout = self.instance_param_container.layout
 
         ##################
         ##################
@@ -292,24 +295,11 @@ class Inferer(ModelFramework):
         self.keep_data_on_cpu_box.setToolTip(
             "If enabled, data will be kept on the RAM rather than the VRAM.\nCan avoid out of memory issues with CUDA"
         )
-        self.instance_box.setToolTip(
+        self.use_instance_choice.setToolTip(
             "Instance segmentation will convert instance (0/1) labels to labels"
             " that attempt to assign an unique ID to each cell."
         )
-        self.instance_method_choice.setToolTip(
-            "Choose which method to use for instance segmentation"
-            "\nConnected components : all separated objects will be assigned an unique ID. "
-            "Robust but will not work correctly with adjacent/touching objects\n"
-            "Watershed : assigns objects ID based on the probability gradient surrounding an object. "
-            "Requires the model to surround objects in a gradient;"
-            " can possibly correctly separate unique but touching/adjacent objects."
-        )
-        self.instance_prob_thresh_slider.tooltips = (
-            "All objects below this probability will be ignored (set to 0)"
-        )
-        self.instance_small_object_thresh.setToolTip(
-            "Will remove all objects smaller (in volume) than the specified number of pixels"
-        )
+
         self.save_stats_to_csv_box.setToolTip(
             "Will save several statistics for each object to a csv in the results folder. Stats include : "
             "volume, centroid coordinates, sphericity"
@@ -358,7 +348,7 @@ class Inferer(ModelFramework):
 
     def _toggle_display_instance(self):
         """Shows or hides the options for instance segmentation based on current user selection"""
-        ui.toggle_visibility(self.instance_box, self.instance_param_container)
+        ui.toggle_visibility(self.use_instance_choice, self.instance_widgets)
 
     def _toggle_display_window_size(self):
         """Show or hide window size choice depending on status of self.window_infer_box"""
@@ -384,19 +374,19 @@ class Inferer(ModelFramework):
 
         self.anisotropy_wdgt.build()
 
-        ui.add_widgets(
-            self.instance_layout,
-            [
-                self.instance_method_choice,
-                self.instance_prob_thresh_slider.container,
-                self.instance_small_object_t_container,
-                self.save_stats_to_csv_box,
-            ],
-        )
-
-        self.instance_param_container.setLayout(self.instance_layout)
-
-        self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.MinimumExpanding)
+        # ui.add_widgets(
+        #     self.instance_layout,
+        #     [
+        #         self.instance_method_choice,
+        #         self.instance_prob_thresh_slider.container,
+        #         self.instance_small_object_t_container,
+        #         self.save_stats_to_csv_box,
+        #     ],
+        # )
+        #
+        # self.instance_param_container.setLayout(self.instance_layout)
+        #
+        # self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.MinimumExpanding)
         ######
         ############
         ##################
@@ -484,14 +474,18 @@ class Inferer(ModelFramework):
                 self.anisotropy_wdgt,  # anisotropy
                 self.thresholding_checkbox,
                 self.thresholding_slider.container,  # thresholding
-                self.instance_box,
-                self.instance_param_container,  # instance segmentation
+                self.use_instance_choice,
+                self.instance_widgets,
+                self.save_stats_to_csv_box,
+                # self.instance_param_container,  # instance segmentation
             ],
         )
+        ModelFramework._show_io_element(self.save_stats_to_csv_box, self.use_instance_choice)
 
         self.anisotropy_wdgt.container.setVisible(False)
         self.thresholding_slider.container.setVisible(False)
-        self.instance_param_container.setVisible(False)
+        self.instance_widgets.setVisible(False)
+        self.save_stats_to_csv_box.setVisible(False)
 
         post_proc_group.setLayout(post_proc_layout)
         tab.layout.addWidget(post_proc_group, alignment=ui.LEFT_AL)
@@ -613,14 +607,14 @@ class Inferer(ModelFramework):
             )
 
             instance_thresh_config = config.Thresholding(
-                threshold_value=self.instance_prob_thresh_slider.slider_value
+                threshold_value=self.instance_widgets.threshold_slider1.slider_value
             )
             instance_small_object_thresh_config = config.Thresholding(
-                threshold_value=self.instance_small_object_thresh.value()
+                threshold_value=self.instance_widgets.counter1.value()
             )
             self.instance_config = config.InstanceSegConfig(
-                enabled=self.instance_box.isChecked(),
-                method=self.instance_method_choice.currentText(),
+                enabled=self.use_instance_choice.isChecked(),
+                method=self.instance_widgets.method_choice.currentText(),
                 threshold=instance_thresh_config,
                 small_object_removal_threshold=instance_small_object_thresh_config,
             )

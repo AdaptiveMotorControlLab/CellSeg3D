@@ -315,6 +315,7 @@ class InstanceWidgets(QWidget):
             step=5,
             text_label="Probability threshold :",
         )
+        """Base prob. threshold"""
         self.threshold_slider2 = ui.Slider(
             lower=0,
             upper=100,
@@ -323,6 +324,7 @@ class InstanceWidgets(QWidget):
             step=5,
             text_label="Probability threshold (seeding) :",
         )
+        """Second prob. thresh. (seeding)"""
 
         self.counter1 = ui.IntIncrementCounter(
             upper=100,
@@ -330,12 +332,15 @@ class InstanceWidgets(QWidget):
             step=5,
             label="Small object removal (pxs) :",
         )
+        """Small obj. rem."""
+
         self.counter2 = ui.IntIncrementCounter(
             upper=100,
             default=3,
             step=5,
             label="Small seed removal (pxs) :",
         )
+        """Small seed rem."""
 
         self._build()
 
@@ -366,6 +371,30 @@ class InstanceWidgets(QWidget):
         )
 
         self.setLayout(group.layout)
+        self._set_tooltips()
+
+    def _set_tooltips(self):
+
+        self.method_choice.setToolTip(
+            "Choose which method to use for instance segmentation"
+            "\nConnected components : all separated objects will be assigned an unique ID. "
+            "Robust but will not work correctly with adjacent/touching objects\n"
+            "Watershed : assigns objects ID based on the probability gradient surrounding an object. "
+            "Requires the model to surround objects in a gradient;"
+            " can possibly correctly separate unique but touching/adjacent objects."
+        )
+        self.threshold_slider1.tooltips = (
+            "All objects below this probability will be ignored (set to 0)"
+        )
+        self.counter1.setToolTip(
+            "Will remove all objects smaller (in volume) than the specified number of pixels"
+        )
+        self.threshold_slider2.tooltips = (
+            "All seeds below this probability will be ignored (set to 0)"
+        )
+        self.counter2.setToolTip(
+            "Will remove all seeds smaller (in volume) than the specified number of pixels"
+        )
 
     def _show_watershed(self):
         name = "Watershed"
