@@ -234,10 +234,10 @@ def launch_review(review_config: config.ReviewConfig):
             )
         )
 
-        if review_config.as_stack:
-            crop_temp = volume[crop_slice].persist().compute()
-        else:
-            crop_temp = volume[crop_slice]
+        # if review_config.as_stack:
+        #     crop_temp = volume[crop_slice].persist().compute()
+        # else:
+        crop_temp = volume[crop_slice]
 
         cropped_volume = np.zeros((100, 100, 100), np.int16)
         cropped_volume[

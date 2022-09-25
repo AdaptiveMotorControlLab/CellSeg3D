@@ -104,6 +104,8 @@ class Reviewer(BasePluginSingleImage):
         ###########################
         self.filetype_choice.setVisible(False)
         layout.addWidget(self.io_panel)
+        self.set_io_visibility()
+        self.layer_choice.toggle()
         ###########################
         ui.add_blank(self, layout)
         ###########################
