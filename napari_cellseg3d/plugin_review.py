@@ -48,7 +48,7 @@ class Reviewer(BasePluginSingleImage):
 
         #######################
         # UI
-        self.io_panel = self.build_io_panel()
+        self.io_panel = self._build_io_panel()
 
         self.layer_choice.setText("New review")
         self.folder_choice.setText("Existing review")

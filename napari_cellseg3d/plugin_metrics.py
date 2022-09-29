@@ -40,7 +40,7 @@ class MetricsUtils(BasePluginFolder):
 
         ######################################
         # interface
-        self.io_panel = self.build_io_panel()
+        self.io_panel = self._build_io_panel()
 
         # set new descriptions for Filewidgets
         self.image_filewidget.description = "Ground truth"

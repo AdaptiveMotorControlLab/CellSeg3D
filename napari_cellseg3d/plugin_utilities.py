@@ -1,13 +1,13 @@
 import napari
 
 # Qt
-from qtpy.QtWidgets import QWidget
-from qtpy.QtWidgets import QVBoxLayout
+from qtpy.QtCore import qInstallMessageHandler
 from qtpy.QtWidgets import QSizePolicy
-
-import napari_cellseg3d.interface as ui
+from qtpy.QtWidgets import QWidget
 
 # local
+import napari_cellseg3d.interface as ui
+from napari_cellseg3d.interface_utils import handle_adjust_errors_wrapper
 from napari_cellseg3d.plugin_crop import Cropping
 from napari_cellseg3d.plugin_convert import AnisoUtils
 from napari_cellseg3d.plugin_convert import RemoveSmallUtils
@@ -64,6 +64,7 @@ class Utilities(QWidget):
         self.utils_choice.currentTextChanged.connect(self._update_visibility)
         self._dock_util()
         self._update_visibility()
+        qInstallMessageHandler(handle_adjust_errors_wrapper)
 
     def _build(self):
         container = ui.ContainerWidget(parent=self)
@@ -83,6 +84,19 @@ class Utilities(QWidget):
             self.docked_widgets[i].setVisible(False)
             if isinstance(self.utils_widgets[i], widget_class):
                 self.docked_widgets[i].setVisible(True)
+        # self.setWindowState(Qt.WindowMaximized)
+        # if self.parent() is not None:
+        # print(self.parent().windowState())
+        # print(int(self.parent().parent().windowState()))
+        # self.parent().parent().showNormal()
+        # self.parent().parent().showMaximized()
+        # state = int(self.parent().parent().windowState())
+        # if state == 0:
+        # self.parent().parent().adjustSize()
+        # elif state == 2:
+        # self.parent().parent().showNormal()
+        # self.parent().parent().showMaximized()
+        # pass
 
     def _dock_util(self):
         for i in range(len(self.utils_widgets)):

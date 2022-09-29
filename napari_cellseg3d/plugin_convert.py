@@ -65,7 +65,7 @@ class AnisoUtils(BasePluginFolder):
             loads_labels=False,
         )
 
-        self.data_panel = self.build_io_panel()
+        self.data_panel = self._build_io_panel()
 
         self.image_layer_loader.layer_list.label.setText("Layer :")
         self.image_layer_loader.set_layer_type(napari.layers.Layer)
@@ -149,7 +149,7 @@ class RemoveSmallUtils(BasePluginFolder):
             loads_labels=False,
         )
 
-        self.data_panel = self.build_io_panel()
+        self.data_panel = self._build_io_panel()
 
         self.image_layer_loader.layer_list.label.setText("Layer :")
         self.image_layer_loader.set_layer_type(napari.layers.Layer)
@@ -233,7 +233,7 @@ class ToSemanticUtils(BasePluginFolder):
             loads_images=False,
         )
 
-        self.data_panel = self.build_io_panel()
+        self.data_panel = self._build_io_panel()
 
         self.start_btn = ui.Button("Start", self._start)
 
@@ -442,7 +442,7 @@ class ToInstanceUtils(BasePluginFolder):
             loads_images=False,
         )
 
-        self.data_panel = self.build_io_panel()
+        self.data_panel = self._build_io_panel()
         self.label_layer_loader.set_layer_type(napari.layers.Layer)
 
         self.instance_widgets = InstanceWidgets()
@@ -516,7 +516,7 @@ class ThresholdUtils(BasePluginFolder):
             loads_labels=False,
         )
 
-        self.data_panel = self.build_io_panel()
+        self.data_panel = self._build_io_panel()
         self.set_io_visibility()
 
         self.image_layer_loader.layer_list.label.setText("Layer :")

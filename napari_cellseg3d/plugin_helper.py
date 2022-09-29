@@ -1,14 +1,12 @@
 import pathlib
-
 import napari
+
+# Qt
 from qtpy.QtCore import QSize
 from qtpy.QtGui import QIcon
 from qtpy.QtGui import QPixmap
-
-# Qt
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
-from qtpy.QtWidgets import QMenu
 
 # local
 from napari_cellseg3d import interface as ui
@@ -57,89 +55,6 @@ class Helper(QWidget):
         self.btnc = ui.Button("Close", self.remove_from_viewer)
 
         self.build()
-
-        from qtpy.QtGui import QCursor
-
-        @viewer.mouse_drag_callbacks.append
-        def context_menu_call(viewer, event):
-            # print(event.modifiers)
-
-            if event.button == 2 and "control" in event.modifiers:
-                print("mouse down")
-                dragged = False
-                yield
-                # on move
-                while event.type == "mouse_move":
-                    print(event.position)
-                    dragged = True
-                    yield
-                # on release
-                if dragged:
-                    print("drag end")
-                else:
-                    print("clicked!")
-                    pos = QCursor.pos()
-                    self.show_menu(pos)
-
-    def show_menu(self, event):
-        from napari_cellseg3d.plugin_crop import Cropping
-        from napari_cellseg3d.plugin_convert import AnisoUtils
-        from napari_cellseg3d.plugin_convert import RemoveSmallUtils
-        from napari_cellseg3d.plugin_convert import ToInstanceUtils
-        from napari_cellseg3d.plugin_convert import ToSemanticUtils
-        from napari_cellseg3d.plugin_convert import ThresholdUtils
-        from napari_cellseg3d.plugin_utilities import UTILITIES_WIDGETS
-
-        # print(self.parent().parent())
-        # TODO create mapping for name:widget
-
-        # menu = QMenu(self.parent().parent())
-        menu = QMenu(self.window())
-        menu.setStyleSheet(
-            f"background-color: {ui.napari_grey}; color: white;"
-        )
-
-        actions = []
-        for title in UTILITIES_WIDGETS.keys():
-            a = menu.addAction(f"Utilities : {title}")
-            actions.append(a)
-
-        # crop_action = menu.addAction("Utilities : Crop")
-        # aniso_action = menu.addAction("Utilities: Correct anisotropy")
-        # clear_small_action = menu.addAction("Utilities : Remove small objects")
-        # to_instance_action = menu.addAction(
-        #     "Utilities : Convert to instance labels"
-        # )
-        # to_semantic_action = menu.addAction(
-        #     "Utilities : Convert to semantic labels"
-        # )
-        # thresh_action = menu.addAction("Utilities : Binarize")
-
-        action = menu.exec_(event)
-
-        for possible_action in actions:
-            if action == possible_action:
-                text = possible_action.text().split(": ")[1]
-                widget = UTILITIES_WIDGETS[text](self._viewer)
-                self._viewer.window.add_dock_widget(widget)
-
-        # if action == crop_action:
-        #     self._viewer.window.add_dock_widget(Cropping(self._viewer))
-        #
-        # if action == aniso_action:
-        #     self._viewer.window.add_dock_widget(AnisoUtils(self._viewer))
-        #
-        # if action == clear_small_action:
-        #     self._viewer.window.add_dock_widget(RemoveSmallUtils(self._viewer))
-        #
-        # if action == to_instance_action:
-        #     self._viewer.window.add_dock_widget(ToInstanceUtils(self._viewer))
-        #
-        # if action == to_semantic_action:
-        #     self._viewer.window.add_dock_widget(ToSemanticUtils(self._viewer))
-        #
-        # if action == thresh_action:
-        #     self._viewer.window.add_dock_widget(ThresholdUtils(self._viewer))
 
     def build(self):
         vbox = QVBoxLayout()

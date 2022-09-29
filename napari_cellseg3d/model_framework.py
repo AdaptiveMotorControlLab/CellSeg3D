@@ -207,6 +207,7 @@ class ModelFramework(BasePluginFolder):
                 allowed_areas=["left"],
             )
 
+            # TODO move to activity log once they figure out _qt_window access
             # activity_log = self._viewer.window._qt_window._activity_dialog
             # activity_layout = activity_log._activityLayout
             # activity_layout.addWidget(self.container_report)

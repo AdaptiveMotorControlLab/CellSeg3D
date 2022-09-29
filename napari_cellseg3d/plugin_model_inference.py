@@ -1,12 +1,8 @@
 from functools import partial
-import warnings
-
 import napari
 import numpy as np
 import pandas as pd
-
-# Qt
-from qtpy.QtWidgets import QSizePolicy
+import warnings
 
 # local
 from napari_cellseg3d import config
@@ -15,7 +11,7 @@ from napari_cellseg3d import utils
 from napari_cellseg3d.model_framework import ModelFramework
 from napari_cellseg3d.model_workers import InferenceResult
 from napari_cellseg3d.model_workers import InferenceWorker
-from napari_cellseg3d.plugin_convert import  InstanceWidgets
+from napari_cellseg3d.plugin_convert import InstanceWidgets
 
 
 class Inferer(ModelFramework):
@@ -404,7 +400,7 @@ class Inferer(ModelFramework):
         )
         self.results_filewidget.check_ready()
 
-        self.data_panel = self.build_io_panel()
+        self.data_panel = self._build_io_panel()
         tab.layout.addWidget(self.data_panel)
         #################################
         #################################
@@ -480,7 +476,9 @@ class Inferer(ModelFramework):
                 # self.instance_param_container,  # instance segmentation
             ],
         )
-        ModelFramework._show_io_element(self.save_stats_to_csv_box, self.use_instance_choice)
+        ModelFramework._show_io_element(
+            self.save_stats_to_csv_box, self.use_instance_choice
+        )
 
         self.anisotropy_wdgt.container.setVisible(False)
         self.thresholding_slider.container.setVisible(False)

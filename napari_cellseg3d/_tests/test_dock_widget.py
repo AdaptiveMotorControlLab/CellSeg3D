@@ -10,7 +10,7 @@ def test_prepare(make_napari_viewer):
     path_image = Path(
         os.path.dirname(os.path.realpath(__file__)) + "/res/test.tif"
     )
-    image = imread(path_image)
+    image = imread(str(path_image))
     viewer = make_napari_viewer()
     viewer.add_image(image)
     widget = Datamanager(viewer)
