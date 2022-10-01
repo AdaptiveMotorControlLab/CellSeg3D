@@ -2,7 +2,10 @@ import napari
 
 # Qt
 from qtpy.QtCore import qInstallMessageHandler
+from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QLayout
+from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
 # local
@@ -31,15 +34,8 @@ class Utilities(QWidget):
         super().__init__()
         self._viewer = viewer
 
-        names = ["crop", "aniso", "small", "inst", "sem", "thresh"]
-
-        for key, name in zip(UTILITIES_WIDGETS, names):
-            setattr(self, name, UTILITIES_WIDGETS[key](self._viewer))
-
-        self.utils_widgets = []
-        for n in names:
-            wid = getattr(self, n)
-            self.utils_widgets.append(wid)
+        attr_names = ["crop", "aniso", "small", "inst", "sem", "thresh"]
+        self._create_utils_widgets(attr_names)
 
         # self.crop = Cropping(self._viewer)
         # self.sem = ToSemanticUtils(self._viewer)
@@ -48,7 +44,37 @@ class Utilities(QWidget):
         # self.thresh = ThresholdUtils(self._viewer)
         # self.small = RemoveSmallUtils(self._viewer)
 
-        self.docked_widgets = []
+        self.utils_choice = ui.DropdownMenu(
+            UTILITIES_WIDGETS.keys(), label="Utilities"
+        )
+
+        self._build()
+        self.utils_choice.currentIndexChanged.connect(self._update_visibility)
+        # self._dock_util()
+        self._update_visibility()
+        qInstallMessageHandler(handle_adjust_errors_wrapper(self))
+
+    def _build(self):
+
+        layout = QVBoxLayout()
+        ui.add_widgets(layout, self.utils_widgets)
+        layout.addWidget(self.utils_choice.label, alignment=ui.BOTT_AL)
+        layout.addWidget(self.utils_choice, alignment=ui.BOTT_AL)
+
+        layout.setSizeConstraint(QLayout.SetFixedSize)
+        self.setLayout(layout)
+        self.setMinimumHeight(500)
+        self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
+        self._update_visibility()
+
+    def _create_utils_widgets(self, names):
+        for key, name in zip(UTILITIES_WIDGETS, names):
+            setattr(self, name, UTILITIES_WIDGETS[key](self._viewer))
+
+        self.utils_widgets = []
+        for n in names:
+            wid = getattr(self, n)
+            self.utils_widgets.append(wid)
 
         if len(self.utils_widgets) != len(UTILITIES_WIDGETS.keys()):
             raise RuntimeError(
@@ -56,34 +82,21 @@ class Utilities(QWidget):
             )
         # TODO how to auto-update list based on UTILITIES_WIDGETS ?
 
-        self.utils_choice = ui.DropdownMenu(
-            UTILITIES_WIDGETS.keys(), label="Utilities"
-        )
-
-        self._build()
-        self.utils_choice.currentTextChanged.connect(self._update_visibility)
-        self._dock_util()
-        self._update_visibility()
-        qInstallMessageHandler(handle_adjust_errors_wrapper)
-
-    def _build(self):
-        container = ui.ContainerWidget(parent=self)
-        layout = container.layout
-        layout.addWidget(self.utils_choice.label)
-        layout.addWidget(self.utils_choice)
-
-        # ui.add_widgets(layout, self.utils_widgets)
-        self.setLayout(layout)
-        container.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
-        self._update_visibility()
-
     def _update_visibility(self):
         widget_class = UTILITIES_WIDGETS[self.utils_choice.currentText()]
+        # print("vis. updated")
+        # print(self.utils_widgets)
+        self._hide_all()
+        for i, w in enumerate(self.utils_widgets):
+            if isinstance(w, widget_class):
+                w.setVisible(True)
+                w.adjustSize()
+            # else:
+            #     self.utils_widgets[i].setVisible(False)
 
-        for i in range(len(self.docked_widgets)):
-            self.docked_widgets[i].setVisible(False)
-            if isinstance(self.utils_widgets[i], widget_class):
-                self.docked_widgets[i].setVisible(True)
+    def _hide_all(self):
+        for w in self.utils_widgets:
+            w.setVisible(False)
         # self.setWindowState(Qt.WindowMaximized)
         # if self.parent() is not None:
         # print(self.parent().windowState())
@@ -98,12 +111,12 @@ class Utilities(QWidget):
         # self.parent().parent().showMaximized()
         # pass
 
-    def _dock_util(self):
-        for i in range(len(self.utils_widgets)):
-            docked = self._viewer.window.add_dock_widget(
-                widget=self.utils_widgets[i]
-            )
-            self.docked_widgets.append(docked)
+    # def _dock_util(self):
+    #     for i in range(len(self.utils_widgets)):
+    #         docked = self._viewer.window.add_dock_widget(
+    #             widget=self.utils_widgets[i]
+    #         )
+    #         self.docked_widgets.append(docked)
 
-    def remove_from_viewer(self):
-        self._viewer.window.remove_dock_widget(self)
+    # def remove_from_viewer(self):
+    #     self._viewer.window.remove_dock_widget(self)

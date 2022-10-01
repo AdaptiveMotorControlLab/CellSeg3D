@@ -7,6 +7,7 @@ from tifffile import imread
 from tifffile import imwrite
 
 from qtpy.QtWidgets import QWidget
+from qtpy.QtWidgets import QSizePolicy
 
 from napari_cellseg3d import config
 import napari_cellseg3d.interface as ui
@@ -99,13 +100,12 @@ class AnisoUtils(BasePluginFolder):
         )
 
         self.set_io_visibility()
+        self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
 
     def _start(self):
 
         self.results_path.mkdir(exist_ok=True)
         zoom = self.aniso_widgets.scaling_zyx()
-
-        self._viewer.window.remove_dock_widget(self.parent())
 
         if self.layer_choice.isChecked():
             if self.image_layer_loader.layer_data() is not None:
@@ -188,7 +188,7 @@ class RemoveSmallUtils(BasePluginFolder):
             container.layout, self, max_wh=[MAX_W, MAX_H]
         )
         self.set_io_visibility()
-
+        container.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
         return container
 
     def _start(self):
@@ -222,6 +222,7 @@ class RemoveSmallUtils(BasePluginFolder):
                     images,
                     self.images_filepaths,
                 )
+        return
 
 
 class ToSemanticUtils(BasePluginFolder):
@@ -259,6 +260,7 @@ class ToSemanticUtils(BasePluginFolder):
             container.layout, self, max_wh=[MAX_W, MAX_H]
         )
         self.set_io_visibility()
+        container.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
 
     def _start(self):
         self.results_path.mkdir(exist_ok=True)
@@ -473,6 +475,7 @@ class ToInstanceUtils(BasePluginFolder):
             container.layout, self, max_wh=[MAX_W, MAX_H]
         )
         self.set_io_visibility()
+        container.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
 
     def _start(self):
         self.results_path.mkdir(exist_ok=True)
@@ -557,6 +560,7 @@ class ThresholdUtils(BasePluginFolder):
             container.layout, self, max_wh=[MAX_W, MAX_H]
         )
         self.set_io_visibility()
+        container.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
 
         return container
 

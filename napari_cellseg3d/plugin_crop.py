@@ -14,12 +14,13 @@ from qtpy.QtWidgets import QWidget
 
 # local
 from napari_cellseg3d import interface as ui
+from napari_cellseg3d.plugin_base import BasePluginSingleImage
 from napari_cellseg3d import utils
 
 DEFAULT_CROP_SIZE = 64
 
 
-class Cropping(QWidget):
+class Cropping(BasePluginSingleImage):
     """A utility plugin for cropping 3D volumes."""
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
@@ -38,35 +39,38 @@ class Cropping(QWidget):
         * A button to close the widget
         """
 
-        super().__init__(parent)
-        self._viewer = viewer
+        super().__init__(viewer)
         self.docked_widgets = []  # TODO add remove on close
         self.results_path = Path.home() / Path("cellseg3d/cropped")
 
         self.btn_start = ui.Button("Start", self._start)
 
-        self.layer_selection1 = ui.LayerSelecter(self._viewer, "Image 1")
-        self.layer_selection2 = ui.LayerSelecter(self._viewer, "Image 2")
+        self.image_layer_loader.set_layer_type(napari.layers.Layer)
+        self.image_layer_loader.layer_list.label.setText("Image 1")
+        # ui.LayerSelecter(self._viewer, "Image 1")
+        # self.layer_selection2 = ui.LayerSelecter(self._viewer, "Image 2")
+        self.label_layer_loader.set_layer_type(napari.layers.Layer)
+        self.label_layer_loader.layer_list.label.setText("Image 2")
 
         self.crop_second_image_choice = ui.CheckBox(
-            "Crop another image simultaneously",
+            "Crop another\nimage simultaneously",
         )
         self.crop_second_image_choice.toggled.connect(
-            partial(
-                ui.toggle_visibility,
-                self.crop_second_image_choice,
-                self.layer_selection2.container(),
-            )
+           self._toggle_second_image_io_visibility
         )
         self.crop_second_image_choice.toggled.connect(self._check_image_list)
         self._viewer.layers.events.inserted.connect(self._check_image_list)
+        self.folder_choice.clicked.connect(self._toggle_second_image_io_visibility)
+        self.layer_choice.clicked.connect(self._toggle_second_image_io_visibility)
 
-        self.results_filewidget = ui.FilePathWidget(
-            "Results path",
-            self._load_results_path,
-            default=str(self.results_path),
-        )
-        self.results_filewidget.tooltips = str(self.results_path)
+        # self.results_filewidget = ui.FilePathWidget(
+        #     "Results path",
+        #     self._load_results_path,
+        #     default=str(self.results_path),
+        # )
+        # self.results_filewidget.tooltips = str(self.results_path)
+        self.results_filewidget.text_field.setText(str(self.results_path))
+        self.results_filewidget.check_ready()
 
         self.crop_size_widgets = ui.IntIncrementCounter.make_n(
             3, 1, 1000, DEFAULT_CROP_SIZE
@@ -98,11 +102,19 @@ class Cropping(QWidget):
         self.crop_second_image = False
 
         self._build()
+        self._toggle_second_image_io_visibility()
+
+    def _toggle_second_image_io_visibility(self):
+        crop_2nd = self.crop_second_image_choice.isChecked()
+        if self.layer_choice.isChecked():
+            self.label_layer_loader.container().setVisible(crop_2nd)
+        elif self.folder_choice.isChecked():
+            self.labels_filewidget.setVisible(crop_2nd)
 
     def _check_image_list(self):
 
-        l1 = self.layer_selection1.layer_list
-        l2 = self.layer_selection2.layer_list
+        l1 = self.image_layer_loader.layer_list
+        l2 = self.label_layer_loader.layer_list
 
         if l1.currentText() == l2.currentText():
             try:
@@ -115,24 +127,17 @@ class Cropping(QWidget):
     def _build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
 
-        w = ui.ContainerWidget(0, 0, 1, 11)
-        layout = w.layout
-
-        data_group_w, data_group_l = ui.make_group("Images")
+        container = ui.ContainerWidget(0, 0, 1, 11)
+        layout = container.layout
 
         ui.add_widgets(
-            data_group_l,
+            layout,
             [
-                self.layer_selection1.container(),
                 self.crop_second_image_choice,
-                self.layer_selection2.container(),
-                self.results_filewidget,
+                self._build_io_panel()
             ],
         )
-        self.layer_selection2.container().setVisible(False)
-
-        data_group_w.setLayout(data_group_l)
-        layout.addWidget(data_group_w)
+        self.label_layer_loader.container().setVisible(False)
         ######################
         ui.add_blank(self, layout)
         ######################
@@ -158,26 +163,28 @@ class Cropping(QWidget):
             ],
         )
 
-        ui.ScrollArea.make_scrollable(layout, self, min_wh=[180, 100])
+        ui.ScrollArea.make_scrollable(layout, self, min_wh=[200,300])
+        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.set_io_visibility()
 
-    def _check_results_path(self, folder):
-        if folder != "" and isinstance(folder, str):
-            if not Path(folder).is_dir():
-                Path(folder).mkdir(parents=True, exist_ok=True)
-                if not Path(folder).is_dir():
-                    return False
-                print(f"Created missing results folder : {folder}")
-            return True
-        return False
+    # def _check_results_path(self, folder):
+    #     if folder != "" and isinstance(folder, str):
+    #         if not Path(folder).is_dir():
+    #             Path(folder).mkdir(parents=True, exist_ok=True)
+    #             if not Path(folder).is_dir():
+    #                 return False
+    #             print(f"Created missing results folder : {folder}")
+    #         return True
+    #     return False
 
-    def _load_results_path(self):
-        """Show file dialog to set :py:attr:`~results_path`"""
-        folder = ui.open_folder_dialog(self, str(self.results_path))
-
-        if self._check_results_path(folder):
-            self.results_path = Path(folder)
-            # print(f"Results path : {self.results_path}")
-            self.results_filewidget.text_field.setText(str(self.results_path))
+    # def _load_results_path(self):
+    #     """Show file dialog to set :py:attr:`~results_path`"""
+    #     folder = ui.open_folder_dialog(self, str(self.results_path))
+    #
+    #     if self._check_results_path(folder):
+    #         self.results_path = Path(folder)
+    #         print(f"Results path : {self.results_path}")
+            # self.results_filewidget.text_field.setText(str(self.results_path))
 
     def quicksave(self):
         """Quicksaves the cropped volume in the folder from which they originate, with their original file extension.
@@ -189,7 +196,7 @@ class Cropping(QWidget):
 
         viewer = self._viewer
 
-        self._check_results_path(str(self.results_path))
+        self.check_results_path(str(self.results_path))
         time = utils.get_date_time()
 
         im1_path = str(
@@ -213,9 +220,9 @@ class Cropping(QWidget):
 
     def check_ready(self):
 
-        if self.layer_selection1.layer_data() is not None:
+        if self.image_layer_loader.layer_data() is not None:
             if self.crop_second_image:
-                if self.layer_selection2.layer_data() is not None:
+                if self.label_layer_loader.layer_data() is not None:
                     return True
                 else:
                     return False
@@ -239,13 +246,13 @@ class Cropping(QWidget):
         if self.aniso_widgets.enabled():
             self.aniso_factors = self.aniso_widgets.scaling_zyx()
 
-        self.image_layer1 = self.layer_selection1.layer()
+        self.image_layer1 = self.image_layer_loader.layer()
 
         if len(self.image_layer1.data) > 3:
             self.image_layer1.data = np.squeeze(self.image_layer1.data)
 
         if self.crop_second_image:
-            self.image_layer2 = self.layer_selection2.layer()
+            self.image_layer2 = self.label_layer_loader.layer()
 
             if len(self.image_layer2.data.shape) > 3:
                 self.image_layer2.data = np.squeeze(

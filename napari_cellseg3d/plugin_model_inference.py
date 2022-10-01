@@ -77,7 +77,7 @@ class Inferer(ModelFramework):
 
         ###########################
         # interface
-        # self.data_panel = None
+        self.data_panel = self._build_io_panel()  # None
 
         self.view_results_container = ui.ContainerWidget(t=7, b=0, parent=self)
         self.view_results_panel = None
@@ -400,7 +400,7 @@ class Inferer(ModelFramework):
         )
         self.results_filewidget.check_ready()
 
-        self.data_panel = self._build_io_panel()
+        # self.data_panel = self._build_io_panel()
         tab.layout.addWidget(self.data_panel)
         #################################
         #################################

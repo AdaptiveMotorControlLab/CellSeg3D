@@ -989,6 +989,9 @@ class GroupedWidget(QGroupBox):
         self.layout.setContentsMargins(l, t, r, b)
         self.layout.setSizeConstraint(QLayout.SetFixedSize)
 
+    def set_layout(self):
+        self.setLayout(self.layout)
+
     @classmethod
     def create_single_widget_group(
         cls, title, widget, layout, l=7, t=20, r=7, b=11

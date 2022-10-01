@@ -5,6 +5,7 @@ from qtpy.QtGui import QCursor
 from qtpy.QtWidgets import QMenu
 
 from napari_cellseg3d import interface as ui
+
 ##################
 # Screen size adjustment error handler
 ##################
@@ -15,17 +16,23 @@ def handle_adjust_errors(widget, type, context, msg: str):
     and resizes the main window"""
     head = msg.split(": ")[0]
     if type == QtWarningMsg and head == "QWindowsWindow::setGeometry":
-        print(f"Qt resize error : {msg}\nhas been handled by attempting to resize the window")
-        if widget.parent() is not None:
-            state = int(widget.parent().parent().windowState())
-            if state == 0:  # normal state
-                widget.parent().parent().adjustSize()
-            elif state == 2:  # maximized state
-                widget.parent().parent().showNormal()
-                widget.parent().parent().showMaximized()
+        print(
+            f"Qt resize error : {msg}\nhas been handled by attempting to resize the window"
+        )
+        try:
+            if widget.parent() is not None:
+                state = int(widget.parent().parent().windowState())
+                if state == 0:  # normal state
+                    widget.parent().parent().adjustSize()
+                elif state == 2:  # maximized state
+                    widget.parent().parent().showNormal()
+                    widget.parent().parent().showMaximized()
+        except RuntimeError:
+            pass
 
 
 def handle_adjust_errors_wrapper(widget):
+    """Returns a callable that can be used with qInstallMessageHandler directly"""
     return partial(handle_adjust_errors, widget)
 
 

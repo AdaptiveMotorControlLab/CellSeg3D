@@ -14,7 +14,6 @@ from napari_cellseg3d.interface_utils import context_menu_call
 from napari_cellseg3d.interface_utils import handle_adjust_errors_wrapper
 
 
-
 class BasePluginSingleImage(QTabWidget):
     """A basic plugin template for working with **single images**"""
 
@@ -100,6 +99,7 @@ class BasePluginSingleImage(QTabWidget):
         def show_menu(viewer, event):
             from qtpy.QtGui import QCursor
             from napari_cellseg3d.interface_utils import show_utils_menu
+
             # context_menu_call(self, event)
             if event.button == 2 and "control" in event.modifiers:
                 # print("mouse down")
