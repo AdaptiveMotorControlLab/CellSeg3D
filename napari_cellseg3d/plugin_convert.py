@@ -48,8 +48,10 @@ def save_layer(results_path, image_name, image):
 def show_result(viewer, layer, image, name):
 
     if isinstance(layer, napari.layers.Image):
+        print("Added resulting image layer")
         viewer.add_image(image, name=name)
     elif isinstance(layer, napari.layers.Labels):
+        print("Added resulting label layer")
         viewer.add_labels(image, name=name)
     else:
         warnings.warn(

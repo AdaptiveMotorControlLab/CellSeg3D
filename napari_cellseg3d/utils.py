@@ -106,6 +106,7 @@ def resize(image, zoom_factors):
     isotropic_image = Zoom(
         zoom_factors,
         keep_size=False,
+        mode="nearest-exact",
         padding_mode="empty",
     )(np.expand_dims(image, axis=0))
     return isotropic_image[0]
