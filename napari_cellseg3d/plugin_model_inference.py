@@ -183,43 +183,10 @@ class Inferer(ModelFramework):
         self.use_instance_choice = ui.CheckBox(
             "Run instance segmentation", func=self._toggle_display_instance
         )
-        #
-        # self.instance_method_choice = ui.DropdownMenu(
-        #     config.INSTANCE_SEGMENTATION_METHOD_LIST.keys()
-        # )
-        #
-        # self.instance_prob_thresh_slider = ui.Slider(
-        #     lower=1,
-        #     upper=99,
-        #     default=config.PostProcessConfig().instance.threshold.threshold_value
-        #     * 100,
-        #     divide_factor=100.0,
-        #     step=5,
-        #     text_label="Probability threshold :",
-        # )
-        #
-        # self.instance_small_object_thresh = ui.IntIncrementCounter(
-        #     upper=100,
-        #     default=10,
-        #     step=5,
-        #     label="Small object removal (pxs) :",
-        # )
-        # self.instance_small_object_thresh_lbl = (
-        #     self.instance_small_object_thresh.label
-        # )
-        # self.instance_small_object_t_container = ui.combine_blocks(
-        #     right_or_below=self.instance_small_object_thresh,
-        #     left_or_above=self.instance_small_object_thresh_lbl,
-        #     horizontal=False,
-        # )
+
         self.save_stats_to_csv_box = ui.CheckBox(
             "Save stats to csv", parent=self
         )
-        #
-        # self.instance_param_container = ui.ContainerWidget(
-        #     t=7, b=0, parent=self
-        # )
-        # self.instance_layout = self.instance_param_container.layout
 
         ##################
         ##################
@@ -228,7 +195,6 @@ class Inferer(ModelFramework):
         self.btn_close = self.make_close_button()
 
         self._set_tooltips()
-        # self._hide_unused_widgets()
 
         self.build()
         self.set_io_visibility()
@@ -303,13 +269,6 @@ class Inferer(ModelFramework):
         ##################
         ##################
 
-    def _hide_unused_widgets(self):
-        """Hide unused widgets from parent class"""
-        self._hide_io_element(self.labels_filewidget, self.folder_choice)
-        self._hide_io_element(self.label_layer_loader, self.layer_choice)
-
-        # self.model_filewidget.setVisible(False)
-
     def check_ready(self):
         """Checks if the paths to the files are properly set"""
 
@@ -370,19 +329,6 @@ class Inferer(ModelFramework):
 
         self.anisotropy_wdgt.build()
 
-        # ui.add_widgets(
-        #     self.instance_layout,
-        #     [
-        #         self.instance_method_choice,
-        #         self.instance_prob_thresh_slider.container,
-        #         self.instance_small_object_t_container,
-        #         self.save_stats_to_csv_box,
-        #     ],
-        # )
-        #
-        # self.instance_param_container.setLayout(self.instance_layout)
-        #
-        # self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.MinimumExpanding)
         ######
         ############
         ##################
@@ -400,7 +346,6 @@ class Inferer(ModelFramework):
         )
         self.results_filewidget.check_ready()
 
-        # self.data_panel = self._build_io_panel()
         tab.layout.addWidget(self.data_panel)
         #################################
         #################################
@@ -428,7 +373,6 @@ class Inferer(ModelFramework):
 
         model_group_w.setLayout(model_group_l)
         tab.layout.addWidget(model_group_w)
-
         #################################
         #################################
         ui.add_blank(tab, tab.layout)
@@ -537,9 +481,10 @@ class Inferer(ModelFramework):
             min_wh=[200, 100],
         )
         self.addTab(tab, "Inference")
-
-        self.setMinimumSize(180, 100)
+        tab.adjustSize()
+        # self.setMinimumSize(180, 100)
         # self.setBaseSize(210, 400)
+
 
     def start(self):
         """Start the inference process, enables :py:attr:`~self.worker` and does the following:

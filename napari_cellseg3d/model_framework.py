@@ -119,7 +119,6 @@ class ModelFramework(BasePluginFolder):
             fixed=False,
         )
         self.btn_save_log.setVisible(False)
-        #####################################################
 
     def send_log(self, text):
         """Emit a signal to print in a Log"""
@@ -207,7 +206,7 @@ class ModelFramework(BasePluginFolder):
                 allowed_areas=["left"],
             )
 
-            # TODO move to activity log once they figure out _qt_window access
+            # TODO move to activity log once they figure out _qt_window access and private attrib.
             # activity_log = self._viewer.window._qt_window._activity_dialog
             # activity_layout = activity_log._activityLayout
             # activity_layout.addWidget(self.container_report)

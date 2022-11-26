@@ -265,7 +265,7 @@ class ToSemanticUtils(BasePluginFolder):
         container.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
 
     def _start(self):
-        self.results_path.mkdir(exist_ok=True)
+        Path(self.results_path).mkdir(exist_ok=True)
 
         if self.layer_choice:
             if self.label_layer_loader.layer_data() is not None:
