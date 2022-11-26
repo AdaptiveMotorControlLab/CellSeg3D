@@ -1,6 +1,6 @@
 {
-  "TRAILMAP_MS": "http://deeplabcut.rowland.harvard.edu/cellseg3dmodels/TRAILMAP_MS.tar.gz",
-  "SegResNet": "http://deeplabcut.rowland.harvard.edu/cellseg3dmodels/SegResNet.tar.gz",
-  "VNet": "http://deeplabcut.rowland.harvard.edu/cellseg3dmodels/VNet.tar.gz",
-  "SwinUNetR": "http://deeplabcut.rowland.harvard.edu/cellseg3dmodels/SWIN.tar.gz"
+  "TRAILMAP_MS": "https://huggingface.co/C-Achard/cellseg3d/resolve/main/TRAILMAP_MS.tar.gz",
+  "SegResNet": "https://huggingface.co/C-Achard/cellseg3d/resolve/main/SegResNet.tar.gz",
+  "VNet": "https://huggingface.co/C-Achard/cellseg3d/resolve/main/VNet.tar.gz",
+  "SwinUNetR": "https://huggingface.co/C-Achard/cellseg3d/resolve/main/Swin64.tar.gz"
 }
