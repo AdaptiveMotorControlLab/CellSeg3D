@@ -147,7 +147,7 @@ class Datamanager(QWidget):
 
         print(self.csv_path, checkbox)
         # print(self.viewer.dims.current_step[0])
-        self.update(self.viewer.dims.current_step[0])
+        self.update_dm(self.viewer.dims.current_step[0])
 
     def load_csv(self, label_dir, model_type, checkbox):
         """
@@ -243,13 +243,12 @@ class Datamanager(QWidget):
                 self.df.at[self.df.index[self.slice_num], "train"]
             )  # puts  button values at value of 1st csv item
 
-    def update(self, slice_num):
+    def update_dm(self, slice_num):
         """Updates the Datamanager with the index of the current slice, and updates
         the text with the status contained in the csv (e.g. checked/not checked).
 
         Args:
             slice_num (int): index of the current slice
-
         """
         self.slice_num = slice_num
         self.update_time_csv()
@@ -280,22 +279,6 @@ class Datamanager(QWidget):
             self.df.at[self.df.index[self.slice_num], "train"] = "Not checked"
             self.df.to_csv(self.csv_path)
 
-    # def move_data(self):
-    #     shutil.copy(
-    #         self.df.at[self.df.index[self.slice_num], "filename"],
-    #         self.train_data_dir,
-    #     )
-    #
-    # def delete_data(self):
-    #     os.remove(
-    #         os.path.join(
-    #             self.train_data_dir,
-    #             os.path.basename(
-    #                 self.df.at[self.df.index[self.slice_num], "filename"]
-    #             ),
-    #         )
-    #     )
-    #
     # def check_all_data_and_mod(self):
     #     for i in range(len(self.df)):
     #         if self.df.at[self.df.index[i], "train"] == "Checked":

@@ -13,7 +13,6 @@ from napari_cellseg3d import interface as ui
 
 
 class Helper(QWidget):
-    # widget testing
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
 
@@ -68,8 +67,6 @@ class Helper(QWidget):
         ]
         ui.add_widgets(vbox, widgets)
         self.setLayout(vbox)
-        # self.show()
-        # self._viewer.window.add_dock_widget(self, name="Help/About...", area="right")
 
     def remove_from_viewer(self):
         self._viewer.window.remove_dock_widget(self)

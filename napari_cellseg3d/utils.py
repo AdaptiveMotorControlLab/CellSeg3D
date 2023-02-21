@@ -13,8 +13,24 @@ from tifffile import imread as tfl_imread
 """
 utils.py
 ====================================
-Definitions of utility functions and variables
+Definitions of utility functions, classes, and variables
 """
+
+
+class Singleton(type):
+    """
+    Singleton class that can only be instantiated once at a time,
+    with said unique instance always being accessed on call
+    """
+
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(
+                *args, **kwargs
+            )
+        return cls._instances[cls]
 
 
 def normalize_x(image):

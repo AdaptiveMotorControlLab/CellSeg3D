@@ -45,6 +45,7 @@ class Reviewer(BasePluginSingleImage):
 
         # self._viewer = viewer # should not be needed
         self.config = config.ReviewConfig()
+        self.enable_utils_menu()
 
         #######################
         # UI

@@ -56,12 +56,16 @@ class Cropping(BasePluginSingleImage):
             "Crop another\nimage simultaneously",
         )
         self.crop_second_image_choice.toggled.connect(
-           self._toggle_second_image_io_visibility
+            self._toggle_second_image_io_visibility
         )
         self.crop_second_image_choice.toggled.connect(self._check_image_list)
         self._viewer.layers.events.inserted.connect(self._check_image_list)
-        self.folder_choice.clicked.connect(self._toggle_second_image_io_visibility)
-        self.layer_choice.clicked.connect(self._toggle_second_image_io_visibility)
+        self.folder_choice.clicked.connect(
+            self._toggle_second_image_io_visibility
+        )
+        self.layer_choice.clicked.connect(
+            self._toggle_second_image_io_visibility
+        )
 
         # self.results_filewidget = ui.FilePathWidget(
         #     "Results path",
@@ -132,10 +136,7 @@ class Cropping(BasePluginSingleImage):
 
         ui.add_widgets(
             layout,
-            [
-                self.crop_second_image_choice,
-                self._build_io_panel()
-            ],
+            [self.crop_second_image_choice, self._build_io_panel()],
         )
         self.label_layer_loader.container().setVisible(False)
         ######################
@@ -163,7 +164,7 @@ class Cropping(BasePluginSingleImage):
             ],
         )
 
-        ui.ScrollArea.make_scrollable(layout, self, min_wh=[200,300])
+        ui.ScrollArea.make_scrollable(layout, self, min_wh=[200, 300])
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.set_io_visibility()
 
@@ -184,7 +185,7 @@ class Cropping(BasePluginSingleImage):
     #     if self._check_results_path(folder):
     #         self.results_path = Path(folder)
     #         print(f"Results path : {self.results_path}")
-            # self.results_filewidget.text_field.setText(str(self.results_path))
+    # self.results_filewidget.text_field.setText(str(self.results_path))
 
     def quicksave(self):
         """Quicksaves the cropped volume in the folder from which they originate, with their original file extension.

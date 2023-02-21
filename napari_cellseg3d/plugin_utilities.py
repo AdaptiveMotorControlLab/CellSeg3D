@@ -17,6 +17,7 @@ from napari_cellseg3d.plugin_convert import RemoveSmallUtils
 from napari_cellseg3d.plugin_convert import ToInstanceUtils
 from napari_cellseg3d.plugin_convert import ToSemanticUtils
 from napari_cellseg3d.plugin_convert import ThresholdUtils
+
 from napari_cellseg3d.plugin_metrics import MetricsUtils
 
 UTILITIES_WIDGETS = {
@@ -49,6 +50,7 @@ class Utilities(QWidget):
         )
 
         self._build()
+
         self.utils_choice.currentIndexChanged.connect(self._update_visibility)
         # self._dock_util()
         self._update_visibility()

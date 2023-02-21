@@ -455,7 +455,7 @@ class LayerSelecter(QWidget):
     def __init__(
         self, viewer, name="Layer", layer_type=napari.layers.Layer, parent=None
     ):
-
+        # TODO(cyril) : chack for proper behaviour and debug. Namely check issues such as cropping list not updating
         super().__init__(parent)
         self._viewer = viewer
 
@@ -1061,7 +1061,7 @@ def add_widgets(layout, widgets, alignment=LEFT_AL):
             layout.addWidget(w, alignment=alignment)
 
 
-def combine_blocks(  # TODO FIXME PLEASE
+def combine_blocks(  # TODO FIXME PLEASE this is a horrible design
     right_or_below,
     left_or_above,
     min_spacing=0,

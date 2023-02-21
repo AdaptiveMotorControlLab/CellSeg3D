@@ -202,7 +202,7 @@ def launch_review(review_config: config.ReviewConfig):
 
         slice_num = axis_event.value[0]
         print(f"slice num is {slice_num}")
-        dmg.update(slice_num)
+        dmg.update_dm(slice_num)
 
     viewer.dims.events.current_step.connect(update_button)
 

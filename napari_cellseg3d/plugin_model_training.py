@@ -116,6 +116,7 @@ class Trainer(ModelFramework):
         # self.master = parent
         self._viewer = viewer
         """napari.viewer.Viewer: viewer in which the widget is displayed"""
+        self.enable_utils_menu()
 
         self.data_path = None
         self.label_path = None

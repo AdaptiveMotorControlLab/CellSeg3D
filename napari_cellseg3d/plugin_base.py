@@ -10,7 +10,7 @@ from qtpy.QtWidgets import QWidget
 
 # local
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d.interface_utils import context_menu_call
+from napari_cellseg3d.interface_utils import UtilsDropdown
 from napari_cellseg3d.interface_utils import handle_adjust_errors_wrapper
 
 
@@ -95,32 +95,16 @@ class BasePluginSingleImage(QTabWidget):
         ########
         qInstallMessageHandler(handle_adjust_errors_wrapper(self))
 
+    def enable_utils_menu(self):
+        """
+        Enables the usage of the CTRL+right-click shortcut to the utilities.
+        Should only be used in "high-level" widgets (provided in napari Plugins menu) to avoid multiple activation
+        """
+        viewer = self._viewer
+
         @viewer.mouse_drag_callbacks.append
-        def show_menu(viewer, event):
-            from qtpy.QtGui import QCursor
-            from napari_cellseg3d.interface_utils import show_utils_menu
-
-            # context_menu_call(self, event)
-            if event.button == 2 and "control" in event.modifiers:
-                # print("mouse down")
-                dragged = False
-                yield
-                # on move
-                while event.type == "mouse_move":
-                    print(event.position)
-                    dragged = True
-                    yield
-                # on release
-                if dragged:
-                    # print("drag end")
-                    pass
-                else:
-                    # print("clicked!")
-                    pos = QCursor.pos()
-                    show_utils_menu(self, pos)
-            # print("context try")
-
-    # def _add_utils_context_menu(self):
+        def show_menu(_, event):
+            return UtilsDropdown().dropdown_menu_call(self, event)
 
     def _build_io_panel(self):
         io_panel = ui.GroupedWidget("Data")
