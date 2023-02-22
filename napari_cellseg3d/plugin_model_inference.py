@@ -364,13 +364,13 @@ class Inferer(ModelFramework):
             [
                 self.model_choice,
                 self.custom_weights_choice,
-                self.weights_path_container,
+                self.weights_filewidget,
                 self.model_input_size.label,
                 self.model_input_size,
             ],
         )
-        self.weights_path_container.setVisible(False)
-        self.model_choice.label.setVisible(False)  # TODO remove (?)
+        self.weights_filewidget.setVisible(False)
+        self.model_choice.label.setVisible(False)  # TODO reminder for adding custom model
 
         model_group_w.setLayout(model_group_l)
         tab.layout.addWidget(model_group_w)
@@ -485,7 +485,6 @@ class Inferer(ModelFramework):
         tab.adjustSize()
         # self.setMinimumSize(180, 100)
         # self.setBaseSize(210, 400)
-
 
     def start(self):
         """Start the inference process, enables :py:attr:`~self.worker` and does the following:

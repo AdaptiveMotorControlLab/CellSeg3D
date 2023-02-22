@@ -434,6 +434,9 @@ class Trainer(ModelFramework):
 
             * Start (see :py:func:`~start`)"""
 
+        # for w in self.children():
+        #     w.setToolTip(f"{w}")
+
         self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.MinimumExpanding)
         ########
         ################
@@ -450,22 +453,17 @@ class Trainer(ModelFramework):
                 ui.combine_blocks(
                     self.filetype_choice, self.filetype_choice.label
                 ),  # file extension
-                ui.combine_blocks(
-                    self.image_filewidget.button,
-                    self.image_filewidget.text_field,
-                ),  # volumes
-                ui.combine_blocks(
-                    self.labels_filewidget.button,
-                    self.labels_filewidget.text_field,
-                ),  # labels
-                ui.combine_blocks(
-                    self.results_filewidget.button,
-                    self.results_filewidget.text_field,
-                ),  # results folder
-                # ui.combine_blocks(self.model_choice, self.model_choice.label),  # model choice  # TODO : add custom model choice
+                self.image_filewidget,
+                self.labels_filewidget,
+                self.results_filewidget,
+                # ui.combine_blocks(self.model_choice, self.model_choice.label), # model choice
+                # TODO : add custom model choice
                 self.zip_choice,  # save as zip
             ],
         )
+
+        for w in [self.image_filewidget, self.labels_filewidget,self.results_filewidget]:
+            w.check_ready()
 
         if self.data_path is not None:
             self.image_filewidget.text_field.setText(self.data_path)
@@ -489,11 +487,11 @@ class Trainer(ModelFramework):
             [
                 self.use_transfer_choice,
                 self.custom_weights_choice,
-                self.weights_path_container,
+                self.weights_filewidget,
             ],
         )
-
         self.custom_weights_choice.setVisible(False)
+        self.weights_filewidget.setVisible(False)
 
         transfer_group_w.setLayout(transfer_group_l)
         data_tab.layout.addWidget(transfer_group_w, alignment=ui.LEFT_AL)

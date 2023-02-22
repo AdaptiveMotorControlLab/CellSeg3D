@@ -43,6 +43,10 @@ class ModelFramework(BasePluginFolder):
 
         Args:
             viewer (napari.viewer.Viewer): viewer to load the widget in
+            parent: parent QWidget
+            loads_images: if True, will contain UI elements used to load napari image layers
+            loads_labels: if True, will contain UI elements used to load napari label layers
+            has_results: if True, will add UI to choose a results path
         """
         super().__init__(
             viewer, parent, loads_images, loads_labels, has_results
@@ -82,13 +86,6 @@ class ModelFramework(BasePluginFolder):
         self.weights_filewidget = ui.FilePathWidget(
             "Weights path", self.load_weights_path, self
         )
-
-        self.weights_path_container = ui.combine_blocks(
-            self.weights_filewidget.button,
-            self.weights_filewidget.text_field,
-            b=0,
-        )
-        self.weights_path_container.setVisible(False)
 
         self.custom_weights_choice = ui.CheckBox(
             "Load custom weights", self.toggle_weights_path, self
@@ -222,7 +219,7 @@ class ModelFramework(BasePluginFolder):
     def toggle_weights_path(self):
         """Toggle visibility of weight path"""
         ui.toggle_visibility(
-            self.custom_weights_choice, self.weights_path_container
+            self.custom_weights_choice, self.weights_filewidget
         )
 
     def create_train_dataset_dict(self):

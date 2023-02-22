@@ -108,12 +108,18 @@ class BasePluginSingleImage(QTabWidget):
 
     def _build_io_panel(self):
         io_panel = ui.GroupedWidget("Data")
+
+        # io_panel.setToolTip("IO Panel")
+        radio_buttons = ui.combine_blocks(
+            self.folder_choice, self.layer_choice
+        )
+
         ui.add_widgets(
             io_panel.layout,
             [
-                ui.combine_blocks(self.folder_choice, self.layer_choice),
-                self.image_layer_loader.container(),
-                self.label_layer_loader.container(),
+                radio_buttons,
+                self.image_layer_loader,
+                self.label_layer_loader,
                 self.filetype_choice,
                 self.image_filewidget,
                 self.labels_filewidget,
@@ -141,17 +147,13 @@ class BasePluginSingleImage(QTabWidget):
         ##################
         # Show when layer is selected
         if self.show_image_io:
-            self._show_io_element(
-                self.image_layer_loader.container(), self.layer_choice
-            )
+            self._show_io_element(self.image_layer_loader, self.layer_choice)
         else:
-            self._hide_io_element(self.image_layer_loader.container())
+            self._hide_io_element(self.image_layer_loader)
         if self.show_label_io:
-            self._show_io_element(
-                self.label_layer_loader.container(), self.layer_choice
-            )
+            self._show_io_element(self.label_layer_loader, self.layer_choice)
         else:
-            self._hide_io_element(self.label_layer_loader.container())
+            self._hide_io_element(self.label_layer_loader)
 
         ##################
         # Show when folder is selected

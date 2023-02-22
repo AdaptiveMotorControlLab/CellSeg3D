@@ -61,9 +61,12 @@ class Cropping(BasePluginSingleImage):
         self.crop_second_image_choice.toggled.connect(self._check_image_list)
         self._viewer.layers.events.inserted.connect(self._check_image_list)
         # TODO(cyril) : fix layer removal (issue with cropping layer? )
-        self.folder_choice.clicked.connect(self._toggle_second_image_io_visibility)
-        self.layer_choice.clicked.connect(self._toggle_second_image_io_visibility)
-
+        self.folder_choice.clicked.connect(
+            self._toggle_second_image_io_visibility
+        )
+        self.layer_choice.clicked.connect(
+            self._toggle_second_image_io_visibility
+        )
 
         # self.results_filewidget = ui.FilePathWidget(
         #     "Results path",
@@ -109,7 +112,7 @@ class Cropping(BasePluginSingleImage):
     def _toggle_second_image_io_visibility(self):
         crop_2nd = self.crop_second_image_choice.isChecked()
         if self.layer_choice.isChecked():
-            self.label_layer_loader.container().setVisible(crop_2nd)
+            self.label_layer_loader.setVisible(crop_2nd)
         elif self.folder_choice.isChecked():
             self.labels_filewidget.setVisible(crop_2nd)
 
@@ -136,7 +139,7 @@ class Cropping(BasePluginSingleImage):
             layout,
             [self.crop_second_image_choice, self._build_io_panel()],
         )
-        self.label_layer_loader.container().setVisible(False)
+        self.label_layer_loader.setVisible(False)
         ######################
         ui.add_blank(self, layout)
         ######################

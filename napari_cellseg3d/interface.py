@@ -33,6 +33,9 @@ User interface functions and aliases"""
 
 
 ###############
+# show debug tooltips
+SHOW_LABELS_DEBUG_TOOLTIP = False
+###############
 # aliases
 LEFT_AL = Qt.AlignmentFlag.AlignLeft
 """Alias for Qt.AlignmentFlag.AlignLeft, to use in addWidget"""
@@ -451,18 +454,16 @@ class AnisotropyWidgets(QWidget):
         self.checkbox.setVisible(False)
 
 
-class LayerSelecter(QWidget):
+class LayerSelecter(ContainerWidget):
     def __init__(
         self, viewer, name="Layer", layer_type=napari.layers.Layer, parent=None
     ):
         # TODO(cyril) : chack for proper behaviour and debug. Namely check issues such as cropping list not updating
-        super().__init__(parent)
+        super().__init__(parent=parent, fixed=False)
         self._viewer = viewer
 
         self.image = None
         self.layer_type = layer_type
-
-        self._container = ContainerWidget(fixed=False)
 
         self.layer_list = DropdownMenu(parent=self, label=name, fixed=False)
         # self.layer_list.setSizeAdjustPolicy(QComboBox.AdjustToContents) # use tooltip instead ?
@@ -472,9 +473,7 @@ class LayerSelecter(QWidget):
 
         self.layer_list.currentIndexChanged.connect(self._update_tooltip)
 
-        add_widgets(
-            self._container.layout, [self.layer_list.label, self.layer_list]
-        )
+        add_widgets(self.layout, [self.layer_list.label, self.layer_list])
         self._check_for_layers()
 
     def _check_for_layers(self):
@@ -511,9 +510,6 @@ class LayerSelecter(QWidget):
         self.layer_type = type
         [self.layer_list.removeItem(i) for i in range(self.layer_list.count())]
         self._check_for_layers()
-
-    def container(self):
-        return self._container
 
     def layer(self):
         return self._viewer.layers[self.layer_name()]
@@ -572,7 +568,7 @@ class FilePathWidget(QWidget):  # TODO include load as folder
         """Builds the layout of the widget"""
         add_widgets(
             self._layout,
-            [combine_blocks(self.button, self.text_field, min_spacing=5)],
+            [combine_blocks(self.button, self.text_field, min_spacing=5, b=0)],
             ABS_AL,
         )
         self.setLayout(self._layout)
@@ -954,9 +950,15 @@ def make_label(name, parent=None):  # TODO update to child class
 
     """
     if parent is not None:
-        return QLabel(name, parent)
+        label = QLabel(name, parent)
+        if SHOW_LABELS_DEBUG_TOOLTIP:
+            label.setToolTip(f"{label}")
+        return label
     else:
-        return QLabel(name)
+        label = QLabel(name)
+        if SHOW_LABELS_DEBUG_TOOLTIP:
+            label.setToolTip(f"{label}")
+        return label
 
 
 def make_group(title, l=7, t=20, r=7, b=11, parent=None):

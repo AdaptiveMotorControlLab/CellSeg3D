@@ -65,7 +65,7 @@ class UtilsDropdown(metaclass=Singleton):
             yield
             # on move
             while event.type == "mouse_move":
-                print(event.position)
+                # print(event.position)
                 dragged = True
                 yield
             # on release

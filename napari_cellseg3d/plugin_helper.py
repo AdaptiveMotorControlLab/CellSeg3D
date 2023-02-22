@@ -16,9 +16,7 @@ class Helper(QWidget):
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
 
-        self.help_url = (
-            "https://adaptivemotorcontrollab.github.io/cellseg3d-docs/"
-        )
+        self.help_url = "https://adaptivemotorcontrollab.github.io/CellSeg3d/"
 
         self.about_url = "https://wysscenter.ch/advances/3d-computer-vision-for-brain-analysis"
         self.repo_url = "https://github.com/AdaptiveMotorControlLab/CellSeg3d"
