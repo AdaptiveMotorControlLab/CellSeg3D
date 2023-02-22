@@ -301,10 +301,6 @@ class BasePluginSingleImage(QTabWidget):
         Can be re-implemented in children classes if needed"""
 
         self.remove_docked_widgets()
-
-        if self.parent is not None:
-            self.parent.remove_from_viewer()  # TODO keep this way ?
-            return
         self._viewer.window.remove_dock_widget(self)
 
     def remove_docked_widgets(self):

@@ -5,12 +5,9 @@ import warnings
 import napari
 import numpy as np
 from magicgui import magicgui
-from magicgui.widgets import Container
-from magicgui.widgets import Slider
 
 # Qt
 from qtpy.QtWidgets import QSizePolicy
-from qtpy.QtWidgets import QWidget
 
 # local
 from napari_cellseg3d import interface as ui
@@ -235,11 +232,19 @@ class Cropping(BasePluginSingleImage):
         """Launches cropping process by loading the files from the chosen folders,
         and adds control widgets to the napari Viewer for moving the cropped volume.
         """
+        # TODO maybe implement proper reset function so multiple runs can be done without closing napari
+        # maybe use singletons or make docked widgets attributes that are hidden upon opening
+
         if not self.check_ready():
             warnings.warn("Please select at least one valid layer !")
             return
 
-        self._viewer.window.remove_dock_widget(self.parent())
+        # self._viewer.window.remove_dock_widget(self.parent()) # no need to close utils ?
+        self.remove_docked_widgets()
+        if self.im1_crop_layer is not None:
+            self._viewer.layers.remove(self.im1_crop_layer)
+        if self.im2_crop_layer is not None:
+            self._viewer.layers.remove(self.im2_crop_layer)
 
         self.results_path = Path(self.results_filewidget.text_field.text())
 
@@ -290,13 +295,14 @@ class Cropping(BasePluginSingleImage):
 
                 self.image_layer2.refresh()
 
-        @magicgui(call_button="Quicksave")
+        @magicgui(call_button="Quicksave")  # TODO move to Qt
         def save_widget():
             return self.quicksave()
 
         save = self._viewer.window.add_dock_widget(
-            save_widget, name="", area="left"
+            save_widget, name="Quicksave", area="left"
         )
+        save._close_btn = False
         self.docked_widgets.append(save)
 
         self._add_crop_sliders()
@@ -444,13 +450,12 @@ class Cropping(BasePluginSingleImage):
 
             # spinbox = SpinBox(name="crop_dims", min=1, value=self._crop_size, max=max(im1_stack.shape), step=1)
             # spinbox.changed.connect(lambda event : change_size(event))
-
         sliders = [
-            Slider(name=axis, min=0, max=end, step=step)
+            ui.Slider(text_label=axis, lower=0, upper=end, step=step)
             for axis, end, step in zip("zyx", ends, stepsizes)
         ]
         for axis, slider in enumerate(sliders):
-            slider.changed.connect(
+            slider.valueChanged.connect(
                 lambda event, axis=axis: set_slice(
                     axis,
                     event,
@@ -459,10 +464,17 @@ class Cropping(BasePluginSingleImage):
                     self.crop_second_image,
                 )
             )
-        container_widget = Container(layout="vertical")
-        container_widget.extend(sliders)
+        container_widget = ui.ContainerWidget(parent=self)
+            # Container(layout="vertical")
+        # container_widget.extend(sliders)
+        ui.add_widgets(
+            container_widget.layout,
+            [ui.combine_blocks(s, s.text_label) for s in sliders]
+        )
         # vw.window.add_dock_widget([spinbox, container_widget], area="right")
-        wdgts = vw.window.add_dock_widget(container_widget, area="right")
+        wdgts = vw.window.add_dock_widget(container_widget, area="right", name="Sliders")
+        wdgts._close_btn = False
+
         self.docked_widgets.append(wdgts)
         # TEST : trying to dynamically change the size of the cropped volume
         # BROKEN for now

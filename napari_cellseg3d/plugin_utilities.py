@@ -2,7 +2,6 @@ import napari
 
 # Qt
 from qtpy.QtCore import qInstallMessageHandler
-from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QLayout
 from qtpy.QtWidgets import QVBoxLayout
