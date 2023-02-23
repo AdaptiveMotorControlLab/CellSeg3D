@@ -1,4 +1,5 @@
 from functools import partial
+import logging
 import shutil
 import warnings
 from pathlib import Path
@@ -35,6 +36,7 @@ from napari_cellseg3d.model_workers import TrainingWorker
 NUMBER_TABS = 3
 DEFAULT_PATCH_SIZE = 64
 
+logger = logging.getLogger(__name__)
 
 class Trainer(ModelFramework):
     """A plugin to train pre-defined PyTorch models for one-channel segmentation directly in napari.
@@ -940,7 +942,7 @@ class Trainer(ModelFramework):
         # self.clean_cache()
 
     def on_yield(self, report: TrainingReport):
-        # print(
+        # logger.info(
         #     f"\nCatching results : for epoch {data['epoch']},
         #     loss is {data['losses']} and validation is {data['val_metrics']}"
         # )
@@ -977,7 +979,7 @@ class Trainer(ModelFramework):
                         self.result_layers[i].data = report.images[i]
                         self.result_layers[i].refresh()
             except Exception as e:
-                print(e)
+                logger.error(e)
 
             self.progress.setValue(
                 100 * (report.epoch + 1) // self.worker_config.max_epochs

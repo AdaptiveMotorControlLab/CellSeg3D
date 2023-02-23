@@ -1,3 +1,4 @@
+import logging
 import threading
 import warnings
 
@@ -5,6 +6,7 @@ from qtpy import QtCore
 from qtpy.QtGui import QTextCursor
 from qtpy.QtWidgets import QTextEdit
 
+logger = logging.getLogger(__name__)
 
 class Log(QTextEdit):
     """Class to implement a log for important user info. Should be thread-safe."""
@@ -65,13 +67,13 @@ class Log(QTextEdit):
 
         Args:
             text (str): Text to be printed and logged
-            printing (bool): Whether to print the message as well or not using print(). Defaults to True.
+            printing (bool): Whether to print the message as well or not using logger.info(). Defaults to True.
 
         """
         self.lock.acquire()
         try:
             if printing:
-                print(text)
+                logger.info(text)
             # causes issue if you clik on terminal (tied to CMD QuickEdit mode on Windows)
             self.moveCursor(QTextCursor.End)
             self.insertPlainText(f"\n{text}")

@@ -1,5 +1,6 @@
-import warnings
+import logging
 from pathlib import Path
+import warnings
 
 import napari
 import torch
@@ -16,7 +17,7 @@ from napari_cellseg3d.log_utility import Log
 from napari_cellseg3d.plugin_base import BasePluginFolder
 
 warnings.formatwarning = utils.format_Warning
-
+logger = logging.getLogger(__name__)
 
 class ModelFramework(BasePluginFolder):
     """A framework with buttons to use for loading images, labels, models, etc. for both inference and training"""
@@ -236,13 +237,13 @@ class ModelFramework(BasePluginFolder):
         if len(self.images_filepaths) == 0 or len(self.labels_filepaths) == 0:
             raise ValueError("Data folders are empty")
 
-        print("Images :\n")
+        logger.info("Images :\n")
         for file in self.images_filepaths:
-            print(Path(file).name)
-        print("*" * 10)
-        print("\nLabels :\n")
+            logger.info(Path(file).name)
+        logger.info("*" * 10)
+        logger.info("\nLabels :\n")
         for file in self.labels_filepaths:
-            print(Path(file).name)
+            logger.info(Path(file).name)
 
         data_dicts = [
             {"image": image_name, "label": label_name}
@@ -273,7 +274,7 @@ class ModelFramework(BasePluginFolder):
     def load_weights_path(self):
         """Show file dialog to set :py:attr:`model_path`"""
 
-        # print(self._default_weights_folder)
+        # logger.debug(self._default_weights_folder)
 
         file = ui.open_file_dialog(
             self,
@@ -294,17 +295,17 @@ class ModelFramework(BasePluginFolder):
         If none is available (CUDA not installed), uses cpu instead."""
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         if show:
-            print(f"Using {device} device")
-            print("Using torch :")
-            print(torch.__version__)
+            logger.info(f"Using {device} device")
+            logger.info("Using torch :")
+            logger.info(torch.__version__)
         return device
 
     def empty_cuda_cache(self):
         """Empties the cuda cache if the device is a cuda device"""
         if self.get_device(show=False).type == "cuda":
-            print("Emptying cache...")
+            logger.info("Attempting to empty cache...")
             torch.cuda.empty_cache()
-            print("Cache emptied")
+            logger.info("Attempt complete : Cache emptied")
 
     # def update_default(self): # TODO add custom models
     #     """Update default path for smoother file dialogs, here with :py:attr:`~model_path` included"""

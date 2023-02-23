@@ -1,4 +1,5 @@
 from functools import partial
+import logging
 
 from qtpy.QtCore import QtWarningMsg
 from qtpy.QtGui import QCursor
@@ -9,6 +10,7 @@ from qtpy.QtWidgets import QWidget
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.utils import Singleton
 
+logger = logging.getLogger(__name__)
 ##################
 # Singleton UI widgets
 ##################
@@ -34,7 +36,7 @@ def handle_adjust_errors(widget, type, context, msg: str):
     and resizes the main window"""
     head = msg.split(": ")[0]
     if type == QtWarningMsg and head == "QWindowsWindow::setGeometry":
-        print(
+        logger.warning(
             f"Qt resize error : {msg}\nhas been handled by attempting to resize the window"
         )
         try:

@@ -1,4 +1,5 @@
 from functools import partial
+import logging
 import napari
 from pathlib import Path
 import warnings
@@ -13,6 +14,7 @@ from napari_cellseg3d import interface as ui
 from napari_cellseg3d.interface_utils import UtilsDropdown
 from napari_cellseg3d.interface_utils import handle_adjust_errors_wrapper
 
+logger = logging.getLogger(__name__)
 
 class BasePluginSingleImage(QTabWidget):
     """A basic plugin template for working with **single images**"""
@@ -201,7 +203,7 @@ class BasePluginSingleImage(QTabWidget):
             try:
                 toggle.toggled.disconnect()
             except TypeError:
-                print(
+                logger.warning(
                     "Warning: no method was found to disconnect from widget visibility"
                 )
 
@@ -255,7 +257,7 @@ class BasePluginSingleImage(QTabWidget):
                 Path(folder).mkdir(parents=True, exist_ok=True)
                 if not Path(folder).is_dir():
                     return False
-                print(f"Created missing results folder : {folder}")
+                logger.info(f"Created missing results folder : {folder}")
             return True
         return False
 
@@ -265,7 +267,7 @@ class BasePluginSingleImage(QTabWidget):
 
         if self.check_results_path(folder):
             self.results_path = folder
-            # print(f"Results path : {self.results_path}")
+            # logger.debug(f"Results path : {self.results_path}")
             self.results_filewidget.text_field.setText(self.results_path)
             self.update_default()
 

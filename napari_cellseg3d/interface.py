@@ -1,7 +1,8 @@
-import warnings
 from functools import partial
+import logging
 from typing import List
 from typing import Optional
+import warnings
 
 import napari
 from qtpy.QtCore import Qt
@@ -58,6 +59,7 @@ napari_param_grey = "#414851"  # napari parameters menu color (lighter gray)
 napari_param_darkgrey = "#202228"  # napari default LineEdit color
 ###############
 
+logger = logging.getLogger(__name__)
 
 def toggle_visibility(checkbox, widget):
     """Toggles the visibility of a widget based on the status of a checkbox.
@@ -932,7 +934,7 @@ def open_folder_dialog(
 ):
     default_path = utils.parse_default_path(possible_paths)
 
-    print(f"Default : {default_path}")
+    logger.info(f"Default : {default_path}")
     filenames = QFileDialog.getExistingDirectory(
         widget, "Open directory", default_path
     )

@@ -1,4 +1,4 @@
-from functools import partial
+import logging
 import platform
 from dataclasses import dataclass
 from pathlib import Path
@@ -56,6 +56,8 @@ from napari_cellseg3d.model_instance_seg import binary_watershed
 from napari_cellseg3d.model_instance_seg import ImageStats
 from napari_cellseg3d.model_instance_seg import volume_stats
 
+logger = logging.getLogger(__name__)
+
 """
 Writing something to log messages from outside the main thread is rather problematic (plenty of silent crashes...)
 so instead, following the instructions in the guides below to have a worker with custom signals, I implemented
@@ -77,7 +79,7 @@ class WeightsDownloader:
         Creates a WeightsDownloader, optionally with a log widget to display the progress.
 
         Args:
-            log_widget (log_utility.Log): a Log to display the progress bar in. If None, uses print()
+            log_widget (log_utility.Log): a Log to display the progress bar in. If None, uses logger.info()
         """
         self.log_widget = log_widget
 
@@ -97,7 +99,7 @@ class WeightsDownloader:
         def show_progress(count, block_size, total_size):
             pbar.update(block_size)
 
-        print("*" * 20)
+        logger.info("*" * 20)
         pretrained_folder_path = WEIGHTS_DIR
         json_path = pretrained_folder_path / Path("pretrained_model_urls.json")
 
@@ -107,7 +109,7 @@ class WeightsDownloader:
             message = f"Weight file {model_weights_filename} already exists, skipping download"
             if self.log_widget is not None:
                 self.log_widget.print_and_log(message, printing=False)
-            print(message)
+            logger.info(message)
             return
 
         with open(json_path) as f:
@@ -119,7 +121,7 @@ class WeightsDownloader:
             start_message = f"Downloading the model from the M.W. Mathis Lab server {url}...."
             total_size = int(response.getheader("Content-Length"))
             if self.log_widget is None:
-                print(start_message)
+                logger.info(start_message)
                 pbar = tqdm(unit="B", total=total_size, position=0)
             else:
                 self.log_widget.print_and_log(start_message)
@@ -345,8 +347,8 @@ class InferenceWorker(GeneratorWorker):
         #
         # model.to(self.config.device)
 
-        # print("FILEPATHS PRINT")
-        # print(self.images_filepaths)
+        # logger.debug("FILEPATHS PRINT")
+        # logger.debug(self.images_filepaths)
         if self.config.sliding_window_config.is_enabled():
             load_transforms = Compose(
                 [
@@ -400,8 +402,8 @@ class InferenceWorker(GeneratorWorker):
         # self.log("\nChecking dimensions...")
         pad = utils.get_padding_dim(dims_check)
 
-        # print(volume.shape)
-        # print(volume.dtype)
+        # logger.debug(volume.shape)
+        # logger.debug(volume.dtype)
         if self.config.sliding_window_config.is_enabled():
             load_transforms = Compose(
                 [
@@ -744,7 +746,7 @@ class InferenceWorker(GeneratorWorker):
 
         """
         sys = platform.system()
-        print(f"OS is {sys}")
+        logger.debug(f"OS is {sys}")
         if sys == "Darwin":
             torch.set_num_threads(1)  # required for threading on macOS ?
             self.log("Number of threads has been set to 1 for macOS")
@@ -835,7 +837,7 @@ class InferenceWorker(GeneratorWorker):
                 #
                 # check_data = first(inference_loader)
                 # image = check_data[0][0]
-                # print(image.shape)
+                # logger.debug(image.shape)
                 ##################
                 ##################
             elif is_layer:
@@ -1063,7 +1065,7 @@ class TrainingWorker(GeneratorWorker):
                 )  # use_deterministic_algorithms = True causes cuda error
 
             sys = platform.system()
-            print(sys)
+            logger.debug(sys)
             if sys == "Darwin":  # required for macOS ?
                 torch.set_num_threads(1)
                 self.log("Number of threads has been set to 1 for macOS")
@@ -1084,7 +1086,7 @@ class TrainingWorker(GeneratorWorker):
                     size = self.config.sample_size
                 else:
                     size = check
-                print(f"Size of image : {size}")
+                logger.info(f"Size of image : {size}")
                 model = model_class.get_net(
                     input_image_size=utils.get_padding_dim(size),
                     # out_channels=1,
@@ -1095,7 +1097,7 @@ class TrainingWorker(GeneratorWorker):
                     size = self.sample_size
                 else:
                     size = check
-                print(f"Size of image : {size}")
+                logger.info(f"Size of image : {size}")
                 model = model_class.get_net(
                     img_size=utils.get_padding_dim(size),
                     use_checkpoint=True,
@@ -1183,14 +1185,14 @@ class TrainingWorker(GeneratorWorker):
             )
             # self.log("Loading dataset...\n")
             if do_sampling:
-                print("train_ds")
+                logger.debug("train_ds")
                 train_ds = PatchDataset(
                     data=self.train_files,
                     transform=train_transforms,
                     patch_func=sample_loader,
                     samples_per_image=self.config.num_samples,
                 )
-                print("val_ds")
+                logger.debug("val_ds")
                 val_ds = PatchDataset(
                     data=self.val_files,
                     transform=val_transforms,
@@ -1211,16 +1213,16 @@ class TrainingWorker(GeneratorWorker):
                         EnsureTyped(keys=["image", "label"]),
                     ]
                 )
-                print("Cache dataset : train")
+                logger.debug("Cache dataset : train")
                 train_ds = CacheDataset(
                     data=self.train_files,
                     transform=Compose(load_whole_images, train_transforms),
                 )
-                print("Cache dataset : val")
+                logger.debug("Cache dataset : val")
                 val_ds = CacheDataset(
                     data=self.val_files, transform=load_whole_images
                 )
-            print("Dataloader")
+            logger.debug("Dataloader")
             train_loader = DataLoader(
                 train_ds,
                 batch_size=self.config.batch_size,
@@ -1232,9 +1234,9 @@ class TrainingWorker(GeneratorWorker):
             val_loader = DataLoader(
                 val_ds, batch_size=self.config.batch_size, num_workers=2
             )
-            print("\nDone")
+            logger.info("\nDone")
 
-            print("Optimizer")
+            logger.debug("Optimizer")
             optimizer = torch.optim.Adam(
                 model.parameters(), self.config.learning_rate
             )
@@ -1244,7 +1246,7 @@ class TrainingWorker(GeneratorWorker):
             best_metric_epoch = -1
 
             # time = utils.get_date_time()
-            print("Weights")
+            logger.debug("Weights")
 
             if weights_config.custom:
                 if weights_config.use_pretrained:
@@ -1263,7 +1265,7 @@ class TrainingWorker(GeneratorWorker):
                         )
                     )
                 except RuntimeError as e:
-                    print(f"Error : {e}")
+                    logger.error(f"Error : {e}")
                     warn = (
                         "WARNING:\nIt'd seem that the weights were incompatible with the model,\n"
                         "the model will be trained from random weights"
@@ -1361,8 +1363,8 @@ class TrainingWorker(GeneratorWorker):
                                 post_label(res_tensor) for res_tensor in labs
                             ]
 
-                            # print(len(val_outputs))
-                            # print(len(val_labels))
+                            # logger.debug(len(val_outputs))
+                            # logger.debug(len(val_labels))
 
                             dice_metric(y_pred=val_outputs, y=val_labels)
                             checkpoint_output.append(
