@@ -1148,10 +1148,15 @@ class Trainer(ModelFramework, metaclass=QWidgetSingleton):
 
             # tab_index = self.addTab(self.canvas, "Loss plot")
             # self.setCurrentIndex(tab_index)
-            self.plot_dock = self._viewer.window.add_dock_widget(
-                self.canvas, name="Loss plots", area="bottom"
-            )
-            self.plot_dock._close_btn = False
+            try:
+                self.plot_dock = self._viewer.window.add_dock_widget(
+                    self.canvas, name="Loss plots", area="bottom"
+                )
+                self.plot_dock._close_btn = False
+            except AttributeError as e:
+                logger.error(e)
+                logger.error("Plot dock widget could not be added. Should occur in testing only")
+
             self.docked_widgets.append(self.plot_dock)
             self.plot_loss(loss, metric)
         else:
