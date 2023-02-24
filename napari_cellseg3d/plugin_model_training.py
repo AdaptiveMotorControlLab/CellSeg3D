@@ -1155,7 +1155,9 @@ class Trainer(ModelFramework, metaclass=QWidgetSingleton):
                 self.plot_dock._close_btn = False
             except AttributeError as e:
                 logger.error(e)
-                logger.error("Plot dock widget could not be added. Should occur in testing only")
+                logger.error(
+                    "Plot dock widget could not be added. Should occur in testing only"
+                )
 
             self.docked_widgets.append(self.plot_dock)
             self.plot_loss(loss, metric)

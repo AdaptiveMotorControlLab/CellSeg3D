@@ -1,12 +1,12 @@
 import platform
 from dataclasses import dataclass
 from math import ceil
-import numpy as np
 from pathlib import Path
-import torch
 from typing import List
 from typing import Optional
 
+import numpy as np
+import torch
 
 # MONAI
 from monai.data import CacheDataset
@@ -1124,7 +1124,7 @@ class TrainingWorker(GeneratorWorker):
                         ) :
                     ],
                 )
-            else :
+            else:
                 self.train_files = self.val_files = self.config.train_data_dict
                 msg = f"Only one image file was provided : {self.config.train_data_dict[0]['image']}.\n"
 
@@ -1137,7 +1137,9 @@ class TrainingWorker(GeneratorWorker):
 
                 logger.warning(msg)
 
-            logger.debug(f"Data dict from config is {self.config.train_data_dict}")
+            logger.debug(
+                f"Data dict from config is {self.config.train_data_dict}"
+            )
             logger.debug(f"Train files : {self.train_files}")
             logger.debug(f"Val. files : {self.val_files}")
 
@@ -1206,13 +1208,23 @@ class TrainingWorker(GeneratorWorker):
                 # if there is only one volume, split samples
                 # TODO(cyril) : maybe implement something in user config to toggle this behavior
                 if len(self.config.train_data_dict) < 2:
-                    num_train_samples = ceil(self.config.num_samples * self.config.validation_percent)
-                    num_val_samples = ceil(self.config.num_samples * (1-self.config.validation_percent))
+                    num_train_samples = ceil(
+                        self.config.num_samples
+                        * self.config.validation_percent
+                    )
+                    num_val_samples = ceil(
+                        self.config.num_samples
+                        * (1 - self.config.validation_percent)
+                    )
                 else:
-                    num_train_samples = num_val_samples = self.config.num_samples
+                    num_train_samples = (
+                        num_val_samples
+                    ) = self.config.num_samples
 
                 logger.debug(f"AMOUNT of train samples : {num_train_samples}")
-                logger.debug(f"AMOUNT of validation samples : {num_val_samples}")
+                logger.debug(
+                    f"AMOUNT of validation samples : {num_val_samples}"
+                )
 
                 logger.debug("train_ds")
                 train_ds = PatchDataset(

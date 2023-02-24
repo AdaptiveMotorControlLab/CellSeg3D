@@ -17,6 +17,7 @@ from napari_cellseg3d.plugin_base import BasePluginSingleImage
 DEFAULT_CROP_SIZE = 64
 logger = utils.LOGGER
 
+
 class Cropping(BasePluginSingleImage):
     """A utility plugin for cropping 3D volumes."""
 
@@ -56,14 +57,12 @@ class Cropping(BasePluginSingleImage):
             self._toggle_second_image_io_visibility
         )
         self.crop_second_image_choice.toggled.connect(self._check_image_list)
-        
-        self.create_new_layer = ui.CheckBox(
-            "Create new layers"
-        )
+
+        self.create_new_layer = ui.CheckBox("Create new layers")
         self.create_new_layer.setToolTip(
             'Use this to create a new layer everytime you start cropping, so you can "zoom in" your volume'
         )
-        
+
         self._viewer.layers.events.inserted.connect(self._check_image_list)
         # TODO(cyril) : fix layer removal (issue with cropping layer? )
         self.folder_choice.clicked.connect(
@@ -94,9 +93,11 @@ class Cropping(BasePluginSingleImage):
         ###########
         for box in self.crop_size_widgets:
             box.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
         self._x = 0
         self._y = 0
         self._z = 0
+
         self._crop_size_x = DEFAULT_CROP_SIZE
         self._crop_size_y = DEFAULT_CROP_SIZE
         self._crop_size_z = DEFAULT_CROP_SIZE
@@ -142,10 +143,7 @@ class Cropping(BasePluginSingleImage):
 
         ui.add_widgets(
             layout,
-            [
-                self.crop_second_image_choice,
-                self._build_io_panel()
-             ],
+            [self.crop_second_image_choice, self._build_io_panel()],
         )
         self.label_layer_loader.setVisible(False)
         ######################
@@ -255,10 +253,17 @@ class Cropping(BasePluginSingleImage):
         self.remove_docked_widgets()
 
         if not self.create_new_layer.isChecked():
-            if self.im1_crop_layer is not None:
-                self._viewer.layers.remove(self.im1_crop_layer)
-            if self.im2_crop_layer is not None:
-                self._viewer.layers.remove(self.im2_crop_layer)
+            try:
+                if self.im1_crop_layer is not None:
+                    self._viewer.layers.remove(self.im1_crop_layer)
+                if self.im2_crop_layer is not None:
+                    self._viewer.layers.remove(self.im2_crop_layer)
+            except ValueError as e:
+                logger.warning(e)
+                logger.warning(
+                    "Could not remove cropping layer programmatically!"
+                )
+                logger.warning("Maybe layer has been removed by user?")
 
         self.results_path = Path(self.results_filewidget.text_field.text())
 
@@ -319,7 +324,7 @@ class Cropping(BasePluginSingleImage):
         save._close_btn = False
         self.docked_widgets.append(save)
 
-        self._add_crop_sliders()
+        self._add_crop_sliders(self._x, self._y, self._z)
 
     def add_isotropic_layer(
         self,
@@ -357,18 +362,32 @@ class Cropping(BasePluginSingleImage):
             )
         return layer
 
+    def _check_for_empty_layer(self, layer, volume_data):
+
+        if layer.data.all() == np.zeros_like(layer.data).all():
+            layer.colormap = "red"
+            layer.data = np.ones_like(layer.data)
+        else:
+            layer.colormap = "twilight_shifted"
+            layer.data = volume_data
+
     def _add_crop_layer(self, layer, cropx, cropy, cropz):
+
+        crop_data = layer.data[:cropx, :cropy, :cropz]
+
         if isinstance(layer, napari.layers.Image):
             new_layer = self._viewer.add_image(
-                layer.data[:cropx, :cropy, :cropz],
+                crop_data,
                 name=f"cropped_{layer.name}",
                 blending="additive",
                 colormap="twilight_shifted",
                 scale=self.aniso_factors,
             )
+            self._check_for_empty_layer(new_layer, crop_data)
+
         elif isinstance(layer, napari.layers.Labels):
             new_layer = self._viewer.add_labels(
-                layer.data[:cropx, :cropy, :cropz],
+                crop_data,
                 name=f"cropped_{layer.name}",
                 scale=self.aniso_factors,
             )
@@ -378,9 +397,10 @@ class Cropping(BasePluginSingleImage):
             )
         return new_layer
 
-    def _add_crop_sliders(
-        self,
-    ):
+    def _reset_dim(self, dim):
+        dim = 0
+
+    def _add_crop_sliders(self, x, y, z):
         # modified version of code posted by Juan Nunez Iglesias here :
         # https://forum.image.sc/t/napari-viewing-3d-image-of-large-tif-stack-cropping-image-w-general-shape/55500/2
         vw = self._viewer
@@ -390,10 +410,12 @@ class Cropping(BasePluginSingleImage):
         self._crop_size_x, self._crop_size_y, self._crop_size_z = [
             box.value() for box in self.crop_size_widgets
         ]
-
-        self._x = 0
-        self._y = 0
-        self._z = 0
+        if not self.create_new_layer.isChecked():
+            self._x = x
+            self._y = y
+            self._z = z
+        else:
+            [self._reset_dim(dim) for dim in [self._x, self._y, self._z]]
 
         # logger.debug(f"Crop variables")
         # logger.debug(im1_stack.shape)
@@ -451,14 +473,7 @@ class Cropping(BasePluginSingleImage):
             highres_crop_layer.translate = scale * izyx
             highres_crop_layer.refresh()
 
-            if (
-                highres_crop_layer.data.all()
-                == np.zeros_like(highres_crop_layer.data).all()
-            ):
-                highres_crop_layer.colormap = "red"
-                highres_crop_layer.data = np.ones_like(highres_crop_layer.data)
-            else:
-                highres_crop_layer.colormap = "twilight_shifted"
+            self._check_for_empty_layer(highres_crop_layer, highres_crop_layer.data)
 
             if crop_lbls and labels_crop_layer is not None:
                 labels_crop_layer.data = im2_stack[

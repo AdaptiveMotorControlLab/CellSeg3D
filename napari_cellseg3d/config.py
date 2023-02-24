@@ -209,5 +209,3 @@ class TrainingWorkerConfig:
     sample_size: List[int] = None
     do_augmentation: bool = True
     deterministic_config: DeterministicConfig = DeterministicConfig()
-
-

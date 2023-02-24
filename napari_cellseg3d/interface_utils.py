@@ -1,4 +1,3 @@
-
 from functools import partial
 
 from qtpy.QtCore import QObject
@@ -45,7 +44,8 @@ def handle_adjust_errors(widget, type, context, msg: str):
                 state = int(widget.parent().parent().windowState())
                 if state == 0:  # normal state
                     widget.parent().parent().adjustSize()
-                    logger.debug("Non- max. size adjust attempt")
+                    logger.debug("Non-max. size adjust attempt")
+                    logger.debug(f"{widget.parent().parent()}")
                 elif state == 2:  # maximized state
                     widget.parent().parent().showNormal()
                     widget.parent().parent().showMaximized()

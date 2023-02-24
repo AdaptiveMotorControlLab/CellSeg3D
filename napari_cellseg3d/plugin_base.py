@@ -1,4 +1,3 @@
-
 import warnings
 from functools import partial
 from pathlib import Path
@@ -12,9 +11,9 @@ from qtpy.QtWidgets import QWidget
 
 # local
 from napari_cellseg3d import interface as ui
+from napari_cellseg3d import utils
 from napari_cellseg3d.interface_utils import handle_adjust_errors_wrapper
 from napari_cellseg3d.interface_utils import UtilsDropdown
-from napari_cellseg3d import utils
 
 logger = utils.LOGGER
 

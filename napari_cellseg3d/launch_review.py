@@ -1,4 +1,3 @@
-
 import os
 from pathlib import Path
 
@@ -118,7 +117,9 @@ def launch_review(review_config: config.ReviewConfig):
 
         return dirname, quicksave()
 
-    file_widget_dock = viewer.window.add_dock_widget(file_widget, name=" ", area="bottom")
+    file_widget_dock = viewer.window.add_dock_widget(
+        file_widget, name=" ", area="bottom"
+    )
     file_widget_dock._close_btn = False
 
     with plt.style.context("dark_background"):

@@ -142,7 +142,9 @@ class Reviewer(BasePluginSingleImage, metaclass=QWidgetSingleton):
         # self._show_io_element(self.results_filewidget)
 
         self.results_filewidget.text_field.setText(
-            str(Path.home() / Path("cellseg3d/review"))  # TODO(cyril) : check proper behaviour
+            str(
+                Path.home() / Path("cellseg3d/review")
+            )  # TODO(cyril) : check proper behaviour
         )
 
         csv_param_w.setLayout(csv_param_l)
