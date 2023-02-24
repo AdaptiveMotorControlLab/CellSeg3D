@@ -1,4 +1,5 @@
 import os
+import logging
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -17,6 +18,7 @@ from napari_cellseg3d import config
 from napari_cellseg3d import utils
 from napari_cellseg3d.plugin_dock import Datamanager
 
+logger = logging.getLogger(__name__)
 
 def launch_review(review_config: config.ReviewConfig):
     """Launch the review process, loading the original image, the labels & the raw labels (from prediction)
@@ -90,13 +92,13 @@ def launch_review(review_config: config.ReviewConfig):
         dirname=Path(review_config.csv_path),
     ):  # file name where to save annotations
         # """Take a filename and do something with it."""
-        # print("The filename is:", dirname)
+        # logger.debug(("The filename is:", dirname)
 
         dirname = Path(review_config.csv_path)
         # def saver():
         out_dir = file_widget.dirname.value
 
-        # print("The directory is:", out_dir)
+        # logger.debug(("The directory is:", out_dir)
 
         def quicksave():
             # if not review_config.as_stack:
@@ -152,7 +154,7 @@ def launch_review(review_config: config.ReviewConfig):
         if "shift" in event.modifiers:
             try:
                 cursor_position = np.round(viewer.cursor.position).astype(int)
-                print(f"plot @ {cursor_position}")
+                logger.debug(f"plot @ {cursor_position}")
 
                 cropped_volume = crop_volume_around_point(
                     [
@@ -186,7 +188,7 @@ def launch_review(review_config: config.ReviewConfig):
                 )
                 canvas.draw_idle()
             except Exception as e:
-                print(e)
+                logger.warning(e)
 
     # Qt widget defined in docker.py
     dmg = Datamanager(parent=viewer)
@@ -201,7 +203,7 @@ def launch_review(review_config: config.ReviewConfig):
     def update_button(axis_event):
 
         slice_num = axis_event.value[0]
-        print(f"slice num is {slice_num}")
+        logger.debug(f"slice num is {slice_num}")
         dmg.update_dm(slice_num)
 
     viewer.dims.events.current_step.connect(update_button)
