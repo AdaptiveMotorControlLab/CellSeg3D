@@ -454,11 +454,11 @@ class Cropping(BasePluginSingleImage):
             )
 
         def set_slice(
-                axis,
-                value,
-                highres_crop_layer,
-                labels_crop_layer=None,
-                crop_lbls=False,
+            axis,
+            value,
+            highres_crop_layer,
+            labels_crop_layer=None,
+            crop_lbls=False,
         ):
             """ "Update cropped volume position"""
             idx = int(value)
@@ -474,17 +474,19 @@ class Cropping(BasePluginSingleImage):
             cropz = self._crop_size_z
 
             highres_crop_layer.data = im1_stack[
-                                      i : i + cropx, j : j + cropy, k : k + cropz
-                                      ]
+                i : i + cropx, j : j + cropy, k : k + cropz
+            ]
             highres_crop_layer.translate = scale * izyx
             highres_crop_layer.refresh()
 
-            self._check_for_empty_layer(highres_crop_layer, highres_crop_layer.data)
+            self._check_for_empty_layer(
+                highres_crop_layer, highres_crop_layer.data
+            )
 
             if crop_lbls and labels_crop_layer is not None:
                 labels_crop_layer.data = im2_stack[
-                                         i : i + cropx, j : j + cropy, k : k + cropz
-                                         ]
+                    i : i + cropx, j : j + cropy, k : k + cropz
+                ]
                 labels_crop_layer.translate = scale * izyx
                 labels_crop_layer.refresh()
 
