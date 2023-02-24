@@ -410,13 +410,19 @@ class Cropping(BasePluginSingleImage):
         self._crop_size_x, self._crop_size_y, self._crop_size_z = [
             box.value() for box in self.crop_size_widgets
         ]
+        #############
+        dims = [self._x, self._y, self._z]
+        [logger.debug(f"{dim}") for dim in dims]
+        logger.debug("SET DIMS ATTEMPT")
         if not self.create_new_layer.isChecked():
             self._x = x
             self._y = y
             self._z = z
+            [logger.debug(f"{dim}") for dim in dims]
         else:
-            [self._reset_dim(dim) for dim in [self._x, self._y, self._z]]
-
+            [self._reset_dim(dim) for dim in dims]
+            [logger.debug(f"{dim}") for dim in dims]
+        #############
         # logger.debug(f"Crop variables")
         # logger.debug(im1_stack.shape)
 
@@ -448,11 +454,11 @@ class Cropping(BasePluginSingleImage):
             )
 
         def set_slice(
-            axis,
-            value,
-            highres_crop_layer,
-            labels_crop_layer=None,
-            crop_lbls=False,
+                axis,
+                value,
+                highres_crop_layer,
+                labels_crop_layer=None,
+                crop_lbls=False,
         ):
             """ "Update cropped volume position"""
             idx = int(value)
@@ -468,8 +474,8 @@ class Cropping(BasePluginSingleImage):
             cropz = self._crop_size_z
 
             highres_crop_layer.data = im1_stack[
-                i : i + cropx, j : j + cropy, k : k + cropz
-            ]
+                                      i : i + cropx, j : j + cropy, k : k + cropz
+                                      ]
             highres_crop_layer.translate = scale * izyx
             highres_crop_layer.refresh()
 
@@ -477,8 +483,8 @@ class Cropping(BasePluginSingleImage):
 
             if crop_lbls and labels_crop_layer is not None:
                 labels_crop_layer.data = im2_stack[
-                    i : i + cropx, j : j + cropy, k : k + cropz
-                ]
+                                         i : i + cropx, j : j + cropy, k : k + cropz
+                                         ]
                 labels_crop_layer.translate = scale * izyx
                 labels_crop_layer.refresh()
 
