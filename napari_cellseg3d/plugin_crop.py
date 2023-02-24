@@ -437,6 +437,12 @@ class Cropping(BasePluginSingleImage):
             highres_crop_layer.translate = scale * izyx
             highres_crop_layer.refresh()
 
+            if highres_crop_layer.data.all() == np.zeros_like(highres_crop_layer.data).all():
+                highres_crop_layer.colormap = "red"
+                highres_crop_layer.data = np.ones_like(highres_crop_layer.data)
+            else:
+                highres_crop_layer.colormap = "twilight_shifted"
+
             if crop_lbls and labels_crop_layer is not None:
                 labels_crop_layer.data = im2_stack[
                     i : i + cropx, j : j + cropy, k : k + cropz
