@@ -1,4 +1,3 @@
-import logging
 import threading
 import warnings
 
@@ -6,7 +5,9 @@ from qtpy import QtCore
 from qtpy.QtGui import QTextCursor
 from qtpy.QtWidgets import QTextEdit
 
-logger = logging.getLogger(__name__)
+from napari_cellseg3d import utils
+
+logger = utils.LOGGER
 
 
 class Log(QTextEdit):

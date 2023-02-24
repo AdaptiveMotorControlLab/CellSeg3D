@@ -1,4 +1,4 @@
-import logging
+
 import warnings
 from functools import partial
 from pathlib import Path
@@ -14,8 +14,9 @@ from qtpy.QtWidgets import QWidget
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.interface_utils import handle_adjust_errors_wrapper
 from napari_cellseg3d.interface_utils import UtilsDropdown
+from napari_cellseg3d import utils
 
-logger = logging.getLogger(__name__)
+logger = utils.LOGGER
 
 
 class BasePluginSingleImage(QTabWidget):
@@ -409,10 +410,9 @@ class BasePluginFolder(BasePluginSingleImage):
     def load_image_dataset(self):
         """Show file dialog to set :py:attr:`~images_filepaths`"""
         filenames = self.load_dataset_paths()
-
+        logger.debug(f"image filenames : {filenames}")
         if filenames:
-            self.images_filepaths = sorted(filenames)
-
+            self.images_filepaths = [str(path) for path in sorted(filenames)]
             path = str(Path(filenames[0]).parent)
             self.image_filewidget.text_field.setText(path)
             self.image_filewidget.check_ready()
@@ -421,8 +421,9 @@ class BasePluginFolder(BasePluginSingleImage):
     def load_label_dataset(self):
         """Show file dialog to set :py:attr:`~labels_filepaths`"""
         filenames = self.load_dataset_paths()
+        logger.debug(f"labels filenames : {filenames}")
         if filenames:
-            self.labels_filepaths = sorted(filenames)
+            self.labels_filepaths = [str(path) for path in sorted(filenames)]
             path = str(Path(filenames[0]).parent)
             self.labels_filewidget.text_field.setText(path)
             self.labels_filewidget.check_ready()

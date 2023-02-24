@@ -1,4 +1,4 @@
-import logging
+
 import os
 from pathlib import Path
 
@@ -18,7 +18,7 @@ from napari_cellseg3d import config
 from napari_cellseg3d import utils
 from napari_cellseg3d.plugin_dock import Datamanager
 
-logger = logging.getLogger(__name__)
+logger = utils.LOGGER
 
 
 def launch_review(review_config: config.ReviewConfig):
@@ -118,7 +118,8 @@ def launch_review(review_config: config.ReviewConfig):
 
         return dirname, quicksave()
 
-    viewer.window.add_dock_widget(file_widget, name=" ", area="bottom")
+    file_widget_dock = viewer.window.add_dock_widget(file_widget, name=" ", area="bottom")
+    file_widget_dock._close_btn = False
 
     with plt.style.context("dark_background"):
         canvas = FigureCanvas(Figure(figsize=(3, 15)))
@@ -147,7 +148,8 @@ def launch_review(review_config: config.ReviewConfig):
 
     canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
 
-    viewer.window.add_dock_widget(canvas, name=" ", area="right")
+    canvas_dock = viewer.window.add_dock_widget(canvas, name=" ", area="right")
+    canvas_dock._close_btn = False
 
     @viewer.mouse_drag_callbacks.append
     def update_canvas_canvas(viewer, event):
@@ -199,7 +201,8 @@ def launch_review(review_config: config.ReviewConfig):
         review_config.model_name,
         review_config.new_csv,
     )
-    viewer.window.add_dock_widget(dmg, name=" ", area="left")
+    datamananger = viewer.window.add_dock_widget(dmg, name=" ", area="left")
+    datamananger._close_btn = False
 
     def update_button(axis_event):
 

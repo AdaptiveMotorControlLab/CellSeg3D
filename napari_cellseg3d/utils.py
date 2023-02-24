@@ -1,3 +1,4 @@
+import logging
 import warnings
 from datetime import datetime
 from pathlib import Path
@@ -9,6 +10,13 @@ from pandas import Series
 from skimage import io
 from skimage.filters import gaussian
 from tifffile import imread as tfl_imread
+
+LOGGER = logging.getLogger(__name__)
+###############
+# Global logging level setting
+LOGGER.setLevel(logging.DEBUG)
+# LOGGER.setLevel(logging.INFO)
+###############
 
 """
 utils.py

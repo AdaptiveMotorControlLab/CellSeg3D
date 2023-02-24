@@ -1,12 +1,12 @@
-import logging
 import platform
 from dataclasses import dataclass
+from math import ceil
+import numpy as np
 from pathlib import Path
+import torch
 from typing import List
 from typing import Optional
 
-import numpy as np
-import torch
 
 # MONAI
 from monai.data import CacheDataset
@@ -56,7 +56,7 @@ from napari_cellseg3d.model_instance_seg import binary_watershed
 from napari_cellseg3d.model_instance_seg import ImageStats
 from napari_cellseg3d.model_instance_seg import volume_stats
 
-logger = logging.getLogger(__name__)
+logger = utils.LOGGER
 
 """
 Writing something to log messages from outside the main thread is rather problematic (plenty of silent crashes...)
@@ -1109,20 +1109,37 @@ class TrainingWorker(GeneratorWorker):
             epoch_loss_values = []
             val_metric_values = []
 
-            self.train_files, self.val_files = (
-                self.config.train_data_dict[
-                    0 : int(
-                        len(self.config.train_data_dict)
-                        * self.config.validation_percent
-                    )
-                ],
-                self.config.train_data_dict[
-                    int(
-                        len(self.config.train_data_dict)
-                        * self.config.validation_percent
-                    ) :
-                ],
-            )
+            if len(self.config.train_data_dict) > 1:
+                self.train_files, self.val_files = (
+                    self.config.train_data_dict[
+                        0 : int(
+                            len(self.config.train_data_dict)
+                            * self.config.validation_percent
+                        )
+                    ],
+                    self.config.train_data_dict[
+                        int(
+                            len(self.config.train_data_dict)
+                            * self.config.validation_percent
+                        ) :
+                    ],
+                )
+            else :
+                self.train_files = self.val_files = self.config.train_data_dict
+                msg = f"Only one image file was provided : {self.config.train_data_dict[0]['image']}.\n"
+
+                logger.debug(f"SAMPLING is {self.config.sampling}")
+                if not self.config.sampling:
+                    msg += f"Sampling is not in use, the only image provided will be used as the validation file."
+                    self.warn(msg)
+                else:
+                    msg += f"Samples for validation will be cropped for the same only volume that is being used for training"
+
+                logger.warning(msg)
+
+            logger.debug(f"Data dict from config is {self.config.train_data_dict}")
+            logger.debug(f"Train files : {self.train_files}")
+            logger.debug(f"Val. files : {self.val_files}")
 
             if len(self.train_files) == 0:
                 raise ValueError("Training dataset is empty")
@@ -1185,19 +1202,31 @@ class TrainingWorker(GeneratorWorker):
             )
             # self.log("Loading dataset...\n")
             if do_sampling:
+
+                # if there is only one volume, split samples
+                # TODO(cyril) : maybe implement something in user config to toggle this behavior
+                if len(self.config.train_data_dict) < 2:
+                    num_train_samples = ceil(self.config.num_samples * self.config.validation_percent)
+                    num_val_samples = ceil(self.config.num_samples * (1-self.config.validation_percent))
+                else:
+                    num_train_samples = num_val_samples = self.config.num_samples
+
+                logger.debug(f"AMOUNT of train samples : {num_train_samples}")
+                logger.debug(f"AMOUNT of validation samples : {num_val_samples}")
+
                 logger.debug("train_ds")
                 train_ds = PatchDataset(
                     data=self.train_files,
                     transform=train_transforms,
                     patch_func=sample_loader,
-                    samples_per_image=self.config.num_samples,
+                    samples_per_image=num_train_samples,
                 )
                 logger.debug("val_ds")
                 val_ds = PatchDataset(
                     data=self.val_files,
                     transform=val_transforms,
                     patch_func=sample_loader,
-                    samples_per_image=self.config.num_samples,
+                    samples_per_image=num_val_samples,
                 )
 
             else:

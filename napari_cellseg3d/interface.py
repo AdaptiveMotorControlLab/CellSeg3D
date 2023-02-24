@@ -1,4 +1,3 @@
-import logging
 import warnings
 from functools import partial
 from typing import List
@@ -59,7 +58,7 @@ napari_param_grey = "#414851"  # napari parameters menu color (lighter gray)
 napari_param_darkgrey = "#202228"  # napari default LineEdit color
 ###############
 
-logger = logging.getLogger(__name__)
+logger = utils.LOGGER
 
 
 def toggle_visibility(checkbox, widget):

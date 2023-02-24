@@ -1,4 +1,4 @@
-import logging
+
 import warnings
 from pathlib import Path
 
@@ -17,7 +17,7 @@ from napari_cellseg3d.log_utility import Log
 from napari_cellseg3d.plugin_base import BasePluginFolder
 
 warnings.formatwarning = utils.format_Warning
-logger = logging.getLogger(__name__)
+logger = utils.LOGGER
 
 
 class ModelFramework(BasePluginFolder):
@@ -204,6 +204,7 @@ class ModelFramework(BasePluginFolder):
                 area="left",
                 allowed_areas=["left"],
             )
+            report_dock._close_btn = False
 
             # TODO move to activity log once they figure out _qt_window access and private attrib.
             # activity_log = self._viewer.window._qt_window._activity_dialog
@@ -242,7 +243,7 @@ class ModelFramework(BasePluginFolder):
         for file in self.images_filepaths:
             logger.info(Path(file).name)
         logger.info("*" * 10)
-        logger.info("\nLabels :\n")
+        logger.info("Labels :\n")
         for file in self.labels_filepaths:
             logger.info(Path(file).name)
 
@@ -252,6 +253,7 @@ class ModelFramework(BasePluginFolder):
                 self.images_filepaths, self.labels_filepaths
             )
         ]
+        logger.debug(f"Training data dict : {data_dicts}")
 
         return data_dicts
 

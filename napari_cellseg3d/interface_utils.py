@@ -1,4 +1,4 @@
-import logging
+
 from functools import partial
 
 from qtpy.QtCore import QObject
@@ -7,9 +7,9 @@ from qtpy.QtGui import QCursor
 from qtpy.QtWidgets import QMenu
 
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d.utils import Singleton
+from napari_cellseg3d import utils
 
-logger = logging.getLogger(__name__)
+logger = utils.LOGGER
 ##################
 # Singleton UI widgets
 ##################
@@ -45,9 +45,11 @@ def handle_adjust_errors(widget, type, context, msg: str):
                 state = int(widget.parent().parent().windowState())
                 if state == 0:  # normal state
                     widget.parent().parent().adjustSize()
+                    logger.debug("Non- max. size adjust attempt")
                 elif state == 2:  # maximized state
                     widget.parent().parent().showNormal()
                     widget.parent().parent().showMaximized()
+                    logger.debug("Maximized size adjust attempt")
         except RuntimeError:
             pass
 
@@ -62,7 +64,7 @@ def handle_adjust_errors_wrapper(widget):
 ##################
 
 
-class UtilsDropdown(metaclass=Singleton):
+class UtilsDropdown(metaclass=utils.Singleton):
     """Singleton class for use in instantiating only one Utility dropdown menu that can be accessed from the plugin."""
 
     caller_widget = None

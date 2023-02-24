@@ -1,4 +1,3 @@
-import logging
 import shutil
 import warnings
 from functools import partial
@@ -37,7 +36,7 @@ from napari_cellseg3d.model_workers import TrainingWorker
 NUMBER_TABS = 3
 DEFAULT_PATCH_SIZE = 64
 
-logger = logging.getLogger(__name__)
+logger = utils.LOGGER
 
 
 class Trainer(ModelFramework, metaclass=QWidgetSingleton):
@@ -834,13 +833,13 @@ class Trainer(ModelFramework, metaclass=QWidgetSingleton):
                 learning_rate=float(self.learning_rate_choice.currentText()),
                 validation_interval=self.val_interval_choice.value(),
                 batch_size=self.batch_choice.slider_value,
-                results_path_folder=results_path_folder,
+                results_path_folder=str(results_path_folder),
                 sampling=self.patch_choice.isChecked(),
                 num_samples=self.sample_choice_slider.slider_value,
                 sample_size=patch_size,
                 do_augmentation=self.augment_choice.isChecked(),
                 deterministic_config=deterministic_config,
-            )  # FIXME continue
+            )  # TODO(cyril) continue to put params in config
 
             self.config = config.TrainerConfig(
                 save_as_zip=self.zip_choice.isChecked()
@@ -1152,6 +1151,7 @@ class Trainer(ModelFramework, metaclass=QWidgetSingleton):
             self.plot_dock = self._viewer.window.add_dock_widget(
                 self.canvas, name="Loss plots", area="bottom"
             )
+            self.plot_dock._close_btn = False
             self.docked_widgets.append(self.plot_dock)
             self.plot_loss(loss, metric)
         else:
