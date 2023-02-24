@@ -15,7 +15,7 @@ from napari_cellseg3d import utils
 from napari_cellseg3d.plugin_base import BasePluginSingleImage
 
 DEFAULT_CROP_SIZE = 64
-
+logger = utils.LOGGER
 
 class Cropping(BasePluginSingleImage):
     """A utility plugin for cropping 3D volumes."""
@@ -56,6 +56,14 @@ class Cropping(BasePluginSingleImage):
             self._toggle_second_image_io_visibility
         )
         self.crop_second_image_choice.toggled.connect(self._check_image_list)
+        
+        self.create_new_layer = ui.CheckBox(
+            "Create new layers"
+        )
+        self.create_new_layer.setToolTip(
+            'Use this to create a new layer everytime you start cropping, so you can "zoom in" your volume'
+        )
+        
         self._viewer.layers.events.inserted.connect(self._check_image_list)
         # TODO(cyril) : fix layer removal (issue with cropping layer? )
         self.folder_choice.clicked.connect(
@@ -134,7 +142,10 @@ class Cropping(BasePluginSingleImage):
 
         ui.add_widgets(
             layout,
-            [self.crop_second_image_choice, self._build_io_panel()],
+            [
+                self.crop_second_image_choice,
+                self._build_io_panel()
+             ],
         )
         self.label_layer_loader.setVisible(False)
         ######################
@@ -142,6 +153,7 @@ class Cropping(BasePluginSingleImage):
         ######################
         dim_group_w, dim_group_l = ui.make_group("Dimensions")
 
+        dim_group_l.addWidget(self.create_new_layer)
         dim_group_l.addWidget(self.aniso_widgets)
         [
             dim_group_l.addWidget(widget, alignment=ui.ABS_AL)
@@ -172,7 +184,7 @@ class Cropping(BasePluginSingleImage):
     #             Path(folder).mkdir(parents=True, exist_ok=True)
     #             if not Path(folder).is_dir():
     #                 return False
-    #             print(f"Created missing results folder : {folder}")
+    #             logger.debug(f"Created missing results folder : {folder}")
     #         return True
     #     return False
 
@@ -182,7 +194,7 @@ class Cropping(BasePluginSingleImage):
     #
     #     if self._check_results_path(folder):
     #         self.results_path = Path(folder)
-    #         print(f"Results path : {self.results_path}")
+    #         logger.debug(f"Results path : {self.results_path}")
     # self.results_filewidget.text_field.setText(str(self.results_path))
 
     def quicksave(self):
@@ -205,7 +217,7 @@ class Cropping(BasePluginSingleImage):
 
         viewer.layers[f"cropped_{self.image_layer1.name}"].save(im1_path)
 
-        print(f"Image 1 saved as: {im1_path}")
+        logger.info(f"Image 1 saved as: {im1_path}")
 
         if self.crop_second_image:
             im2_path = str(
@@ -215,7 +227,7 @@ class Cropping(BasePluginSingleImage):
 
             viewer.layers[f"cropped_{self.image_layer2.name}"].save(im2_path)
 
-            print(f"Image 2 saved as: {im2_path}")
+            logger.info(f"Image 2 saved as: {im2_path}")
 
     def check_ready(self):
 
@@ -241,10 +253,12 @@ class Cropping(BasePluginSingleImage):
 
         # self._viewer.window.remove_dock_widget(self.parent()) # no need to close utils ?
         self.remove_docked_widgets()
-        if self.im1_crop_layer is not None:
-            self._viewer.layers.remove(self.im1_crop_layer)
-        if self.im2_crop_layer is not None:
-            self._viewer.layers.remove(self.im2_crop_layer)
+
+        if not self.create_new_layer.isChecked():
+            if self.im1_crop_layer is not None:
+                self._viewer.layers.remove(self.im1_crop_layer)
+            if self.im2_crop_layer is not None:
+                self._viewer.layers.remove(self.im2_crop_layer)
 
         self.results_path = Path(self.results_filewidget.text_field.text())
 
@@ -315,7 +329,7 @@ class Cropping(BasePluginSingleImage):
         opacity=0.7,
         visible=True,
     ):
-        print(layer.name)
+        logger.debug(layer.name)
 
         if isinstance(layer, napari.layers.Image):
             layer = self._viewer.add_image(
@@ -327,7 +341,7 @@ class Cropping(BasePluginSingleImage):
                 scale=self.aniso_factors,
                 visible=visible,
             )
-            print("image")
+            logger.debug("image")
         elif isinstance(layer, napari.layers.Labels):
             layer = self._viewer.add_labels(
                 layer.data,
@@ -336,7 +350,7 @@ class Cropping(BasePluginSingleImage):
                 scale=self.aniso_factors,
                 visible=visible,
             )
-            print("label")
+            logger.debug("label")
         else:
             raise ValueError(
                 f"Please select a valid layer type, {type(layer)} is not compatible"
@@ -381,8 +395,8 @@ class Cropping(BasePluginSingleImage):
         self._y = 0
         self._z = 0
 
-        # print(f"Crop variables")
-        # print(im1_stack.shape)
+        # logger.debug(f"Crop variables")
+        # logger.debug(im1_stack.shape)
 
         # define crop sizes and boundaries for the image
         crop_sizes = [self._crop_size_x, self._crop_size_y, self._crop_size_z]
@@ -397,9 +411,9 @@ class Cropping(BasePluginSingleImage):
 
         stepsizes = ends // 100
 
-        # print(crop_sizes)
-        # print(ends)
-        # print(stepsizes)
+        # logger.debug(crop_sizes)
+        # logger.debug(ends)
+        # logger.debug(stepsizes)
 
         self.im1_crop_layer = self._add_crop_layer(
             self.image_layer1, cropx, cropy, cropz
@@ -493,7 +507,7 @@ class Cropping(BasePluginSingleImage):
         # @spinbox.changed.connect
         # def change_size(value: int):
         #
-        #     print(value)
+        #     logger.debug(value)
         #     i = self._x
         #     j = self._y
         #     k = self._z
@@ -522,8 +536,8 @@ class Cropping(BasePluginSingleImage):
 
 #  def change_size(axis, value) :
 
-#                     print(value)
-#                     print(axis)
+#                     logger.debug(value)
+#                     logger.debug(axis)
 #                     index = int(value)
 #                     scale = np.asarray(highres_crop_layer.scale)
 #                     translate = np.asarray(highres_crop_layer.translate)
