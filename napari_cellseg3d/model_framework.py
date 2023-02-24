@@ -1,6 +1,6 @@
 import logging
-from pathlib import Path
 import warnings
+from pathlib import Path
 
 import napari
 import torch
@@ -18,6 +18,7 @@ from napari_cellseg3d.plugin_base import BasePluginFolder
 
 warnings.formatwarning = utils.format_Warning
 logger = logging.getLogger(__name__)
+
 
 class ModelFramework(BasePluginFolder):
     """A framework with buttons to use for loading images, labels, models, etc. for both inference and training"""

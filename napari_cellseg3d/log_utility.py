@@ -8,6 +8,7 @@ from qtpy.QtWidgets import QTextEdit
 
 logger = logging.getLogger(__name__)
 
+
 class Log(QTextEdit):
     """Class to implement a log for important user info. Should be thread-safe."""
 

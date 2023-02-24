@@ -1,6 +1,5 @@
 import logging
 import os
-import logging
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -20,6 +19,7 @@ from napari_cellseg3d import utils
 from napari_cellseg3d.plugin_dock import Datamanager
 
 logger = logging.getLogger(__name__)
+
 
 def launch_review(review_config: config.ReviewConfig):
     """Launch the review process, loading the original image, the labels & the raw labels (from prediction)

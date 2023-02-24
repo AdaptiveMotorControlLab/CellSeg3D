@@ -1,16 +1,15 @@
-from pathlib import Path
 import warnings
+from pathlib import Path
 
 import napari
 import numpy as np
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QWidget
 from tifffile import imread
 from tifffile import imwrite
 
-from qtpy.QtWidgets import QWidget
-from qtpy.QtWidgets import QSizePolicy
-
-from napari_cellseg3d import config
 import napari_cellseg3d.interface as ui
+from napari_cellseg3d import config
 from napari_cellseg3d import utils
 from napari_cellseg3d.model_instance_seg import clear_small_objects
 from napari_cellseg3d.model_instance_seg import threshold

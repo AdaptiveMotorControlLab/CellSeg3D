@@ -1,20 +1,22 @@
+import warnings
 from functools import partial
+
 import napari
 import numpy as np
 import pandas as pd
-import warnings
 
 # local
 from napari_cellseg3d import config
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
+from napari_cellseg3d.interface_utils import QWidgetSingleton
 from napari_cellseg3d.model_framework import ModelFramework
 from napari_cellseg3d.model_workers import InferenceResult
 from napari_cellseg3d.model_workers import InferenceWorker
 from napari_cellseg3d.plugin_convert import InstanceWidgets
 
 
-class Inferer(ModelFramework):
+class Inferer(ModelFramework, metaclass=QWidgetSingleton):
     """A plugin to run already trained models in evaluation mode to preform inference and output a label on all
     given volumes."""
 
@@ -370,7 +372,9 @@ class Inferer(ModelFramework):
             ],
         )
         self.weights_filewidget.setVisible(False)
-        self.model_choice.label.setVisible(False)  # TODO reminder for adding custom model
+        self.model_choice.label.setVisible(
+            False
+        )  # TODO reminder for adding custom model
 
         model_group_w.setLayout(model_group_l)
         tab.layout.addWidget(model_group_w)

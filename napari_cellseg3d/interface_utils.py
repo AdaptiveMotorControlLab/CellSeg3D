@@ -1,11 +1,10 @@
-from functools import partial
 import logging
+from functools import partial
 
+from qtpy.QtCore import QObject
 from qtpy.QtCore import QtWarningMsg
 from qtpy.QtGui import QCursor
 from qtpy.QtWidgets import QMenu
-from qtpy.QtWidgets import QWidget
-
 
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.utils import Singleton
@@ -16,15 +15,17 @@ logger = logging.getLogger(__name__)
 ##################
 
 
-class SingletonWidget(QWidget):
+class QWidgetSingleton(type(QObject)):
+
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(SingletonWidget, cls).__call__(
+            cls._instances[cls] = super(QWidgetSingleton, cls).__call__(
                 *args, **kwargs
             )
         return cls._instances[cls]
+
 
 ##################
 # Screen size adjustment error handler

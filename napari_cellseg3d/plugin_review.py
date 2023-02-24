@@ -4,6 +4,7 @@ from pathlib import Path
 import napari
 
 # Qt
+from qtpy.QtCore import QObject
 from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QSizePolicy
 
@@ -11,13 +12,14 @@ from qtpy.QtWidgets import QSizePolicy
 from napari_cellseg3d import config
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
+from napari_cellseg3d.interface_utils import QWidgetSingleton
 from napari_cellseg3d.launch_review import launch_review
 from napari_cellseg3d.plugin_base import BasePluginSingleImage
 
 warnings.formatwarning = utils.format_Warning
 
 
-class Reviewer(BasePluginSingleImage):
+class Reviewer(BasePluginSingleImage, metaclass=QWidgetSingleton):
     """A plugin for selecting volumes and labels file and launching the review process.
     Inherits from : :doc:`plugin_base`"""
 
@@ -87,6 +89,7 @@ class Reviewer(BasePluginSingleImage):
         self.image_filewidget.text_field.textChanged.connect(
             self._update_results_path
         )
+        print(f"{self}")
 
     def _update_results_path(self):
         p = self.image_filewidget.text_field.text()

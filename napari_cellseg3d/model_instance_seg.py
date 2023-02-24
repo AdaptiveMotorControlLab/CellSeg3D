@@ -5,13 +5,13 @@ from dataclasses import dataclass
 from typing import List
 
 import numpy as np
+from skimage.filters import thresholding
 
 # from skimage.measure import marching_cubes
 # from skimage.measure import mesh_surface_area
 from skimage.measure import label
 from skimage.measure import regionprops
 from skimage.morphology import remove_small_objects
-from skimage.filters import thresholding
 from skimage.segmentation import watershed
 from skimage.transform import resize
 from tifffile import imread

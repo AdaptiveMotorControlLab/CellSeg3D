@@ -1,6 +1,6 @@
+import warnings
 from functools import partial
 from pathlib import Path
-import warnings
 
 import napari
 import numpy as np
@@ -11,8 +11,8 @@ from qtpy.QtWidgets import QSizePolicy
 
 # local
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d.plugin_base import BasePluginSingleImage
 from napari_cellseg3d import utils
+from napari_cellseg3d.plugin_base import BasePluginSingleImage
 
 DEFAULT_CROP_SIZE = 64
 
@@ -437,7 +437,10 @@ class Cropping(BasePluginSingleImage):
             highres_crop_layer.translate = scale * izyx
             highres_crop_layer.refresh()
 
-            if highres_crop_layer.data.all() == np.zeros_like(highres_crop_layer.data).all():
+            if (
+                highres_crop_layer.data.all()
+                == np.zeros_like(highres_crop_layer.data).all()
+            ):
                 highres_crop_layer.colormap = "red"
                 highres_crop_layer.data = np.ones_like(highres_crop_layer.data)
             else:
@@ -456,6 +459,7 @@ class Cropping(BasePluginSingleImage):
 
             # spinbox = SpinBox(name="crop_dims", min=1, value=self._crop_size, max=max(im1_stack.shape), step=1)
             # spinbox.changed.connect(lambda event : change_size(event))
+
         sliders = [
             ui.Slider(text_label=axis, lower=0, upper=end, step=step)
             for axis, end, step in zip("zyx", ends, stepsizes)
@@ -471,14 +475,16 @@ class Cropping(BasePluginSingleImage):
                 )
             )
         container_widget = ui.ContainerWidget(parent=self)
-            # Container(layout="vertical")
+        # Container(layout="vertical")
         # container_widget.extend(sliders)
         ui.add_widgets(
             container_widget.layout,
-            [ui.combine_blocks(s, s.text_label) for s in sliders]
+            [ui.combine_blocks(s, s.text_label) for s in sliders],
         )
         # vw.window.add_dock_widget([spinbox, container_widget], area="right")
-        wdgts = vw.window.add_dock_widget(container_widget, area="right", name="Sliders")
+        wdgts = vw.window.add_dock_widget(
+            container_widget, area="right", name="Sliders"
+        )
         wdgts._close_btn = False
 
         self.docked_widgets.append(wdgts)

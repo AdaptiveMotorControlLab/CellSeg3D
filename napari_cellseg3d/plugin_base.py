@@ -1,8 +1,9 @@
-from functools import partial
 import logging
-import napari
-from pathlib import Path
 import warnings
+from functools import partial
+from pathlib import Path
+
+import napari
 
 # Qt
 from qtpy.QtCore import qInstallMessageHandler
@@ -11,10 +12,11 @@ from qtpy.QtWidgets import QWidget
 
 # local
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d.interface_utils import UtilsDropdown
 from napari_cellseg3d.interface_utils import handle_adjust_errors_wrapper
+from napari_cellseg3d.interface_utils import UtilsDropdown
 
 logger = logging.getLogger(__name__)
+
 
 class BasePluginSingleImage(QTabWidget):
     """A basic plugin template for working with **single images**"""

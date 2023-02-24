@@ -1,4 +1,5 @@
 import pathlib
+
 import napari
 
 # Qt
@@ -10,9 +11,10 @@ from qtpy.QtWidgets import QWidget
 
 # local
 from napari_cellseg3d import interface as ui
+from napari_cellseg3d.interface_utils import QWidgetSingleton
 
 
-class Helper(QWidget):
+class Helper(QWidget, metaclass=QWidgetSingleton):
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
 

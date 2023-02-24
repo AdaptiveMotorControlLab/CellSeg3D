@@ -1,8 +1,8 @@
-from functools import partial
 import logging
+import warnings
+from functools import partial
 from typing import List
 from typing import Optional
-import warnings
 
 import napari
 from qtpy.QtCore import Qt
@@ -60,6 +60,7 @@ napari_param_darkgrey = "#202228"  # napari default LineEdit color
 ###############
 
 logger = logging.getLogger(__name__)
+
 
 def toggle_visibility(checkbox, widget):
     """Toggles the visibility of a widget based on the status of a checkbox.

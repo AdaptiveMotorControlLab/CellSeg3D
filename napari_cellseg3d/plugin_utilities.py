@@ -2,21 +2,21 @@ import napari
 
 # Qt
 from qtpy.QtCore import qInstallMessageHandler
-from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QLayout
+from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
 # local
 import napari_cellseg3d.interface as ui
 from napari_cellseg3d.interface_utils import handle_adjust_errors_wrapper
-from napari_cellseg3d.plugin_crop import Cropping
+from napari_cellseg3d.interface_utils import QWidgetSingleton
 from napari_cellseg3d.plugin_convert import AnisoUtils
 from napari_cellseg3d.plugin_convert import RemoveSmallUtils
+from napari_cellseg3d.plugin_convert import ThresholdUtils
 from napari_cellseg3d.plugin_convert import ToInstanceUtils
 from napari_cellseg3d.plugin_convert import ToSemanticUtils
-from napari_cellseg3d.plugin_convert import ThresholdUtils
-
+from napari_cellseg3d.plugin_crop import Cropping
 from napari_cellseg3d.plugin_metrics import MetricsUtils
 
 UTILITIES_WIDGETS = {
@@ -29,7 +29,7 @@ UTILITIES_WIDGETS = {
 }
 
 
-class Utilities(QWidget):
+class Utilities(QWidget, metaclass=QWidgetSingleton):
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
         self._viewer = viewer

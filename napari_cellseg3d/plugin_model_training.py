@@ -1,7 +1,7 @@
-from functools import partial
 import logging
 import shutil
 import warnings
+from functools import partial
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -29,6 +29,7 @@ from qtpy.QtWidgets import QSizePolicy
 from napari_cellseg3d import config
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
+from napari_cellseg3d.interface_utils import QWidgetSingleton
 from napari_cellseg3d.model_framework import ModelFramework
 from napari_cellseg3d.model_workers import TrainingReport
 from napari_cellseg3d.model_workers import TrainingWorker
@@ -38,7 +39,8 @@ DEFAULT_PATCH_SIZE = 64
 
 logger = logging.getLogger(__name__)
 
-class Trainer(ModelFramework):
+
+class Trainer(ModelFramework, metaclass=QWidgetSingleton):
     """A plugin to train pre-defined PyTorch models for one-channel segmentation directly in napari.
     Features parameter selection for training, dynamic loss plotting and automatic saving of the best weights during
     training through validation."""
@@ -464,7 +466,11 @@ class Trainer(ModelFramework):
             ],
         )
 
-        for w in [self.image_filewidget, self.labels_filewidget,self.results_filewidget]:
+        for w in [
+            self.image_filewidget,
+            self.labels_filewidget,
+            self.results_filewidget,
+        ]:
             w.check_ready()
 
         if self.data_path is not None:
