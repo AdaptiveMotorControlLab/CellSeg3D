@@ -86,7 +86,7 @@ class Cropping(BasePluginSingleImage):
         )
         self.crop_size_labels = [
             ui.make_label("Size in " + axis + " of cropped volume :", self)
-            for axis in "xyz"
+            for axis in "zyx"
         ]
 
         self.aniso_widgets = ui.AnisotropyWidgets(self)
@@ -324,7 +324,7 @@ class Cropping(BasePluginSingleImage):
         save._close_btn = False
         self.docked_widgets.append(save)
 
-        self._add_crop_sliders(self._x, self._y, self._z)
+        self._add_crop_sliders()
 
     def add_isotropic_layer(
         self,
@@ -366,10 +366,12 @@ class Cropping(BasePluginSingleImage):
 
         if layer.data.all() == np.zeros_like(layer.data).all():
             layer.colormap = "red"
-            layer.data = np.ones_like(layer.data)
+            layer.data = np.random.random(layer.data.shape)
+            layer.refresh()
         else:
             layer.colormap = "twilight_shifted"
             layer.data = volume_data
+            layer.refresh()
 
     def _add_crop_layer(self, layer, cropx, cropy, cropz):
 
@@ -383,7 +385,7 @@ class Cropping(BasePluginSingleImage):
                 colormap="twilight_shifted",
                 scale=self.aniso_factors,
             )
-            self._check_for_empty_layer(new_layer, crop_data)
+            # self._check_for_empty_layer(new_layer, crop_data)
 
         elif isinstance(layer, napari.layers.Labels):
             new_layer = self._viewer.add_labels(
@@ -397,10 +399,12 @@ class Cropping(BasePluginSingleImage):
             )
         return new_layer
 
-    def _reset_dim(self, dim):
-        dim = 0
+    # def _reset_dim(self, dim):
+    #     dim = 0
 
-    def _add_crop_sliders(self, x, y, z):
+    def _add_crop_sliders(self,
+                          # x, y, z
+                          ):
         # modified version of code posted by Juan Nunez Iglesias here :
         # https://forum.image.sc/t/napari-viewing-3d-image-of-large-tif-stack-cropping-image-w-general-shape/55500/2
         vw = self._viewer
@@ -428,12 +432,14 @@ class Cropping(BasePluginSingleImage):
 
         # define crop sizes and boundaries for the image
         crop_sizes = [self._crop_size_x, self._crop_size_y, self._crop_size_z]
+
         for i in range(len(crop_sizes)):
             if crop_sizes[i] > im1_stack.shape[i]:
                 crop_sizes[i] = im1_stack.shape[i]
                 warnings.warn(
                     f"WARNING : Crop dimension in axis {i} was too large at {crop_sizes[i]}, it was set to {im1_stack.shape[i]}"
                 )
+
         cropx, cropy, cropz = crop_sizes
         ends = np.asarray(im1_stack.shape) - np.asarray(crop_sizes) + 1
 
@@ -442,6 +448,10 @@ class Cropping(BasePluginSingleImage):
         # logger.debug(crop_sizes)
         # logger.debug(ends)
         # logger.debug(stepsizes)
+        if self.im1_crop_layer is not None and self.create_new_layer.isChecked():
+            self.im1_crop_layer.translate = [0,0,0]
+            if self.im2_crop_layer is not None :
+                self.im2_crop_layer.translate = [0,0,0]
 
         self.im1_crop_layer = self._add_crop_layer(
             self.image_layer1, cropx, cropy, cropz
@@ -461,6 +471,11 @@ class Cropping(BasePluginSingleImage):
             crop_lbls=False,
         ):
             """ "Update cropped volume position"""
+            # self._check_for_empty_layer(highres_crop_layer, highres_crop_layer.data)
+
+            logger.debug(f"axis : {axis}")
+            logger.debug(f"value : {value}")
+
             idx = int(value)
             scale = np.asarray(highres_crop_layer.scale)
             translate = np.asarray(highres_crop_layer.translate)
