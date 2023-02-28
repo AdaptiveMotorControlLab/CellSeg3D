@@ -141,11 +141,14 @@ class Cropping(BasePluginSingleImage):
         container = ui.ContainerWidget(0, 0, 1, 11)
         layout = container.layout
 
+        io_panel = self._build_io_panel()
+
         ui.add_widgets(
             layout,
-            [self.crop_second_image_choice, self._build_io_panel()],
+            [io_panel,self.crop_second_image_choice],
         )
         self.label_layer_loader.setVisible(False)
+        self.radio_buttons.setVisible(False) # TODO(cyril) : remove code related to folders as it is deprecated here
         ######################
         ui.add_blank(self, layout)
         ######################

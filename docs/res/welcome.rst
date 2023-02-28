@@ -2,7 +2,7 @@ Introduction
 ===================
 
 
-Here you will find instructions on how to use the plugin for direct-to-3D segmentation.
+Here you will find instructions on how to use the plugin for direct segmentation in 3D.
 If the installation was successful, you'll see the napari-cellseg3D plugin
 in the Plugins section of napari.
 
@@ -20,7 +20,10 @@ From this page you can access the guides on the several modules available for yo
     * Review : :ref:`loader_module_guide`
 * Utilities :
     * Cropping (3D) : :ref:`cropping_module_guide`
-    * Convert labels : :ref:`convert_module_guide`
+    * Other utilities : :ref:`utils_module_guide`
+
+..
+    * Convert labels : :ref:`utils_module_guide`
     * Compute scores : :ref:`metrics_module_guide`
 * Advanced :
     * Defining custom models directly in the plugin (WIP) : :ref:`custom_model_guide`
@@ -66,10 +69,11 @@ To use the plugin, please run:
 Then go into Plugins > napari-cellseg3d, and choose which tool to use:
 
 
-- **Train**:  This module allows you to train segmentation algorithms from labeled volumes.
-- **Infer**: This module allows you to use pre-trained segmentation algorithms on volumes to automatically label cells.
-- **Review**: This module allows you to review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.
+- **Review**: This module allows you to review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring
+- **Inference**: This module allows you to use pre-trained segmentation algorithms on volumes to automatically label cells
+- **Training**:  This module allows you to train segmentation algorithms from labeled volumes
 - **Utilities**: This module allows you to use several utilities, e.g. to crop your volumes and labels, compute prediction scores or convert labels
+- **Help/About...** : Quick access to version info, Github page and docs
 
 See above for links to detailed guides regarding the usage of the modules.
 

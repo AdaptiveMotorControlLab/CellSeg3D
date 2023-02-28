@@ -16,7 +16,7 @@ Welcome to napari-cellseg3d's documentation!
     :caption: Utilities :
 
     res/guides/metrics_module_guide
-    res/guides/convert_module_guide
+    res/guides/utils_module_guide
     res/guides/cropping_module_guide
 
 

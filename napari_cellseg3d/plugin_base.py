@@ -63,6 +63,10 @@ class BasePluginSingleImage(QTabWidget):
         ################
         self.layer_choice = ui.RadioButton("Layer", parent=self)
         self.folder_choice = ui.RadioButton("Folder", parent=self)
+        self.radio_buttons = ui.combine_blocks(
+            self.folder_choice, self.layer_choice
+        )
+        self.io_panel = None # call self._build_io_panel to build
         ################
         # Image widgets
         self.image_filewidget = ui.FilePathWidget(
@@ -111,17 +115,14 @@ class BasePluginSingleImage(QTabWidget):
             return UtilsDropdown().dropdown_menu_call(self, event)
 
     def _build_io_panel(self):
-        io_panel = ui.GroupedWidget("Data")
+        self.io_panel = ui.GroupedWidget("Data")
 
-        # io_panel.setToolTip("IO Panel")
-        radio_buttons = ui.combine_blocks(
-            self.folder_choice, self.layer_choice
-        )
+        # self.io_panel.setToolTip("IO Panel")
 
         ui.add_widgets(
-            io_panel.layout,
+            self.io_panel.layout,
             [
-                radio_buttons,
+                self.radio_buttons,
                 self.image_layer_loader,
                 self.label_layer_loader,
                 self.filetype_choice,
@@ -130,10 +131,10 @@ class BasePluginSingleImage(QTabWidget):
                 self.results_filewidget,
             ],
         )
-        io_panel.setLayout(io_panel.layout)
+        self.io_panel.setLayout(self.io_panel.layout)
 
         # self._set_io_visibility()
-        return io_panel
+        return self.io_panel
 
     def _remove_unused(self):
         if not self.show_label_io:
