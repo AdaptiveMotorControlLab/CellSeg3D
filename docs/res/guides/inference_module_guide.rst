@@ -3,12 +3,12 @@
 Inference module guide
 =================================
 
-This module allows you to use  pre-trained segmentation algorithms (written in Pytorch) on 3D volumes
+This module allows you to use pre-trained segmentation algorithms (written in Pytorch) on 3D volumes
 to automatically label cells.
 
 .. important::
     Currently, only inference on **3D volumes is supported**. Your image and label folders should both contain a set of
-    **3D image files**, currently either **.tif** or **.tiff**. Loading a folder of 2D images as a stack is not supported as of yet.
+    **3D image files**, currently either **.tif** or **.tiff**.
 
 Currently, the following pre-trained models are available :
 
@@ -17,14 +17,16 @@ Model            Link to original paper
 ==============   ================================================================================================
 VNet             `Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation`_
 SegResNet        `3D MRI brain tumor segmentation using autoencoder regularization`_
-TRAILMAP_MS       A PyTorch implementation of the `TRAILMAP project on GitHub`_ pretrained with MesoSpim data
+TRAILMAP_MS       A PyTorch implementation of the `TRAILMAP project on GitHub`_ pretrained with mesoSPIM data
 TRAILMAP          An implementation of the `TRAILMAP project on GitHub`_ using a `3DUNet for PyTorch`_
+SwinUNetR         `Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images`_
 ==============   ================================================================================================
 
 .. _Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation: https://arxiv.org/pdf/1606.04797.pdf
 .. _3D MRI brain tumor segmentation using autoencoder regularization: https://arxiv.org/pdf/1810.11654.pdf
 .. _TRAILMAP project on GitHub: https://github.com/AlbertPun/TRAILMAP
 .. _3DUnet for Pytorch: https://github.com/wolny/pytorch-3dunet
+.. _Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images: https://arxiv.org/abs/2201.01266
 
 Interface and functionalities
 --------------------------------
@@ -35,10 +37,9 @@ Interface and functionalities
 
 * **Loading data** :
 
-  | When launching the module, you will be asked to provide an **image folder** containing all the 3D volumes you'd like to be labeled.
-  | All images with the chosen extension (**.tif** or **.tiff** currently supported) in this folder will be labeled.
+  | When launching the module, you will be asked to provide an **image layer** or an **image folder** with the 3D volumes you'd like to be labeled.
+  | If loading from folder : All images with the chosen extension (**.tif** or **.tiff** currently supported) in this folder will be labeled.
   | You can then choose an **output folder**, where all the results will be saved.
-
 
 * **Model choice** :
 
@@ -51,11 +52,9 @@ Interface and functionalities
   | You can choose to use inference on the whole image at once, which generally yields better performance at the cost of more memory, or you can use a specific window size to run inference on smaller chunks one by one, for lower memory usage.
   | You can also choose to keep the dataset in the RAM rather than the VRAM (cpu vs cuda device) to avoid running out of VRAM if you have several images.
 
-
 * **Anisotropy** :
 
   | If you want to see your results without **anisotropy** when you have anisotropic images, you can specify that you have anisotropic data and set the **resolution of your imaging method in micron**, this wil save and show the results without anisotropy.
-
 
 * **Thresholding** :
 
