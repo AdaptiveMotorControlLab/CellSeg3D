@@ -745,6 +745,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
                 labels = result.instance_labels
                 method = self.worker_config.post_process_config.instance.method
+
                 number_cells = (
                     np.unique(labels.flatten()).size - 1
                 )  # remove background
@@ -771,5 +772,5 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                     )
 
                     # self.log.print_and_log(
-                    #     f"\nNUMBER OF CELLS : {number_cells}\n"
+                    #     f"OBJECTS DETECTED : {number_cells}\n"
                     # )
