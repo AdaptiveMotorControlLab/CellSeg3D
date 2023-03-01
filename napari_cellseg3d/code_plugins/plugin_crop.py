@@ -1,5 +1,4 @@
 import warnings
-from functools import partial
 from pathlib import Path
 
 import napari
@@ -12,7 +11,7 @@ from qtpy.QtWidgets import QSizePolicy
 # local
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
-from napari_cellseg3d.plugin_base import BasePluginSingleImage
+from napari_cellseg3d.code_plugins.plugin_base import BasePluginSingleImage
 
 DEFAULT_CROP_SIZE = 64
 logger = utils.LOGGER

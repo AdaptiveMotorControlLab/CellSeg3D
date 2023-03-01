@@ -1,12 +1,20 @@
+import threading
 import warnings
 from functools import partial
 from typing import List
 from typing import Optional
 
 import napari
+
+# Qt
+from qtpy import QtCore
+from qtpy.QtCore import QObject
 from qtpy.QtCore import Qt
+from qtpy.QtCore import QtWarningMsg
 from qtpy.QtCore import QUrl
+from qtpy.QtGui import QCursor
 from qtpy.QtGui import QDesktopServices
+from qtpy.QtGui import QTextCursor
 from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QDoubleSpinBox
@@ -17,15 +25,18 @@ from qtpy.QtWidgets import QHBoxLayout
 from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QLayout
 from qtpy.QtWidgets import QLineEdit
+from qtpy.QtWidgets import QMenu
 from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QRadioButton
 from qtpy.QtWidgets import QScrollArea
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QSlider
 from qtpy.QtWidgets import QSpinBox
+from qtpy.QtWidgets import QTextEdit
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
+# Local
 from napari_cellseg3d import utils
 
 """
@@ -59,6 +70,216 @@ napari_param_darkgrey = "#202228"  # napari default LineEdit color
 ###############
 
 logger = utils.LOGGER
+
+##################
+# Singleton UI widgets
+##################
+
+
+class QWidgetSingleton(type(QObject)):
+
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(QWidgetSingleton, cls).__call__(
+                *args, **kwargs
+            )
+        return cls._instances[cls]
+
+
+##################
+# Screen size adjustment error handler
+##################
+
+
+def handle_adjust_errors(widget, type, context, msg: str):
+    """Qt message handler that attempts to react to errors when setting the window size
+    and resizes the main window"""
+    head = msg.split(": ")[0]
+    if type == QtWarningMsg and head == "QWindowsWindow::setGeometry":
+        logger.warning(
+            f"Qt resize error : {msg}\nhas been handled by attempting to resize the window"
+        )
+        try:
+            if widget.parent() is not None:
+                state = int(widget.parent().parent().windowState())
+                if state == 0:  # normal state
+                    widget.parent().parent().adjustSize()
+                    logger.debug("Non-max. size adjust attempt")
+                    logger.debug(f"{widget.parent().parent()}")
+                elif state == 2:  # maximized state
+                    widget.parent().parent().showNormal()
+                    widget.parent().parent().showMaximized()
+                    logger.debug("Maximized size adjust attempt")
+        except RuntimeError:
+            pass
+
+
+def handle_adjust_errors_wrapper(widget):
+    """Returns a callable that can be used with qInstallMessageHandler directly"""
+    return partial(handle_adjust_errors, widget)
+
+
+##################
+# Context menu for utilities
+##################
+
+
+class UtilsDropdown(metaclass=utils.Singleton):
+    """Singleton class for use in instantiating only one Utility dropdown menu that can be accessed from the plugin."""
+
+    caller_widget = None
+    # TODO(cyril) : might cause issues with forcing all widget instances to remain forever
+
+    def dropdown_menu_call(self, widget, event):
+        """Calls the utility dropdown menu at the location of a CTRL+right-click"""
+        # ### DEBUG ### #
+        # print(event.modifiers)
+        # print("menu call")
+        # print(widget)
+        # print(self)
+        ##################
+        if self.caller_widget is None:
+            self.caller_widget = widget
+
+        if event.button == 2 and "control" in event.modifiers:
+            dragged = False
+            yield
+            # on move
+            while event.type == "mouse_move":
+                # print(event.position)
+                dragged = True
+                yield
+            # on release
+            if dragged:
+                # print("drag end")
+                pass
+            else:
+                # print("clicked!")
+                if widget is self.caller_widget:
+                    # print(f"authorized widget {widget} to show menu")
+                    pos = QCursor.pos()
+                    self.show_utils_menu(widget, pos)
+                # else:
+                # print(f"blocked widget {widget} from opening utils")
+
+    def show_utils_menu(self, widget, event):
+        from napari_cellseg3d.code_plugins.plugin_utilities import (
+            UTILITIES_WIDGETS,
+        )
+
+        # print(self.parent().parent())
+        # TODO create mapping for name:widget
+        # menu = QMenu(self.parent().parent())
+        menu = QMenu(widget.window())
+        menu.setStyleSheet(f"background-color: {napari_grey}; color: white;")
+
+        actions = []
+        for title in UTILITIES_WIDGETS.keys():
+            a = menu.addAction(f"Utilities : {title}")
+            actions.append(a)
+
+        action = menu.exec_(event)
+
+        for possible_action in actions:
+            if action == possible_action:
+                text = possible_action.text().split(": ")[1]
+                widget = UTILITIES_WIDGETS[text](widget._viewer)
+                widget._viewer.window.add_dock_widget(widget)
+
+
+##############
+# Log widget
+##############
+
+
+class Log(QTextEdit):
+    """Class to implement a log for important user info. Should be thread-safe."""
+
+    def __init__(self, parent):
+        """Creates a log with a lock for multithreading
+
+        Args:
+            parent (QWidget): parent widget to add Log instance to.
+        """
+        super().__init__(parent)
+
+        # from qtpy.QtCore import QMetaType
+        # parent.qRegisterMetaType<QTextCursor>("QTextCursor")
+
+        self.lock = threading.Lock()
+
+    # def receive_log(self, text):
+    #     self.print_and_log(text)
+    def write(self, message):
+        self.lock.acquire()
+        try:
+            if not hasattr(self, "flag"):
+                self.flag = False
+            message = message.replace("\r", "").rstrip()
+            if message:
+                method = "replace_last_line" if self.flag else "append"
+                QtCore.QMetaObject.invokeMethod(
+                    self,
+                    method,
+                    QtCore.Qt.QueuedConnection,
+                    QtCore.Q_ARG(str, message),
+                )
+                self.flag = True
+            else:
+                self.flag = False
+
+        finally:
+            self.lock.release()
+
+    @QtCore.Slot(str)
+    def replace_last_line(self, text):
+        self.lock.acquire()
+        try:
+            cursor = self.textCursor()
+            cursor.movePosition(QTextCursor.End)
+            cursor.select(QTextCursor.BlockUnderCursor)
+            cursor.removeSelectedText()
+            cursor.insertBlock()
+            self.setTextCursor(cursor)
+            self.insertPlainText(text)
+        finally:
+            self.lock.release()
+
+    def print_and_log(self, text, printing=True):
+        """Utility used to both print to terminal and log text to a QTextEdit
+         item in a thread-safe manner. Use only for important user info.
+
+        Args:
+            text (str): Text to be printed and logged
+            printing (bool): Whether to print the message as well or not using logger.info(). Defaults to True.
+
+        """
+        self.lock.acquire()
+        try:
+            if printing:
+                logger.info(text)
+            # causes issue if you clik on terminal (tied to CMD QuickEdit mode on Windows)
+            self.moveCursor(QTextCursor.End)
+            self.insertPlainText(f"\n{text}")
+            self.verticalScrollBar().setValue(
+                self.verticalScrollBar().maximum()
+            )
+        finally:
+            self.lock.release()
+
+    def warn(self, warning):
+        self.lock.acquire()
+        try:
+            warnings.warn(warning)
+        finally:
+            self.lock.release()
+
+
+##############
+# UI elements
+##############
 
 
 def toggle_visibility(checkbox, widget):

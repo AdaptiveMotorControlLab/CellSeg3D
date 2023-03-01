@@ -47,14 +47,14 @@ from tifffile import imwrite
 from tqdm import tqdm
 
 from napari_cellseg3d import config
-from napari_cellseg3d import log_utility
+from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
 
 # local
-from napari_cellseg3d.model_instance_seg import binary_connected
-from napari_cellseg3d.model_instance_seg import binary_watershed
-from napari_cellseg3d.model_instance_seg import ImageStats
-from napari_cellseg3d.model_instance_seg import volume_stats
+from napari_cellseg3d.code_models.model_instance_seg import binary_connected
+from napari_cellseg3d.code_models.model_instance_seg import binary_watershed
+from napari_cellseg3d.code_models.model_instance_seg import ImageStats
+from napari_cellseg3d.code_models.model_instance_seg import volume_stats
 
 logger = utils.LOGGER
 
@@ -69,12 +69,13 @@ a custom worker function."""
 # https://napari-staging-site.github.io/guides/stable/threading.html
 
 WEIGHTS_DIR = Path(__file__).parent.resolve() / Path("models/pretrained")
+logger.debug(f"PRETRAINED WEIGHT DIR LOCATION : {WEIGHTS_DIR}")
 
 
 class WeightsDownloader:
     """A utility class the downloads the weights of a model when needed."""
 
-    def __init__(self, log_widget: Optional[log_utility.Log] = None):
+    def __init__(self, log_widget: Optional[ui.Log] = None):
         """
         Creates a WeightsDownloader, optionally with a log widget to display the progress.
 

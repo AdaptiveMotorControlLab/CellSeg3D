@@ -9,14 +9,13 @@ import pandas as pd
 from napari_cellseg3d import config
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
-from napari_cellseg3d.interface_utils import QWidgetSingleton
-from napari_cellseg3d.model_framework import ModelFramework
-from napari_cellseg3d.model_workers import InferenceResult
-from napari_cellseg3d.model_workers import InferenceWorker
-from napari_cellseg3d.plugin_convert import InstanceWidgets
+from napari_cellseg3d.code_models.model_framework import ModelFramework
+from napari_cellseg3d.code_models.model_workers import InferenceResult
+from napari_cellseg3d.code_models.model_workers import InferenceWorker
+from napari_cellseg3d.code_plugins.plugin_convert import InstanceWidgets
 
 
-class Inferer(ModelFramework, metaclass=QWidgetSingleton):
+class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
     """A plugin to run already trained models in evaluation mode to preform inference and output a label on all
     given volumes."""
 

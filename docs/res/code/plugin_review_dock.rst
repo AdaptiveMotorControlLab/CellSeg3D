@@ -6,7 +6,7 @@ Datamanager
 
 Methods
 **********************
-.. autoclass:: napari_cellseg3d.plugin_dock::Datamanager
+.. autoclass:: napari_cellseg3d.plugin_review_dock::Datamanager
    :members:  __init__, prepare, update, load_csv, create
    :noindex:
 

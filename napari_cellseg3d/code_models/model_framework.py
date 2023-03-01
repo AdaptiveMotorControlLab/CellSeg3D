@@ -12,8 +12,7 @@ from qtpy.QtWidgets import QSizePolicy
 from napari_cellseg3d import config
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
-from napari_cellseg3d.log_utility import Log
-from napari_cellseg3d.plugin_base import BasePluginFolder
+from napari_cellseg3d.code_plugins.plugin_base import BasePluginFolder
 
 warnings.formatwarning = utils.format_Warning
 logger = utils.LOGGER
@@ -106,7 +105,7 @@ class ModelFramework(BasePluginFolder):
         self.progress.setVisible(False)
         """Widget for the progress bar"""
 
-        self.log = Log(self.report_container)
+        self.log = ui.Log(self.report_container)
         self.log.setVisible(False)
         """Read-only display for process-related info. Use only for info destined to user."""
 

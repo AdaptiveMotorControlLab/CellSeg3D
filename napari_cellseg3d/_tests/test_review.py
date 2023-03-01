@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from napari_cellseg3d import plugin_review as rev
+from napari_cellseg3d.code_plugins import plugin_review as rev
 
 
 def test_launch_review(make_napari_viewer):

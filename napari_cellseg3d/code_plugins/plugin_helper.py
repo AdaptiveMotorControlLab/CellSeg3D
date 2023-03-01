@@ -11,10 +11,9 @@ from qtpy.QtWidgets import QWidget
 
 # local
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d.interface_utils import QWidgetSingleton
 
 
-class Helper(QWidget, metaclass=QWidgetSingleton):
+class Helper(QWidget, metaclass=ui.QWidgetSingleton):
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
 
@@ -25,7 +24,7 @@ class Helper(QWidget, metaclass=QWidgetSingleton):
         self._viewer = viewer
 
         path = pathlib.Path(__file__).parent.resolve()
-        url = str(path) + "/res/logo_alpha.png"
+        url = str(path) + "../res/logo_alpha.png"
         image = QPixmap(url)
 
         self.logo_label = ui.Button(func=lambda: ui.open_url(self.repo_url))

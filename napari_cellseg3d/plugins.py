@@ -1,8 +1,8 @@
-from napari_cellseg3d.plugin_helper import Helper
-from napari_cellseg3d.plugin_model_inference import Inferer
-from napari_cellseg3d.plugin_model_training import Trainer
-from napari_cellseg3d.plugin_review import Reviewer
-from napari_cellseg3d.plugin_utilities import Utilities
+from napari_cellseg3d.code_plugins.plugin_helper import Helper
+from napari_cellseg3d.code_plugins.plugin_model_inference import Inferer
+from napari_cellseg3d.code_plugins.plugin_model_training import Trainer
+from napari_cellseg3d.code_plugins.plugin_review import Reviewer
+from napari_cellseg3d.code_plugins.plugin_utilities import Utilities
 
 
 def napari_experimental_provide_dock_widget():

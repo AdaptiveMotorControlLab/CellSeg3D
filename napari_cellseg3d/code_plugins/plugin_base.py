@@ -12,8 +12,6 @@ from qtpy.QtWidgets import QWidget
 # local
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
-from napari_cellseg3d.interface_utils import handle_adjust_errors_wrapper
-from napari_cellseg3d.interface_utils import UtilsDropdown
 
 logger = utils.LOGGER
 
@@ -101,7 +99,7 @@ class BasePluginSingleImage(QTabWidget):
             [".tif", ".tiff"], label="File format"
         )
         ########
-        qInstallMessageHandler(handle_adjust_errors_wrapper(self))
+        qInstallMessageHandler(ui.handle_adjust_errors_wrapper(self))
 
     def enable_utils_menu(self):
         """
@@ -112,7 +110,7 @@ class BasePluginSingleImage(QTabWidget):
 
         @viewer.mouse_drag_callbacks.append
         def show_menu(_, event):
-            return UtilsDropdown().dropdown_menu_call(self, event)
+            return ui.UtilsDropdown().dropdown_menu_call(self, event)
 
     def _build_io_panel(self):
         self.io_panel = ui.GroupedWidget("Data")

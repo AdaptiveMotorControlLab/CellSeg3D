@@ -11,8 +11,8 @@ from tifffile import imread
 
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
-from napari_cellseg3d.model_instance_seg import to_semantic
-from napari_cellseg3d.plugin_base import BasePluginFolder
+from napari_cellseg3d.code_models.model_instance_seg import to_semantic
+from napari_cellseg3d.code_plugins.plugin_base import BasePluginFolder
 
 DEFAULT_THRESHOLD = 0.5
 

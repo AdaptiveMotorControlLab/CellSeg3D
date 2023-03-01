@@ -11,7 +11,7 @@ Class : Loader
 Methods
 **********************
 .. autoclass:: napari_cellseg3d.plugin_review::Reviewer
-   :members:  __init__, run_review, build, remove_from_viewer
+   :members:  __init__, run_review, launch_review, build, remove_from_viewer
    :noindex:
 
 

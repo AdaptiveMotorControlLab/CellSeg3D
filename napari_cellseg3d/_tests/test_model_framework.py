@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from napari_cellseg3d import model_framework
+from napari_cellseg3d.code_models import model_framework
 
 
 def pth(path):

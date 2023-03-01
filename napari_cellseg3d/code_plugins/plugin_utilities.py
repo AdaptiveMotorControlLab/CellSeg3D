@@ -9,15 +9,12 @@ from qtpy.QtWidgets import QWidget
 
 # local
 import napari_cellseg3d.interface as ui
-from napari_cellseg3d.interface_utils import handle_adjust_errors_wrapper
-from napari_cellseg3d.interface_utils import QWidgetSingleton
-from napari_cellseg3d.plugin_convert import AnisoUtils
-from napari_cellseg3d.plugin_convert import RemoveSmallUtils
-from napari_cellseg3d.plugin_convert import ThresholdUtils
-from napari_cellseg3d.plugin_convert import ToInstanceUtils
-from napari_cellseg3d.plugin_convert import ToSemanticUtils
-from napari_cellseg3d.plugin_crop import Cropping
-from napari_cellseg3d.plugin_metrics import MetricsUtils
+from napari_cellseg3d.code_plugins.plugin_convert import AnisoUtils
+from napari_cellseg3d.code_plugins.plugin_convert import RemoveSmallUtils
+from napari_cellseg3d.code_plugins.plugin_convert import ThresholdUtils
+from napari_cellseg3d.code_plugins.plugin_convert import ToInstanceUtils
+from napari_cellseg3d.code_plugins.plugin_convert import ToSemanticUtils
+from napari_cellseg3d.code_plugins.plugin_crop import Cropping
 
 UTILITIES_WIDGETS = {
     "Crop": Cropping,
@@ -29,7 +26,7 @@ UTILITIES_WIDGETS = {
 }
 
 
-class Utilities(QWidget, metaclass=QWidgetSingleton):
+class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
         self._viewer = viewer

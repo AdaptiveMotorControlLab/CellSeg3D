@@ -28,10 +28,9 @@ from qtpy.QtWidgets import QSizePolicy
 from napari_cellseg3d import config
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
-from napari_cellseg3d.interface_utils import QWidgetSingleton
-from napari_cellseg3d.model_framework import ModelFramework
-from napari_cellseg3d.model_workers import TrainingReport
-from napari_cellseg3d.model_workers import TrainingWorker
+from napari_cellseg3d.code_models.model_framework import ModelFramework
+from napari_cellseg3d.code_models.model_workers import TrainingReport
+from napari_cellseg3d.code_models.model_workers import TrainingWorker
 
 NUMBER_TABS = 3
 DEFAULT_PATCH_SIZE = 64
@@ -39,7 +38,7 @@ DEFAULT_PATCH_SIZE = 64
 logger = utils.LOGGER
 
 
-class Trainer(ModelFramework, metaclass=QWidgetSingleton):
+class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
     """A plugin to train pre-defined PyTorch models for one-channel segmentation directly in napari.
     Features parameter selection for training, dynamic loss plotting and automatic saving of the best weights during
     training through validation."""
@@ -1091,7 +1090,7 @@ class Trainer(ModelFramework, metaclass=QWidgetSingleton):
             self.canvas.draw_idle()
 
             plot_path = self.worker_config.results_path_folder / Path(
-                "Loss_plots"
+                "../Loss_plots"
             )
             Path(plot_path).mkdir(parents=True, exist_ok=True)
 
