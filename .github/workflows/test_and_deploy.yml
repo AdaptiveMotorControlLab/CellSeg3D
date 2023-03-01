@@ -65,6 +65,9 @@ jobs:
       - name: Coverage
         uses: codecov/codecov-action@v2
 
+      - name: Assert success
+        conclusion: success
+
   deploy:
     # this will run when you have tagged a commit, starting with "v*"
     # and requires that you have put your twine API key in your
