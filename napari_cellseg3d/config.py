@@ -23,8 +23,8 @@ from napari_cellseg3d.code_models.models import model_VNet as VNet
 # TODO(cyril) add JSON load/save
 
 MODEL_LIST = {
-    "VNet": VNet,
     "SegResNet": SegResNet,
+    "VNet": VNet,
     # "TRAILMAP": TRAILMAP,
     "TRAILMAP_MS": TRAILMAP_MS,
     "SwinUNetR": SwinUNetR,

@@ -119,7 +119,7 @@ class WeightsDownloader:
             url = neturls[model_name]
             response = urllib.request.urlopen(url)
 
-            start_message = f"Downloading the model from the M.W. Mathis Lab server {url}...."
+            start_message = f"Downloading the model from HuggingFace {url}...."
             total_size = int(response.getheader("Content-Length"))
             if self.log_widget is None:
                 logger.info(start_message)
@@ -142,7 +142,11 @@ class WeightsDownloader:
                     abs_directory = Path(directory).resolve()
                     abs_target = Path(target).resolve()
                     # prefix = os.path.commonprefix([abs_directory, abs_target])
-                    return abs_target in abs_directory.parents
+                    logger.debug(abs_directory)
+                    logger.debug(abs_target)
+                    logger.debug(abs_directory.parents)
+
+                    return abs_directory in abs_target.parents
 
                 def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
 
