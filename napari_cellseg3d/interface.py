@@ -82,6 +82,7 @@ class QWidgetSingleton(type(QObject)):
      meaning only one instance exists at a time.
      Avoids unnecessary memory overhead and keeps user parameters even when a widget is closed
     """
+
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
@@ -374,6 +375,7 @@ class Button(QPushButton):
 
 class DropdownMenu(QComboBox):
     """Creates a dropdown menu with a title and adds specified entries to it"""
+
     def __init__(
         self,
         entries: Optional[list] = None,

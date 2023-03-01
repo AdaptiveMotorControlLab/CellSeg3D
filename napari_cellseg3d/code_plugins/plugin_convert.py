@@ -92,6 +92,7 @@ def show_result(viewer, layer, image, name):
 
 class AnisoUtils(BasePluginFolder):
     """Class to correct anisotropy in images"""
+
     def __init__(self, viewer: "napari.Viewer.viewer", parent=None):
         """
         Creates a AnisoUtils widget
@@ -186,6 +187,7 @@ class RemoveSmallUtils(BasePluginFolder):
     """
     Widget to remove small objects
     """
+
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
         """
         Creates a RemoveSmallUtils widget
@@ -282,6 +284,7 @@ class ToSemanticUtils(BasePluginFolder):
     """
     Widget to create semantic labels from instance labels
     """
+
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
         """
         Creates a ToSemanticUtils widget
@@ -362,6 +365,7 @@ class InstanceWidgets(QWidget):
     """
     Base widget with several sliders, for use in instance segmentation parameters
     """
+
     def __init__(self, parent=None):
         """
         Creates an InstanceWidgets widget
@@ -518,6 +522,7 @@ class ToInstanceUtils(BasePluginFolder):
     """
     Widget to convert semantic labels to instance labels
     """
+
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
         """
         Creates a ToInstanceUtils widget
@@ -607,6 +612,7 @@ class ThresholdUtils(BasePluginFolder):
         viewer: viewer in which to process data
         parent: parent widget
     """
+
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
 
         super().__init__(

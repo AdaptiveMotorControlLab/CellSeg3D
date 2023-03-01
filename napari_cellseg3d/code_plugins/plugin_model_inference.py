@@ -77,9 +77,13 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             config.InferenceWorkerConfig()
         )
         """InferenceWorkerConfig class from config.py"""
-        self.instance_config : config.InstanceSegConfig = config.InstanceSegConfig()
+        self.instance_config: config.InstanceSegConfig = (
+            config.InstanceSegConfig()
+        )
         """InstanceSegConfig class from config.py"""
-        self.post_process_config : config.PostProcessConfig = config.PostProcessConfig()
+        self.post_process_config: config.PostProcessConfig = (
+            config.PostProcessConfig()
+        )
         """PostProcessConfig class from config.py"""
 
         ###########################

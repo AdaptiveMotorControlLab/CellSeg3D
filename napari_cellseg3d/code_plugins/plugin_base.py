@@ -73,7 +73,7 @@ class BasePluginSingleImage(QTabWidget):
             "Image path", self._show_dialog_images, self
         )
 
-        self.image_layer_loader : ui.LayerSelecter = ui.LayerSelecter(
+        self.image_layer_loader: ui.LayerSelecter = ui.LayerSelecter(
             self._viewer,
             name="Image :",
             layer_type=napari.layers.Image,
