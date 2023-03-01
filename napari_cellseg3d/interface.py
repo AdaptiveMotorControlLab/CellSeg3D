@@ -183,9 +183,6 @@ class UtilsDropdown(metaclass=utils.Singleton):
             UTILITIES_WIDGETS,
         )
 
-        # print(self.parent().parent())
-        # TODO create mapping for name:widget
-        # menu = QMenu(self.parent().parent())
         menu = QMenu(widget.window())
         menu.setStyleSheet(f"background-color: {napari_grey}; color: white;")
 
@@ -702,7 +699,6 @@ class LayerSelecter(ContainerWidget):
     def __init__(
         self, viewer, name="Layer", layer_type=napari.layers.Layer, parent=None
     ):
-        # TODO(cyril) : chack for proper behaviour and debug. Namely check issues such as cropping list not updating
         super().__init__(parent=parent, fixed=False)
         self._viewer = viewer
 

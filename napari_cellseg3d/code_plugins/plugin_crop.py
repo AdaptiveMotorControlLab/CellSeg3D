@@ -176,7 +176,7 @@ class Cropping(BasePluginSingleImage):
             ],
         )
 
-        ui.ScrollArea.make_scrollable(layout, self, min_wh=[200, 500])
+        ui.ScrollArea.make_scrollable(layout, self, min_wh=[200, 400])
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
         self._set_io_visibility()
 
@@ -308,7 +308,7 @@ class Cropping(BasePluginSingleImage):
         else:
             self.image_layer1.opacity = 0.7
             self.image_layer1.colormap = "inferno"
-            self.image_layer1.contrast_limits = [200, 1000]
+            self.image_layer1.contrast_limits = [200, 1000] # TODO generalize
 
             self.image_layer1.refresh()
 
@@ -334,7 +334,7 @@ class Cropping(BasePluginSingleImage):
         self,
         layer,
         colormap="inferno",
-        contrast_lim=[200, 1000],  # TODO generalize ?
+        contrast_lim= [200, 1000],  # TODO generalize ?
         opacity=0.7,
         visible=True,
     ):
