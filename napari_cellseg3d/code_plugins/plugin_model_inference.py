@@ -144,8 +144,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         )
 
         self.window_infer_box = ui.CheckBox("Use window inference")
-
-        self.window_infer_box.clicked.connect(self.toggle_display_window_size)
+        self.window_infer_box.clicked.connect(self._toggle_display_window_size)
 
         sizes_window = ["8", "16", "32", "64", "128", "256", "512"]
         # (
@@ -169,6 +168,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             parent=self,
             text_label="Overlap %",
         )
+
         self.keep_data_on_cpu_box = ui.CheckBox("Keep data on CPU")
 
         window_size_widgets = ui.combine_blocks(
@@ -238,19 +238,9 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             "DO NOT CHANGE if you are using the provided pre-trained weights"
         )
 
-        self.thresholding_checkbox.setToolTip(thresh_desc)
-        self.thresholding_count.setToolTip(thresh_desc)
-        self.window_infer_box.setToolTip(
-            "Sliding window inference runs the model on parts of the image"
-            "\nrather than the whole image, to reduce memory requirements."
-            "\nUse this if you have large images."
-        )
-        self.window_size_choice.setToolTip(
-            "Size of the window to run inference with (in pixels)"
-        )
-
-        self.window_overlap_counter.set_all_tooltips(
-            "Percentage of overlap between windows to use when using sliding window"
+        thresh_desc = (
+            "Thresholding : all values in the image below the chosen probability"
+            " threshold will be set to 0, and all others to 1."
         )
 
         self.thresholding_checkbox.setToolTip(thresh_desc)

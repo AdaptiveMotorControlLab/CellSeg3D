@@ -423,15 +423,16 @@ class Cropping(BasePluginSingleImage):
         dims = [self._x, self._y, self._z]
         [logger.debug(f"{dim}") for dim in dims]
         logger.debug("SET DIMS ATTEMPT")
-        if not self.create_new_layer.isChecked():
-            self._x = x
-            self._y = y
-            self._z = z
-            [logger.debug(f"{dim}") for dim in dims]
-        else:
-            [self._reset_dim(dim) for dim in dims]
-            [logger.debug(f"{dim}") for dim in dims]
+        # if not self.create_new_layer.isChecked():
+        #     self._x = x
+        #     self._y = y
+        #     self._z = z
+        #     [logger.debug(f"{dim}") for dim in dims]
+        # else:
+        #     [self._reset_dim(dim) for dim in dims]
+        #     [logger.debug(f"{dim}") for dim in dims]
         #############
+
         # logger.debug(f"Crop variables")
         # logger.debug(im1_stack.shape)
 
@@ -502,9 +503,9 @@ class Cropping(BasePluginSingleImage):
             highres_crop_layer.translate = scale * izyx
             highres_crop_layer.refresh()
 
-            self._check_for_empty_layer(
-                highres_crop_layer, highres_crop_layer.data
-            )
+            # self._check_for_empty_layer(
+            #     highres_crop_layer, highres_crop_layer.data
+            # )
 
             if crop_lbls and labels_crop_layer is not None:
                 labels_crop_layer.data = im2_stack[

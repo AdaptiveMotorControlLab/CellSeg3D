@@ -317,18 +317,33 @@ def add_label(widget, label, label_before=True, horizontal=True):
         return combine_blocks(label, widget, horizontal=horizontal)
 
 
-def add_label(widget, label, label_before=True, horizontal=True):
-    if label_before:
-        return combine_blocks(widget, label, horizontal=horizontal)
-    else:
-        return combine_blocks(label, widget, horizontal=horizontal)
+class ContainerWidget(QWidget):
+    def __init__(
+        self, l=0, t=0, r=1, b=11, vertical=True, parent=None, fixed=True
+    ):
+        """
+        Creates a container widget that can contain other widgets
+        Args:
+            l: left margin in pixels
+            t: top margin in pixels
+            r: right margin in pixels
+            b: bottom margin in pixels
+            vertical: if True, renders vertically. Horizontal otherwise
+            parent: parent QWidget
+            fixed: uses QLayout.SetFixedSize if True
+        """
 
+        super().__init__(parent)
+        self.layout = None
 
-def add_label(widget, label, label_before=True, horizontal=True):
-    if label_before:
-        return combine_blocks(widget, label, horizontal=horizontal)
-    else:
-        return combine_blocks(label, widget, horizontal=horizontal)
+        if vertical:
+            self.layout = QVBoxLayout(self)
+        else:
+            self.layout = QHBoxLayout(self)
+
+        self.layout.setContentsMargins(l, t, r, b)
+        if fixed:
+            self.layout.setSizeConstraint(QLayout.SetFixedSize)
 
 
 class RadioButton(QRadioButton):
@@ -1242,49 +1257,6 @@ class GroupedWidget(QGroupBox):
         group.layout.addWidget(widget)
         group.setLayout(group.layout)
         layout.addWidget(group)
-
-
-
-class GroupedWidget(QGroupBox):
-    """Subclass of QGroupBox designed to easily group widgets belonging to a same category"""
-
-    def __init__(self, title, l=7, t=20, r=7, b=11, parent=None):
-        super().__init__(title, parent)
-
-        self.setSizePolicy(QSizePolicy.Fixed)
-
-        self.layout = QVBoxLayout()
-        self.layout.setContentsMargins(l, t, r, b)
-        self.layout.setSizeConstraint(QLayout.SetFixedSize)
-
-    @property
-    def layout(self) -> "QLayout":
-        return self.layout
-
-    @classmethod
-    def create_single_widget_group(
-        cls, title, widget, layout, l=7, t=20, r=7, b=11
-    ):
-        group, group_layout = cls(title, l, t, r, b)
-        group_layout.addWidget(widget)
-        group.setLayout(group_layout)
-        layout.addWidget(group)
-
-
-class ContainerWidget(QWidget):  # TODO convert calls
-    def __init__(self, l=0, t=0, r=1, b=11, vertical=True, parent=None):
-
-        super().__init__(parent)
-        self.layout = None
-
-        if vertical:
-            self.layout = QVBoxLayout(self)
-        else:
-            self.layout = QHBoxLayout(self)
-
-        self.layout.setContentsMargins(l, t, r, b)
-        if fixed:
-            self.layout.setSizeConstraint(QLayout.SetFixedSize)
 
 
 def add_widgets(layout, widgets, alignment=LEFT_AL):
