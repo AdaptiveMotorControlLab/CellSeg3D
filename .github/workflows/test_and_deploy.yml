@@ -64,8 +64,6 @@ jobs:
 
       - name: Coverage
         uses: codecov/codecov-action@v2
-        with:
-          conclusion: success
 
   deploy:
     # this will run when you have tagged a commit, starting with "v*"
