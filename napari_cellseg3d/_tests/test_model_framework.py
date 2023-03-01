@@ -14,7 +14,7 @@ def test_update_default(make_napari_viewer):
     widget.images_filepaths = []
     widget.results_path = None
 
-    widget.update_default()
+    widget._update_default()
 
     assert widget._default_folders == []
 
@@ -29,7 +29,7 @@ def test_update_default(make_napari_viewer):
     widget.results_path = pth("D:/dataset/res")
     # widget.model_path = None
 
-    widget.update_default()
+    widget._update_default()
 
     assert widget._default_folders == [
         pth("C:/test/test"),

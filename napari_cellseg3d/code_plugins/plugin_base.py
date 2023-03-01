@@ -29,12 +29,14 @@ class BasePluginSingleImage(QTabWidget):
     ):
         """
         Creates a Base plugin with several buttons pre-defined
+
         Args:
             viewer: napari viewer to display in
             parent: parent QWidget. Defaults to None
             loads_images: whether to show image IO widgets
             loads_labels: whether to show labels IO widgets
             has_results: whether to show results IO widgets
+
         """
         super().__init__(parent)
         """Parent widget"""
@@ -68,31 +70,33 @@ class BasePluginSingleImage(QTabWidget):
         ################
         # Image widgets
         self.image_filewidget = ui.FilePathWidget(
-            "Image path", self.show_dialog_images, self
+            "Image path", self._show_dialog_images, self
         )
 
-        self.image_layer_loader = ui.LayerSelecter(
+        self.image_layer_loader : ui.LayerSelecter = ui.LayerSelecter(
             self._viewer,
             name="Image :",
             layer_type=napari.layers.Image,
             parent=self,
         )
+        """LayerSelecter for images"""
         ################
         # Label widgets
         self.labels_filewidget = ui.FilePathWidget(
-            "Label path", self.show_dialog_labels, parent=self
+            "Label path", self._show_dialog_labels, parent=self
         )
 
-        self.label_layer_loader = ui.LayerSelecter(
+        self.label_layer_loader: ui.LayerSelecter = ui.LayerSelecter(
             self._viewer,
             name="Labels :",
             layer_type=napari.layers.Labels,
             parent=self,
         )
+        """LayerSelecter for labels"""
         ################
         # Results widget
         self.results_filewidget = ui.FilePathWidget(
-            "Saving path", self.load_results_path, parent=self
+            "Saving path", self._load_results_path, parent=self
         )
 
         self.filetype_choice = ui.DropdownMenu(
@@ -146,7 +150,7 @@ class BasePluginSingleImage(QTabWidget):
         if not self.show_results_io:
             self.results_filewidget = None
 
-    def set_io_visibility(self):
+    def _set_io_visibility(self):
         ##################
         # Show when layer is selected
         if self.show_image_io:
@@ -210,18 +214,18 @@ class BasePluginSingleImage(QTabWidget):
 
         widget.setVisible(False)
 
-    def build(self):
+    def _build(self):
         """Method to be defined by children classes"""
         raise NotImplementedError("To be defined in child classes")
 
-    def show_filetype_choice(self):
+    def _show_filetype_choice(self):
         """Method to show/hide the filetype choice when "loading as folder" is (de)selected"""
         show = self.load_as_stack_choice.isChecked()
         if show is not None:
             self.filetype_choice.setVisible(show)
             # self.lbl_ft.setVisible(show)
 
-    def show_file_dialog(self):
+    def _show_file_dialog(self):
         """Open file dialog and process path depending on single file/folder loading behaviour"""
         if self.load_as_stack_choice.isChecked():
             folder = ui.open_folder_dialog(
@@ -236,23 +240,23 @@ class BasePluginSingleImage(QTabWidget):
             self.filetype = str(Path(f_name).suffix)
             return f_name
 
-    def show_dialog_images(self):
+    def _show_dialog_images(self):
         """Show file dialog and set image path"""
-        f_name = self.show_file_dialog()
+        f_name = self._show_file_dialog()
         if type(f_name) is str and f_name != "":
             self.image_path = f_name
             self.image_filewidget.text_field.setText(self.image_path)
-            self.update_default()
+            self._update_default()
 
-    def show_dialog_labels(self):
+    def _show_dialog_labels(self):
         """Show file dialog and set label path"""
-        f_name = self.show_file_dialog()
+        f_name = self._show_file_dialog()
         if isinstance(f_name, str) and f_name != "":
             self.label_path = f_name
             self.labels_filewidget.text_field.setText(self.label_path)
-            self.update_default()
+            self._update_default()
 
-    def check_results_path(self, folder):
+    def _check_results_path(self, folder):
         if folder != "" and isinstance(folder, str):
             if not Path(folder).is_dir():
                 Path(folder).mkdir(parents=True, exist_ok=True)
@@ -262,17 +266,17 @@ class BasePluginSingleImage(QTabWidget):
             return True
         return False
 
-    def load_results_path(self):
+    def _load_results_path(self):
         """Show file dialog to set :py:attr:`~results_path`"""
         folder = ui.open_folder_dialog(self, self._default_path)
 
-        if self.check_results_path(folder):
+        if self._check_results_path(folder):
             self.results_path = folder
             # logger.debug(f"Results path : {self.results_path}")
             self.results_filewidget.text_field.setText(self.results_path)
-            self.update_default()
+            self._update_default()
 
-    def update_default(self):
+    def _update_default(self):
         """Updates default path for smoother navigation when opening file dialogs"""
         self._default_path = [
             self.image_path,
@@ -280,20 +284,20 @@ class BasePluginSingleImage(QTabWidget):
             self.results_path,
         ]
 
-    def make_close_button(self):
+    def _make_close_button(self):
         btn = ui.Button("Close", self.remove_from_viewer)
         btn.setToolTip(
             "Close the window and all docked widgets. Make sure to save your work !"
         )
         return btn
 
-    def make_prev_button(self):
+    def _make_prev_button(self):
         btn = ui.Button(
             "Previous", lambda: self.setCurrentIndex(self.currentIndex() - 1)
         )
         return btn
 
-    def make_next_button(self):
+    def _make_next_button(self):
         btn = ui.Button(
             "Next", lambda: self.setCurrentIndex(self.currentIndex() + 1)
         )
@@ -367,7 +371,7 @@ class BasePluginFolder(BasePluginSingleImage):
         # )
         self.image_filewidget.text_field = "Images directory"
         self.image_filewidget.button.clicked.disconnect(
-            self.show_dialog_images
+            self._show_dialog_images
         )
         self.image_filewidget.button.clicked.connect(self.load_image_dataset)
 
@@ -376,7 +380,7 @@ class BasePluginFolder(BasePluginSingleImage):
         # )
         self.labels_filewidget.text_field = "Labels directory"
         self.labels_filewidget.button.clicked.disconnect(
-            self.show_dialog_labels
+            self._show_dialog_labels
         )
         self.labels_filewidget.button.clicked.connect(self.load_label_dataset)
 
@@ -414,7 +418,7 @@ class BasePluginFolder(BasePluginSingleImage):
             path = str(Path(filenames[0]).parent)
             self.image_filewidget.text_field.setText(path)
             self.image_filewidget.check_ready()
-            self.update_default()
+            self._update_default()
 
     def load_label_dataset(self):
         """Show file dialog to set :py:attr:`~labels_filepaths`"""
@@ -425,9 +429,9 @@ class BasePluginFolder(BasePluginSingleImage):
             path = str(Path(filenames[0]).parent)
             self.labels_filewidget.text_field.setText(path)
             self.labels_filewidget.check_ready()
-            self.update_default()
+            self._update_default()
 
-    def update_default(self):
+    def _update_default(self):
         """Update default path for smoother file dialogs"""
         if len(self.images_filepaths) != 0:
             from_images = str(Path(self.images_filepaths[0]).parent)

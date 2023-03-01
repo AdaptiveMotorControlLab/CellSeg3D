@@ -41,7 +41,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
 
         * A checkbox if you want to create a new status csv for the dataset
 
-        * A button to launch the review process (see :doc:`launch_review`)
+        * A button to launch the review process
         """
 
         super().__init__(
@@ -91,7 +91,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         )
         ###########################
 
-        self.build()
+        self._build()
 
         self.image_filewidget.text_field.textChanged.connect(
             self._update_results_path
@@ -103,7 +103,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         if p is not None and p != "" and Path(p).is_file():
             self.results_filewidget.text_field.setText(str(Path(p).parent))
 
-    def build(self):
+    def _build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
 
         self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.MinimumExpanding)
@@ -115,7 +115,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         ###########################
         self.filetype_choice.setVisible(False)
         layout.addWidget(self.io_panel)
-        self.set_io_visibility()
+        self._set_io_visibility()
         self.layer_choice.toggle()
         ###########################
         ui.add_blank(self, layout)
@@ -160,7 +160,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         ui.add_blank(self, layout)
         ###########################
 
-        ui.add_widgets(layout, [self.btn_start, self.make_close_button()])
+        ui.add_widgets(layout, [self.btn_start, self._make_close_button()])
 
         ui.ScrollArea.make_scrollable(
             contained_layout=layout, parent=tab, min_wh=[190, 300]
@@ -175,6 +175,8 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         self.results_path = self.results_filewidget.text_field.text()
 
     def check_image_data(self):
+        """Checks that images are present and that sizes match"""
+
         cfg = self.config
 
         if cfg.image is None:
@@ -186,7 +188,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
                     "Image and label dimensions do not match ! Please load matching images"
                 )
 
-    def prepare_data(self):
+    def _prepare_data(self):
 
         if self.layer_choice.isChecked():
             self.config.image = self.image_layer_loader.layer_data()
@@ -200,7 +202,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             )
 
         self.check_image_data()
-        self.check_results_path(self.results_filewidget.text_field.text())
+        self._check_results_path(self.results_filewidget.text_field.text())
 
         self.config.csv_path = self.results_filewidget.text_field.text()
         self.config.model_name = self.csv_textbox.text()
@@ -225,7 +227,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
 
         * Save work done before leaving
 
-        See :doc:`launch_review`
+        See launch_review
 
         Returns:
             napari.viewer.Viewer: self.viewer
@@ -235,17 +237,17 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         previous_viewer = self._viewer
         try:
 
-            self.prepare_data()
+            self._prepare_data()
 
             self._viewer, self.docked_widgets = self.launch_review()
-            self.reset()
+            self._reset()
             previous_viewer.close()
         except ValueError as e:
             warnings.warn(
                 f"An exception occurred : {e}. Please ensure you have entered all required parameters."
             )
 
-    def reset(self):
+    def _reset(self):
         self.remove_docked_widgets()
 
     def launch_review(self):

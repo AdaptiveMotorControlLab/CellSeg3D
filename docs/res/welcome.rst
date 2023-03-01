@@ -24,7 +24,9 @@ From this page you can access the guides on the several modules available for yo
 
 ..
     * Convert labels : :ref:`utils_module_guide`
+..
     * Compute scores : :ref:`metrics_module_guide`
+
 * Advanced :
     * Defining custom models directly in the plugin (WIP) : :ref:`custom_model_guide`
 

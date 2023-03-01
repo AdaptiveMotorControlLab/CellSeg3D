@@ -50,7 +50,7 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
         self.utils_choice.currentIndexChanged.connect(self._update_visibility)
         # self._dock_util()
         self._update_visibility()
-        qInstallMessageHandler(handle_adjust_errors_wrapper(self))
+        qInstallMessageHandler(ui.handle_adjust_errors_wrapper(self))
 
     def _build(self):
 
@@ -61,7 +61,7 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
 
         layout.setSizeConstraint(QLayout.SetFixedSize)
         self.setLayout(layout)
-        self.setMinimumHeight(500)
+        self.setMinimumHeight(1000)
         self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
         self._update_visibility()
 

@@ -10,8 +10,8 @@ Class : Inferer
 
 Methods
 **********************
-.. autoclass:: napari_cellseg3d.plugin_model_inference::Inferer
-   :members:  __init__, start, build,on_start,on_error,on_finish,on_yield,check_ready,toggle_display_number,toggle_display_thresh, remove_from_viewer
+.. autoclass:: napari_cellseg3d.code_plugins.plugin_model_inference::Inferer
+   :members:  __init__, start,on_start,on_error,on_finish,on_yield, check_ready, remove_from_viewer
    :noindex:
 
 
@@ -20,5 +20,5 @@ Methods
 Attributes
 *********************
 
-.. autoclass:: napari_cellseg3d.plugin_model_inference::Inferer
-   :members:  _viewer, models_dict
+.. autoclass:: napari_cellseg3d.code_plugins.plugin_model_inference::Inferer
+   :members:  _viewer, worker, config, instance_config, post_process_config, worker_config, model_info

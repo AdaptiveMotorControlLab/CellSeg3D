@@ -65,17 +65,22 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         """Viewer to display the widget in"""
         self.enable_utils_menu()
 
-        self.worker = None
-        """Worker for inference, should be an InferenceWorker instance from :doc:model_workers.py"""
+        self.worker: InferenceWorker = None
+        """Worker for inference, should be an InferenceWorker instance from model_workers.py"""
 
         self.model_info: config.ModelInfo = None
+        """ModelInfo class from config.py"""
 
         self.config = config.InfererConfig()
+        """InfererConfig class from config.py"""
         self.worker_config: config.InferenceWorkerConfig = (
             config.InferenceWorkerConfig()
         )
-        self.instance_config = config.InstanceSegConfig()
-        self.post_process_config = config.PostProcessConfig()
+        """InferenceWorkerConfig class from config.py"""
+        self.instance_config : config.InstanceSegConfig = config.InstanceSegConfig()
+        """InstanceSegConfig class from config.py"""
+        self.post_process_config : config.PostProcessConfig = config.PostProcessConfig()
+        """PostProcessConfig class from config.py"""
 
         ###########################
         # interface
@@ -194,12 +199,12 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ##################
 
         self.btn_start = ui.Button("Start", self.start)
-        self.btn_close = self.make_close_button()
+        self.btn_close = self._make_close_button()
 
         self._set_tooltips()
 
-        self.build()
-        self.set_io_visibility()
+        self._build()
+        self._set_io_visibility()
         self.folder_choice.toggled.connect(
             partial(
                 self._show_io_element,
@@ -311,7 +316,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         """Show or hide window size choice depending on status of self.window_infer_box"""
         ui.toggle_visibility(self.window_infer_box, self.window_infer_params)
 
-    def build(self):
+    def _build(self):
         """Puts all widgets in a layout and adds them to the napari Viewer"""
 
         # ui.add_blank(self.view_results_container, view_results_layout)
@@ -535,7 +540,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.weights_config.custom = self.custom_weights_choice.isChecked()
 
             save_path = self.results_filewidget.text_field.text()
-            if not self.check_results_path(save_path):
+            if not self._check_results_path(save_path):
                 msg = f"ERROR: please set valid results path. Current path is {save_path}"
                 self.log.print_and_log(msg)
                 warnings.warn(msg)

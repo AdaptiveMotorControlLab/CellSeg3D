@@ -59,5 +59,5 @@ Source code
 -------------------------------------------------
 
 * :doc:`../code/plugin_review`
-* :doc:`../code/launch_review`
+* :doc:`../code/plugin_review_dock`
 * :doc:`../code/plugin_base`

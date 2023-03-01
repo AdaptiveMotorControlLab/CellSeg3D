@@ -77,10 +77,18 @@ logger = utils.LOGGER
 
 
 class QWidgetSingleton(type(QObject)):
-
+    """
+    To be used as a metaclass when making a singleton QWidget,
+     meaning only one instance exists at a time.
+     Avoids unnecessary memory overhead and keeps user parameters even when a widget is closed
+    """
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
+        """
+        Ensure only one instance of a QWidget with QWidgetSingleton as a metaclass exists at a time
+
+        """
         if cls not in cls._instances:
             cls._instances[cls] = super(QWidgetSingleton, cls).__call__(
                 *args, **kwargs
@@ -130,7 +138,6 @@ class UtilsDropdown(metaclass=utils.Singleton):
     """Singleton class for use in instantiating only one Utility dropdown menu that can be accessed from the plugin."""
 
     caller_widget = None
-    # TODO(cyril) : might cause issues with forcing all widget instances to remain forever
 
     def dropdown_menu_call(self, widget, event):
         """Calls the utility dropdown menu at the location of a CTRL+right-click"""
@@ -165,6 +172,12 @@ class UtilsDropdown(metaclass=utils.Singleton):
                 # print(f"blocked widget {widget} from opening utils")
 
     def show_utils_menu(self, widget, event):
+        """
+        Shows the context menu for utilities. Use with dropdown_menu_call.
+        Args:
+            widget: widget to show context menu in
+            event: mouse press event
+        """
         from napari_cellseg3d.code_plugins.plugin_utilities import (
             UTILITIES_WIDGETS,
         )
@@ -213,6 +226,11 @@ class Log(QTextEdit):
     # def receive_log(self, text):
     #     self.print_and_log(text)
     def write(self, message):
+        """
+        Write message to log in a thread-safe manner
+        Args:
+            message: string to be printed
+        """
         self.lock.acquire()
         try:
             if not hasattr(self, "flag"):
@@ -235,6 +253,7 @@ class Log(QTextEdit):
 
     @QtCore.Slot(str)
     def replace_last_line(self, text):
+        """Replace last line. For use in progress bar"""
         self.lock.acquire()
         try:
             cursor = self.textCursor()
@@ -270,6 +289,7 @@ class Log(QTextEdit):
             self.lock.release()
 
     def warn(self, warning):
+        """Show warnings.warn from another thread"""
         self.lock.acquire()
         try:
             warnings.warn(warning)
@@ -354,7 +374,6 @@ class Button(QPushButton):
 
 class DropdownMenu(QComboBox):
     """Creates a dropdown menu with a title and adds specified entries to it"""
-
     def __init__(
         self,
         entries: Optional[list] = None,

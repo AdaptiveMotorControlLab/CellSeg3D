@@ -20,11 +20,21 @@ from napari_cellseg3d.code_plugins.plugin_base import BasePluginFolder
 # TODO create parent class for utils modules to avoid duplicates
 
 MAX_W = 200
-MAX_H = 400
+MAX_H = 1000
+
+logger = utils.LOGGER
 
 
 def save_folder(results_path, folder_name, images, image_paths):
+    """
+    Saves a list of images in a folder
 
+    Args:
+        results_path: Path to the folder containing results
+        folder_name: Name of the folder containing results
+        images: List of images to save
+        image_paths: list of filenames of images
+    """
     results_folder = results_path / Path(folder_name)
     results_folder.mkdir(exist_ok=False)
 
@@ -35,22 +45,44 @@ def save_folder(results_path, folder_name, images, image_paths):
             path,
             image,
         )
-    print(f"Saved processed folder as : {results_folder}")
+    logger.info(f"Saved processed folder as : {results_folder}")
 
 
 def save_layer(results_path, image_name, image):
+    """
+    Saves an image layer at the specified path
+
+    Args:
+        results_path: path to folder containing result
+        image_name: image name for saving
+        image: data array containing image
+
+    Returns:
+
+    """
     path = str(results_path / Path(image_name))  # TODO flexible filetype
-    print(f"Saved as : {path}")
+    logger.info(f"Saved as : {path}")
     imwrite(path, image)
 
 
 def show_result(viewer, layer, image, name):
+    """
+    Adds layers to a viewer to show result to user
 
+    Args:
+        viewer: viewer to add layer in
+        layer: type of the original layer the operation was run on, to determine whether it should be an Image or Labels layer
+        image: the data array containing the image
+        name: name of the added layer
+
+    Returns:
+
+    """
     if isinstance(layer, napari.layers.Image):
-        print("Added resulting image layer")
+        logger.debug("Added resulting image layer")
         viewer.add_image(image, name=name)
     elif isinstance(layer, napari.layers.Labels):
-        print("Added resulting label layer")
+        logger.debug("Added resulting label layer")
         viewer.add_labels(image, name=name)
     else:
         warnings.warn(
@@ -59,8 +91,15 @@ def show_result(viewer, layer, image, name):
 
 
 class AnisoUtils(BasePluginFolder):
+    """Class to correct anisotropy in images"""
     def __init__(self, viewer: "napari.Viewer.viewer", parent=None):
+        """
+        Creates a AnisoUtils widget
 
+        Args:
+            viewer: viewer in which to process data
+            parent: parent widget
+        """
         super().__init__(
             viewer,
             parent,
@@ -100,7 +139,7 @@ class AnisoUtils(BasePluginFolder):
             max_wh=[MAX_W, MAX_H],  # , min_wh=[100, 200], base_wh=[100, 200]
         )
 
-        self.set_io_visibility()
+        self._set_io_visibility()
         self.setSizePolicy(
             QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
         )
@@ -144,8 +183,17 @@ class AnisoUtils(BasePluginFolder):
 
 
 class RemoveSmallUtils(BasePluginFolder):
+    """
+    Widget to remove small objects
+    """
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
+        """
+        Creates a RemoveSmallUtils widget
 
+        Args:
+            viewer: viewer in which to process data
+            parent: parent widget
+        """
         super().__init__(
             viewer,
             parent,
@@ -190,7 +238,7 @@ class RemoveSmallUtils(BasePluginFolder):
         ui.ScrollArea.make_scrollable(
             container.layout, self, max_wh=[MAX_W, MAX_H]
         )
-        self.set_io_visibility()
+        self._set_io_visibility()
         container.setSizePolicy(
             QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
         )
@@ -231,8 +279,17 @@ class RemoveSmallUtils(BasePluginFolder):
 
 
 class ToSemanticUtils(BasePluginFolder):
+    """
+    Widget to create semantic labels from instance labels
+    """
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
+        """
+        Creates a ToSemanticUtils widget
 
+        Args:
+            viewer: viewer in which to process data
+            parent: parent widget
+        """
         super().__init__(
             viewer,
             parent,
@@ -264,7 +321,7 @@ class ToSemanticUtils(BasePluginFolder):
         ui.ScrollArea.make_scrollable(
             container.layout, self, max_wh=[MAX_W, MAX_H]
         )
-        self.set_io_visibility()
+        self._set_io_visibility()
         container.setSizePolicy(
             QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
         )
@@ -302,8 +359,16 @@ class ToSemanticUtils(BasePluginFolder):
 
 
 class InstanceWidgets(QWidget):
+    """
+    Base widget with several sliders, for use in instance segmentation parameters
+    """
     def __init__(self, parent=None):
+        """
+        Creates an InstanceWidgets widget
 
+        Args:
+            parent: parent widget
+        """
         super().__init__(parent)
 
         self.method_choice = ui.DropdownMenu(
@@ -353,7 +418,14 @@ class InstanceWidgets(QWidget):
 
         self._build()
 
-    def get_method(self, volume):
+    def run_method(self, volume):
+        """
+        Calls instance function with chosen parameters
+        Args:
+            volume: image data to run method on
+
+        Returns: processed image from self._method
+        """
         return self._method(
             volume,
             self.threshold_slider1.slider_value,
@@ -443,8 +515,17 @@ class InstanceWidgets(QWidget):
 
 
 class ToInstanceUtils(BasePluginFolder):
+    """
+    Widget to convert semantic labels to instance labels
+    """
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
+        """
+        Creates a ToInstanceUtils widget
 
+        Args:
+            viewer: viewer in which to process data
+            parent: parent widget
+        """
         super().__init__(
             viewer,
             parent,
@@ -481,7 +562,7 @@ class ToInstanceUtils(BasePluginFolder):
         ui.ScrollArea.make_scrollable(
             container.layout, self, max_wh=[MAX_W, MAX_H]
         )
-        self.set_io_visibility()
+        self._set_io_visibility()
         container.setSizePolicy(
             QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
         )
@@ -494,7 +575,7 @@ class ToInstanceUtils(BasePluginFolder):
                 layer = self.label_layer_loader.layer()
 
                 data = np.array(layer.data, dtype=np.int16)
-                instance = self.instance_widgets.get_method(data)
+                instance = self.instance_widgets.run_method(data)
 
                 save_layer(
                     self.results_path,
@@ -508,7 +589,7 @@ class ToInstanceUtils(BasePluginFolder):
         elif self.folder_choice.isChecked():
             if len(self.images_filepaths) != 0:
                 images = [
-                    self.instance_widgets.get_method(imread(file))
+                    self.instance_widgets.run_method(imread(file))
                     for file in self.images_filepaths
                 ]
                 save_folder(
@@ -520,6 +601,12 @@ class ToInstanceUtils(BasePluginFolder):
 
 
 class ThresholdUtils(BasePluginFolder):
+    """
+    Creates a ThresholdUtils widget
+    Args:
+        viewer: viewer in which to process data
+        parent: parent widget
+    """
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
 
         super().__init__(
@@ -529,7 +616,7 @@ class ThresholdUtils(BasePluginFolder):
         )
 
         self.data_panel = self._build_io_panel()
-        self.set_io_visibility()
+        self._set_io_visibility()
 
         self.image_layer_loader.layer_list.label.setText("Layer :")
         self.image_layer_loader.set_layer_type(napari.layers.Layer)
@@ -568,7 +655,7 @@ class ThresholdUtils(BasePluginFolder):
         ui.ScrollArea.make_scrollable(
             container.layout, self, max_wh=[MAX_W, MAX_H]
         )
-        self.set_io_visibility()
+        self._set_io_visibility()
         container.setSizePolicy(
             QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
         )

@@ -28,7 +28,8 @@ Definitions of utility functions, classes, and variables
 class Singleton(type):
     """
     Singleton class that can only be instantiated once at a time,
-    with said unique instance always being accessed on call
+    with said unique instance always being accessed on call.
+    Should be used as a metaclass for classes without inheritance (object type)
     """
 
     _instances = {}

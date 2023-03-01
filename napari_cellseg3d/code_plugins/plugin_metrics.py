@@ -69,9 +69,9 @@ class MetricsUtils(BasePluginFolder):
         )
         self.btn_reset_plot.setToolTip("Erase all plots")
 
-        self.build()
+        self._build()
 
-    def build(self):
+    def _build(self):
         """Builds the layout of the widget."""
 
         self.filetype_choice.label.setVisible(False)
@@ -119,7 +119,7 @@ class MetricsUtils(BasePluginFolder):
                 metrics_group_w,
                 param_group_w,
                 self.btn_compute_dice,
-                self.make_close_button(),
+                self._make_close_button(),
                 self.btn_reset_plot,
             ],
         )

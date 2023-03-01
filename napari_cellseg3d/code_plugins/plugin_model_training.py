@@ -85,8 +85,6 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             * A choice of using random or deterministic training
 
         TODO training plugin:
-
-
         * Custom model loading
 
 
@@ -213,9 +211,9 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             label="Validation interval : ",
         )
 
-        self.epoch_choice.valueChanged.connect(self.update_validation_choice)
+        self.epoch_choice.valueChanged.connect(self._update_validation_choice)
         self.val_interval_choice.valueChanged.connect(
-            self.update_validation_choice
+            self._update_validation_choice
         )
 
         learning_rate_vals = [
@@ -236,7 +234,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.augment_choice = ui.CheckBox("Augment data")
 
         self.close_buttons = [
-            self.make_close_button() for i in range(NUMBER_TABS)
+            self._make_close_button() for i in range(NUMBER_TABS)
         ]
         """Close buttons list for each tab"""
 
@@ -332,7 +330,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ############################
         ############################
         set_tooltips()
-        self.build()
+        self._build()
 
     def _hide_unused(self):
         [
@@ -345,7 +343,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             ]
         ]
 
-    def update_validation_choice(self):
+    def _update_validation_choice(self):
         validation = self.val_interval_choice
         max_epoch = self.epoch_choice.value()
 
@@ -401,7 +399,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             warnings.warn("Image and label paths are not correctly set")
             return False
 
-    def build(self):
+    def _build(self):
         """Builds the layout of the widget and creates the following tabs and prompts:
 
         * Model parameters :
@@ -516,7 +514,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ui.add_widgets(
             data_tab.layout,
             [
-                self.make_next_button(),  # next
+                self._make_next_button(),  # next
                 ui.add_blank(self),
                 self.close_buttons[0],  # close
             ],
@@ -586,8 +584,8 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         #######################
         augment_tab_l.addWidget(
             ui.combine_blocks(
-                left_or_above=self.make_prev_button(),
-                right_or_below=self.make_next_button(),
+                left_or_above=self._make_prev_button(),
+                right_or_below=self._make_next_button(),
                 l=1,
             ),
             alignment=ui.LEFT_AL,
@@ -685,7 +683,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ui.add_widgets(
             train_tab.layout,
             [
-                self.make_prev_button(),  # previous
+                self._make_prev_button(),  # previous
                 self.btn_start,  # start
                 ui.add_blank(self),
                 self.close_buttons[2],
@@ -725,19 +723,20 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         )
         self.results_filewidget.text_field.setText(default_results_path)
         self.results_filewidget.check_ready()
-        self.check_results_path(default_results_path)
+        self._check_results_path(default_results_path)
         self.results_path = default_results_path
 
-    def show_dialog_lab(self):
-        """Shows the  dialog to load label files in a path, loads them (see :doc:model_framework) and changes the widget
-        label :py:attr:`self.label_filewidget.text_field` accordingly"""
-        folder = ui.open_folder_dialog(self, self._default_path)
-
-        if folder:
-            self.label_path = folder
-            self.labels_filewidget.text_field.setText(self.label_path)
+    # def _show_dialog_lab(self):
+    #     """Shows the  dialog to load label files in a path, loads them (see :doc:model_framework) and changes the widget
+    #     label :py:attr:`self.label_filewidget.text_field` accordingly"""
+    #     folder = ui.open_folder_dialog(self, self._default_path)
+    #
+    #     if folder:
+    #         self.label_path = folder
+    #         self.labels_filewidget.text_field.setText(self.label_path)
 
     def send_log(self, text):
+        """Sends a message via the Log attribute"""
         self.log.print_and_log(text)
 
     def start(self):
@@ -784,7 +783,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.log.print_and_log("Starting...")
             self.log.print_and_log("*" * 20)
 
-            self.reset_loss_plot()
+            self._reset_loss_plot()
 
             try:
                 self.data = self.create_train_dataset_dict()
@@ -910,7 +909,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.log.print_and_log("Done")
         self.log.print_and_log("*" * 10)
 
-        self.make_csv()
+        self._make_csv()
 
         self.btn_start.setText("Start")
         [btn.setVisible(True) for btn in self.close_buttons]
@@ -1021,7 +1020,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
     #     if self.get_device(show=False).type == "cuda":
     #         self.empty_cuda_cache()
 
-    def make_csv(self):
+    def _make_csv(self):
 
         size_column = range(1, self.worker_config.max_epochs + 1)
 
@@ -1168,7 +1167,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
                 self.plot_loss(loss, metric)
 
-    def reset_loss_plot(self):
+    def _reset_loss_plot(self):
         if (
             self.train_loss_plot is not None
             and self.dice_metric_plot is not None

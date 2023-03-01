@@ -176,9 +176,9 @@ class Cropping(BasePluginSingleImage):
             ],
         )
 
-        ui.ScrollArea.make_scrollable(layout, self, min_wh=[200, 300])
-        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.set_io_visibility()
+        ui.ScrollArea.make_scrollable(layout, self, min_wh=[200, 500])
+        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        self._set_io_visibility()
 
     # def _check_results_path(self, folder):
     #     if folder != "" and isinstance(folder, str):
@@ -209,7 +209,7 @@ class Cropping(BasePluginSingleImage):
 
         viewer = self._viewer
 
-        self.check_results_path(str(self.results_path))
+        self._check_results_path(str(self.results_path))
         time = utils.get_date_time()
 
         im1_path = str(
@@ -231,7 +231,7 @@ class Cropping(BasePluginSingleImage):
 
             logger.info(f"Image 2 saved as: {im2_path}")
 
-    def check_ready(self):
+    def _check_ready(self):
 
         if self.image_layer_loader.layer_data() is not None:
             if self.crop_second_image:
@@ -249,7 +249,7 @@ class Cropping(BasePluginSingleImage):
         # TODO maybe implement proper reset function so multiple runs can be done without closing napari
         # maybe use singletons or make docked widgets attributes that are hidden upon opening
 
-        if not self.check_ready():
+        if not self._check_ready():
             warnings.warn("Please select at least one valid layer !")
             return
 

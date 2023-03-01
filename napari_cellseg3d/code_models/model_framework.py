@@ -84,11 +84,11 @@ class ModelFramework(BasePluginFolder):
         )
 
         self.weights_filewidget = ui.FilePathWidget(
-            "Weights path", self.load_weights_path, self
+            "Weights path", self._load_weights_path, self
         )
 
         self.custom_weights_choice = ui.CheckBox(
-            "Load custom weights", self.toggle_weights_path, self
+            "Load custom weights", self._toggle_weights_path, self
         )
 
         ###################################################
@@ -217,7 +217,7 @@ class ModelFramework(BasePluginFolder):
         self.btn_save_log.setVisible(True)
         self.progress.setValue(0)
 
-    def toggle_weights_path(self):
+    def _toggle_weights_path(self):
         """Toggle visibility of weight path"""
         ui.toggle_visibility(
             self.custom_weights_choice, self.weights_filewidget
@@ -226,11 +226,10 @@ class ModelFramework(BasePluginFolder):
     def create_train_dataset_dict(self):
         """Creates data dictionary for MONAI transforms and training.
 
-        Returns: a dict with the following :
-            **Keys:**
+        Returns:
+            A dict with the following keys
 
             * "image": image
-
             * "label" : corresponding label
         """
 
@@ -272,7 +271,7 @@ class ModelFramework(BasePluginFolder):
     #         self.lbl_model_path.setText(self.model_path)
     #         # self.update_default()
 
-    def load_weights_path(self):
+    def _load_weights_path(self):
         """Show file dialog to set :py:attr:`model_path`"""
 
         # logger.debug(self._default_weights_folder)
@@ -334,5 +333,5 @@ class ModelFramework(BasePluginFolder):
     #     self._default_folders = possible_paths
     # update if model_path is used again
 
-    def build(self):
+    def _build(self):
         raise NotImplementedError("Should be defined in children classes")

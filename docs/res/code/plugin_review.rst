@@ -10,8 +10,8 @@ Class : Loader
 
 Methods
 **********************
-.. autoclass:: napari_cellseg3d.plugin_review::Reviewer
-   :members:  __init__, run_review, launch_review, build, remove_from_viewer
+.. autoclass:: napari_cellseg3d.code_plugins.plugin_review::Reviewer
+   :members:  __init__, run_review, launch_review, check_image_data, remove_from_viewer
    :noindex:
 
 
@@ -22,8 +22,8 @@ Methods
 Attributes
 *********************
 
-.. autoclass:: napari_cellseg3d.plugin_review::Reviewer
-   :members:  _viewer, image_path, label_path, filetype
+.. autoclass:: napari_cellseg3d.code_plugins.plugin_review::Reviewer
+   :members:  _viewer, image_path, label_path
 
 
 

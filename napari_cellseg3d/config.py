@@ -19,8 +19,8 @@ from napari_cellseg3d.code_models.models import (
 )
 from napari_cellseg3d.code_models.models import model_VNet as VNet
 
-# TODO DOCUMENT !!! and add default values
-# TODO add JSON load/save
+# TODO(cyril) DOCUMENT !!! and add default values
+# TODO(cyril) add JSON load/save
 
 MODEL_LIST = {
     "VNet": VNet,
