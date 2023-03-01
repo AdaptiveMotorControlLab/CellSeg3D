@@ -145,10 +145,12 @@ class Cropping(BasePluginSingleImage):
 
         ui.add_widgets(
             layout,
-            [io_panel,self.crop_second_image_choice],
+            [io_panel, self.crop_second_image_choice],
         )
         self.label_layer_loader.setVisible(False)
-        self.radio_buttons.setVisible(False) # TODO(cyril) : remove code related to folders as it is deprecated here
+        self.radio_buttons.setVisible(
+            False
+        )  # TODO(cyril) : remove code related to folders as it is deprecated here
         ######################
         ui.add_blank(self, layout)
         ######################
@@ -405,9 +407,10 @@ class Cropping(BasePluginSingleImage):
     # def _reset_dim(self, dim):
     #     dim = 0
 
-    def _add_crop_sliders(self,
-                          # x, y, z
-                          ):
+    def _add_crop_sliders(
+        self,
+        # x, y, z
+    ):
         # modified version of code posted by Juan Nunez Iglesias here :
         # https://forum.image.sc/t/napari-viewing-3d-image-of-large-tif-stack-cropping-image-w-general-shape/55500/2
         vw = self._viewer
@@ -451,10 +454,13 @@ class Cropping(BasePluginSingleImage):
         # logger.debug(crop_sizes)
         # logger.debug(ends)
         # logger.debug(stepsizes)
-        if self.im1_crop_layer is not None and self.create_new_layer.isChecked():
-            self.im1_crop_layer.translate = [0,0,0]
-            if self.im2_crop_layer is not None :
-                self.im2_crop_layer.translate = [0,0,0]
+        if (
+            self.im1_crop_layer is not None
+            and self.create_new_layer.isChecked()
+        ):
+            self.im1_crop_layer.translate = [0, 0, 0]
+            if self.im2_crop_layer is not None:
+                self.im2_crop_layer.translate = [0, 0, 0]
 
         self.im1_crop_layer = self._add_crop_layer(
             self.image_layer1, cropx, cropy, cropz

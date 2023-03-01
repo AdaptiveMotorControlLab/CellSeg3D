@@ -66,7 +66,7 @@ class BasePluginSingleImage(QTabWidget):
         self.radio_buttons = ui.combine_blocks(
             self.folder_choice, self.layer_choice
         )
-        self.io_panel = None # call self._build_io_panel to build
+        self.io_panel = None  # call self._build_io_panel to build
         ################
         # Image widgets
         self.image_filewidget = ui.FilePathWidget(
