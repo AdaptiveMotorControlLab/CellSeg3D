@@ -119,25 +119,29 @@ class ModelFramework(BasePluginFolder):
 
     def send_log(self, text):
         """Emit a signal to print in a Log"""
-        self.log.print_and_log(text)
+        if self.log is not None:
+            self.log.print_and_log(text)
 
     def save_log(self):
         """Saves the worker's log to disk at self.results_path when called"""
-        log = self.log.toPlainText()
+        if self.log is not None:
+            log = self.log.toPlainText()
 
-        path = self.results_path
+            path = self.results_path
 
-        if len(log) != 0:
-            with open(
-                path + f"/Log_report_{utils.get_date_time()}.txt",
-                "x",
-            ) as f:
-                f.write(log)
-                f.close()
+            if len(log) != 0:
+                with open(
+                    path + f"/Log_report_{utils.get_date_time()}.txt",
+                    "x",
+                ) as f:
+                    f.write(log)
+                    f.close()
+            else:
+                warnings.warn(
+                    "No job has been completed yet, please start one or re-open the log window."
+                )
         else:
-            warnings.warn(
-                "No job has been completed yet, please start one or re-open the log window."
-            )
+            warnings.warn(f"No logger defined : Log is {self.log}")
 
     def save_log_to_path(self, path):
         """Saves the worker log to a specific path. Cannot be used with connect.

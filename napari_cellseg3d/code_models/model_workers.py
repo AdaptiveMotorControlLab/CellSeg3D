@@ -137,6 +137,7 @@ class WeightsDownloader:
                 url, reporthook=show_progress
             )
             with tarfile.open(filename, mode="r:gz") as tar:
+
                 def is_within_directory(directory, target):
 
                     abs_directory = Path(directory).resolve()
@@ -148,12 +149,16 @@ class WeightsDownloader:
 
                     return abs_directory in abs_target.parents
 
-                def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+                def safe_extract(
+                    tar, path=".", members=None, *, numeric_owner=False
+                ):
 
                     for member in tar.getmembers():
                         member_path = str(Path(path) / member.name)
                         if not is_within_directory(path, member_path):
-                            raise Exception("Attempted Path Traversal in Tar File")
+                            raise Exception(
+                                "Attempted Path Traversal in Tar File"
+                            )
 
                     tar.extractall(path, members, numeric_owner=numeric_owner)
 

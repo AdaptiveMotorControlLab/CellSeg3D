@@ -15,7 +15,9 @@ def test_launch_review(make_napari_viewer):
     widget.folder_choice.setChecked(True)
     widget.image_filewidget.text_field = im_path
     widget.labels_filewidget.text_field = im_path
-    widget.results_filewidget.text_field = str(Path(__file__).resolve().parent / "res")
+    widget.results_filewidget.text_field = str(
+        Path(__file__).resolve().parent / "res"
+    )
 
     widget.run_review()
     widget._viewer.close()
