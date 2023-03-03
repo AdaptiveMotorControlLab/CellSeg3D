@@ -26,10 +26,10 @@ def test_inference(make_napari_viewer, qtbot):
 
     assert widget.check_ready()
 
-    # widget.start()  # takes too long on Github Actions (~30min)
-    # assert widget.worker is not None
-    #
-    # with qtbot.waitSignal(signal=widget.worker.finished) as blocker:
-    #     blocker.connect(widget.worker.errored)
-    #
+    widget.start()  # takes too long on Github Actions (~30min)
+    assert widget.worker is not None
+
+    with qtbot.waitSignal(signal=widget.worker.finished, timeout=60000, raising=False) as blocker:
+        blocker.connect(widget.worker.errored)
+
     # assert len(viewer.layers) == 2

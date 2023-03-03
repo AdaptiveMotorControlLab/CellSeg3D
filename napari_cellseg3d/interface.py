@@ -208,7 +208,7 @@ class UtilsDropdown(metaclass=utils.Singleton):
 class Log(QTextEdit):
     """Class to implement a log for important user info. Should be thread-safe."""
 
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         """Creates a log with a lock for multithreading
 
         Args:
@@ -223,31 +223,31 @@ class Log(QTextEdit):
 
     # def receive_log(self, text):
     #     self.print_and_log(text)
-    def write(self, message):
-        """
-        Write message to log in a thread-safe manner
-        Args:
-            message: string to be printed
-        """
-        self.lock.acquire()
-        try:
-            if not hasattr(self, "flag"):
-                self.flag = False
-            message = message.replace("\r", "").rstrip()
-            if message:
-                method = "replace_last_line" if self.flag else "append"
-                QtCore.QMetaObject.invokeMethod(
-                    self,
-                    method,
-                    QtCore.Qt.QueuedConnection,
-                    QtCore.Q_ARG(str, message),
-                )
-                self.flag = True
-            else:
-                self.flag = False
-
-        finally:
-            self.lock.release()
+    # def write(self, message):
+    #     """
+    #     Write message to log in a thread-safe manner
+    #     Args:
+    #         message: string to be printed
+    #     """
+    #     self.lock.acquire()
+    #     try:
+    #         if not hasattr(self, "flag"):
+    #             self.flag = False
+    #         message = message.replace("\r", "").rstrip()
+    #         if message:
+    #             method = "replace_last_line" if self.flag else "append"
+    #             QtCore.QMetaObject.invokeMethod(
+    #                 self,
+    #                 method,
+    #                 QtCore.Qt.QueuedConnection,
+    #                 QtCore.Q_ARG(str, message),
+    #             )
+    #             self.flag = True
+    #         else:
+    #             self.flag = False
+    #
+    #     finally:
+    #         self.lock.release()
 
     @QtCore.Slot(str)
     def replace_last_line(self, text):

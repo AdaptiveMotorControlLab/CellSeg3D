@@ -22,6 +22,7 @@ def test_training(make_napari_viewer, qtbot):
 
     widget.images_filepaths = [im_path]
     widget.labels_filepaths = [im_path]
+    widget.epoch_choice.setValue(1)
 
     assert widget.check_ready()
 
@@ -29,11 +30,11 @@ def test_training(make_napari_viewer, qtbot):
     # Training is too long to test properly this way. Do not use on Github
     #################
 
-    # widget.start()
-    # assert widget.worker is not None
-    #
-    # with qtbot.waitSignal(signal=widget.worker.finished, timeout=60000) as blocker:  # wait only for 60 seconds.
-    #     blocker.connect(widget.worker.errored)
+    widget.start()
+    assert widget.worker is not None
+
+    with qtbot.waitSignal(signal=widget.worker.finished, timeout=60000, raising=False) as blocker:  # wait only for 60 seconds.
+        blocker.connect(widget.worker.errored)
 
 
 def test_update_loss_plot(make_napari_viewer):
