@@ -3,6 +3,7 @@ from napari_cellseg3d.code_models.model_workers import (
     WEIGHTS_DIR,
 )
 
+
 def test_weight_download():
     downloader = WeightsDownloader()
     downloader.download_weights("test", "test.pth")
