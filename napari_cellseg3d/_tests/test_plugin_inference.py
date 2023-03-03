@@ -21,7 +21,7 @@ def test_inference(make_napari_viewer, qtbot):
     assert len(viewer.layers) == 1
 
     widget.window_infer_box.setChecked(True)
-    widget.window_overlap_slider.setValue(0.0)
+    widget.window_overlap_slider.setValue(0)
     widget.keep_data_on_cpu_box.setChecked(True)
 
     assert widget.check_ready()
