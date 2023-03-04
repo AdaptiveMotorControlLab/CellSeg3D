@@ -31,11 +31,11 @@ def test_training(make_napari_viewer, qtbot):
     # Training is too long to test properly this way. Do not use on Github
     #################
 
-    widget.start()
-    assert widget.worker is not None
+    # widget.start()
+    # assert widget.worker is not None
 
-    with qtbot.waitSignal(signal=widget.worker.yielded, timeout=60000, raising=False) as blocker:  # wait only for 60 seconds.
-        blocker.connect(widget.worker.errored)
+    # with qtbot.waitSignal(signal=widget.worker.yielded, timeout=60000, raising=False) as blocker:  # wait only for 60 seconds.
+    #     blocker.connect(widget.worker.errored)
 
 
 def test_update_loss_plot(make_napari_viewer):
