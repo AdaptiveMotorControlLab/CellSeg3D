@@ -18,6 +18,9 @@ from napari_cellseg3d.code_models.models import (
     model_TRAILMAP_MS as TRAILMAP_MS,
 )
 from napari_cellseg3d.code_models.models import model_VNet as VNet
+from napari_cellseg3d.utils import LOGGER
+
+logger = LOGGER
 
 # TODO(cyril) DOCUMENT !!! and add default values
 # TODO(cyril) add JSON load/save
@@ -28,6 +31,7 @@ MODEL_LIST = {
     # "TRAILMAP": TRAILMAP,
     "TRAILMAP_MS": TRAILMAP_MS,
     "SwinUNetR": SwinUNetR,
+    # "test" : DO NOT USE, reserved for testing
 }
 
 INSTANCE_SEGMENTATION_METHOD_LIST = {
@@ -81,12 +85,14 @@ class ModelInfo:
         try:
             return MODEL_LIST[self.name]
         except KeyError as e:
-            warnings.warn(f"Model {self.name} is not defined")
+            msg = f"Model {self.name} is not defined"
+            warnings.warn(msg)
+            logger.warning(msg)
             raise KeyError(e)
 
     @staticmethod
     def get_model_name_list():
-        print(
+        logger.info(
             f"Model list :\n" + str(f"{name}\n" for name in MODEL_LIST.keys())
         )
         return MODEL_LIST.keys()

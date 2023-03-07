@@ -791,6 +791,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.data = None
                 raise err
 
+
             model_config = config.ModelInfo(
                 name=self.model_choice.currentText()
             )
@@ -820,6 +821,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
             patch_size = [w.value() for w in self.patch_size_widgets]
 
+            logger.debug("Loading config...")
             self.worker_config = config.TrainingWorkerConfig(
                 device=self.get_device(),
                 model_info=model_config,

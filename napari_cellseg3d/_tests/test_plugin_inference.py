@@ -1,9 +1,10 @@
 from tifffile import imread
 from pathlib import Path
 
+from napari_cellseg3d.config import MODEL_LIST
 from napari_cellseg3d._tests.fixtures import LogFixture
 from napari_cellseg3d.code_plugins.plugin_model_inference import Inferer
-
+from napari_cellseg3d.code_models.models.model_test import TestModel
 
 def test_inference(make_napari_viewer, qtbot):
 
@@ -26,10 +27,14 @@ def test_inference(make_napari_viewer, qtbot):
 
     assert widget.check_ready()
 
-    # widget.start()  # takes too long on Github Actions
-    # assert widget.worker is not None
+    MODEL_LIST["test"] = TestModel
+    widget.model_choice.addItem("test")
+    widget.setCurrentIndex(-1)
 
-    # with qtbot.waitSignal(signal=widget.worker.yielded, timeout=60000, raising=False) as blocker:
-    #     blocker.connect(widget.worker.errored)
+    widget.start()  # takes too long on Github Actions
+    assert widget.worker is not None
+
+    with qtbot.waitSignal(signal=widget.worker.finished, timeout=60000, raising=False) as blocker:
+        blocker.connect(widget.worker.errored)
 
     # assert len(viewer.layers) == 2

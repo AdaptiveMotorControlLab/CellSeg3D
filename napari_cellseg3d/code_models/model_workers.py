@@ -455,7 +455,7 @@ class InferenceWorker(GeneratorWorker):
         inputs = inputs.to("cpu")
 
         model_output = lambda inputs: post_process_transforms(
-            self.config.model_info.get_model().get_output(model, inputs)
+            self.config.model_info.get_model().get_output(model, inputs)  # TODO(cyril) refactor those functions
         )
 
         def model_output(inputs):
@@ -870,7 +870,7 @@ class InferenceWorker(GeneratorWorker):
             model.to("cpu")
 
         except Exception as e:
-            self.log(f"Error : {e}")
+            self.log(f"Error during inference : {e}")
             self.quit()
         finally:
             self.quit()
@@ -1078,6 +1078,7 @@ class TrainingWorker(GeneratorWorker):
                 torch.set_num_threads(1)
                 self.log("Number of threads has been set to 1 for macOS")
 
+            self.log(f"config model : {self.config.model_info.name}")
             model_name = model_config.name
             model_class = model_config.get_model()
 
@@ -1314,7 +1315,7 @@ class TrainingWorker(GeneratorWorker):
                         )
                     )
                 except RuntimeError as e:
-                    logger.error(f"Error : {e}")
+                    logger.error(f"Error when loading weights : {e}")
                     warn = (
                         "WARNING:\nIt'd seem that the weights were incompatible with the model,\n"
                         "the model will be trained from random weights"
@@ -1332,6 +1333,9 @@ class TrainingWorker(GeneratorWorker):
             self.log_parameters()
 
             device = self.config.device
+
+            if model_name == "test":
+                self.quit()
 
             for epoch in range(self.config.max_epochs):
                 # self.log("\n")
@@ -1472,7 +1476,7 @@ class TrainingWorker(GeneratorWorker):
             model.to("cpu")
 
         except Exception as e:
-            self.log(f"Error : {e}")
+            self.log(f"Error in training : {e}")
             self.quit()
         finally:
             self.quit()
