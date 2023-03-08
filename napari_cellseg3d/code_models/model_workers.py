@@ -1336,6 +1336,7 @@ class TrainingWorker(GeneratorWorker):
 
             if model_name == "test":
                 self.quit()
+                yield TrainingReport(False)
 
             for epoch in range(self.config.max_epochs):
                 # self.log("\n")
