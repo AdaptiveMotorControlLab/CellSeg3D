@@ -13,6 +13,7 @@ from napari_cellseg3d.code_models.model_instance_seg import clear_small_objects
 from napari_cellseg3d.code_models.model_instance_seg import InstanceWidgets
 from napari_cellseg3d.code_models.model_instance_seg import threshold
 from napari_cellseg3d.code_models.model_instance_seg import to_semantic
+from napari_cellseg3d.code_models.model_instance_seg import InstanceWidgets
 from napari_cellseg3d.code_plugins.plugin_base import BasePluginFolder
 
 # TODO break down into multiple mini-widgets

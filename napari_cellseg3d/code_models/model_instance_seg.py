@@ -8,12 +8,18 @@ from skimage.measure import label
 from skimage.measure import regionprops
 from skimage.morphology import remove_small_objects
 from skimage.segmentation import watershed
+
+from skimage.filters import thresholding
+from skimage.transform import resize
+# from skimage.measure import mesh_surface_area
+# from skimage.measure import marching_cubes
 from tifffile import imread
 
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.utils import fill_list_in_between
 from napari_cellseg3d.utils import LOGGER as logger
 from napari_cellseg3d.utils import sphericity_axis
+from napari_cellseg3d.utils import Singleton
 
 # from skimage.measure import mesh_surface_area
 # from skimage.measure import marching_cubes
@@ -82,6 +88,42 @@ class InstanceMethod:
         raise NotImplementedError("Must be defined in child classes")
 
 
+class InstanceMethod:
+    def __init__(
+        self,
+        name: str,
+        function: callable,
+        num_sliders: int,
+        num_counters: int,
+    ):
+        self.name = name
+        self.function = function
+        self.counters: List[ui.DoubleIncrementCounter] = []
+        self.sliders: List[ui.Slider] = []
+        if num_sliders > 0:
+            for i in range(num_sliders):
+                widget = f"slider_{i}"
+                setattr(
+                    self,
+                    widget,
+                    ui.Slider(0, 100, 1, divide_factor=100, text_label=""),
+                )
+                self.sliders.append(getattr(self, widget))
+
+        if num_counters > 0:
+            for i in range(num_counters):
+                widget = f"counter_{i}"
+                setattr(
+                    self,
+                    widget,
+                    ui.DoubleIncrementCounter(label=""),
+                )
+                self.counters.append(getattr(self, widget))
+
+    def run_method(self, image):
+        raise NotImplementedError("Must be defined in child classes")
+
+
 @dataclass
 class ImageStats:
     volume: List[float]
@@ -122,7 +164,6 @@ def voronoi_otsu(
     volume: np.ndarray,
     spot_sigma: float,
     outline_sigma: float,
-    # remove_small_size: float,
 ):
     """
     Voronoi-Otsu labeling from pyclesperanto.
@@ -390,7 +431,7 @@ class Watershed(InstanceMethod):
             function=binary_watershed,
             num_sliders=2,
             num_counters=2,
-            widget_parent=widget_parent,
+            # widget_parent=widget_parent,
         )
 
         self.sliders[0].text_label.setText("Foreground probability threshold")
@@ -436,7 +477,7 @@ class ConnectedComponents(InstanceMethod):
             function=binary_connected,
             num_sliders=1,
             num_counters=1,
-            widget_parent=widget_parent,
+            # widget_parent=widget_parent,
         )
 
         self.sliders[0].text_label.setText("Foreground probability threshold")
@@ -475,8 +516,8 @@ class VoronoiOtsu(InstanceMethod):
         ].tooltips = "Determines how close detected objects can be"
         self.counters[0].setMaximum(100)
         self.counters[0].setValue(2)
-
         self.counters[1].label.setText("Outline sigma")  # smoothness
+
         self.counters[
             1
         ].tooltips = "Determines the smoothness of the segmentation"
@@ -504,6 +545,7 @@ class VoronoiOtsu(InstanceMethod):
             self.counters[0].value(),
             self.counters[1].value(),
             # self.counters[2].value(),
+
         )
 
 
@@ -518,7 +560,6 @@ class InstanceWidgets(QWidget):
 
         Args:
             parent: parent widget
-
         """
         super().__init__(parent)
         self.method_choice = ui.DropdownMenu(
@@ -528,14 +569,12 @@ class InstanceWidgets(QWidget):
         """Contains the instance of the method, with its name as key"""
         self.instance_widgets = {}
         """Contains the lists of widgets for each methods, to show/hide"""
-
         self.method_choice.currentTextChanged.connect(self._set_visibility)
         self._build()
 
     def _build(self):
         group = ui.GroupedWidget("Instance segmentation")
         group.layout.addWidget(self.method_choice)
-
         try:
             for name, method in INSTANCE_SEGMENTATION_METHOD_LIST.items():
                 method_class = method(widget_parent=self.parent())
@@ -555,11 +594,11 @@ class InstanceWidgets(QWidget):
             logger.debug(
                 f"Caught runtime error {e}, most likely during testing"
             )
-
         self.setLayout(group.layout)
         self._set_visibility()
 
     def _set_visibility(self):
+
         for name in self.instance_widgets.keys():
             if name != self.method_choice.currentText():
                 for widget in self.instance_widgets[name]:
@@ -571,12 +610,10 @@ class InstanceWidgets(QWidget):
     def run_method(self, volume):
         """
         Calls instance function with chosen parameters
-
         Args:
             volume: image data to run method on
 
         Returns: processed image from self._method
-
         """
         method = self.methods[self.method_choice.currentText()]
         return method.run_method(volume)
