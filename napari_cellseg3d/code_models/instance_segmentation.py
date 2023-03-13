@@ -158,15 +158,13 @@ def voronoi_otsu(
         spot_sigma (float): parameter determining how close detected objects can be
         outline_sigma (float): determines the smoothness of the segmentation
 
+
     Returns:
     Instance segmentation labels from Voronoi-Otsu method
 
     """
     # remove_small_size (float): remove all objects smaller than the specified size in pixels
-    # semantic = np.squeeze(volume)
-    logger.debug(
-        f"Running voronoi otsu segmentation with spot_sigma={spot_sigma} and outline_sigma={outline_sigma}"
-    )
+    semantic = np.squeeze(volume)
     instance = cle.voronoi_otsu_labeling(
         volume, spot_sigma=spot_sigma, outline_sigma=outline_sigma
     )
@@ -490,7 +488,6 @@ class VoronoiOtsu(InstanceMethod):
             function=voronoi_otsu,
             num_sliders=0,
             num_counters=2,
-            widget_parent=widget_parent,
         )
         self.counters[0].label.setText("Spot sigma")  # closeness
         self.counters[
