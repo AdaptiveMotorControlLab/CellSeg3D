@@ -449,7 +449,6 @@ class InferenceWorker(GeneratorWorker):
         #         self.config.model_info.get_model().get_output(model, inputs)
         #     )
 
-
         def model_output(inputs):
             return post_process_transforms(
                 self.config.model_info.get_model().get_output(model, inputs)
