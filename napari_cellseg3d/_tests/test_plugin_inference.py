@@ -15,6 +15,8 @@ from napari_cellseg3d.config import MODEL_LIST
 
 
 def test_inference(make_napari_viewer, qtbot):
+
+def test_inference(make_napari_viewer, qtbot):
     im_path = str(Path(__file__).resolve().parent / "res/test.tif")
     image = imread(im_path)
 

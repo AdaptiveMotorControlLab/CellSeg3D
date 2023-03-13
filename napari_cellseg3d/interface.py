@@ -10,6 +10,8 @@ import napari
 from qtpy import QtCore
 from qtpy.QtCore import QObject
 from qtpy.QtCore import Qt
+
+# from qtpy.QtCore import QtWarningMsg
 from qtpy.QtCore import QUrl
 from qtpy.QtGui import QCursor
 from qtpy.QtGui import QDesktopServices
@@ -1089,9 +1091,9 @@ class DoubleIncrementCounter(QDoubleSpinBox):
 
     def _update_step(self):
         if self.value() < 0.9:
-            self.setSingleStep(0.01)
-        else:
             self.setSingleStep(0.1)
+        else:
+            self.setSingleStep(1)
 
     @property
     def tooltips(self):

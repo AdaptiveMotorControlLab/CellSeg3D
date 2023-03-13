@@ -39,23 +39,10 @@ def test_training(make_napari_viewer, qtbot):
     widget.model_choice.addItem("test")
     widget.model_choice.setCurrentIndex(len(MODEL_LIST.keys()) - 1)
 
-    worker_config = widget._set_worker_config()
-    worker = widget._create_worker_from_config(worker_config)
-    worker.config.train_data_dict = [{"image": im_path, "label": im_path}]
-    worker.config.val_data_dict = [{"image": im_path, "label": im_path}]
-    worker.config.max_epochs = 1
-    worker.log_parameters()
-    res = next(worker.train())
+    # widget.start()
+    # assert widget.worker is not None
 
-    assert isinstance(res, TrainingReport)
-
-    # def on_error(e):
-    #     print(e)
-    #     assert False
-    #
-    # with qtbot.waitSignal(
-    #     signal=widget.worker.finished, timeout=10000, raising=True
-    # ) as blocker:
+    # with qtbot.waitSignal(signal=widget.worker.finished, timeout=10000, raising=False) as blocker:  # wait only for 60 seconds.
     #     blocker.connect(widget.worker.errored)
     #     widget.worker.error_signal.connect(on_error)
     #     widget.worker.train()

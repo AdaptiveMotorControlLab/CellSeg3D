@@ -54,6 +54,8 @@ from tqdm import tqdm
 from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
+
+# local
 from napari_cellseg3d.code_models.model_instance_seg import ImageStats
 from napari_cellseg3d.code_models.model_instance_seg import volume_stats
 
@@ -503,10 +505,33 @@ class InferenceWorker(GeneratorWorker):
     ):
         inputs = inputs.to("cpu")
 
-        # def model_output(inputs):
-        #     return post_process_transforms(
-        #         self.config.model_info.get_model().get_output(model, inputs)
-        #     )
+        model_output = lambda inputs: post_process_transforms(
+            self.config.model_info.get_model().get_output(
+                model, inputs
+            )  # TODO(cyril) refactor those functions
+        )
+
+        def model_output(inputs):
+            return post_process_transforms(
+                self.config.model_info.get_model().get_output(model, inputs)
+            )
+
+        if self.config.keep_on_cpu:
+            dataset_device = "cpu"
+        else:
+            dataset_device = self.config.device
+
+        window_size = self.config.sliding_window_config.window_size
+        window_overlap = self.config.sliding_window_config.window_overlap
+
+        # FIXME
+        # import sys
+
+        # old_stdout = sys.stdout
+        # old_stderr = sys.stderr
+
+        # sys.stdout = self.downloader.log_widget
+        # sys.stdout = self.downloader.log_widget
 
         dataset_device = (
             "cpu" if self.config.keep_on_cpu else self.config.device
@@ -681,8 +706,8 @@ class InferenceWorker(GeneratorWorker):
         if image_id is not None:
             self.log(f"\nRunning instance segmentation for image n°{image_id}")
 
-        method = self.config.post_process_config.instance.method
-        instance_labels = method.run_method(image=to_instance)
+        method = self.config.post_process_config.instance
+        instance_labels = method.run_method(to_instance)
 
         instance_filepath = (
             self.config.results_path
