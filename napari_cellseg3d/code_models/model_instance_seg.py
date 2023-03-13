@@ -162,7 +162,7 @@ def voronoi_otsu(
     volume: np.ndarray,
     spot_sigma: float,
     outline_sigma: float,
-    remove_small_size: float,
+    # remove_small_size: float,
 ):
     """
     Voronoi-Otsu labeling from pyclesperanto.
@@ -172,11 +172,12 @@ def voronoi_otsu(
         volume (np.ndarray): volume to segment
         spot_sigma (float): parameter determining how close detected objects can be
         outline_sigma (float): determines the smoothness of the segmentation
-        remove_small_size (float): remove all objects smaller than the specified size in pixels
+
 
     Returns:
     Instance segmentation labels from Voronoi-Otsu method
     """
+    # remove_small_size (float): remove all objects smaller than the specified size in pixels
     semantic = np.squeeze(volume)
     instance = cle.voronoi_otsu_labeling(
         semantic, spot_sigma=spot_sigma, outline_sigma=outline_sigma
@@ -493,7 +494,7 @@ class VoronoiOtsu(InstanceMethod, metaclass=Singleton):
             name="Voronoi-Otsu",
             function=voronoi_otsu,
             num_sliders=0,
-            num_counters=3,
+            num_counters=2,
         )
         self.counters[0].label.setText("Spot sigma")
         self.counters[
@@ -509,18 +510,19 @@ class VoronoiOtsu(InstanceMethod, metaclass=Singleton):
         self.counters[1].setMaximum(100)
         self.counters[1].setValue(2)
 
-        self.counters[2].label.setText("Small object removal")
-        self.counters[2].tooltips = (
-            "Volume/size threshold for small object removal."
-            "\nAll objects with a volume/size below this value will be removed."
-        )
+        # self.counters[2].label.setText("Small object removal")
+        # self.counters[2].tooltips = (
+        #     "Volume/size threshold for small object removal."
+        #     "\nAll objects with a volume/size below this value will be removed."
+        # )
+        # self.counters[2].setValue(30)
 
     def run_method(self, image):
         return self.function(
             image,
             self.counters[0].value(),
             self.counters[1].value(),
-            self.counters[2].value(),
+            # self.counters[2].value(),
         )
 
 
