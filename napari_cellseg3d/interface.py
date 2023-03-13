@@ -6,6 +6,10 @@ from typing import List, Optional
 import napari
 
 # Qt
+from qtpy import QtCore
+from qtpy.QtCore import QObject
+from qtpy.QtCore import Qt
+
 # from qtpy.QtCore import QtWarningMsg
 from qtpy import QtCore
 from qtpy.QtCore import QObject, Qt, QUrl
@@ -1046,11 +1050,11 @@ class DoubleIncrementCounter(QDoubleSpinBox):
             self.label = make_label(name=label)
         self.valueChanged.connect(self._update_step)
 
-    def _update_step(self):  # FIXME check divide_factor
+    def _update_step(self):
         if self.value() < 0.9:
-            self.setSingleStep(0.01)
-        else:
             self.setSingleStep(0.1)
+        else:
+            self.setSingleStep(1)
 
     @property
     def tooltips(self):

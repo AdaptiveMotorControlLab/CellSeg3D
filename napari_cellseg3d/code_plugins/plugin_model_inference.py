@@ -13,6 +13,11 @@ from napari_cellseg3d.code_models.model_instance_seg import InstanceMethod
 from napari_cellseg3d.code_models.model_instance_seg import InstanceWidgets
 from napari_cellseg3d.code_models.model_workers import InferenceResult
 from napari_cellseg3d.code_models.model_workers import InferenceWorker
+from napari_cellseg3d.code_models.model_instance_seg import InstanceMethod
+from napari_cellseg3d.code_models.model_instance_seg import InstanceWidgets
+from napari_cellseg3d.code_models.model_instance_seg import (
+    INSTANCE_SEGMENTATION_METHOD_LIST,
+)
 
 
 class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
@@ -552,12 +557,9 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 threshold_value=self.thresholding_slider.slider_value,
             )
 
-            self.instance_config = config.InstanceSegConfig(
-                enabled=self.use_instance_choice.isChecked(),
-                method=self.instance_widgets.methods[
-                    self.instance_widgets.method_choice.currentText()
-                ],
-            )
+            self.instance_config = INSTANCE_SEGMENTATION_METHOD_LIST[
+                self.instance_widgets.method_choice.currentText()
+            ]
 
             self.post_process_config = config.PostProcessConfig(
                 zoom=zoom_config,
