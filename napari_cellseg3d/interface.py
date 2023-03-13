@@ -10,7 +10,7 @@ import napari
 from qtpy import QtCore
 from qtpy.QtCore import QObject
 from qtpy.QtCore import Qt
-from qtpy.QtCore import QtWarningMsg
+# from qtpy.QtCore import QtWarningMsg
 from qtpy.QtCore import QUrl
 from qtpy.QtGui import QCursor
 from qtpy.QtGui import QDesktopServices
@@ -105,24 +105,25 @@ class QWidgetSingleton(type(QObject)):
 def handle_adjust_errors(widget, type, context, msg: str):
     """Qt message handler that attempts to react to errors when setting the window size
     and resizes the main window"""
-    head = msg.split(": ")[0]
-    if type == QtWarningMsg and head == "QWindowsWindow::setGeometry":
-        logger.warning(
-            f"Qt resize error : {msg}\nhas been handled by attempting to resize the window"
-        )
-        try:
-            if widget.parent() is not None:
-                state = int(widget.parent().parent().windowState())
-                if state == 0:  # normal state
-                    widget.parent().parent().adjustSize()
-                    logger.debug("Non-max. size adjust attempt")
-                    logger.debug(f"{widget.parent().parent()}")
-                elif state == 2:  # maximized state
-                    widget.parent().parent().showNormal()
-                    widget.parent().parent().showMaximized()
-                    logger.debug("Maximized size adjust attempt")
-        except RuntimeError:
-            pass
+    pass
+    # head = msg.split(": ")[0]
+    # if type == QtWarningMsg and head == "QWindowsWindow::setGeometry":
+    #     logger.warning(
+    #         f"Qt resize error : {msg}\nhas been handled by attempting to resize the window"
+    #     )
+    #     try:
+    #         if widget.parent() is not None:
+    #             state = int(widget.parent().parent().windowState())
+    #             if state == 0:  # normal state
+    #                 widget.parent().parent().adjustSize()
+    #                 logger.debug("Non-max. size adjust attempt")
+    #                 logger.debug(f"{widget.parent().parent()}")
+    #             elif state == 2:  # maximized state
+    #                 widget.parent().parent().showNormal()
+    #                 widget.parent().parent().showMaximized()
+    #                 logger.debug("Maximized size adjust attempt")
+    #     except RuntimeError:
+    #         pass
 
 
 def handle_adjust_errors_wrapper(widget):
@@ -223,31 +224,31 @@ class Log(QTextEdit):
 
     # def receive_log(self, text):
     #     self.print_and_log(text)
-    # def write(self, message):
-    #     """
-    #     Write message to log in a thread-safe manner
-    #     Args:
-    #         message: string to be printed
-    #     """
-    #     self.lock.acquire()
-    #     try:
-    #         if not hasattr(self, "flag"):
-    #             self.flag = False
-    #         message = message.replace("\r", "").rstrip()
-    #         if message:
-    #             method = "replace_last_line" if self.flag else "append"
-    #             QtCore.QMetaObject.invokeMethod(
-    #                 self,
-    #                 method,
-    #                 QtCore.Qt.QueuedConnection,
-    #                 QtCore.Q_ARG(str, message),
-    #             )
-    #             self.flag = True
-    #         else:
-    #             self.flag = False
-    #
-    #     finally:
-    #         self.lock.release()
+    def write(self, message):
+        """
+        Write message to log in a thread-safe manner
+        Args:
+            message: string to be printed
+        """
+        self.lock.acquire()
+        try:
+            if not hasattr(self, "flag"):
+                self.flag = False
+            message = message.replace("\r", "").rstrip()
+            if message:
+                method = "replace_last_line" if self.flag else "append"
+                QtCore.QMetaObject.invokeMethod(
+                    self,
+                    method,
+                    QtCore.Qt.QueuedConnection,
+                    QtCore.Q_ARG(str, message),
+                )
+                self.flag = True
+            else:
+                self.flag = False
+
+        finally:
+            self.lock.release()
 
     @QtCore.Slot(str)
     def replace_last_line(self, text):
