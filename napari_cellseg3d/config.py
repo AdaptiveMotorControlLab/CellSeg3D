@@ -8,9 +8,6 @@ from typing import Optional
 import napari
 import numpy as np
 
-from napari_cellseg3d.code_models.model_instance_seg import binary_connected
-from napari_cellseg3d.code_models.model_instance_seg import binary_watershed
-
 # from napari_cellseg3d.models import model_TRAILMAP as TRAILMAP
 from napari_cellseg3d.code_models.models import model_SegResNet as SegResNet
 from napari_cellseg3d.code_models.models import model_SwinUNetR as SwinUNetR
@@ -18,6 +15,12 @@ from napari_cellseg3d.code_models.models import (
     model_TRAILMAP_MS as TRAILMAP_MS,
 )
 from napari_cellseg3d.code_models.models import model_VNet as VNet
+from napari_cellseg3d.code_models.model_instance_seg import (
+    ConnectedComponents,
+    Watershed,
+    VoronoiOtsu,
+    InstanceMethod,
+)
 from napari_cellseg3d.utils import LOGGER
 
 logger = LOGGER
@@ -34,10 +37,6 @@ MODEL_LIST = {
     # "test" : DO NOT USE, reserved for testing
 }
 
-INSTANCE_SEGMENTATION_METHOD_LIST = {
-    "Watershed": binary_watershed,
-    "Connected components": binary_connected,
-}
 
 WEIGHTS_DIR = str(
     Path(__file__).parent.resolve() / Path("code_models/models/pretrained")
@@ -122,20 +121,10 @@ class Zoom:
 
 
 @dataclass
-class InstanceSegConfig:
-    enabled: bool = False
-    method: str = None
-    threshold: Thresholding = Thresholding(enabled=False, threshold_value=0.85)
-    small_object_removal_threshold: Thresholding = Thresholding(
-        enabled=True, threshold_value=20
-    )
-
-
-@dataclass
 class PostProcessConfig:
     zoom: Zoom = Zoom()
     thresholding: Thresholding = Thresholding()
-    instance: InstanceSegConfig = InstanceSegConfig()
+    instance: InstanceMethod = None
 
 
 ################

@@ -5,21 +5,61 @@ from dataclasses import dataclass
 from typing import List
 
 import numpy as np
-from skimage.filters import thresholding
-
-# from skimage.measure import marching_cubes
-# from skimage.measure import mesh_surface_area
+import pyclesperanto_prototype as cle
+from qtpy.QtWidgets import QWidget
 from skimage.measure import label
 from skimage.measure import regionprops
 from skimage.morphology import remove_small_objects
 from skimage.segmentation import watershed
+from skimage.filters import thresholding
 from skimage.transform import resize
+
+# from skimage.measure import mesh_surface_area
+# from skimage.measure import marching_cubes
 from tifffile import imread
 
+from napari_cellseg3d import interface as ui
 from napari_cellseg3d.utils import fill_list_in_between
 from napari_cellseg3d.utils import sphericity_axis
+from napari_cellseg3d.utils import Singleton
 
 # from napari_cellseg3d.utils import sphericity_volume_area
+
+
+class InstanceMethod:
+    def __init__(
+        self,
+        name: str,
+        function: callable,
+        num_sliders: int,
+        num_counters: int,
+    ):
+        self.name = name
+        self.function = function
+        self.counters: List[ui.DoubleIncrementCounter] = []
+        self.sliders: List[ui.Slider] = []
+        if num_sliders > 0:
+            for i in range(num_sliders):
+                widget = f"slider_{i}"
+                setattr(
+                    self,
+                    widget,
+                    ui.Slider(0, 100, 1, divide_factor=100, text_label=""),
+                )
+                self.sliders.append(getattr(self, widget))
+
+        if num_counters > 0:
+            for i in range(num_counters):
+                widget = f"counter_{i}"
+                setattr(
+                    self,
+                    widget,
+                    ui.DoubleIncrementCounter(label=""),
+                )
+                self.counters.append(getattr(self, widget))
+
+    def run_method(self, image):
+        raise NotImplementedError("Must be defined in child classes")
 
 
 @dataclass
@@ -52,18 +92,43 @@ class ImageStats:
 
 
 def threshold(volume, thresh):
+    """Remove all values smaller than the specified threshold in the volume"""
     im = np.squeeze(volume)
     binary = im > thresh
     return np.where(binary, im, np.zeros_like(im))
+
+
+def voronoi_otsu(
+    volume: np.ndarray,
+    spot_sigma: float,
+    outline_sigma: float,
+    remove_small_size: float,
+):
+    """
+    Voronoi-Otsu labeling from pyclesperanto.
+    BASED ON CODE FROM : napari_pyclesperanto_assistant by Robert Haase
+    https://github.com/clEsperanto/napari_pyclesperanto_assistant
+    Args:
+        volume (np.ndarray): volume to segment
+        spot_sigma (float): parameter determining how close detected objects can be
+        outline_sigma (float): determines the smoothness of the segmentation
+        remove_small_size (float): remove all objects smaller than the specified size in pixels
+
+    Returns:
+    Instance segmentation labels from Voronoi-Otsu method
+    """
+    semantic = np.squeeze(volume)
+    instance = cle.voronoi_otsu_labeling(
+        semantic, spot_sigma=spot_sigma, outline_sigma=outline_sigma
+    )
+    # instance = remove_small_objects(instance, remove_small_size)
+    return instance
 
 
 def binary_connected(
     volume,
     thres=0.5,
     thres_small=3,
-    # scale_factors=(1.0, 1.0, 1.0),
-    *args,
-    **kwargs
 ):
     r"""Convert binary foreground probability maps to instance masks via
     connected-component labeling.
@@ -99,12 +164,9 @@ def binary_connected(
 def binary_watershed(
     volume,
     thres_objects=0.3,
-    thres_small=10,
     thres_seeding=0.9,
-    # scale_factors=(1.0, 1.0, 1.0),
+    thres_small=10,
     rem_seed_thres=3,
-    *args,
-    **kwargs
 ):
     r"""Convert binary foreground probability maps to instance masks via
     watershed segmentation algorithm.
@@ -115,10 +177,9 @@ def binary_watershed(
 
     Args:
         volume (numpy.ndarray): foreground probability of shape :math:`(C, Z, Y, X)`.
-        thres_seeding (float): threshold for seeding. Default: 0.98
         thres_objects (float): threshold for foreground objects. Default: 0.3
+        thres_seeding (float): threshold for seeding. Default: 0.9
         thres_small (int): size threshold of small objects removal. Default: 10
-        scale_factors (tuple): scale factors for resizing in :math:`(Z, Y, X)` order. Default: (1.0, 1.0, 1.0)
         rem_seed_thres (int): threshold for small seeds removal. Default : 3
     """
     semantic = np.squeeze(volume)
@@ -195,7 +256,7 @@ def to_instance(image, is_file_path=False):
 
     result = binary_watershed(
         image, thres_small=0, thres_seeding=0.3, rem_seed_thres=0
-    )  # TODO add params
+    )  # FIXME add params from utils plugin
 
     return result
 
@@ -285,3 +346,188 @@ def volume_stats(volume_image):
         ratio,
         fill([len(properties)]),
     )
+
+
+class Watershed(InstanceMethod, metaclass=Singleton):
+    def __init__(self):
+        super().__init__(
+            name="Watershed",
+            function=binary_watershed,
+            num_sliders=2,
+            num_counters=2,
+        )
+
+        self.sliders[0].text_label.setText("Foreground probability threshold")
+        self.sliders[
+            0
+        ].tooltips = "Probability threshold for foreground object"
+        self.sliders[0].setValue(50)
+
+        self.sliders[1].text_label.setText("Seed probability threshold")
+        self.sliders[1].tooltips = "Probability threshold for seeding"
+        self.sliders[1].setValue(90)
+
+        self.counters[0].label.setText("Small object removal")
+        self.counters[0].tooltips = (
+            "Volume/size threshold for small object removal."
+            "\nAll objects with a volume/size below this value will be removed."
+        )
+        self.counters[0].setValue(30)
+
+        self.counters[1].label.setText("Small seed removal")
+        self.counters[1].tooltips = (
+            "Volume/size threshold for small seeds removal."
+            "\nAll seeds with a volume/size below this value will be removed."
+        )
+        self.counters[1].setValue(3)
+
+    def run_method(self, image):
+        return self.function(
+            image,
+            self.sliders[0].value(),
+            self.sliders[1].value(),
+            self.counters[0].value(),
+            self.counters[1].value(),
+        )
+
+
+class ConnectedComponents(InstanceMethod, metaclass=Singleton):
+    def __init__(self):
+        super().__init__(
+            name="Connected Components",
+            function=binary_connected,
+            num_sliders=1,
+            num_counters=1,
+        )
+
+        self.sliders[0].text_label.setText("Foreground probability threshold")
+        self.sliders[
+            0
+        ].tooltips = "Probability threshold for foreground object"
+        self.sliders[0].setValue(80)
+
+        self.counters[0].label.setText("Small objects removal")
+        self.counters[0].tooltips = (
+            "Volume/size threshold for small object removal."
+            "\nAll objects with a volume/size below this value will be removed."
+        )
+        self.counters[0].setValue(3)
+
+    def run_method(self, image):
+        return self.function(
+            image, self.sliders[0].value(), self.counters[0].value()
+        )
+
+
+class VoronoiOtsu(InstanceMethod, metaclass=Singleton):
+    def __init__(self):
+        super().__init__(
+            name="Voronoi-Otsu",
+            function=voronoi_otsu,
+            num_sliders=0,
+            num_counters=3,
+        )
+        self.counters[0].label.setText("Spot sigma")
+        self.counters[
+            0
+        ].tooltips = "Determines how close detected objects can be"
+        self.counters[0].setMaximum(100)
+        self.counters[0].setValue(2)
+
+        self.counters[1].label.setText("Outline sigma")
+        self.counters[
+            1
+        ].tooltips = "Determines the smoothness of the segmentation"
+        self.counters[1].setMaximum(100)
+        self.counters[1].setValue(2)
+
+        self.counters[2].label.setText("Small object removal")
+        self.counters[2].tooltips = (
+            "Volume/size threshold for small object removal."
+            "\nAll objects with a volume/size below this value will be removed."
+        )
+
+    def run_method(self, image):
+        return self.function(
+            image,
+            self.counters[0].value(),
+            self.counters[1].value(),
+            self.counters[2].value(),
+        )
+
+
+class InstanceWidgets(QWidget):
+    """
+    Base widget with several sliders, for use in instance segmentation parameters
+    """
+
+    def __init__(self, parent=None):
+        """
+        Creates an InstanceWidgets widget
+
+        Args:
+            parent: parent widget
+        """
+        super().__init__(parent)
+
+        self.method_choice = ui.DropdownMenu(
+            INSTANCE_SEGMENTATION_METHOD_LIST.keys()
+        )
+        self.methods = []
+        self.instance_widgets = {}
+
+        self.method_choice.currentTextChanged.connect(self._set_visibility)
+        self._build()
+
+    def _build(self):
+
+        group = ui.GroupedWidget("Instance segmentation")
+        group.layout.addWidget(self.method_choice)
+
+        for name, method in INSTANCE_SEGMENTATION_METHOD_LIST.items():
+            self.instance_widgets[name] = []
+            if len(method().sliders) > 0:
+                for slider in method().sliders:
+                    group.layout.addWidget(slider.container)
+                    self.instance_widgets[name].append(slider)
+            if len(method().counters) > 0:
+                for counter in method().counters:
+                    group.layout.addWidget(counter.label)
+                    group.layout.addWidget(counter)
+                    self.instance_widgets[name].append(counter)
+
+        self.setLayout(group.layout)
+        self._set_visibility()
+
+    def _set_visibility(self):
+        method = INSTANCE_SEGMENTATION_METHOD_LIST[
+            self.method_choice.currentText()
+        ]()
+
+        for widget in self.instance_widgets[method.name]:
+            widget.set_visibility(True)
+
+        for key in self.instance_widgets.keys():
+            if key != method.name:
+                for widget in self.instance_widgets[key]:
+                    widget.set_visibility(False)
+
+    def run_method(self, volume):
+        """
+        Calls instance function with chosen parameters
+        Args:
+            volume: image data to run method on
+
+        Returns: processed image from self._method
+        """
+        method = INSTANCE_SEGMENTATION_METHOD_LIST[
+            self.method_choice.currentText()
+        ]()
+        return method.run_method(volume)
+
+
+INSTANCE_SEGMENTATION_METHOD_LIST = {
+    Watershed().name: Watershed,
+    ConnectedComponents().name: ConnectedComponents,
+    VoronoiOtsu().name: VoronoiOtsu,
+}

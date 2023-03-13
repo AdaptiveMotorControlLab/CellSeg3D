@@ -19,11 +19,6 @@ ToSemanticUtils
 .. autoclass:: napari_cellseg3d.code_plugins.plugin_convert::ToSemanticUtils
     :members: __init__
 
-InstanceWidgets
-**********************************
-.. autoclass:: napari_cellseg3d.code_plugins.plugin_convert::InstanceWidgets
-    :members: __init__, run_method
-
 ToInstanceUtils
 **********************************
 .. autoclass:: napari_cellseg3d.code_plugins.plugin_convert::ToInstanceUtils

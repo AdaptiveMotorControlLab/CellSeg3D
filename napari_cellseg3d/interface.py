@@ -10,6 +10,7 @@ import napari
 from qtpy import QtCore
 from qtpy.QtCore import QObject
 from qtpy.QtCore import Qt
+
 # from qtpy.QtCore import QtWarningMsg
 from qtpy.QtCore import QUrl
 from qtpy.QtGui import QCursor
@@ -500,9 +501,12 @@ class Slider(QSlider):
 
         self._build_container()
 
-    def _build_container(self):
-        self.container.layout
+    def set_visibility(self, visible: bool):
+        self.container.setVisible(visible)
+        self.setVisible(visible)
+        self.text_label.setVisible(visible)
 
+    def _build_container(self):
         if self.text_label is not None:
             add_widgets(
                 self.container.layout,
@@ -1026,7 +1030,7 @@ class DoubleIncrementCounter(QDoubleSpinBox):
     def __init__(
         self,
         lower: Optional[float] = 0.0,
-        upper: Optional[float] = 10.0,
+        upper: Optional[float] = 1000.0,
         default: Optional[float] = 0.0,
         step: Optional[float] = 1.0,
         parent: Optional[QWidget] = None,
@@ -1049,6 +1053,13 @@ class DoubleIncrementCounter(QDoubleSpinBox):
 
         if label is not None:
             self.label = make_label(name=label)
+        self.valueChanged.connect(self._update_step)
+
+    def _update_step(self):
+        if self.value() < 0.9:
+            self.setSingleStep(0.1)
+        else:
+            self.setSingleStep(1)
 
     @property
     def tooltips(self):
@@ -1084,6 +1095,10 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         return make_n_spinboxes(
             cls, n, lower, upper, default, step, parent, fixed
         )
+
+    def set_visibility(self, visible: bool):
+        self.setVisible(visible)
+        self.label.setVisible(visible)
 
 
 class IntIncrementCounter(QSpinBox):

@@ -12,7 +12,11 @@ from napari_cellseg3d import utils
 from napari_cellseg3d.code_models.model_framework import ModelFramework
 from napari_cellseg3d.code_models.model_workers import InferenceResult
 from napari_cellseg3d.code_models.model_workers import InferenceWorker
-from napari_cellseg3d.code_plugins.plugin_convert import InstanceWidgets
+from napari_cellseg3d.code_models.model_instance_seg import InstanceMethod
+from napari_cellseg3d.code_models.model_instance_seg import InstanceWidgets
+from napari_cellseg3d.code_models.model_instance_seg import (
+    INSTANCE_SEGMENTATION_METHOD_LIST,
+)
 
 
 class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
@@ -77,9 +81,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             config.InferenceWorkerConfig()
         )
         """InferenceWorkerConfig class from config.py"""
-        self.instance_config: config.InstanceSegConfig = (
-            config.InstanceSegConfig()
-        )
+        self.instance_config: InstanceMethod
         """InstanceSegConfig class from config.py"""
         self.post_process_config: config.PostProcessConfig = (
             config.PostProcessConfig()
@@ -551,18 +553,9 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 threshold_value=self.thresholding_slider.slider_value,
             )
 
-            instance_thresh_config = config.Thresholding(
-                threshold_value=self.instance_widgets.threshold_slider1.slider_value
-            )
-            instance_small_object_thresh_config = config.Thresholding(
-                threshold_value=self.instance_widgets.counter1.value()
-            )
-            self.instance_config = config.InstanceSegConfig(
-                enabled=self.use_instance_choice.isChecked(),
-                method=self.instance_widgets.method_choice.currentText(),
-                threshold=instance_thresh_config,
-                small_object_removal_threshold=instance_small_object_thresh_config,
-            )
+            self.instance_config = INSTANCE_SEGMENTATION_METHOD_LIST[
+                self.instance_widgets.method_choice.currentText()
+            ]
 
             self.post_process_config = config.PostProcessConfig(
                 zoom=zoom_config,

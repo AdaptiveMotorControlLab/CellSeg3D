@@ -7,7 +7,6 @@ def get_weights_file():
 
 
 class TestModel(nn.Module):
-
     def __init__(self):
         super().__init__()
         self.linear = nn.Linear(1, 1)
@@ -23,6 +22,7 @@ class TestModel(nn.Module):
 
     def get_validation(self, val_inputs):
         return val_inputs
+
 
 # if __name__ == "__main__":
 #

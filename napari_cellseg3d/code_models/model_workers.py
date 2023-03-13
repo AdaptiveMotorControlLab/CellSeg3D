@@ -51,8 +51,6 @@ from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
 
 # local
-from napari_cellseg3d.code_models.model_instance_seg import binary_connected
-from napari_cellseg3d.code_models.model_instance_seg import binary_watershed
 from napari_cellseg3d.code_models.model_instance_seg import ImageStats
 from napari_cellseg3d.code_models.model_instance_seg import volume_stats
 
@@ -455,7 +453,9 @@ class InferenceWorker(GeneratorWorker):
         inputs = inputs.to("cpu")
 
         model_output = lambda inputs: post_process_transforms(
-            self.config.model_info.get_model().get_output(model, inputs)  # TODO(cyril) refactor those functions
+            self.config.model_info.get_model().get_output(
+                model, inputs
+            )  # TODO(cyril) refactor those functions
         )
 
         def model_output(inputs):
@@ -609,30 +609,8 @@ class InferenceWorker(GeneratorWorker):
         if image_id is not None:
             self.log(f"\nRunning instance segmentation for image n°{image_id}")
 
-        threshold = (
-            self.config.post_process_config.instance.threshold.threshold_value
-        )
-        size_small = (
-            self.config.post_process_config.instance.small_object_removal_threshold.threshold_value
-        )
-        method_name = self.config.post_process_config.instance.method
-
-        if method_name == "Watershed":  # FIXME use dict in config instead
-
-            def method(image):
-                return binary_watershed(image, threshold, size_small)
-
-        elif method_name == "Connected components":
-
-            def method(image):
-                return binary_connected(image, threshold, size_small)
-
-        else:
-            raise NotImplementedError(
-                "Selected instance segmentation method is not defined"
-            )
-
-        instance_labels = method(to_instance)
+        method = self.config.post_process_config.instance
+        instance_labels = method.run_method(to_instance)
 
         instance_filepath = (
             self.config.results_path

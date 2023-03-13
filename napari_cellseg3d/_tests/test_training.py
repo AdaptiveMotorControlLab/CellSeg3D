@@ -34,7 +34,7 @@ def test_training(make_napari_viewer, qtbot):
     #################
     MODEL_LIST["test"] = TestModel()
     widget.model_choice.addItem("test")
-    widget.model_choice.setCurrentIndex(len(MODEL_LIST.keys())-1)
+    widget.model_choice.setCurrentIndex(len(MODEL_LIST.keys()) - 1)
 
     # widget.start()
     # assert widget.worker is not None
