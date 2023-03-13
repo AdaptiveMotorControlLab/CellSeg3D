@@ -51,10 +51,9 @@ from tqdm import tqdm
 # local
 from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d.code_models.model_instance_seg import (
-    ImageStats,
-    volume_stats,
-)
+from napari_cellseg3d import utils
+from napari_cellseg3d.code_models.model_instance_seg import ImageStats
+from napari_cellseg3d.code_models.model_instance_seg import volume_stats
 
 logger = utils.LOGGER
 
@@ -600,8 +599,8 @@ class InferenceWorker(GeneratorWorker):
         if image_id is not None:
             self.log(f"\nRunning instance segmentation for image n°{image_id}")
 
-        method = self.config.post_process_config.instance.method
-        instance_labels = method.run_method(image=to_instance)
+        method = self.config.post_process_config.instance
+        instance_labels = method.run_method(to_instance)
 
         instance_filepath = (
             self.config.results_path

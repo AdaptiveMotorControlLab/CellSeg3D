@@ -2,19 +2,26 @@ from dataclasses import dataclass
 from typing import List
 
 import numpy as np
+
 import pyclesperanto_prototype as cle
 from qtpy.QtWidgets import QWidget
-from skimage.measure import label, regionprops
+
+from skimage.measure import label
+from skimage.measure import regionprops
 from skimage.morphology import remove_small_objects
 from skimage.segmentation import watershed
+
+from skimage.filters import thresholding
+from skimage.transform import resize
 
 # from skimage.measure import mesh_surface_area
 # from skimage.measure import marching_cubes
 from tifffile import imread
 
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d.utils import LOGGER as logger
-from napari_cellseg3d.utils import fill_list_in_between, sphericity_axis
+from napari_cellseg3d.utils import fill_list_in_between
+from napari_cellseg3d.utils import sphericity_axis
+from napari_cellseg3d.utils import Singleton
 
 # from napari_cellseg3d.utils import sphericity_volume_area
 
@@ -79,6 +86,42 @@ class InstanceMethod:
         raise NotImplementedError("Must be defined in child classes")
 
 
+class InstanceMethod:
+    def __init__(
+        self,
+        name: str,
+        function: callable,
+        num_sliders: int,
+        num_counters: int,
+    ):
+        self.name = name
+        self.function = function
+        self.counters: List[ui.DoubleIncrementCounter] = []
+        self.sliders: List[ui.Slider] = []
+        if num_sliders > 0:
+            for i in range(num_sliders):
+                widget = f"slider_{i}"
+                setattr(
+                    self,
+                    widget,
+                    ui.Slider(0, 100, 1, divide_factor=100, text_label=""),
+                )
+                self.sliders.append(getattr(self, widget))
+
+        if num_counters > 0:
+            for i in range(num_counters):
+                widget = f"counter_{i}"
+                setattr(
+                    self,
+                    widget,
+                    ui.DoubleIncrementCounter(label=""),
+                )
+                self.counters.append(getattr(self, widget))
+
+    def run_method(self, image):
+        raise NotImplementedError("Must be defined in child classes")
+
+
 @dataclass
 class ImageStats:
     volume: List[float]
@@ -119,32 +162,27 @@ def voronoi_otsu(
     volume: np.ndarray,
     spot_sigma: float,
     outline_sigma: float,
-    # remove_small_size: float,
+    remove_small_size: float,
 ):
     """
     Voronoi-Otsu labeling from pyclesperanto.
     BASED ON CODE FROM : napari_pyclesperanto_assistant by Robert Haase
     https://github.com/clEsperanto/napari_pyclesperanto_assistant
-
     Args:
         volume (np.ndarray): volume to segment
         spot_sigma (float): parameter determining how close detected objects can be
         outline_sigma (float): determines the smoothness of the segmentation
+        remove_small_size (float): remove all objects smaller than the specified size in pixels
 
     Returns:
     Instance segmentation labels from Voronoi-Otsu method
-
     """
-    # remove_small_size (float): remove all objects smaller than the specified size in pixels
-    # semantic = np.squeeze(volume)
-    logger.debug(
-        f"Running voronoi otsu segmentation with spot_sigma={spot_sigma} and outline_sigma={outline_sigma}"
-    )
+    semantic = np.squeeze(volume)
     instance = cle.voronoi_otsu_labeling(
-        volume, spot_sigma=spot_sigma, outline_sigma=outline_sigma
+        semantic, spot_sigma=spot_sigma, outline_sigma=outline_sigma
     )
     # instance = remove_small_objects(instance, remove_small_size)
-    return np.array(instance)
+    return instance
 
 
 def binary_connected(
@@ -159,8 +197,6 @@ def binary_connected(
         volume (numpy.ndarray): foreground probability of shape :math:`(C, Z, Y, X)`.
         thres (float): threshold of foreground. Default: 0.8
         thres_small (int): size threshold of small objects to remove. Default: 128
-        scale_factors (tuple): scale factors for resizing in :math:`(Z, Y, X)` order. Default: (1.0, 1.0, 1.0)
-
     """
     logger.debug(
         f"Running connected components segmentation with thres={thres} and thres_small={thres_small}"
@@ -380,16 +416,13 @@ def volume_stats(volume_image):
     )
 
 
-class Watershed(InstanceMethod):
-    """Widget class for Watershed segmentation. Requires 4 parameters, see binary_watershed"""
-
-    def __init__(self, widget_parent=None):
+class Watershed(InstanceMethod, metaclass=Singleton):
+    def __init__(self):
         super().__init__(
-            name=WATERSHED,
+            name="Watershed",
             function=binary_watershed,
             num_sliders=2,
             num_counters=2,
-            widget_parent=widget_parent,
         )
 
         self.sliders[0].text_label.setText("Foreground probability threshold")
@@ -419,23 +452,20 @@ class Watershed(InstanceMethod):
     def run_method(self, image):
         return self.function(
             image,
-            self.sliders[0].slider_value,
-            self.sliders[1].slider_value,
+            self.sliders[0].value(),
+            self.sliders[1].value(),
             self.counters[0].value(),
             self.counters[1].value(),
         )
 
 
-class ConnectedComponents(InstanceMethod):
-    """Widget class for Connected Components instance segmentation. Requires 2 parameters, see binary_connected."""
-
-    def __init__(self, widget_parent=None):
+class ConnectedComponents(InstanceMethod, metaclass=Singleton):
+    def __init__(self):
         super().__init__(
-            name=CONNECTED_COMP,
+            name="Connected Components",
             function=binary_connected,
             num_sliders=1,
             num_counters=1,
-            widget_parent=widget_parent,
         )
 
         self.sliders[0].text_label.setText("Foreground probability threshold")
@@ -453,56 +483,44 @@ class ConnectedComponents(InstanceMethod):
 
     def run_method(self, image):
         return self.function(
-            image, self.sliders[0].slider_value, self.counters[0].value()
+            image, self.sliders[0].value(), self.counters[0].value()
         )
 
 
-class VoronoiOtsu(InstanceMethod):
-    """Widget class for Voronoi-Otsu labeling from pyclesperanto. Requires 2 parameter, see voronoi_otsu"""
-
-    def __init__(self, widget_parent=None):
+class VoronoiOtsu(InstanceMethod, metaclass=Singleton):
+    def __init__(self):
         super().__init__(
-            name=VORONOI_OTSU,
+            name="Voronoi-Otsu",
             function=voronoi_otsu,
             num_sliders=0,
-            num_counters=2,
-            widget_parent=widget_parent,
+            num_counters=3,
         )
-        self.counters[0].label.setText("Spot sigma")  # closeness
+        self.counters[0].label.setText("Spot sigma")
         self.counters[
             0
         ].tooltips = "Determines how close detected objects can be"
         self.counters[0].setMaximum(100)
         self.counters[0].setValue(2)
 
-        self.counters[1].label.setText("Outline sigma")  # smoothness
+        self.counters[1].label.setText("Outline sigma")
         self.counters[
             1
         ].tooltips = "Determines the smoothness of the segmentation"
         self.counters[1].setMaximum(100)
         self.counters[1].setValue(2)
 
-        # self.counters[2].label.setText("Small object removal")
-        # self.counters[2].tooltips = (
-        #     "Volume/size threshold for small object removal."
-        #     "\nAll objects with a volume/size below this value will be removed."
-        # )
-        # self.counters[2].setValue(30)
+        self.counters[2].label.setText("Small object removal")
+        self.counters[2].tooltips = (
+            "Volume/size threshold for small object removal."
+            "\nAll objects with a volume/size below this value will be removed."
+        )
 
     def run_method(self, image):
-        ################
-        # For debugging
-        # import napari
-        # view = napari.Viewer()
-        # view.add_image(image)
-        # napari.run()
-        ################
-
         return self.function(
             image,
             self.counters[0].value(),
             self.counters[1].value(),
-            # self.counters[2].value(),
+            self.counters[2].value(),
         )
 
 
@@ -517,72 +535,67 @@ class InstanceWidgets(QWidget):
 
         Args:
             parent: parent widget
-
         """
         super().__init__(parent)
+
         self.method_choice = ui.DropdownMenu(
-            list(INSTANCE_SEGMENTATION_METHOD_LIST.keys())
+            INSTANCE_SEGMENTATION_METHOD_LIST.keys()
         )
-        self.methods = {}
-        """Contains the instance of the method, with its name as key"""
+        self.methods = []
         self.instance_widgets = {}
-        """Contains the lists of widgets for each methods, to show/hide"""
 
         self.method_choice.currentTextChanged.connect(self._set_visibility)
         self._build()
 
     def _build(self):
+
         group = ui.GroupedWidget("Instance segmentation")
         group.layout.addWidget(self.method_choice)
 
-        try:
-            for name, method in INSTANCE_SEGMENTATION_METHOD_LIST.items():
-                method_class = method(widget_parent=self.parent())
-                self.methods[name] = method_class
-                self.instance_widgets[name] = []
-                # moderately unsafe way to init those widgets ?
-                if len(method_class.sliders) > 0:
-                    for slider in method_class.sliders:
-                        group.layout.addWidget(slider.container)
-                        self.instance_widgets[name].append(slider)
-                if len(method_class.counters) > 0:
-                    for counter in method_class.counters:
-                        group.layout.addWidget(counter.label)
-                        group.layout.addWidget(counter)
-                        self.instance_widgets[name].append(counter)
-        except RuntimeError as e:
-            logger.debug(
-                f"Caught runtime error {e}, most likely during testing"
-            )
+        for name, method in INSTANCE_SEGMENTATION_METHOD_LIST.items():
+            self.instance_widgets[name] = []
+            if len(method().sliders) > 0:
+                for slider in method().sliders:
+                    group.layout.addWidget(slider.container)
+                    self.instance_widgets[name].append(slider)
+            if len(method().counters) > 0:
+                for counter in method().counters:
+                    group.layout.addWidget(counter.label)
+                    group.layout.addWidget(counter)
+                    self.instance_widgets[name].append(counter)
 
         self.setLayout(group.layout)
         self._set_visibility()
 
     def _set_visibility(self):
-        for name in self.instance_widgets:
-            if name != self.method_choice.currentText():
-                for widget in self.instance_widgets[name]:
+        method = INSTANCE_SEGMENTATION_METHOD_LIST[
+            self.method_choice.currentText()
+        ]()
+
+        for widget in self.instance_widgets[method.name]:
+            widget.set_visibility(True)
+
+        for key in self.instance_widgets.keys():
+            if key != method.name:
+                for widget in self.instance_widgets[key]:
                     widget.set_visibility(False)
-            else:
-                for widget in self.instance_widgets[name]:
-                    widget.set_visibility(True)
 
     def run_method(self, volume):
         """
         Calls instance function with chosen parameters
-
         Args:
             volume: image data to run method on
 
         Returns: processed image from self._method
-
         """
-        method = self.methods[self.method_choice.currentText()]
+        method = INSTANCE_SEGMENTATION_METHOD_LIST[
+            self.method_choice.currentText()
+        ]()
         return method.run_method(volume)
 
 
 INSTANCE_SEGMENTATION_METHOD_LIST = {
-    VORONOI_OTSU: VoronoiOtsu,
-    WATERSHED: Watershed,
-    CONNECTED_COMP: ConnectedComponents,
+    Watershed().name: Watershed,
+    ConnectedComponents().name: ConnectedComponents,
+    VoronoiOtsu().name: VoronoiOtsu,
 }
