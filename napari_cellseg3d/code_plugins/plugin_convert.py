@@ -13,6 +13,9 @@ from napari_cellseg3d.code_models.instance_segmentation import (
     threshold,
     to_semantic,
 )
+from napari_cellseg3d.code_models.model_instance_seg import threshold
+from napari_cellseg3d.code_models.model_instance_seg import to_semantic
+from napari_cellseg3d.code_models.model_instance_seg import InstanceWidgets
 from napari_cellseg3d.code_plugins.plugin_base import BasePluginFolder
 
 MAX_W = ui.UTILS_MAX_WIDTH
@@ -276,20 +279,18 @@ class ToSemanticUtils(BasePluginFolder):
                 utils.show_result(
                     self._viewer, layer, semantic, f"semantic_{layer.name}"
                 )
-        elif (
-            self.folder_choice.isChecked() and len(self.images_filepaths) != 0
-        ):
-            images = [
-                to_semantic(file, is_file_path=True)
-                for file in self.images_filepaths
-            ]
-            utils.save_folder(
-                self.results_path,
-                f"semantic_results_{utils.get_date_time()}",
-                images,
-                self.images_filepaths,
-            )
-
+        elif self.folder_choice.isChecked():
+            if len(self.images_filepaths) != 0:
+                images = [
+                    to_semantic(file, is_file_path=True)
+                    for file in self.images_filepaths
+                ]
+                save_folder(
+                    self.results_path,
+                    f"semantic_results_{utils.get_date_time()}",
+                    images,
+                    self.images_filepaths,
+                )
 
 class ToInstanceUtils(BasePluginFolder):
     """

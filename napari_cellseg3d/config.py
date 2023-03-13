@@ -6,14 +6,20 @@ from typing import List, Optional
 import napari
 import numpy as np
 
-from napari_cellseg3d.code_models.instance_segmentation import InstanceMethod
 
 # from napari_cellseg3d.models import model_TRAILMAP as TRAILMAP
-from napari_cellseg3d.code_models.models.model_SegResNet import SegResNet_
-from napari_cellseg3d.code_models.models.model_SwinUNetR import SwinUNETR_
-from napari_cellseg3d.code_models.models.model_TRAILMAP_MS import TRAILMAP_MS_
-from napari_cellseg3d.code_models.models.model_VNet import VNet_
-from napari_cellseg3d.code_models.models.model_WNet import WNet_
+from napari_cellseg3d.code_models.models import model_SegResNet as SegResNet
+from napari_cellseg3d.code_models.models import model_SwinUNetR as SwinUNetR
+from napari_cellseg3d.code_models.models import (
+    model_TRAILMAP_MS as TRAILMAP_MS,
+)
+from napari_cellseg3d.code_models.models import model_VNet as VNet
+from napari_cellseg3d.code_models.model_instance_seg import (
+    ConnectedComponents,
+    Watershed,
+    VoronoiOtsu,
+    InstanceMethod,
+)
 from napari_cellseg3d.utils import LOGGER
 
 logger = LOGGER
@@ -31,7 +37,8 @@ MODEL_LIST = {
     # "test" : DO NOT USE, reserved for testing
 }
 
-PRETRAINED_WEIGHTS_DIR = str(
+
+WEIGHTS_DIR = str(
     Path(__file__).parent.resolve() / Path("code_models/models/pretrained")
 )
 
@@ -118,11 +125,6 @@ class Zoom:
     zoom_values: List[float] = None
 
 @dataclass
-class InstanceSegConfig:
-    enabled: bool = False
-    method: InstanceMethod = None
-
-@dataclass
 class PostProcessConfig:
     """Class to record params for post processing
 
@@ -134,7 +136,7 @@ class PostProcessConfig:
 
     zoom: Zoom = Zoom()
     thresholding: Thresholding = Thresholding()
-    instance: InstanceSegConfig = InstanceSegConfig()
+    instance: InstanceMethod = None
 
 
 @dataclass

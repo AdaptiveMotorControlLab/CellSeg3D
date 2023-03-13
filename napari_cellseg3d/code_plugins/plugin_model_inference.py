@@ -15,13 +15,13 @@ from napari_cellseg3d.code_models.instance_segmentation import (
     InstanceWidgets,
 )
 from napari_cellseg3d.code_models.model_framework import ModelFramework
-from napari_cellseg3d.code_models.workers import (
-    InferenceResult,
-    InferenceWorker,
+from napari_cellseg3d.code_models.model_workers import InferenceResult
+from napari_cellseg3d.code_models.model_workers import InferenceWorker
+from napari_cellseg3d.code_models.model_instance_seg import InstanceMethod
+from napari_cellseg3d.code_models.model_instance_seg import InstanceWidgets
+from napari_cellseg3d.code_models.model_instance_seg import (
+    INSTANCE_SEGMENTATION_METHOD_LIST,
 )
-from napari_cellseg3d.code_plugins.plugin_crf import CRFParamsWidget
-
-logger = utils.LOGGER
 
 
 class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
@@ -581,7 +581,61 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.log.print_and_log("Starting...")
             self.log.print_and_log("*" * 20)
 
-            self._set_worker_config()
+            self.model_info = config.ModelInfo(
+                name=self.model_choice.currentText(),
+                model_input_size=self.model_input_size.value(),
+            )
+
+            self.weights_config.custom = self.custom_weights_choice.isChecked()
+
+            save_path = self.results_filewidget.text_field.text()
+            if not self._check_results_path(save_path):
+                msg = f"ERROR: please set valid results path. Current path is {save_path}"
+                self.log.print_and_log(msg)
+                warnings.warn(msg)
+            else:
+                if self.results_path is None:
+                    self.results_path = save_path
+
+            zoom_config = config.Zoom(
+                enabled=self.anisotropy_wdgt.enabled(),
+                zoom_values=self.anisotropy_wdgt.scaling_xyz(),
+            )
+            thresholding_config = config.Thresholding(
+                enabled=self.thresholding_checkbox.isChecked(),
+                threshold_value=self.thresholding_slider.slider_value,
+            )
+
+            self.instance_config = INSTANCE_SEGMENTATION_METHOD_LIST[
+                self.instance_widgets.method_choice.currentText()
+            ]
+
+            self.post_process_config = config.PostProcessConfig(
+                zoom=zoom_config,
+                thresholding=thresholding_config,
+                instance=self.instance_config,
+            )
+
+            if self.window_infer_box.isChecked():
+                size = int(self.window_size_choice.currentText())
+                window_config = config.SlidingWindowConfig(
+                    window_size=size,
+                    window_overlap=self.window_overlap_slider.slider_value,
+                )
+            else:
+                window_config = config.SlidingWindowConfig()
+
+            self.worker_config = config.InferenceWorkerConfig(
+                device=self.get_device(),
+                model_info=self.model_info,
+                weights_config=self.weights_config,
+                results_path=self.results_path,
+                filetype=self.filetype_choice.currentText(),
+                keep_on_cpu=self.keep_data_on_cpu_box.isChecked(),
+                compute_stats=self.save_stats_to_csv_box.isChecked(),
+                post_process_config=self.post_process_config,
+                sliding_window_config=window_config,
+            )
             #####################
             #####################
             #####################

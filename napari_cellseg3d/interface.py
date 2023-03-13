@@ -9,30 +9,33 @@ import napari
 from qtpy import QtCore
 
 # from qtpy.QtCore import QtWarningMsg
-from qtpy.QtCore import QObject, Qt, QUrl
-from qtpy.QtGui import QCursor, QDesktopServices, QTextCursor
-from qtpy.QtWidgets import (
-    QCheckBox,
-    QComboBox,
-    QDoubleSpinBox,
-    QFileDialog,
-    QGridLayout,
-    QGroupBox,
-    QHBoxLayout,
-    QLabel,
-    QLayout,
-    QLineEdit,
-    QMenu,
-    QPushButton,
-    QRadioButton,
-    QScrollArea,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QTextEdit,
-    QVBoxLayout,
-    QWidget,
-)
+from qtpy.QtCore import QObject
+from qtpy.QtCore import Qt
+# from qtpy.QtCore import QtWarningMsg
+from qtpy.QtCore import QUrl
+from qtpy.QtGui import QCursor
+from qtpy.QtGui import QDesktopServices
+from qtpy.QtGui import QTextCursor
+from qtpy.QtWidgets import QCheckBox
+from qtpy.QtWidgets import QComboBox
+from qtpy.QtWidgets import QDoubleSpinBox
+from qtpy.QtWidgets import QFileDialog
+from qtpy.QtWidgets import QGridLayout
+from qtpy.QtWidgets import QGroupBox
+from qtpy.QtWidgets import QHBoxLayout
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QLayout
+from qtpy.QtWidgets import QLineEdit
+from qtpy.QtWidgets import QMenu
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QRadioButton
+from qtpy.QtWidgets import QScrollArea
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QSlider
+from qtpy.QtWidgets import QSpinBox
+from qtpy.QtWidgets import QTextEdit
+from qtpy.QtWidgets import QVBoxLayout
+from qtpy.QtWidgets import QWidget
 
 # Local
 from napari_cellseg3d import utils
@@ -525,10 +528,10 @@ class Slider(QSlider):
     def set_visibility(self, visible: bool):
         self.container.setVisible(visible)
         self.setVisible(visible)
-        self.label.setVisible(visible)
+        self.text_label.setVisible(visible)
 
     def _build_container(self):
-        if self.label is not None:
+        if self.text_label is not None:
             add_widgets(
                 self.container.layout,
                 [
@@ -1082,8 +1085,8 @@ class DoubleIncrementCounter(QDoubleSpinBox):
 
         self.layout = None
 
-        if text_label is not None:
-            self.label = make_label(name=text_label)
+        if label is not None:
+            self.label = make_label(name=label)
         self.valueChanged.connect(self._update_step)
 
     def _update_step(self):
