@@ -87,43 +87,6 @@ class InstanceMethod:
     def run_method(self, image):
         raise NotImplementedError("Must be defined in child classes")
 
-
-class InstanceMethod:
-    def __init__(
-        self,
-        name: str,
-        function: callable,
-        num_sliders: int,
-        num_counters: int,
-    ):
-        self.name = name
-        self.function = function
-        self.counters: List[ui.DoubleIncrementCounter] = []
-        self.sliders: List[ui.Slider] = []
-        if num_sliders > 0:
-            for i in range(num_sliders):
-                widget = f"slider_{i}"
-                setattr(
-                    self,
-                    widget,
-                    ui.Slider(0, 100, 1, divide_factor=100, text_label=""),
-                )
-                self.sliders.append(getattr(self, widget))
-
-        if num_counters > 0:
-            for i in range(num_counters):
-                widget = f"counter_{i}"
-                setattr(
-                    self,
-                    widget,
-                    ui.DoubleIncrementCounter(label=""),
-                )
-                self.counters.append(getattr(self, widget))
-
-    def run_method(self, image):
-        raise NotImplementedError("Must be defined in child classes")
-
-
 @dataclass
 class ImageStats:
     volume: List[float]
@@ -431,7 +394,7 @@ class Watershed(InstanceMethod):
             function=binary_watershed,
             num_sliders=2,
             num_counters=2,
-            # widget_parent=widget_parent,
+            widget_parent=widget_parent,
         )
 
         self.sliders[0].text_label.setText("Foreground probability threshold")
@@ -545,7 +508,6 @@ class VoronoiOtsu(InstanceMethod):
             self.counters[0].value(),
             self.counters[1].value(),
             # self.counters[2].value(),
-
         )
 
 
