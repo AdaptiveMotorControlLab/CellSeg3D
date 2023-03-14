@@ -51,7 +51,6 @@ class InstanceMethod:
             num_sliders: Number of Slider UI elements needed to set the parameters of the function
             num_counters: Number of DoubleIncrementCounter UI elements needed to set the parameters of the function
             widget_parent: parent for the declared widgets
-
         """
         self.name = name
         self.function = function
@@ -384,11 +383,11 @@ def volume_stats(volume_image):
         fill([len(properties)]),
     )
 
-
 class Watershed(InstanceMethod):
     """Widget class for Watershed segmentation. Requires 4 parameters, see binary_watershed"""
 
     def __init__(self, widget_parent=None):
+
         super().__init__(
             name=WATERSHED,
             function=binary_watershed,
@@ -430,11 +429,11 @@ class Watershed(InstanceMethod):
             self.counters[1].value(),
         )
 
-
 class ConnectedComponents(InstanceMethod):
     """Widget class for Connected Components instance segmentation. Requires 2 parameters, see binary_connected."""
 
     def __init__(self, widget_parent=None):
+
         super().__init__(
             name=CONNECTED_COMP,
             function=binary_connected,
@@ -466,6 +465,7 @@ class VoronoiOtsu(InstanceMethod):
     """Widget class for Voronoi-Otsu labeling from pyclesperanto. Requires 2 parameter, see voronoi_otsu"""
 
     def __init__(self, widget_parent=None):
+
         super().__init__(
             name=VORONOI_OTSU,
             function=voronoi_otsu,
@@ -480,7 +480,6 @@ class VoronoiOtsu(InstanceMethod):
         self.counters[0].setMaximum(100)
         self.counters[0].setValue(2)
         self.counters[1].label.setText("Outline sigma")  # smoothness
-
         self.counters[
             1
         ].tooltips = "Determines the smoothness of the segmentation"
@@ -585,4 +584,5 @@ INSTANCE_SEGMENTATION_METHOD_LIST = {
     VORONOI_OTSU: VoronoiOtsu,
     WATERSHED: Watershed,
     CONNECTED_COMP: ConnectedComponents,
+
 }
