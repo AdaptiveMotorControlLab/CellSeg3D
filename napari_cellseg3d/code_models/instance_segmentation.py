@@ -39,14 +39,11 @@ class InstanceMethod:
     ):
         """
         Methods for instance segmentation
-
         Args:
             name: Name of the instance segmentation method (for UI)
             function: Function to use for instance segmentation
             num_sliders: Number of Slider UI elements needed to set the parameters of the function
             num_counters: Number of DoubleIncrementCounter UI elements needed to set the parameters of the function
-            widget_parent: parent for the declared widgets
-
         """
         self.name = name
         self.function = function
@@ -402,10 +399,10 @@ def volume_stats(volume_image):
     )
 
 
-class Watershed(InstanceMethod):
+class Watershed(InstanceMethod, metaclass=Singleton):
     """Widget class for Watershed segmentation. Requires 4 parameters, see binary_watershed"""
 
-    def __init__(self, widget_parent=None):
+    def __init__(self):
         super().__init__(
             name=WATERSHED,
             function=binary_watershed,
@@ -448,10 +445,10 @@ class Watershed(InstanceMethod):
         )
 
 
-class ConnectedComponents(InstanceMethod):
+class ConnectedComponents(InstanceMethod, metaclass=Singleton):
     """Widget class for Connected Components instance segmentation. Requires 2 parameters, see binary_connected."""
 
-    def __init__(self, widget_parent=None):
+    def __init__(self):
         super().__init__(
             name=CONNECTED_COMP,
             function=binary_connected,
@@ -479,10 +476,10 @@ class ConnectedComponents(InstanceMethod):
         )
 
 
-class VoronoiOtsu(InstanceMethod):
+class VoronoiOtsu(InstanceMethod, metaclass=Singleton):
     """Widget class for Voronoi-Otsu labeling from pyclesperanto. Requires 2 parameter, see voronoi_otsu"""
 
-    def __init__(self, widget_parent=None):
+    def __init__(self):
         super().__init__(
             name=VORONOI_OTSU,
             function=voronoi_otsu,
@@ -603,7 +600,7 @@ class InstanceWidgets(QWidget):
 
 
 INSTANCE_SEGMENTATION_METHOD_LIST = {
-    VORONOI_OTSU: VoronoiOtsu,
-    WATERSHED: Watershed,
-    CONNECTED_COMP: ConnectedComponents,
+    VoronoiOtsu().name: VoronoiOtsu,
+    Watershed().name: Watershed,
+    ConnectedComponents().name: ConnectedComponents,
 }
