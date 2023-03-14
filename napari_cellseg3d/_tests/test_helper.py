@@ -13,4 +13,4 @@ def test_helper(make_napari_viewer):
 
     widget.btnc.click()
 
-    assert len(viewer.window._dock_widgets) == children-1
+    assert len(viewer.window._dock_widgets) == children - 1

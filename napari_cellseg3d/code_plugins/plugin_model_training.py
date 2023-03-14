@@ -791,7 +791,6 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.data = None
                 raise err
 
-
             model_config = config.ModelInfo(
                 name=self.model_choice.currentText()
             )

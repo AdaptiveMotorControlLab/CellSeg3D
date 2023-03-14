@@ -1,5 +1,6 @@
 from napari_cellseg3d.interface import Log
 
+
 def test_log(qtbot):
     log = Log()
     log.print_and_log("test")
