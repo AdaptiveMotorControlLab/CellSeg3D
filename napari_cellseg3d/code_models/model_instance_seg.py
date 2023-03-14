@@ -94,6 +94,14 @@ class InstanceMethod:
         num_sliders: int,
         num_counters: int,
     ):
+        """
+        Methods for instance segmentation
+        Args:
+            name: Name of the instance segmentation method (for UI)
+            function: Function to use for instance segmentation
+            num_sliders: Number of Slider UI elements needed to set the parameters of the function
+            num_counters: Number of DoubleIncrementCounter UI elements needed to set the parameters of the function
+        """
         self.name = name
         self.function = function
         self.counters: List[ui.DoubleIncrementCounter] = []
@@ -418,6 +426,8 @@ def volume_stats(volume_image):
 
 
 class Watershed(InstanceMethod, metaclass=Singleton):
+    """Widget class for Watershed segmentation. Requires 4 parameters, see binary_watershed"""
+
     def __init__(self):
         super().__init__(
             name="Watershed",
@@ -461,6 +471,8 @@ class Watershed(InstanceMethod, metaclass=Singleton):
 
 
 class ConnectedComponents(InstanceMethod, metaclass=Singleton):
+    """Widget class for Connected Components instance segmentation. Requires 2 parameters, see binary_connected."""
+
     def __init__(self):
         super().__init__(
             name="Connected Components",
@@ -489,6 +501,8 @@ class ConnectedComponents(InstanceMethod, metaclass=Singleton):
 
 
 class VoronoiOtsu(InstanceMethod, metaclass=Singleton):
+    """Widget class for Voronoi-Otsu labeling from pyclesperanto. Requires 2 parameter, see voronoi_otsu"""
+
     def __init__(self):
         super().__init__(
             name="Voronoi-Otsu",
@@ -496,14 +510,14 @@ class VoronoiOtsu(InstanceMethod, metaclass=Singleton):
             num_sliders=0,
             num_counters=2,
         )
-        self.counters[0].label.setText("Spot sigma")
+        self.counters[0].label.setText("Spot sigma")  # closeness
         self.counters[
             0
         ].tooltips = "Determines how close detected objects can be"
         self.counters[0].setMaximum(100)
         self.counters[0].setValue(2)
 
-        self.counters[1].label.setText("Outline sigma")
+        self.counters[1].label.setText("Outline sigma")  # smoothness
         self.counters[
             1
         ].tooltips = "Determines the smoothness of the segmentation"
@@ -597,7 +611,7 @@ class InstanceWidgets(QWidget):
 
 
 INSTANCE_SEGMENTATION_METHOD_LIST = {
+    VoronoiOtsu().name: VoronoiOtsu,
     Watershed().name: Watershed,
     ConnectedComponents().name: ConnectedComponents,
-    VoronoiOtsu().name: VoronoiOtsu,
 }
