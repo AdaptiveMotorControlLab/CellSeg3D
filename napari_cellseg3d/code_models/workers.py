@@ -617,6 +617,8 @@ class InferenceWorker(GeneratorWorker):
                 semantic_labels,
                 i + 1,
             )
+            if from_layer:
+                instance_labels = np.swapaxes(instance_labels, 0, 2) # TODO(cyril) check if correct
             data_dict = self.stats_csv(instance_labels)
         else:
             instance_labels = None
@@ -677,8 +679,8 @@ class InferenceWorker(GeneratorWorker):
         if image_id is not None:
             self.log(f"\nRunning instance segmentation for image n°{image_id}")
 
-        method = self.config.post_process_config.instance
-        instance_labels = method.run_method(to_instance)
+        method = self.config.post_process_config.instance.method
+        instance_labels = method.run_method(image=to_instance)
 
         instance_filepath = (
             self.config.results_path

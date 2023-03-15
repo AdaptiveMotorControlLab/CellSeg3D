@@ -124,6 +124,11 @@ class Zoom:
     zoom_values: List[float] = None
 
 @dataclass
+class InstanceSegConfig:
+    enabled: bool = False
+    method: InstanceMethod = None
+
+@dataclass
 class PostProcessConfig:
     """Class to record params for post processing
 
@@ -135,7 +140,7 @@ class PostProcessConfig:
 
     zoom: Zoom = Zoom()
     thresholding: Thresholding = Thresholding()
-    instance: InstanceMethod = None
+    instance: InstanceSegConfig = InstanceSegConfig()
 
 
 @dataclass

@@ -605,9 +605,10 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 threshold_value=self.thresholding_slider.slider_value,
             )
 
-            self.instance_config = INSTANCE_SEGMENTATION_METHOD_LIST[
-                self.instance_widgets.method_choice.currentText()
-            ]
+            self.instance_config = config.InstanceSegConfig(
+                enabled=self.use_instance_choice.isChecked(),
+                method=self.instance_widgets.methods[self.instance_widgets.method_choice.currentText()]
+            )
 
             self.post_process_config = config.PostProcessConfig(
                 zoom=zoom_config,
@@ -873,11 +874,13 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                         np.unique(result.instance_labels.flatten()).size - 1
                     )  # remove background
 
-                    name = f"({number_cells} objects)_{method_name}_instance_labels_{image_id}"
+            if result.instance_labels is not None:
+                labels = result.instance_labels
+                method_name = self.worker_config.post_process_config.instance.method.name
 
                     viewer.add_labels(result.instance_labels, name=name)
 
-                    from napari_cellseg3d.utils import LOGGER as log
+                name = f"({number_cells} objects)_{method_name}_instance_labels_{image_id}"
 
                     if result.stats is not None and isinstance(
                         result.stats, list
@@ -898,11 +901,11 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                                     f"Number of instances in channel {i} : {stats.number_objects[0]}"
                                 )
 
-                                csv_name = f"/{method_name}_seg_results_{image_id}_channel_{i}_{utils.get_date_time()}.csv"
-                                stats_df.to_csv(
-                                    self.worker_config.results_path + csv_name,
-                                    index=False,
-                                )
+                    csv_name = f"/{method_name}_seg_results_{image_id}_{utils.get_date_time()}.csv"
+                    stats_df.to_csv(
+                        self.worker_config.results_path + csv_name,
+                        index=False,
+                    )
 
                             # self.log.print_and_log(
                             #     f"OBJECTS DETECTED : {number_cells}\n"
