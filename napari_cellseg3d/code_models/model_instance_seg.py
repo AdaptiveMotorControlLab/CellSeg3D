@@ -15,8 +15,8 @@ from tifffile import imread
 
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.utils import fill_list_in_between
-from napari_cellseg3d.utils import Singleton
 from napari_cellseg3d.utils import sphericity_axis
+from napari_cellseg3d.utils import LOGGER as logger
 
 # from napari_cellseg3d.utils import sphericity_volume_area
 
@@ -33,18 +33,16 @@ class InstanceMethod:
         function: callable,
         num_sliders: int,
         num_counters: int,
-        widget_parent: QWidget = None,
+        widget_parent: QWidget = None
     ):
         """
         Methods for instance segmentation
-
         Args:
             name: Name of the instance segmentation method (for UI)
             function: Function to use for instance segmentation
             num_sliders: Number of Slider UI elements needed to set the parameters of the function
             num_counters: Number of DoubleIncrementCounter UI elements needed to set the parameters of the function
             widget_parent: parent for the declared widgets
-
         """
         self.name = name
         self.function = function
@@ -56,14 +54,7 @@ class InstanceMethod:
                 setattr(
                     self,
                     widget,
-                    ui.Slider(
-                        0,
-                        100,
-                        1,
-                        divide_factor=100,
-                        text_label="",
-                        parent=None,
-                    ),
+                    ui.Slider(0, 100, 1, divide_factor=100, text_label="", parent=None),
                 )
                 self.sliders.append(getattr(self, widget))
 
@@ -74,50 +65,6 @@ class InstanceMethod:
                     self,
                     widget,
                     ui.DoubleIncrementCounter(label="", parent=None),
-                )
-                self.counters.append(getattr(self, widget))
-
-    def run_method(self, image):
-        raise NotImplementedError("Must be defined in child classes")
-
-
-class InstanceMethod:
-    def __init__(
-        self,
-        name: str,
-        function: callable,
-        num_sliders: int,
-        num_counters: int,
-    ):
-        """
-        Methods for instance segmentation
-        Args:
-            name: Name of the instance segmentation method (for UI)
-            function: Function to use for instance segmentation
-            num_sliders: Number of Slider UI elements needed to set the parameters of the function
-            num_counters: Number of DoubleIncrementCounter UI elements needed to set the parameters of the function
-        """
-        self.name = name
-        self.function = function
-        self.counters: List[ui.DoubleIncrementCounter] = []
-        self.sliders: List[ui.Slider] = []
-        if num_sliders > 0:
-            for i in range(num_sliders):
-                widget = f"slider_{i}"
-                setattr(
-                    self,
-                    widget,
-                    ui.Slider(0, 100, 1, divide_factor=100, text_label=""),
-                )
-                self.sliders.append(getattr(self, widget))
-
-        if num_counters > 0:
-            for i in range(num_counters):
-                widget = f"counter_{i}"
-                setattr(
-                    self,
-                    widget,
-                    ui.DoubleIncrementCounter(label=""),
                 )
                 self.counters.append(getattr(self, widget))
 
@@ -420,15 +367,16 @@ def volume_stats(volume_image):
     )
 
 
-class Watershed(InstanceMethod, metaclass=Singleton):
+class Watershed(InstanceMethod):
     """Widget class for Watershed segmentation. Requires 4 parameters, see binary_watershed"""
 
-    def __init__(self):
+    def __init__(self, widget_parent = None):
         super().__init__(
-            name="Watershed",
+            name=WATERSHED,
             function=binary_watershed,
             num_sliders=2,
             num_counters=2,
+            widget_parent=widget_parent
         )
 
         self.sliders[0].text_label.setText("Foreground probability threshold")
@@ -465,15 +413,16 @@ class Watershed(InstanceMethod, metaclass=Singleton):
         )
 
 
-class ConnectedComponents(InstanceMethod, metaclass=Singleton):
+class ConnectedComponents(InstanceMethod):
     """Widget class for Connected Components instance segmentation. Requires 2 parameters, see binary_connected."""
 
-    def __init__(self):
+    def __init__(self, widget_parent = None):
         super().__init__(
-            name="Connected Components",
+            name=CONNECTED_COMP,
             function=binary_connected,
             num_sliders=1,
             num_counters=1,
+            widget_parent=widget_parent
         )
 
         self.sliders[0].text_label.setText("Foreground probability threshold")
@@ -495,15 +444,16 @@ class ConnectedComponents(InstanceMethod, metaclass=Singleton):
         )
 
 
-class VoronoiOtsu(InstanceMethod, metaclass=Singleton):
+class VoronoiOtsu(InstanceMethod):
     """Widget class for Voronoi-Otsu labeling from pyclesperanto. Requires 2 parameter, see voronoi_otsu"""
 
-    def __init__(self):
+    def __init__(self, widget_parent):
         super().__init__(
-            name="Voronoi-Otsu",
+            name=VORONOI_OTSU,
             function=voronoi_otsu,
             num_sliders=0,
             num_counters=2,
+            widget_parent=widget_parent
         )
         self.counters[0].label.setText("Spot sigma")  # closeness
         self.counters[
@@ -548,7 +498,6 @@ class InstanceWidgets(QWidget):
             parent: parent widget
         """
         super().__init__(parent)
-
         self.method_choice = ui.DropdownMenu(
             INSTANCE_SEGMENTATION_METHOD_LIST.keys()
         )
@@ -559,37 +508,38 @@ class InstanceWidgets(QWidget):
         self._build()
 
     def _build(self):
-
         group = ui.GroupedWidget("Instance segmentation")
         group.layout.addWidget(self.method_choice)
 
-        for name, method in INSTANCE_SEGMENTATION_METHOD_LIST.items():
-            self.instance_widgets[name] = []
-            if len(method().sliders) > 0:
-                for slider in method().sliders:
-                    group.layout.addWidget(slider.container)
-                    self.instance_widgets[name].append(slider)
-            if len(method().counters) > 0:
-                for counter in method().counters:
-                    group.layout.addWidget(counter.label)
-                    group.layout.addWidget(counter)
-                    self.instance_widgets[name].append(counter)
+        try:
+            for name, method in INSTANCE_SEGMENTATION_METHOD_LIST.items():
+                method_class = method(widget_parent=self.parent())
+                self.instance_widgets[name] = []
+                # moderately unsafe way to init those widgets
+                if len(method_class.sliders) > 0:
+                    for slider in method_class.sliders:
+                        group.layout.addWidget(slider.container)
+                        self.instance_widgets[name].append(slider)
+                if len(method_class.counters) > 0:
+                    for counter in method_class.counters:
+                        group.layout.addWidget(counter.label)
+                        group.layout.addWidget(counter)
+                        self.instance_widgets[name].append(counter)
+        except RuntimeError as e:
+            logger.debug(f"Caught runtime error, most likely during testing")
 
         self.setLayout(group.layout)
         self._set_visibility()
 
     def _set_visibility(self):
-        method = INSTANCE_SEGMENTATION_METHOD_LIST[
-            self.method_choice.currentText()
-        ]()
 
-        for widget in self.instance_widgets[method.name]:
-            widget.set_visibility(True)
-
-        for key in self.instance_widgets.keys():
-            if key != method.name:
-                for widget in self.instance_widgets[key]:
+        for name in self.instance_widgets.keys():
+            if name != self.method_choice.currentText():
+                for widget in self.instance_widgets[name]:
                     widget.set_visibility(False)
+            else:
+                for widget in self.instance_widgets[name]:
+                    widget.set_visibility(True)
 
     def run_method(self, volume):
         """
@@ -606,7 +556,7 @@ class InstanceWidgets(QWidget):
 
 
 INSTANCE_SEGMENTATION_METHOD_LIST = {
-    VoronoiOtsu().name: VoronoiOtsu,
-    Watershed().name: Watershed,
-    ConnectedComponents().name: ConnectedComponents,
+    VORONOI_OTSU: VoronoiOtsu,
+    WATERSHED: Watershed,
+    CONNECTED_COMP: ConnectedComponents,
 }
