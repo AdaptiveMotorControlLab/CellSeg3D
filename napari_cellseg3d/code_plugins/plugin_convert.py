@@ -384,7 +384,7 @@ class ToInstanceUtils(BasePluginFolder):
         self.data_panel = self._build_io_panel()
         self.label_layer_loader.set_layer_type(napari.layers.Layer)
 
-        self.instance_widgets = InstanceWidgets()
+        self.instance_widgets = InstanceWidgets(parent=self)
 
         self.start_btn = ui.Button("Start", self._start)
 
