@@ -492,8 +492,10 @@ class InstanceWidgets(QWidget):
         self.method_choice = ui.DropdownMenu(
             INSTANCE_SEGMENTATION_METHOD_LIST.keys()
         )
-        self.methods = []
+        self.methods = {}
+        """Contains the instance of the method, with its name as key"""
         self.instance_widgets = {}
+        """Contains the lists of widgets for each methods, to show/hide"""
 
         self.method_choice.currentTextChanged.connect(self._set_visibility)
         self._build()
@@ -505,6 +507,7 @@ class InstanceWidgets(QWidget):
         try:
             for name, method in INSTANCE_SEGMENTATION_METHOD_LIST.items():
                 method_class = method(widget_parent=self.parent())
+                self.methods[name] = method_class
                 self.instance_widgets[name] = []
                 # moderately unsafe way to init those widgets
                 if len(method_class.sliders) > 0:

@@ -309,9 +309,7 @@ class InferenceWorker(GeneratorWorker):
         instance_config = config.post_process_config.instance
         if instance_config.enabled:
             self.log(
-                f"Instance segmentation enabled, method : {instance_config.method}\n"
-                f"Probability threshold is {instance_config.threshold.threshold_value:.2f}\n"
-                f"Objects smaller than {instance_config.small_object_removal_threshold.threshold_value} pixels will be removed\n"
+                f"Instance segmentation enabled, method : {instance_config.method.name}\n"
             )
         self.log("-" * 20)
 
@@ -383,7 +381,7 @@ class InferenceWorker(GeneratorWorker):
         return inference_loader
 
     def load_layer(self):
-        self.log("Loading layer\n")
+        self.log("\nLoading layer\n")
         data = np.squeeze(self.config.layer)
 
         volume = np.array(data, dtype=np.int16)
@@ -544,7 +542,7 @@ class InferenceWorker(GeneratorWorker):
                 i + 1,
             )
             if from_layer:
-                instance_labels = np.swapaxes(instance_labels, 0, 2)
+                instance_labels = np.swapaxes(instance_labels, 0, 2) # TODO(cyril) check if correct
             data_dict = self.stats_csv(instance_labels)
         else:
             instance_labels = None
@@ -597,8 +595,8 @@ class InferenceWorker(GeneratorWorker):
         if image_id is not None:
             self.log(f"\nRunning instance segmentation for image n°{image_id}")
 
-        method = self.config.post_process_config.instance
-        instance_labels = method.run_method(to_instance)
+        method = self.config.post_process_config.instance.method
+        instance_labels = method.run_method(image=to_instance)
 
         instance_filepath = (
             self.config.results_path
