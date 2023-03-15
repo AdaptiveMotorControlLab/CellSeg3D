@@ -555,9 +555,10 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 threshold_value=self.thresholding_slider.slider_value,
             )
 
-            self.instance_config = INSTANCE_SEGMENTATION_METHOD_LIST[
-                self.instance_widgets.method_choice.currentText()
-            ]
+            self.instance_config = config.InstanceSegConfig(
+                enabled=self.use_instance_choice.isChecked(),
+                method=self.instance_widgets.methods[self.instance_widgets.method_choice.currentText()]
+            )
 
             self.post_process_config = config.PostProcessConfig(
                 zoom=zoom_config,
@@ -725,9 +726,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
             if result.instance_labels is not None:
                 labels = result.instance_labels
-                method_name = (
-                    self.worker_config.post_process_config.instance.method.name
-                )
+                method_name = self.worker_config.post_process_config.instance.method.name
 
                 number_cells = (
                     np.unique(labels.flatten()).size - 1

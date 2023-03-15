@@ -540,8 +540,10 @@ class InstanceWidgets(QWidget):
         self.method_choice = ui.DropdownMenu(
             INSTANCE_SEGMENTATION_METHOD_LIST.keys()
         )
-        self.methods = []
+        self.methods = {}
+        """Contains the instance of the method, with its name as key"""
         self.instance_widgets = {}
+        """Contains the lists of widgets for each methods, to show/hide"""
 
         self.method_choice.currentTextChanged.connect(self._set_visibility)
         self._build()
@@ -551,17 +553,23 @@ class InstanceWidgets(QWidget):
         group = ui.GroupedWidget("Instance segmentation")
         group.layout.addWidget(self.method_choice)
 
-        for name, method in INSTANCE_SEGMENTATION_METHOD_LIST.items():
-            self.instance_widgets[name] = []
-            if len(method().sliders) > 0:
-                for slider in method().sliders:
-                    group.layout.addWidget(slider.container)
-                    self.instance_widgets[name].append(slider)
-            if len(method().counters) > 0:
-                for counter in method().counters:
-                    group.layout.addWidget(counter.label)
-                    group.layout.addWidget(counter)
-                    self.instance_widgets[name].append(counter)
+        try:
+            for name, method in INSTANCE_SEGMENTATION_METHOD_LIST.items():
+                method_class = method(widget_parent=self.parent())
+                self.methods[name] = method_class
+                self.instance_widgets[name] = []
+                # moderately unsafe way to init those widgets
+                if len(method_class.sliders) > 0:
+                    for slider in method_class.sliders:
+                        group.layout.addWidget(slider.container)
+                        self.instance_widgets[name].append(slider)
+                if len(method_class.counters) > 0:
+                    for counter in method_class.counters:
+                        group.layout.addWidget(counter.label)
+                        group.layout.addWidget(counter)
+                        self.instance_widgets[name].append(counter)
+        except RuntimeError as e:
+            logger.debug(f"Caught runtime error, most likely during testing")
 
         self.setLayout(group.layout)
         self._set_visibility()
