@@ -1,10 +1,10 @@
 from pathlib import Path
 
 from napari_cellseg3d import config
-from napari_cellseg3d.code_plugins.plugin_model_training import Trainer
 from napari_cellseg3d._tests.fixtures import LogFixture
-from napari_cellseg3d.config import MODEL_LIST
 from napari_cellseg3d.code_models.models.model_test import TestModel
+from napari_cellseg3d.code_plugins.plugin_model_training import Trainer
+from napari_cellseg3d.config import MODEL_LIST
 
 
 def test_training(make_napari_viewer, qtbot):

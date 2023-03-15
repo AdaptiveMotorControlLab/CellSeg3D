@@ -1,10 +1,11 @@
-from tifffile import imread
 from pathlib import Path
 
-from napari_cellseg3d.config import MODEL_LIST
+from tifffile import imread
+
 from napari_cellseg3d._tests.fixtures import LogFixture
-from napari_cellseg3d.code_plugins.plugin_model_inference import Inferer
 from napari_cellseg3d.code_models.models.model_test import TestModel
+from napari_cellseg3d.code_plugins.plugin_model_inference import Inferer
+from napari_cellseg3d.config import MODEL_LIST
 
 
 def test_inference(make_napari_viewer, qtbot):

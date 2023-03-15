@@ -1,7 +1,6 @@
-from napari_cellseg3d.code_models.model_workers import (
-    WeightsDownloader,
-    WEIGHTS_DIR,
-)
+from napari_cellseg3d.code_models.model_workers import WEIGHTS_DIR
+from napari_cellseg3d.code_models.model_workers import WeightsDownloader
+
 
 # DISABLED, causes GitHub actions to freeze
 def test_weight_download():
