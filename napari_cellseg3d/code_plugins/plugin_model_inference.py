@@ -203,7 +203,6 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ##################
         # instance segmentation widgets
         self.instance_widgets = InstanceWidgets(parent=self)
-        self.crf_widgets = CRFParamsWidget(parent=self)
 
         self.use_instance_choice = ui.CheckBox(
             "Run instance segmentation",
