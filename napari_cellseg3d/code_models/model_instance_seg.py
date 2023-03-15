@@ -4,11 +4,11 @@ from typing import List
 import numpy as np
 import pyclesperanto_prototype as cle
 from qtpy.QtWidgets import QWidget
+
 from skimage.measure import label
 from skimage.measure import regionprops
 from skimage.morphology import remove_small_objects
 from skimage.segmentation import watershed
-
 from skimage.filters import thresholding
 from skimage.transform import resize
 # from skimage.measure import mesh_surface_area
@@ -20,6 +20,7 @@ from napari_cellseg3d.utils import fill_list_in_between
 from napari_cellseg3d.utils import LOGGER as logger
 from napari_cellseg3d.utils import sphericity_axis
 from napari_cellseg3d.utils import Singleton
+from napari_cellseg3d.utils import sphericity_axis
 
 # from skimage.measure import mesh_surface_area
 # from skimage.measure import marching_cubes
