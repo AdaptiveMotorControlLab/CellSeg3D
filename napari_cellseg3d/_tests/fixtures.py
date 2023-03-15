@@ -1,3 +1,5 @@
+import warnings
+
 from qtpy.QtWidgets import QTextEdit
 
 from napari_cellseg3d.utils import LOGGER as logger
