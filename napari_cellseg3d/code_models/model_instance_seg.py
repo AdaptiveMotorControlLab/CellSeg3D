@@ -1,30 +1,22 @@
 from __future__ import division
 from __future__ import print_function
-
 from dataclasses import dataclass
 from typing import List
-
 import numpy as np
-
 import pyclesperanto_prototype as cle
 from qtpy.QtWidgets import QWidget
-
 from skimage.measure import label
 from skimage.measure import regionprops
 from skimage.morphology import remove_small_objects
 from skimage.segmentation import watershed
-
-from skimage.filters import thresholding
-from skimage.transform import resize
-
+from tifffile import imread
 # from skimage.measure import mesh_surface_area
 # from skimage.measure import marching_cubes
-from tifffile import imread
 
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.utils import fill_list_in_between
-from napari_cellseg3d.utils import sphericity_axis
 from napari_cellseg3d.utils import Singleton
+from napari_cellseg3d.utils import sphericity_axis
 
 # from napari_cellseg3d.utils import sphericity_volume_area
 
