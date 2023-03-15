@@ -17,10 +17,8 @@ from tifffile import imread
 
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.utils import fill_list_in_between
+from napari_cellseg3d.utils import sphericity_axis
 from napari_cellseg3d.utils import LOGGER as logger
-from napari_cellseg3d.utils import sphericity_axis
-from napari_cellseg3d.utils import Singleton
-from napari_cellseg3d.utils import sphericity_axis
 
 # from skimage.measure import mesh_surface_area
 # from skimage.measure import marching_cubes
@@ -71,6 +69,7 @@ class InstanceMethod:
                         text_label="",
                         parent=None,
                     ),
+
                 )
                 self.sliders.append(getattr(self, widget))
 
@@ -384,11 +383,11 @@ def volume_stats(volume_image):
         fill([len(properties)]),
     )
 
+
 class Watershed(InstanceMethod):
     """Widget class for Watershed segmentation. Requires 4 parameters, see binary_watershed"""
 
     def __init__(self, widget_parent=None):
-
         super().__init__(
             name=WATERSHED,
             function=binary_watershed,
@@ -434,13 +433,12 @@ class ConnectedComponents(InstanceMethod):
     """Widget class for Connected Components instance segmentation. Requires 2 parameters, see binary_connected."""
 
     def __init__(self, widget_parent=None):
-
         super().__init__(
             name=CONNECTED_COMP,
             function=binary_connected,
             num_sliders=1,
             num_counters=1,
-            # widget_parent=widget_parent,
+            widget_parent=widget_parent,
         )
 
         self.sliders[0].text_label.setText("Foreground probability threshold")
@@ -466,7 +464,6 @@ class VoronoiOtsu(InstanceMethod):
     """Widget class for Voronoi-Otsu labeling from pyclesperanto. Requires 2 parameter, see voronoi_otsu"""
 
     def __init__(self, widget_parent=None):
-
         super().__init__(
             name=VORONOI_OTSU,
             function=voronoi_otsu,
@@ -585,5 +582,4 @@ INSTANCE_SEGMENTATION_METHOD_LIST = {
     VORONOI_OTSU: VoronoiOtsu,
     WATERSHED: Watershed,
     CONNECTED_COMP: ConnectedComponents,
-
 }
