@@ -90,20 +90,23 @@ We also provide a model that was trained in-house on mesoSPIM nuclei data in col
 
 This plugin mainly uses the following libraries and software:
 
-* `napari website`_
+* `napari`_
 
-* `PyTorch website`_
+* `PyTorch`_
 
-* `MONAI project website`_ (various models used here are credited `on their website`_)
+* `MONAI project`_ (various models used here are credited `on their website`_)
+
+* `pyclEsperanto`_ (for the Voronoi Otsu labeling) by Robert Haase
 
 
 .. _Mathis Laboratory of Adaptive Motor Control: http://www.mackenziemathislab.org/
 .. _Wyss Center: https://wysscenter.ch/
 .. _TRAILMAP project on GitHub: https://github.com/AlbertPun/TRAILMAP
-.. _napari website: https://napari.org/
-.. _PyTorch website: https://pytorch.org/
-.. _MONAI project website: https://monai.io/
+.. _napari: https://napari.org/
+.. _PyTorch: https://pytorch.org/
+.. _MONAI project: https://monai.io/
 .. _on their website: https://docs.monai.io/en/stable/networks.html#nets
+.. _pyclEsperanto: https://github.com/clEsperanto/pyclesperanto_prototype
 
 
 .. rubric:: References
