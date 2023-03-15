@@ -552,6 +552,7 @@ class InstanceWidgets(QWidget):
         try:
             for name, method in INSTANCE_SEGMENTATION_METHOD_LIST.items():
                 method_class = method(widget_parent=self.parent())
+                self.methods[name] = method_class
                 self.instance_widgets[name] = []
                 # moderately unsafe way to init those widgets
                 if len(method_class.sliders) > 0:
