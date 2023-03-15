@@ -112,6 +112,10 @@ class Zoom:
     enabled: bool = True
     zoom_values: List[float] = None
 
+@dataclass
+class InstanceSegConfig:
+    enabled: bool = False
+    method: InstanceMethod = None
 
 @dataclass
 class InstanceSegConfig:
@@ -123,7 +127,7 @@ class InstanceSegConfig:
 class PostProcessConfig:
     zoom: Zoom = Zoom()
     thresholding: Thresholding = Thresholding()
-    instance: InstanceMethod = None
+    instance: InstanceSegConfig = InstanceSegConfig()
 
 
 ################

@@ -528,6 +528,7 @@ class InstanceWidgets(QWidget):
         """Contains the instance of the method, with its name as key"""
         self.instance_widgets = {}
         """Contains the lists of widgets for each methods, to show/hide"""
+
         self.method_choice.currentTextChanged.connect(self._set_visibility)
         self._build()
 
