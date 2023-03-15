@@ -1,22 +1,17 @@
 import warnings
 from pathlib import Path
-
 import napari
 import numpy as np
 from qtpy.QtWidgets import QSizePolicy
-from tifffile import imread, imwrite
+from tifffile import imread
+from tifffile import imwrite
 
 import napari_cellseg3d.interface as ui
 from napari_cellseg3d import utils
-from napari_cellseg3d.code_models.model_instance_seg import (
-    InstanceWidgets,
-    clear_small_objects,
-    threshold,
-    to_semantic,
-)
+from napari_cellseg3d.code_models.model_instance_seg import clear_small_objects
+from napari_cellseg3d.code_models.model_instance_seg import InstanceWidgets
 from napari_cellseg3d.code_models.model_instance_seg import threshold
 from napari_cellseg3d.code_models.model_instance_seg import to_semantic
-from napari_cellseg3d.code_models.model_instance_seg import InstanceWidgets
 from napari_cellseg3d.code_plugins.plugin_base import BasePluginFolder
 
 # TODO break down into multiple mini-widgets
