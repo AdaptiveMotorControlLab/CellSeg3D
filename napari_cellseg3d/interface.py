@@ -1057,9 +1057,9 @@ class DoubleIncrementCounter(QDoubleSpinBox):
 
     def _update_step(self):
         if self.value() < 0.9:
-            self.setSingleStep(0.1)
+            self.setSingleStep(0.01)
         else:
-            self.setSingleStep(1)
+            self.setSingleStep(0.1)
 
     @property
     def tooltips(self):
