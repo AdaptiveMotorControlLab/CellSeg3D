@@ -8,6 +8,11 @@ from typing import Optional
 import napari
 import numpy as np
 
+from napari_cellseg3d.code_models.model_instance_seg import ConnectedComponents
+from napari_cellseg3d.code_models.model_instance_seg import InstanceMethod
+from napari_cellseg3d.code_models.model_instance_seg import VoronoiOtsu
+from napari_cellseg3d.code_models.model_instance_seg import Watershed
+
 
 # from napari_cellseg3d.models import model_TRAILMAP as TRAILMAP
 from napari_cellseg3d.code_models.models import model_SegResNet as SegResNet
@@ -16,12 +21,6 @@ from napari_cellseg3d.code_models.models import (
     model_TRAILMAP_MS as TRAILMAP_MS,
 )
 from napari_cellseg3d.code_models.models import model_VNet as VNet
-from napari_cellseg3d.code_models.model_instance_seg import (
-    ConnectedComponents,
-    Watershed,
-    VoronoiOtsu,
-    InstanceMethod,
-)
 from napari_cellseg3d.utils import LOGGER
 
 logger = LOGGER
