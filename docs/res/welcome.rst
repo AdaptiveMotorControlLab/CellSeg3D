@@ -103,8 +103,6 @@ This plugin mainly uses the following libraries and software:
 
 * `pyclEsperanto`_ (for the Voronoi Otsu labeling) by Robert Haase
 
-* `pyclEsperanto`_ (for the Voronoi Otsu labeling) by Robert Haase
-
 * A custom re-implementation of the `WNet model`_ by Xia and Kulis [#]_
 
 .. _Mathis Laboratory of Adaptive Motor Control: http://www.mackenziemathislab.org/
