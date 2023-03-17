@@ -176,8 +176,8 @@ class Cropping(BasePluginSingleImage):
             ],
         )
 
-        ui.ScrollArea.make_scrollable(layout, self, min_wh=[200, 400])
-        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        ui.ScrollArea.make_scrollable(layout, self, min_wh=[200, 200])
+        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.MinimumExpanding)
         self._set_io_visibility()
 
     # def _check_results_path(self, folder):
