@@ -50,6 +50,7 @@ class InstanceMethod:
             num_sliders: Number of Slider UI elements needed to set the parameters of the function
             num_counters: Number of DoubleIncrementCounter UI elements needed to set the parameters of the function
             widget_parent: parent for the declared widgets
+
         """
         self.name = name
         self.function = function
@@ -519,6 +520,7 @@ class InstanceWidgets(QWidget):
 
         Args:
             parent: parent widget
+
         """
         super().__init__(parent)
         self.method_choice = ui.DropdownMenu(
@@ -570,10 +572,12 @@ class InstanceWidgets(QWidget):
     def run_method(self, volume):
         """
         Calls instance function with chosen parameters
+
         Args:
             volume: image data to run method on
 
         Returns: processed image from self._method
+
         """
         method = self.methods[self.method_choice.currentText()]
         return method.run_method(volume)

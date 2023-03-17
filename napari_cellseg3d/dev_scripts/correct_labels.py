@@ -18,7 +18,6 @@ from napari_cellseg3d.code_models.model_instance_seg import binary_watershed
 # import sys
 # sys.path.append(str(Path(__file__) / "../../"))
 
-
 """
 New code by Yves Paychère
 Fixes labels and allows to auto-detect artifacts and neurons based on a simple intenstiy threshold
@@ -87,7 +86,6 @@ def add_label(old_label, artefact, new_label_path, i_labels_to_add):
 
 returns = []
 
-
 def ask_labels(unique_artefact, test=False):
     global returns
     returns = []
@@ -138,7 +136,6 @@ def ask_labels(unique_artefact, test=False):
 
     returns = [i_labels_to_add_tmp]
     print("close the napari window to continue")
-
 
 def relabel(
     image_path,
@@ -373,3 +370,4 @@ def relabel_non_unique_i_folder(folder_path, end_of_new_name="relabeled"):
 #     gt_labels_path = str(im_path / "labels.tif")
 #
 #     relabel(image_path, gt_labels_path, check_for_unicity=True, go_fast=False)
+
