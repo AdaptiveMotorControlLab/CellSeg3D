@@ -4,6 +4,7 @@ from tqdm import tqdm
 import napari
 
 from napari_cellseg3d.utils import LOGGER as log
+
 def map_labels(labels, model_labels):
     """Map the model's labels to the neurons labels.
     Parameters
@@ -33,10 +34,12 @@ def map_labels(labels, model_labels):
         unique, counts = np.unique(indexes, return_counts=True)
         tmp_map = []
         total_pixel_found = 0
+
+        print(f"i: {i}")
         for ii in range(len(unique)):
             true_positive_ratio_model = counts[ii] / np.sum(counts)
             # if >50% of the pixels of the label i of the model correspond to the background it is considered as an artifact, that should not have been found
-            log.debug(f"unique: {unique[ii]}")
+            print(f"unique: {unique[ii]}")
             if unique[ii] == 0:
                 if true_positive_ratio_model > 0.5:
                     # -> artifact found
@@ -50,8 +53,7 @@ def map_labels(labels, model_labels):
                     tmp_map.append(
                         [i, unique[ii], ratio_pixel_found, true_positive_ratio_model]
                     )
-                if total_pixel_found > np.sum(counts):
-                    raise ValueError(f"total_pixel_found > np.sum(counts) : {total_pixel_found} > {np.sum(counts)}")
+
 
         if len(tmp_map) == 1:
             # map to only one true neuron -> found neuron
@@ -59,12 +61,14 @@ def map_labels(labels, model_labels):
         elif len(tmp_map) > 1:
             # map to multiple true neurons -> fused neuron
             for ii in range(len(tmp_map)):
-                # if total_pixel_found > np.sum(counts):
-                #     raise ValueError(
-                #         f"total_pixel_found > np.sum(counts[ii]) : {total_pixel_found} > {np.sum(counts)}"
-                #     )
+                if total_pixel_found > np.sum(counts):
+                    raise ValueError(f"total_pixel_found > np.sum(counts) : {total_pixel_found} > {np.sum(counts)}")
                 tmp_map[ii][3] = total_pixel_found / np.sum(counts)
             map_fused_neurons += tmp_map
+
+    # print(f"map_labels_existing: {map_labels_existing}")
+    print(f"map_fused_neurons: {map_fused_neurons}")
+    # print(f"new_labels: {new_labels}")
     return map_labels_existing, map_fused_neurons, new_labels
 
 
@@ -99,7 +103,7 @@ def evaluate_model_performance(labels, model_labels, do_print=True, visualize=Fa
     mean_ratio_false_pixel_artefact: float
         The mean (over the model's labels that are not labelled in the neurons) of (wrongly labelled pixels)/(total number of pixels of the model's label)
     """
-    log.debug("Mapping labels...")
+    print("Mapping labels...")
     map_labels_existing, map_fused_neurons, new_labels = map_labels(
         labels, model_labels
     )
@@ -109,7 +113,7 @@ def evaluate_model_performance(labels, model_labels, do_print=True, visualize=Fa
     # calculate the number of neurons fused
     neurons_fused = len(map_fused_neurons)
     # calculate the number of neurons not found
-    log.debug("Calculating the number of neurons not found...")
+    print("Calculating the number of neurons not found...")
     neurons_found_labels = np.unique(
         [i[1] for i in map_labels_existing] + [i[1] for i in map_fused_neurons]
     )
