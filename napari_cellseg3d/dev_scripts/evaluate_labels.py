@@ -7,7 +7,6 @@ from napari_cellseg3d.utils import LOGGER as log
 
 PERCENT_CORRECT = 0.5  # how much of the original label should be found by the model to be classified as correct
 
-
 def evaluate_model_performance(
     labels,
     model_labels,
@@ -47,7 +46,7 @@ def evaluate_model_performance(
     mean_ratio_false_pixel_artefact: float
         The mean (over the model's labels that are not labelled in the neurons) of (wrongly labelled pixels)/(total number of pixels of the model's label)
     """
-    log.debug("Mapping labels...")
+    print("Mapping labels...")
     map_labels_existing, map_fused_neurons, new_labels = map_labels(
         labels, model_labels, threshold_correct
     )
@@ -57,7 +56,7 @@ def evaluate_model_performance(
     # calculate the number of neurons fused
     neurons_fused = len(map_fused_neurons)
     # calculate the number of neurons not found
-    log.debug("Calculating the number of neurons not found...")
+    print("Calculating the number of neurons not found...")
     neurons_found_labels = np.unique(
         [i[1] for i in map_labels_existing] + [i[1] for i in map_fused_neurons]
     )
