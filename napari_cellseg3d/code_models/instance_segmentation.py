@@ -38,12 +38,14 @@ class InstanceMethod:
     ):
         """
         Methods for instance segmentation
+
         Args:
             name: Name of the instance segmentation method (for UI)
             function: Function to use for instance segmentation
             num_sliders: Number of Slider UI elements needed to set the parameters of the function
             num_counters: Number of DoubleIncrementCounter UI elements needed to set the parameters of the function
             widget_parent: parent for the declared widgets
+
         """
         self.name = name
         self.function = function
@@ -147,7 +149,6 @@ def voronoi_otsu(
         volume (np.ndarray): volume to segment
         spot_sigma (float): parameter determining how close detected objects can be
         outline_sigma (float): determines the smoothness of the segmentation
-
 
     Returns:
     Instance segmentation labels from Voronoi-Otsu method
