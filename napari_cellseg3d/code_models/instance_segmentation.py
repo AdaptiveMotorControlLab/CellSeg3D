@@ -40,12 +40,14 @@ class InstanceMethod:
     ):
         """
         Methods for instance segmentation
+
         Args:
             name: Name of the instance segmentation method (for UI)
             function: Function to use for instance segmentation
             num_sliders: Number of Slider UI elements needed to set the parameters of the function
             num_counters: Number of DoubleIncrementCounter UI elements needed to set the parameters of the function
             widget_parent: parent for the declared widgets
+
         """
         self.name = name
         self.function = function
@@ -150,7 +152,6 @@ def voronoi_otsu(
         spot_sigma (float): parameter determining how close detected objects can be
         outline_sigma (float): determines the smoothness of the segmentation
 
-
     Returns:
     Instance segmentation labels from Voronoi-Otsu method
 
@@ -176,6 +177,8 @@ def binary_connected(
         volume (numpy.ndarray): foreground probability of shape :math:`(C, Z, Y, X)`.
         thres (float): threshold of foreground. Default: 0.8
         thres_small (int): size threshold of small objects to remove. Default: 128
+        scale_factors (tuple): scale factors for resizing in :math:`(Z, Y, X)` order. Default: (1.0, 1.0, 1.0)
+
     """
     logger.debug(
         f"Running connected components segmentation with thres={thres} and thres_small={thres_small}"
