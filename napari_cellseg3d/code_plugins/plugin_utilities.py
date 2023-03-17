@@ -60,10 +60,10 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
         layout.addWidget(self.utils_choice.label, alignment=ui.BOTT_AL)
         layout.addWidget(self.utils_choice, alignment=ui.BOTT_AL)
 
-        layout.setSizeConstraint(QLayout.SetFixedSize)
+        # layout.setSizeConstraint(QLayout.SetFixedSize)
         self.setLayout(layout)
-        self.setMinimumHeight(1000)
-        self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
+        # self.setMinimumHeight(2000)
+        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.MinimumExpanding)
         self._update_visibility()
 
     def _create_utils_widgets(self, names):
@@ -79,7 +79,6 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
             raise RuntimeError(
                 "One or several utility widgets are missing/erroneous"
             )
-        # TODO how to auto-update list based on UTILITIES_WIDGETS ?
 
     def _update_visibility(self):
         widget_class = UTILITIES_WIDGETS[self.utils_choice.currentText()]
