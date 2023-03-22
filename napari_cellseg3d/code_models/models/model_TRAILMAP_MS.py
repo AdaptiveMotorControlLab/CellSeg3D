@@ -17,5 +17,4 @@ def get_output(model, input):
 
 
 def get_validation(model, val_inputs):
-
     return model(val_inputs)

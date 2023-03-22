@@ -36,9 +36,7 @@ class Singleton(type):
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(
-                *args, **kwargs
-            )
+            cls._instances[cls] = super().__call__(*args, **kwargs)
         return cls._instances[cls]
 
 
@@ -161,7 +159,7 @@ def align_array_sizes(array_shape, target_shape):
     for i in range(len(targets)):
         targets[i] = reverse_mapping[targets[i]]
     infos = np.unique(origins, return_index=True, return_counts=True)
-    info_dict = {"origins": infos[0], "index": infos[1], "counts": infos[2]}
+    {"origins": infos[0], "index": infos[1], "counts": infos[2]}
     # print(info_dict)
 
     final_orig = []
@@ -229,7 +227,6 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
             # problems with zero divs avoided via params for spinboxes
             size = int(size / anisotropy_factor[i])
         while pad < size:
-
             # if size - pad < 30:
             #     warnings.warn(
             #         f"Your value is close to a lower power of two; you might want to choose slightly smaller"
@@ -414,17 +411,17 @@ def parse_default_path(possible_paths):
 
 def get_date_time():
     """Get date and time in the following format : year_month_day_hour_minute_second"""
-    return "{:%Y_%m_%d_%H_%M_%S}".format(datetime.now())
+    return f"{datetime.now():%Y_%m_%d_%H_%M_%S}"
 
 
 def get_time():
     """Get time in the following format : hour:minute:second. NOT COMPATIBLE with file paths (saving with ":" is invalid)"""
-    return "{:%H:%M:%S}".format(datetime.now())
+    return f"{datetime.now():%H:%M:%S}"
 
 
 def get_time_filepath():
     """Get time in the following format : hour_minute_second. Compatible with saving"""
-    return "{:%H_%M_%S}".format(datetime.now())
+    return f"{datetime.now():%H_%M_%S}"
 
 
 def load_images(dir_or_path, filetype="", as_folder: bool = False):

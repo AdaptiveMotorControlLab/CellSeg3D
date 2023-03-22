@@ -19,7 +19,6 @@ def get_output(model, input):
 
 
 def get_validation(model, val_inputs):
-
     return model(val_inputs)
 
 
@@ -41,7 +40,6 @@ class TRAILMAP(nn.Module):
         self.out = self.outBlock(32, out_ch, 1)
 
     def forward(self, x):
-
         conv0 = self.conv0(x)  # l0
         conv1 = self.conv1(conv0)  # l1
         conv2 = self.conv2(conv1)  # l2
@@ -67,7 +65,6 @@ class TRAILMAP(nn.Module):
         return out
 
     def encoderBlock(self, in_ch, out_ch, kernel_size, padding="same"):
-
         encode = nn.Sequential(
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
             nn.BatchNorm3d(out_ch),
@@ -82,7 +79,6 @@ class TRAILMAP(nn.Module):
         return encode
 
     def bridgeBlock(self, in_ch, out_ch, kernel_size, padding="same"):
-
         encode = nn.Sequential(
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
             nn.BatchNorm3d(out_ch),
@@ -96,7 +92,6 @@ class TRAILMAP(nn.Module):
         return encode
 
     def decoderBlock(self, in_ch, out_ch, kernel_size, padding="same"):
-
         decode = nn.Sequential(
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
             nn.BatchNorm3d(out_ch),
@@ -113,7 +108,6 @@ class TRAILMAP(nn.Module):
         return decode
 
     def outBlock(self, in_ch, out_ch, kernel_size, padding="same"):
-
         out = nn.Sequential(
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
         )

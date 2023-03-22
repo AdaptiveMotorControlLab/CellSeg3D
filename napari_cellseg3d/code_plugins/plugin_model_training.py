@@ -893,7 +893,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.log.print_and_log(
             f"Saving in {self.worker_config.results_path_folder}"
         )
-        self.log.print_and_log(f"Saving last loss plot")
+        self.log.print_and_log("Saving last loss plot")
 
         plot_name = self.worker_config.results_path_folder / Path(
             f"final_metric_plots_{utils.get_time_filepath()}.png"
@@ -954,7 +954,6 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             return
 
         if report.show_plot:
-
             try:
                 layer_name = "Training_checkpoint_"
                 rge = range(len(report.images))
@@ -1022,7 +1021,6 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
     #         self.empty_cuda_cache()
 
     def _make_csv(self):
-
         size_column = range(1, self.worker_config.max_epochs + 1)
 
         if len(self.loss_values) == 0 or self.loss_values is None:
@@ -1119,7 +1117,6 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         elif epoch == self.worker_config.validation_interval * 2:
             bckgrd_color = (0, 0, 0, 0)  # '#262930'
             with plt.style.context("dark_background"):
-
                 self.canvas = FigureCanvas(Figure(figsize=(10, 1.5)))
                 # loss plot
                 self.train_loss_plot = self.canvas.figure.add_subplot(1, 2, 1)
@@ -1162,7 +1159,6 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.plot_loss(loss, metric)
         else:
             with plt.style.context("dark_background"):
-
                 self.train_loss_plot.cla()
                 self.dice_metric_plot.cla()
 

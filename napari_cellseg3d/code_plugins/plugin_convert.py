@@ -4,12 +4,10 @@ from pathlib import Path
 import napari
 import numpy as np
 from qtpy.QtWidgets import QSizePolicy
-from qtpy.QtWidgets import QWidget
 from tifffile import imread
 from tifffile import imwrite
 
 import napari_cellseg3d.interface as ui
-from napari_cellseg3d import config
 from napari_cellseg3d import utils
 from napari_cellseg3d.code_models.model_instance_seg import clear_small_objects
 from napari_cellseg3d.code_models.model_instance_seg import InstanceWidgets
@@ -123,7 +121,6 @@ class AnisoUtils(BasePluginFolder):
         self._build()
 
     def _build(self):
-
         container = ui.ContainerWidget()
 
         ui.add_widgets(
@@ -147,7 +144,6 @@ class AnisoUtils(BasePluginFolder):
         )
 
     def _start(self):
-
         self.results_path.mkdir(exist_ok=True)
         zoom = self.aniso_widgets.scaling_zyx()
 
@@ -225,7 +221,6 @@ class RemoveSmallUtils(BasePluginFolder):
         self.function = clear_small_objects
 
     def _build(self):
-
         container = ui.ContainerWidget()
 
         ui.add_widgets(
@@ -311,7 +306,6 @@ class ToSemanticUtils(BasePluginFolder):
         self._build()
 
     def _build(self):
-
         container = ui.ContainerWidget()
 
         ui.add_widgets(
@@ -395,7 +389,6 @@ class ToInstanceUtils(BasePluginFolder):
         self._build()
 
     def _build(self):
-
         container = ui.ContainerWidget()
 
         ui.add_widgets(
@@ -458,7 +451,6 @@ class ThresholdUtils(BasePluginFolder):
     """
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
-
         super().__init__(
             viewer,
             parent,
@@ -489,7 +481,6 @@ class ThresholdUtils(BasePluginFolder):
         self.function = threshold
 
     def _build(self):
-
         container = ui.ContainerWidget()
 
         ui.add_widgets(

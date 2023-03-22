@@ -162,7 +162,7 @@ class MetricsUtils(BasePluginFolder):
                 f"Session {len(self.plots)}\nMean dice : {np.mean(dice_coeffs):.4f}"
             )
             # dice_plot.set_xticks(rotation=45)
-            dice_plot.set_xlabel(f"Dice coefficient")
+            dice_plot.set_xlabel("Dice coefficient")
             # dice_plot.set_ylabel("Labels pair id", rotation=90)
 
             self.canvas.draw_idle()

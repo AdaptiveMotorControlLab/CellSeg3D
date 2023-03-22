@@ -2,7 +2,6 @@ import napari
 
 # Qt
 from qtpy.QtCore import qInstallMessageHandler
-from qtpy.QtWidgets import QLayout
 from qtpy.QtWidgets import QSizePolicy
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
@@ -53,7 +52,6 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
         qInstallMessageHandler(ui.handle_adjust_errors_wrapper(self))
 
     def _build(self):
-
         layout = QVBoxLayout()
         ui.add_widgets(layout, self.utils_widgets)
         layout.addWidget(self.utils_choice.label, alignment=ui.BOTT_AL)

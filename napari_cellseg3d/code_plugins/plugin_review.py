@@ -189,7 +189,6 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
                 )
 
     def _prepare_data(self):
-
         if self.layer_choice.isChecked():
             self.config.image = self.image_layer_loader.layer_data()
             self.config.labels = self.label_layer_loader.layer_data()
@@ -217,7 +216,6 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         self.config.zoom_factor = zoom
 
     def run_review(self):
-
         """Launches review process by loading the files from the chosen folders,
         and adds several widgets to the napari Viewer.
         If the review process has been launched once before,
@@ -236,7 +234,6 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         print("New review session\n" + "*" * 20)
         previous_viewer = self._viewer
         try:
-
             self._prepare_data()
 
             self._viewer, self.docked_widgets = self.launch_review()
@@ -368,7 +365,6 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
 
         @viewer.mouse_drag_callbacks.append
         def update_canvas_canvas(viewer, event):
-
             if "shift" in event.modifiers:
                 try:
                     cursor_position = np.round(viewer.cursor.position).astype(
@@ -424,7 +420,6 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         datamananger._close_btn = False
 
         def update_button(axis_event):
-
             slice_num = axis_event.value[0]
             logger.debug(f"slice num is {slice_num}")
             dmg.update_dm(slice_num)
