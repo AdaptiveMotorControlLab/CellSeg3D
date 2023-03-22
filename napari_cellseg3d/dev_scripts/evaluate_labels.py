@@ -1,7 +1,5 @@
 import napari
 import numpy as np
-from collections import Counter
-from dataclasses import dataclass
 import pandas as pd
 from tqdm import tqdm
 
@@ -287,6 +285,192 @@ def save_as_csv(results, path):
     )
     df.to_csv(path, index=False)
 
+#######################
+# Slower version that was used for debugging
+#######################
+
+# from collections import Counter
+# from dataclasses import dataclass
+# from typing import Dict
+# @dataclass
+# class LabelInfo:
+#     gt_index: int
+#     model_labels_id_and_status: Dict = None  # for each model label id present on gt_index in gt labels, contains status (correct/wrong)
+#     best_model_label_coverage: float = (
+#         0.0  # ratio of pixels of the gt label correctly labelled
+#     )
+#     overall_gt_label_coverage: float = 0.0  # true positive ration of the model
+#
+#     def get_correct_ratio(self):
+#         for model_label, status in self.model_labels_id_and_status.items():
+#             if status == "correct":
+#                 return self.best_model_label_coverage
+#             else:
+#                 return None
+
+
+# def eval_model(gt_labels, model_labels, print_report=False):
+#
+#     report_list, new_labels, fused_labels = create_label_report(
+#         gt_labels, model_labels
+#     )
+#     per_label_perfs = []
+#     for report in report_list:
+#         if print_report:
+#             log.info(
+#                 f"Label {report.gt_index} : {report.model_labels_id_and_status}"
+#             )
+#             log.info(
+#                 f"Best model label coverage : {report.best_model_label_coverage}"
+#             )
+#             log.info(
+#                 f"Overall gt label coverage : {report.overall_gt_label_coverage}"
+#             )
+#
+#         perf = report.get_correct_ratio()
+#         if perf is not None:
+#             per_label_perfs.append(perf)
+#
+#     per_label_perfs = np.array(per_label_perfs)
+#     return per_label_perfs.mean(), new_labels, fused_labels
+
+
+# def create_label_report(gt_labels, model_labels):
+#     """Map the model's labels to the neurons labels.
+#     Parameters
+#     ----------
+#     gt_labels : ndarray
+#         Label image with neurons labelled as mulitple values.
+#     model_labels : ndarray
+#         Label image from the model labelled as mulitple values.
+#     Returns
+#     -------
+#     map_labels_existing: numpy array
+#         The label value of the model and the label value of the neurone associated, the ratio of the pixels of the true label correctly labelled, the ratio of the pixels of the model's label correctly labelled
+#     map_fused_neurons: numpy array
+#         The neurones are considered fused if they are labelled by the same model's label, in this case we will return The label value of the model and the label value of the neurone associated, the ratio of the pixels of the true label correctly labelled, the ratio of the pixels of the model's label that are in one of the fused neurones
+#     new_labels: list
+#         The labels of the model that are not labelled in the neurons, the ratio of the pixels of the model's label that are an artefact
+#     """
+#
+#     map_labels_existing = []
+#     map_fused_neurons = {}
+#     "background_labels contains all model labels where gt_labels is 0 and model_labels is not 0"
+#     background_labels = model_labels[np.where((gt_labels == 0))]
+#     "new_labels contains all labels in model_labels for which more than PERCENT_CORRECT% of the pixels are not labelled in gt_labels"
+#     new_labels = []
+#     for lab in np.unique(background_labels):
+#         if lab == 0:
+#             continue
+#         gt_background_size_at_lab = (
+#             gt_labels[np.where((model_labels == lab) & (gt_labels == 0))]
+#             .flatten()
+#             .shape[0]
+#         )
+#         gt_lab_size = (
+#             gt_labels[np.where(model_labels == lab)].flatten().shape[0]
+#         )
+#         if gt_background_size_at_lab / gt_lab_size > PERCENT_CORRECT:
+#             new_labels.append(lab)
+#
+#     label_report_list = []
+#     # label_report = {}  # contains a dict saying which labels are correct or wrong for each gt label
+#     # model_label_values = {}  # contains the model labels value assigned to each unique gt label
+#     not_found_id = 0
+#
+#     for i in tqdm(np.unique(gt_labels)):
+#         if i == 0:
+#             continue
+#
+#         gt_label = gt_labels[np.where(gt_labels == i)]  # get a single gt label
+#
+#         model_lab_on_gt = model_labels[
+#             np.where(((gt_labels == i) & (model_labels != 0)))
+#         ]  # all models labels on single gt_label
+#         info = LabelInfo(i)
+#
+#         info.model_labels_id_and_status = {
+#             label_id: "" for label_id in np.unique(model_lab_on_gt)
+#         }
+#
+#         if model_lab_on_gt.shape[0] == 0:
+#             info.model_labels_id_and_status[
+#                 f"not_found_{not_found_id}"
+#             ] = "not found"
+#             not_found_id += 1
+#             label_report_list.append(info)
+#             continue
+#
+#         log.debug(f"model_lab_on_gt : {np.unique(model_lab_on_gt)}")
+#
+#         #  create LabelInfo object and init model_labels_id_and_status with all unique model labels on gt_label
+#         log.debug(
+#             f"info.model_labels_id_and_status : {info.model_labels_id_and_status}"
+#         )
+#
+#         ratio = []
+#         for model_lab_id in info.model_labels_id_and_status.keys():
+#             size_model_label = (
+#                 model_lab_on_gt[np.where(model_lab_on_gt == model_lab_id)]
+#                 .flatten()
+#                 .shape[0]
+#             )
+#             size_gt_label = gt_label.flatten().shape[0]
+#
+#             log.debug(f"size_model_label : {size_model_label}")
+#             log.debug(f"size_gt_label : {size_gt_label}")
+#
+#             ratio.append(size_model_label / size_gt_label)
+#
+#         # log.debug(ratio)
+#         ratio_model_lab_for_given_gt_lab = np.array(ratio)
+#         info.best_model_label_coverage = ratio_model_lab_for_given_gt_lab.max()
+#
+#         best_model_lab_id = model_lab_on_gt[
+#             np.argmax(ratio_model_lab_for_given_gt_lab)
+#         ]
+#         log.debug(f"best_model_lab_id : {best_model_lab_id}")
+#
+#         info.overall_gt_label_coverage = (
+#             ratio_model_lab_for_given_gt_lab.sum()
+#         )  # the ratio of the pixels of the true label correctly labelled
+#
+#         if info.best_model_label_coverage > PERCENT_CORRECT:
+#             info.model_labels_id_and_status[best_model_lab_id] = "correct"
+#             # info.model_labels_id_and_size[best_model_lab_id] = model_labels[np.where(model_labels == best_model_lab_id)].flatten().shape[0]
+#         else:
+#             info.model_labels_id_and_status[best_model_lab_id] = "wrong"
+#         for model_lab_id in np.unique(model_lab_on_gt):
+#             if model_lab_id != best_model_lab_id:
+#                 log.debug(model_lab_id, "is wrong")
+#                 info.model_labels_id_and_status[model_lab_id] = "wrong"
+#
+#         label_report_list.append(info)
+#
+#     correct_labels_id = []
+#     for report in label_report_list:
+#         for i_lab in report.model_labels_id_and_status.keys():
+#             if report.model_labels_id_and_status[i_lab] == "correct":
+#                 correct_labels_id.append(i_lab)
+#     """Find all labels in label_report_list that are correct more than once"""
+#     duplicated_labels = [
+#         item for item, count in Counter(correct_labels_id).items() if count > 1
+#     ]
+#     "Sum up the size of all duplicated labels"
+#     for i in duplicated_labels:
+#         for report in label_report_list:
+#             if (
+#                 i in report.model_labels_id_and_status.keys()
+#                 and report.model_labels_id_and_status[i] == "correct"
+#             ):
+#                 size = (
+#                     model_labels[np.where(model_labels == i)]
+#                     .flatten()
+#                     .shape[0]
+#                 )
+#                 map_fused_neurons[i] = size
+#
+#     return label_report_list, new_labels, map_fused_neurons
 
 #######################
 # Slower version that was used for debugging
