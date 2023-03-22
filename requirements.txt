@@ -20,7 +20,7 @@ matplotlib>=3.4.1
 ruff
 tifffile>=2022.2.9
 torch>=1.11
-monai[nibabel,einops,tifffile]>=1.0.1
+monai[nibabel,einops]>=1.0.1
 pillow
 scikit-image>=0.19.2
 vispy>=0.9.6
