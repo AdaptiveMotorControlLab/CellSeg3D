@@ -119,11 +119,6 @@ class InstanceSegConfig:
     method: InstanceMethod = None
 
 
-@dataclass
-class InstanceSegConfig:
-    enabled: bool = False
-    method: InstanceMethod = None
-
 
 @dataclass
 class PostProcessConfig:
