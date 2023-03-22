@@ -417,7 +417,6 @@ def create_artefact_labels_from_folder(
 
 
 if __name__ == "__main__":
-
     repo_path = Path(__file__).resolve().parents[1]
     print(f"REPO PATH : {repo_path}")
     paths = [
