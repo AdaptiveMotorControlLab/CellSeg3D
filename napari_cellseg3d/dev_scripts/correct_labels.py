@@ -17,7 +17,6 @@ from napari_cellseg3d.code_models.model_instance_seg import binary_watershed
 
 # import sys
 # sys.path.append(str(Path(__file__) / "../../"))
-
 """
 New code by Yves Paychère
 Fixes labels and allows to auto-detect artifacts and neurons based on a simple intenstiy threshold
