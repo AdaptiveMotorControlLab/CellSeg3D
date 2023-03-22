@@ -180,7 +180,7 @@ def voronoi_otsu(
         semantic, spot_sigma=spot_sigma, outline_sigma=outline_sigma
     )
     # instance = remove_small_objects(instance, remove_small_size)
-    return instance
+    return np.array(instance)
 
 
 def binary_connected(
