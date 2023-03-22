@@ -32,57 +32,9 @@ dependencies = [
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-include-package-data = true
-
-[tool.setuptools.packages.find]
-where = ["."]
-
-[tool.setuptools.package-data]
-"*" = ["res/*.png", "code_models/models/pretrained/*.json", "*.yaml"]
-
 [tool.ruff]
-select = [
-    "E", "F", "W",
-    "A",
-    "B",
-    "G",
-    "I",
-    "PT",
-    "PTH",
-    "RET",
-    "SIM",
-    "TCH",
-    "NPY",
-]
-# Never enforce `E501` (line length violations) and 'E741' (ambiguous variable names)
-# and 'G004' (do not use f-strings in logging)
-ignore = ["E501", "E741", "G004", "A003"]
-exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".git-rewrite",
-    ".hg",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pytype",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "venv",
-    "docs/conf.py",
-    "napari_cellseg3d/_tests/conftest.py",
-]
+# Never enforce `E501` (line length violations).
+ignore = ["E501"]
 
 [tool.black]
 line-length = 79
