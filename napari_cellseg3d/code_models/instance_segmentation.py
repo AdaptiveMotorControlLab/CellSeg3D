@@ -36,7 +36,7 @@ class InstanceMethod:
         function: callable,
         num_sliders: int,
         num_counters: int,
-        widget_parent: QWidget = None
+        widget_parent: QWidget = None,
     ):
         """
         Methods for instance segmentation
@@ -59,7 +59,14 @@ class InstanceMethod:
                 setattr(
                     self,
                     widget,
-                    ui.Slider(0, 100, 1, divide_factor=100, text_label="", parent=None),
+                    ui.Slider(
+                        0,
+                        100,
+                        1,
+                        divide_factor=100,
+                        text_label="",
+                        parent=None,
+                    ),
                 )
                 self.sliders.append(getattr(self, widget))
 
@@ -400,13 +407,13 @@ def volume_stats(volume_image):
 class Watershed(InstanceMethod):
     """Widget class for Watershed segmentation. Requires 4 parameters, see binary_watershed"""
 
-    def __init__(self, widget_parent = None):
+    def __init__(self, widget_parent=None):
         super().__init__(
             name=WATERSHED,
             function=binary_watershed,
             num_sliders=2,
             num_counters=2,
-            widget_parent=widget_parent
+            widget_parent=widget_parent,
         )
 
         self.sliders[0].label.setText("Foreground probability threshold")
@@ -446,13 +453,13 @@ class Watershed(InstanceMethod):
 class ConnectedComponents(InstanceMethod):
     """Widget class for Connected Components instance segmentation. Requires 2 parameters, see binary_connected."""
 
-    def __init__(self, widget_parent = None):
+    def __init__(self, widget_parent=None):
         super().__init__(
             name=CONNECTED_COMP,
             function=binary_connected,
             num_sliders=1,
             num_counters=1,
-            widget_parent=widget_parent
+            widget_parent=widget_parent,
         )
 
         self.sliders[0].label.setText("Foreground probability threshold")
@@ -483,7 +490,7 @@ class VoronoiOtsu(InstanceMethod):
             function=voronoi_otsu,
             num_sliders=0,
             num_counters=2,
-            widget_parent=widget_parent
+            widget_parent=widget_parent,
         )
         self.counters[0].label.setText("Spot sigma")  # closeness
         self.counters[

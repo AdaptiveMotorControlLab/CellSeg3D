@@ -10,11 +10,14 @@ from napari_cellseg3d.utils import LOGGER as log
 
 PERCENT_CORRECT = 0.7
 
+
 @dataclass
 class LabelInfo:
     gt_index: int
     model_labels_id_and_status: Dict = None  # for each model label id present on gt_index in gt labels, contains status (correct/wrong)
-    best_model_label_coverage: float = 0.0  # ratio of pixels of the gt label correctly labelled
+    best_model_label_coverage: float = (
+        0.0  # ratio of pixels of the gt label correctly labelled
+    )
     overall_gt_label_coverage: float = 0.0  # true positive ration of the model
 
     def get_correct_ratio(self):
@@ -24,16 +27,25 @@ class LabelInfo:
             else:
                 return None
 
+
 def eval_model(gt_labels, model_labels, print_report=False):
 
-    report_list, new_labels, fused_labels = create_label_report(gt_labels, model_labels)
+    report_list, new_labels, fused_labels = create_label_report(
+        gt_labels, model_labels
+    )
 
     per_label_perfs = []
     for report in report_list:
         if print_report:
-            log.info(f"Label {report.gt_index} : {report.model_labels_id_and_status}")
-            log.info(f"Best model label coverage : {report.best_model_label_coverage}")
-            log.info(f"Overall gt label coverage : {report.overall_gt_label_coverage}")
+            log.info(
+                f"Label {report.gt_index} : {report.model_labels_id_and_status}"
+            )
+            log.info(
+                f"Best model label coverage : {report.best_model_label_coverage}"
+            )
+            log.info(
+                f"Overall gt label coverage : {report.overall_gt_label_coverage}"
+            )
 
         perf = report.get_correct_ratio()
         if perf is not None:
@@ -41,8 +53,6 @@ def eval_model(gt_labels, model_labels, print_report=False):
 
     per_label_perfs = np.array(per_label_perfs)
     return per_label_perfs.mean(), new_labels, fused_labels
-
-
 
 
 def create_label_report(gt_labels, model_labels):
@@ -62,7 +72,6 @@ def create_label_report(gt_labels, model_labels):
     new_labels: list
         The labels of the model that are not labelled in the neurons, the ratio of the pixels of the model's label that are an artefact
     """
-
 
     map_labels_existing = []
     map_fused_neurons = {}
@@ -135,9 +144,7 @@ def create_label_report(gt_labels, model_labels):
 
         # log.debug(ratio)
         ratio_model_lab_for_given_gt_lab = np.array(ratio)
-        info.best_model_label_coverage = (
-            ratio_model_lab_for_given_gt_lab.max()
-        )
+        info.best_model_label_coverage = ratio_model_lab_for_given_gt_lab.max()
 
         best_model_lab_id = model_lab_on_gt[
             np.argmax(ratio_model_lab_for_given_gt_lab)
@@ -369,9 +376,7 @@ def evaluate_model_performance(
             "Mean true positive ratio of the model for fused neurons: ",
         )
         log.info(mean_true_positive_ratio_model_fused)
-        log.info(
-            "Mean ratio of false pixel in artefacts: "
-        )
+        log.info("Mean ratio of false pixel in artefacts: ")
         log.info(mean_ratio_false_pixel_artefact)
 
         if visualize:
