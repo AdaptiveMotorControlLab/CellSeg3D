@@ -1,6 +1,7 @@
 black
 coverage
 isort
+itk
 pytest
 pytest-qt
 sphinx
@@ -18,6 +19,7 @@ matplotlib>=3.4.1
 tifffile>=2022.2.9
 imageio-ffmpeg>=0.4.5
 torch>=1.11
-monai[nibabel,scikit-image,itk,einops]>=0.9.0
+monai[nibabel,einops]>=1.0.1
 pillow
+scikit-image>=0.19.2
 vispy>=0.9.6

@@ -134,7 +134,7 @@ def resize(image, zoom_factors):
         mode="nearest-exact",
         padding_mode="empty",
     )(np.expand_dims(image, axis=0))
-    return isotropic_image[0]
+    return isotropic_image[0].numpy()
 
 
 def align_array_sizes(array_shape, target_shape):
