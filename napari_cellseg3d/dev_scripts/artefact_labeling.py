@@ -1,10 +1,9 @@
 import os
 
 import napari
-import numpy as np
-import scipy.ndimage as ndimage
-from skimage.filters import threshold_otsu
-from tifffile import imread, imwrite
+
+# import sys
+# sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from napari_cellseg3d.code_models.model_instance_seg import binary_watershed
 
@@ -105,7 +104,6 @@ def make_labels(
         image_contrasted = (image_contrasted - np.min(image_contrasted)) / (
             np.max(image_contrasted) - np.min(image_contrasted)
         )
-
         image_contrasted = image_contrasted * augment_contrast_factor
         image_contrasted = np.where(image_contrasted > 1, 1, image_contrasted)
         labels = binary_watershed(image_contrasted, thres_small=threshold_size)
@@ -126,7 +124,9 @@ def make_labels(
     )
 
 
-def select_image_by_labels(image, labels, path_image_out, label_values):
+def select_image_by_labels(
+    path_image, path_labels, path_image_out, label_values
+):
     """Select image by labels.
     Parameters
     ----------
