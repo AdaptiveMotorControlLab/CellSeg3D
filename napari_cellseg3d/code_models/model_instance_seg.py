@@ -1,5 +1,3 @@
-from __future__ import division
-from __future__ import print_function
 from dataclasses import dataclass
 from typing import List
 import numpy as np
@@ -10,6 +8,7 @@ from skimage.measure import regionprops
 from skimage.morphology import remove_small_objects
 from skimage.segmentation import watershed
 from tifffile import imread
+
 # from skimage.measure import mesh_surface_area
 # from skimage.measure import marching_cubes
 
@@ -531,14 +530,13 @@ class InstanceWidgets(QWidget):
                         group.layout.addWidget(counter.label)
                         group.layout.addWidget(counter)
                         self.instance_widgets[name].append(counter)
-        except RuntimeError as e:
-            logger.debug(f"Caught runtime error, most likely during testing")
+        except RuntimeError:
+            logger.debug("Caught runtime error, most likely during testing")
 
         self.setLayout(group.layout)
         self._set_visibility()
 
     def _set_visibility(self):
-
         for name in self.instance_widgets.keys():
             if name != self.method_choice.currentText():
                 for widget in self.instance_widgets[name]:

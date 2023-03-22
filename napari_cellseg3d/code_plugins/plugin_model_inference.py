@@ -10,9 +10,6 @@ from napari_cellseg3d import config
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
 from napari_cellseg3d.code_models.model_framework import ModelFramework
-from napari_cellseg3d.code_models.model_instance_seg import (
-    INSTANCE_SEGMENTATION_METHOD_LIST,
-)
 from napari_cellseg3d.code_models.model_instance_seg import InstanceMethod
 from napari_cellseg3d.code_models.model_instance_seg import InstanceWidgets
 from napari_cellseg3d.code_models.model_workers import InferenceResult

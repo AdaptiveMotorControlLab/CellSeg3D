@@ -5,11 +5,15 @@ import napari
 
 from napari_cellseg3d.utils import LOGGER as log
 
-PERCENT_CORRECT = 0.5 # how much of the original label should be found by the model to be classified as correct
+PERCENT_CORRECT = 0.5  # how much of the original label should be found by the model to be classified as correct
 
 
 def evaluate_model_performance(
-    labels, model_labels,threshold_correct = PERCENT_CORRECT , print_details=False, visualize=False
+    labels,
+    model_labels,
+    threshold_correct=PERCENT_CORRECT,
+    print_details=False,
+    visualize=False,
 ):
     """Evaluate the model performance.
     Parameters
@@ -91,9 +95,15 @@ def evaluate_model_performance(
     else:
         mean_ratio_false_pixel_artefact = np.nan
 
-    log.info(f"Percent of non-fused neurons found: {neurons_found / len(unique_labels) * 100:.2f}%")
-    log.info(f"Percent of fused neurons found: {neurons_fused / len(unique_labels) * 100:.2f}%")
-    log.info(f"Overall percent of neurons found: {(neurons_found + neurons_fused) / len(unique_labels) * 100:.2f}%")
+    log.info(
+        f"Percent of non-fused neurons found: {neurons_found / len(unique_labels) * 100:.2f}%"
+    )
+    log.info(
+        f"Percent of fused neurons found: {neurons_fused / len(unique_labels) * 100:.2f}%"
+    )
+    log.info(
+        f"Overall percent of neurons found: {(neurons_found + neurons_fused) / len(unique_labels) * 100:.2f}%"
+    )
 
     if print_details:
         log.info(f"Neurons found: {neurons_found}")
@@ -131,7 +141,7 @@ def evaluate_model_performance(
             )
             viewer.add_labels(found_label, name="ground truth found")
             neurones_not_found_labels = np.where(
-                np.isin(unique_labels, neurons_found_labels) == False,
+                np.isin(unique_labels, neurons_found_labels) is False,
                 unique_labels,
                 0,
             )
@@ -275,6 +285,7 @@ def save_as_csv(results, path):
         ],
     )
     df.to_csv(path, index=False)
+
 
 #######################
 # Slower version that was used for debugging

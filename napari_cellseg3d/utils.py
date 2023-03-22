@@ -36,9 +36,7 @@ class Singleton(type):
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(
-                *args, **kwargs
-            )
+            cls._instances[cls] = super().__call__(*args, **kwargs)
         return cls._instances[cls]
 
 
@@ -413,17 +411,17 @@ def parse_default_path(possible_paths):
 
 def get_date_time():
     """Get date and time in the following format : year_month_day_hour_minute_second"""
-    return "{:%Y_%m_%d_%H_%M_%S}".format(datetime.now())
+    return f"{datetime.now():%Y_%m_%d_%H_%M_%S}"
 
 
 def get_time():
     """Get time in the following format : hour:minute:second. NOT COMPATIBLE with file paths (saving with ":" is invalid)"""
-    return "{:%H:%M:%S}".format(datetime.now())
+    return f"{datetime.now():%H:%M:%S}"
 
 
 def get_time_filepath():
     """Get time in the following format : hour_minute_second. Compatible with saving"""
-    return "{:%H_%M_%S}".format(datetime.now())
+    return f"{datetime.now():%H_%M_%S}"
 
 
 def load_images(dir_or_path, filetype="", as_folder: bool = False):
