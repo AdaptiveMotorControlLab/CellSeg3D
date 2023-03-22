@@ -70,7 +70,6 @@ class InstanceMethod:
                         text_label="",
                         parent=None,
                     ),
-
                 )
                 self.sliders.append(getattr(self, widget))
 

@@ -557,7 +557,6 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 method=self.instance_widgets.methods[
                     self.instance_widgets.method_choice.currentText()
                 ],
-
             )
 
             self.post_process_config = config.PostProcessConfig(
