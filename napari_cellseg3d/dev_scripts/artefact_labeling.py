@@ -412,22 +412,22 @@ def create_artefact_labels_from_folder(
             )
 
 
-# if __name__ == "__main__":
-#     repo_path = Path(__file__).resolve().parents[1]
-#     print(f"REPO PATH : {repo_path}")
-#     paths = [
-#         "dataset_clean/cropped_visual/train",
-#         "dataset_clean/cropped_visual/val",
-#         "dataset_clean/somatomotor",
-#         "dataset_clean/visual_tif",
-#     ]
-#     for data_path in paths:
-#         path = str(repo_path / data_path)
-#         print(path)
-#         create_artefact_labels_from_folder(
-#             path,
-#             do_visualize=False,
-#             threshold_artefact_brightness_percent=20,
-#             threshold_artefact_size_percent=1,
-#             contrast_power=20,
-#         )
+if __name__ == "__main__":
+    repo_path = Path(__file__).resolve().parents[1]
+    print(f"REPO PATH : {repo_path}")
+    paths = [
+        "dataset_clean/cropped_visual/train",
+        "dataset_clean/cropped_visual/val",
+        "dataset_clean/somatomotor",
+        "dataset_clean/visual_tif",
+    ]
+    for data_path in paths:
+        path = str(repo_path / data_path)
+        print(path)
+        create_artefact_labels_from_folder(
+            path,
+            do_visualize=False,
+            threshold_artefact_brightness_percent=20,
+            threshold_artefact_size_percent=1,
+            contrast_power=20,
+        )
