@@ -13,8 +13,6 @@ from napari_cellseg3d.code_plugins.plugin_model_inference import (
 )
 from napari_cellseg3d.config import MODEL_LIST
 
-
-
 def test_inference(make_napari_viewer, qtbot):
     im_path = str(Path(__file__).resolve().parent / "res/test.tif")
     image = imread(im_path)

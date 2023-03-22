@@ -6,10 +6,7 @@ from typing import List, Optional
 import napari
 import numpy as np
 
-from napari_cellseg3d.code_models.model_instance_seg import ConnectedComponents
 from napari_cellseg3d.code_models.model_instance_seg import InstanceMethod
-from napari_cellseg3d.code_models.model_instance_seg import VoronoiOtsu
-from napari_cellseg3d.code_models.model_instance_seg import Watershed
 
 
 # from napari_cellseg3d.models import model_TRAILMAP as TRAILMAP

@@ -5,7 +5,9 @@ if TYPE_CHECKING:
 
 # Qt
 from qtpy.QtCore import qInstallMessageHandler
-from qtpy.QtWidgets import QSizePolicy, QVBoxLayout, QWidget
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QVBoxLayout
+from qtpy.QtWidgets import QWidget
 
 # local
 import napari_cellseg3d.interface as ui
