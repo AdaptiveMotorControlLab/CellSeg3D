@@ -10,12 +10,13 @@ import scipy.ndimage as ndimage
 from napari.qt.threading import thread_worker
 from tifffile import imread, imwrite
 from tqdm import tqdm
-
-import napari_cellseg3d.dev_scripts.artefact_labeling as make_artefact_labels
-from napari_cellseg3d.code_models.model_instance_seg import binary_watershed
+import threading
 
 # import sys
 # sys.path.append(str(Path(__file__) / "../../"))
+
+import napari_cellseg3d.dev_scripts.artefact_labeling as make_artefact_labels
+
 """
 New code by Yves Paychère
 Fixes labels and allows to auto-detect artifacts and neurons based on a simple intenstiy threshold
@@ -138,13 +139,7 @@ def ask_labels(unique_artefact, test=False):
 
 
 def relabel(
-    image_path,
-    label_path,
-    go_fast=False,
-    check_for_unicity=True,
-    delay=0.3,
-    viewer=None,
-    test=False,
+    image_path, label_path, go_fast=False, check_for_unicity=True, delay=0.3
 ):
     """relabel the image labelled with different label for each neuron and save it in the save_path location
     Parameters
@@ -175,10 +170,9 @@ def relabel(
         print(
             "visualize the relabeld image in white the previous labels and in red the new labels"
         )
-        if not test:
-            visualize_map(
-                map_labels_existing, label_path, new_label_path, delay=delay
-            )
+        visualize_map(
+            map_labels_existing, label_path, new_label_path, delay=delay
+        )
         label_path = new_label_path
     # detect artefact
     print("detection of potential neurons (in progress)")
@@ -205,11 +199,7 @@ def relabel(
         artefact_copy = np.where(
             np.isin(artefact, i_labels_to_add), 0, artefact
         )
-        if viewer is None:
-            viewer = napari.view_image(image)
-        else:
-            viewer = viewer
-            viewer.add_image(image, name="image")
+        viewer = napari.view_image(image)
         viewer.add_labels(artefact_copy, name="potential neurons")
         viewer.add_labels(imread(label_path), name="labels")
         if not test:
