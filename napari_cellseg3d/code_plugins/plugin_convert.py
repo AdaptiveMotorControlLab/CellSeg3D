@@ -4,7 +4,8 @@ from pathlib import Path
 import napari
 import numpy as np
 from qtpy.QtWidgets import QSizePolicy
-from tifffile import imread, imwrite
+from tifffile import imread
+from tifffile import imwrite
 
 import napari_cellseg3d.interface as ui
 from napari_cellseg3d import utils
@@ -143,7 +144,7 @@ class AnisoUtils(BasePluginFolder):
         )
 
     def _start(self):
-        self.results_path.mkdir(exist_ok=True, parents=True)
+        self.results_path.mkdir(exist_ok=True)
         zoom = self.aniso_widgets.scaling_zyx()
 
         if self.layer_choice.isChecked():

@@ -444,11 +444,10 @@ class InferenceWorker(GeneratorWorker):
     ):
         inputs = inputs.to("cpu")
 
-        model_output = lambda inputs: post_process_transforms(
-            self.config.model_info.get_model().get_output(
-                model, inputs
-            )  # TODO(cyril) refactor those functions
-        )
+        # def model_output(inputs):
+        #     return post_process_transforms(
+        #         self.config.model_info.get_model().get_output(model, inputs)
+        #     )
 
         def model_output(inputs):
             return post_process_transforms(
