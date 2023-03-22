@@ -315,21 +315,6 @@ class InferenceWorker(GeneratorWorker):
         """Sends a warning to main thread"""
         self.warn_signal.emit(warning)
 
-    def raise_error(self, exception, msg):
-        """Raises an error in main thread"""
-        logger.error(msg, exc_info=True)
-        logger.error(exception, exc_info=True)
-
-        self.log_signal.emit("!" * 20)
-        self.log_signal.emit("Error occured")
-        # self.log_signal.emit(msg)
-        # self.log_signal.emit(str(exception))
-
-        self.error_signal.emit(exception, msg)
-        self.errored.emit(exception)
-        yield exception
-        # self.quit()
-
     def log_parameters(self):
         config = self.config
 
@@ -505,11 +490,10 @@ class InferenceWorker(GeneratorWorker):
     ):
         inputs = inputs.to("cpu")
 
-        model_output = lambda inputs: post_process_transforms(
-            self.config.model_info.get_model().get_output(
-                model, inputs
-            )  # TODO(cyril) refactor those functions
-        )
+        # def model_output(inputs):
+        #     return post_process_transforms(
+        #         self.config.model_info.get_model().get_output(model, inputs)
+        #     )
 
         def model_output(inputs):
             return post_process_transforms(
@@ -698,11 +682,10 @@ class InferenceWorker(GeneratorWorker):
                 padding_mode="empty",
             )
             return anisotropic_transform(image[0])
-        return image
+        else:
+            return image
 
-    def instance_seg(
-        self, semantic_labels, image_id=0, original_filename="layer"
-    ):
+    def instance_seg(self, to_instance, image_id=0, original_filename="layer"):
         if image_id is not None:
             self.log(f"\nRunning instance segmentation for image n°{image_id}")
 
@@ -1095,14 +1078,6 @@ class TrainingWorker(GeneratorWorker):
         """Sends a warning to main thread"""
         self.warn_signal.emit(warning)
 
-    def raise_error(self, exception, msg):
-        """Sends an error to main thread"""
-        logger.error(msg, exc_info=True)
-        logger.error(exception, exc_info=True)
-        self.error_signal.emit(exception, msg)
-        self.errored.emit(exception)
-        self.quit()
-
     def log_parameters(self):
         self.log("-" * 20)
         self.log("Parameters summary :\n")
@@ -1314,31 +1289,6 @@ class TrainingWorker(GeneratorWorker):
             )
 
             # self.log("Loading dataset...\n")
-            def get_loader_func(num_samples):
-                return Compose(
-                    [
-                        LoadImaged(keys=["image", "label"]),
-                        EnsureChannelFirstd(keys=["image", "label"]),
-                        RandSpatialCropSamplesd(
-                            keys=["image", "label"],
-                            roi_size=(
-                                self.config.sample_size
-                            ),  # multiply by axis_stretch_factor if anisotropy
-                            # max_roi_size=(120, 120, 120),
-                            random_size=False,
-                            num_samples=num_samples,
-                        ),
-                        Orientationd(keys=["image", "label"], axcodes="PLI"),
-                        SpatialPadd(
-                            keys=["image", "label"],
-                            spatial_size=(
-                                utils.get_padding_dim(self.config.sample_size)
-                            ),
-                        ),
-                        EnsureTyped(keys=["image", "label"]),
-                    ]
-                )
-
             if do_sampling:
                 # if there is only one volume, split samples
                 # TODO(cyril) : maybe implement something in user config to toggle this behavior

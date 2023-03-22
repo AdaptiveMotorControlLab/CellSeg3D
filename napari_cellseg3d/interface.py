@@ -1077,7 +1077,7 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         step (Optional[float]): step value, defaults to 1
         parent: parent widget, defaults to None
         fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed
-        text_label (Optional[str]): if provided, creates a label with the chosen title to use with the counter
+        label (Optional[str]): if provided, creates a label with the chosen title to use with the counter
         """
 
         super().__init__(parent)

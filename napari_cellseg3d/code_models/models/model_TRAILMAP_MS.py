@@ -8,23 +8,8 @@ class TRAILMAP_MS_(UNet3D):
     use_default_training = True
     weights_file = "TRAILMAP_MS_best_metric_epoch_26.pth"
 
-    # original model from Liqun Luo lab, transferred to pytorch and trained on mesoSPIM-acquired data (mostly cFOS as of July 2022)
+    return out
 
-    def __init__(self, in_channels=1, out_channels=1, **kwargs):
-        try:
-            super().__init__(
-                in_channels=in_channels, out_channels=out_channels, **kwargs
-            )
-        except TypeError as e:
-            logger.warning(f"Caught TypeError: {e}")
-            super().__init__(
-                in_channels=in_channels, out_channels=out_channels
-            )
 
-    # def get_output(self, input):
-    #     out = self(input)
-
-    # return out
-    #
-    # def get_validation(self, val_inputs):
-    #     return self(val_inputs)
+def get_validation(model, val_inputs):
+    return model(val_inputs)

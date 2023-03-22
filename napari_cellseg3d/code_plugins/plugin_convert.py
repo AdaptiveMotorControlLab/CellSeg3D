@@ -139,7 +139,7 @@ class AnisoUtils(BasePluginFolder):
         )
 
     def _start(self):
-        self.results_path.mkdir(exist_ok=True, parents=True)
+        self.results_path.mkdir(exist_ok=True)
         zoom = self.aniso_widgets.scaling_zyx()
 
         if self.layer_choice.isChecked():

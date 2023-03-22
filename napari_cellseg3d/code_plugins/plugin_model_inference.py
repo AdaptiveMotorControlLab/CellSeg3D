@@ -15,9 +15,6 @@ from napari_cellseg3d.code_models.instance_segmentation import (
     InstanceWidgets,
 )
 from napari_cellseg3d.code_models.model_framework import ModelFramework
-from napari_cellseg3d.code_models.model_instance_seg import (
-    INSTANCE_SEGMENTATION_METHOD_LIST,
-)
 from napari_cellseg3d.code_models.model_instance_seg import InstanceMethod
 from napari_cellseg3d.code_models.model_instance_seg import InstanceWidgets
 from napari_cellseg3d.code_models.model_workers import InferenceResult
@@ -834,27 +831,23 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             ):
                 zoom = self.worker_config.post_process_config.zoom.zoom_values
 
-                viewer.dims.ndisplay = 3
-                viewer.scale_bar.visible = True
-
-                if self.config.show_original and result.original is not None:
-                    viewer.add_image(
-                        result.original,
-                        colormap="inferno",
-                        name=f"original_{image_id}",
-                        scale=zoom,
-                        opacity=0.7,
-                    )
+        if (
+            self.config.show_results
+            and image_id <= self.config.show_results_count
+        ):
+            zoom = self.worker_config.post_process_config.zoom.zoom_values
 
                 out_colormap = "twilight"
                 if self.worker_config.post_process_config.thresholding.enabled:
                     out_colormap = "turbo"
 
+            if self.config.show_original and result.original is not None:
                 viewer.add_image(
-                    result.result,
-                    colormap=out_colormap,
-                    name=f"pred_{image_id}_{model_name}",
-                    opacity=0.8,
+                    result.original,
+                    colormap="inferno",
+                    name=f"original_{image_id}",
+                    scale=zoom,
+                    opacity=0.7,
                 )
                 if result.crf_results is not None:
                     logger.debug(
@@ -873,9 +866,16 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                         self.worker_config.post_process_config.instance.method.name
                     )
 
-                    number_cells = (
-                        np.unique(result.instance_labels.flatten()).size - 1
-                    )  # remove background
+            out_colormap = "twilight"
+            if self.worker_config.post_process_config.thresholding.enabled:
+                out_colormap = "turbo"
+
+            viewer.add_image(
+                result.result,
+                colormap=out_colormap,
+                name=f"pred_{image_id}_{model_name}",
+                opacity=0.8,
+            )
 
             if result.instance_labels is not None:
                 labels = result.instance_labels
@@ -889,22 +889,16 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
                 name = f"({number_cells} objects)_{method_name}_instance_labels_{image_id}"
 
-                name = f"({number_cells} objects)_{method_name}_instance_labels_{image_id}"
+                viewer.add_labels(labels, name=name)
 
                     if result.stats is not None and isinstance(
                         result.stats, list
                     ):
                         log.debug(f"len stats : {len(result.stats)}")
 
-                        for i, stats in enumerate(result.stats):
-                            # stats = result.stats
-
-                            if (
-                                self.worker_config.compute_stats
-                                and stats is not None
-                            ):
-                                stats_dict = stats.get_dict()
-                                stats_df = pd.DataFrame(stats_dict)
+                if self.worker_config.compute_stats and stats is not None:
+                    stats_dict = stats.get_dict()
+                    stats_df = pd.DataFrame(stats_dict)
 
                                 self.log.print_and_log(
                                     f"Number of instances in channel {i} : {stats.number_objects[0]}"
