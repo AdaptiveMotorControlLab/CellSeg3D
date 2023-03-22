@@ -544,7 +544,9 @@ class InferenceWorker(GeneratorWorker):
                 i + 1,
             )
             if from_layer:
-                instance_labels = np.swapaxes(instance_labels, 0, 2) # TODO(cyril) check if correct
+                instance_labels = np.swapaxes(
+                    instance_labels, 0, 2
+                )  # TODO(cyril) check if correct
             data_dict = self.stats_csv(instance_labels)
         else:
             instance_labels = None

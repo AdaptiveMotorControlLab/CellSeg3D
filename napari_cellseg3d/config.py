@@ -116,10 +116,12 @@ class Zoom:
     enabled: bool = True
     zoom_values: List[float] = None
 
+
 @dataclass
 class InstanceSegConfig:
     enabled: bool = False
     method: InstanceMethod = None
+
 
 @dataclass
 class PostProcessConfig:
