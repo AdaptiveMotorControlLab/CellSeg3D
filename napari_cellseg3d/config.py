@@ -11,12 +11,11 @@ import numpy as np
 from napari_cellseg3d.code_models.model_instance_seg import InstanceMethod
 
 # from napari_cellseg3d.models import model_TRAILMAP as TRAILMAP
-from napari_cellseg3d.code_models.models import model_SegResNet as SegResNet
-from napari_cellseg3d.code_models.models import model_SwinUNetR as SwinUNetR
-from napari_cellseg3d.code_models.models import (
-    model_TRAILMAP_MS as TRAILMAP_MS,
-)
-from napari_cellseg3d.code_models.models import model_VNet as VNet
+from napari_cellseg3d.code_models.models.model_SegResNet import SegResNet_
+from napari_cellseg3d.code_models.models.model_SwinUNetR import SwinUNETR_
+from napari_cellseg3d.code_models.models.model_TRAILMAP_MS import TRAILMAP_MS_
+from napari_cellseg3d.code_models.models.model_VNet import VNet_
+
 from napari_cellseg3d.utils import LOGGER
 
 logger = LOGGER
@@ -25,16 +24,15 @@ logger = LOGGER
 # TODO(cyril) add JSON load/save
 
 MODEL_LIST = {
-    "SegResNet": SegResNet,
-    "VNet": VNet,
+    "SegResNet": SegResNet_,
+    "VNet": VNet_,
     # "TRAILMAP": TRAILMAP,
-    "TRAILMAP_MS": TRAILMAP_MS,
-    "SwinUNetR": SwinUNetR,
+    "TRAILMAP_MS": TRAILMAP_MS_,
+    "SwinUNetR": SwinUNETR_,
     # "test" : DO NOT USE, reserved for testing
 }
 
-
-WEIGHTS_DIR = str(
+PRETRAINED_WEIGHTS_DIR = str(
     Path(__file__).parent.resolve() / Path("code_models/models/pretrained")
 )
 
@@ -70,8 +68,11 @@ class ReviewSession:
 
 @dataclass
 class ModelInfo:
-    """Dataclass recording model info :
-    - name (str): name of the model"""
+    """Dataclass recording model info
+    Args:
+        name (str): name of the model
+        model_input_size (Optional[List[int]]): input size of the model
+    """
 
     name: str = next(iter(MODEL_LIST))
     model_input_size: Optional[List[int]] = None
@@ -95,7 +96,7 @@ class ModelInfo:
 
 @dataclass
 class WeightsInfo:
-    path: str = WEIGHTS_DIR
+    path: str = PRETRAINED_WEIGHTS_DIR
     custom: bool = False
     use_pretrained: Optional[bool] = False
 
@@ -124,6 +125,14 @@ class InstanceSegConfig:
 
 @dataclass
 class PostProcessConfig:
+    """Class to record params for post processing
+
+    Args:
+        zoom (Zoom): zoom config
+        thresholding (Thresholding): thresholding config
+        instance (InstanceSegConfig): instance segmentation config
+    """
+
     zoom: Zoom = Zoom()
     thresholding: Thresholding = Thresholding()
     instance: InstanceSegConfig = InstanceSegConfig()
@@ -144,7 +153,15 @@ class SlidingWindowConfig:
 
 @dataclass
 class InfererConfig:
-    """Class to record params for Inferer plugin"""
+    """Class to record params for Inferer plugin
+
+    Args:
+        model_info (ModelInfo): model info
+        show_results (bool): show results in napari
+        show_results_count (int): number of results to show
+        show_original (bool): show original image in napari
+        anisotropy_resolution (List[int]): anisotropy resolution
+    """
 
     model_info: ModelInfo = None
     show_results: bool = False
@@ -155,7 +172,21 @@ class InfererConfig:
 
 @dataclass
 class InferenceWorkerConfig:
-    """Class to record configuration for Inference job"""
+    """Class to record configuration for Inference job
+
+    Args:
+        device (str): device to use for inference
+        model_info (ModelInfo): model info
+        weights_config (WeightsInfo): weights info
+        results_path (str): path to save results
+        filetype (str): filetype to save results
+        keep_on_cpu (bool): keep results on cpu
+        compute_stats (bool): compute stats
+        post_process_config (PostProcessConfig): post processing config
+        sliding_window_config (SlidingWindowConfig): sliding window config
+        images_filepaths (str): path to images to infer
+        layer (napari.layers.Layer): napari layer to infer on
+    """
 
     device: str = "cpu"
     model_info: ModelInfo = ModelInfo()

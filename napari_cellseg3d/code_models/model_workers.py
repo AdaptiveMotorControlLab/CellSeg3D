@@ -2,8 +2,7 @@ import platform
 from dataclasses import dataclass
 from math import ceil
 from pathlib import Path
-from typing import List
-from typing import Optional
+import typing as t
 
 import numpy as np
 import torch
@@ -39,6 +38,8 @@ from monai.utils import set_determinism
 
 # threads
 from napari.qt.threading import GeneratorWorker
+
+# from napari.qt.threading import thread_worker
 from napari.qt.threading import WorkerBaseSignals
 
 # Qt
@@ -65,14 +66,16 @@ a custom worker function."""
 # https://www.pythoncentral.io/pysidepyqt-tutorial-creating-your-own-signals-and-slots/
 # https://napari-staging-site.github.io/guides/stable/threading.html
 
-WEIGHTS_DIR = Path(__file__).parent.resolve() / Path("models/pretrained")
-logger.debug(f"PRETRAINED WEIGHT DIR LOCATION : {WEIGHTS_DIR}")
+PRETRAINED_WEIGHTS_DIR = Path(__file__).parent.resolve() / Path(
+    "models/pretrained"
+)
+logger.debug(f"PRETRAINED WEIGHT DIR LOCATION : {PRETRAINED_WEIGHTS_DIR}")
 
 
 class WeightsDownloader:
     """A utility class the downloads the weights of a model when needed."""
 
-    def __init__(self, log_widget: Optional[ui.Log] = None):
+    def __init__(self, log_widget: t.Optional[ui.Log] = None):
         """
         Creates a WeightsDownloader, optionally with a log widget to display the progress.
 
@@ -94,11 +97,11 @@ class WeightsDownloader:
         import tarfile
         import urllib.request
 
-        def show_progress(count, block_size, total_size):
+        def show_progress(_, block_size, __):  # count, block_size, total_size
             pbar.update(block_size)
 
         logger.info("*" * 20)
-        pretrained_folder_path = WEIGHTS_DIR
+        pretrained_folder_path = PRETRAINED_WEIGHTS_DIR
         json_path = pretrained_folder_path / Path("pretrained_model_urls.json")
 
         check_path = pretrained_folder_path / Path(model_weights_filename)
@@ -168,12 +171,17 @@ class WeightsDownloader:
 class LogSignal(WorkerBaseSignals):
     """Signal to send messages to be logged from another thread.
 
-    Separate from Worker instances as indicated `here`_"""  # TODO link ?
+    Separate from Worker instances as indicated `here`_
+
+    .. _here: https://stackoverflow.com/questions/2970312/pyqt4-qtcore-pyqtsignal-object-has-no-attribute-connect
+    """  # TODO link ?
 
     log_signal = Signal(str)
     """qtpy.QtCore.Signal: signal to be sent when some text should be logged"""
     warn_signal = Signal(str)
     """qtpy.QtCore.Signal: signal to be sent when some warning should be emitted in main thread"""
+    error_signal = Signal(Exception, str)
+    """qtpy.QtCore.Signal: signal to be sent when some error should be emitted in main thread"""
 
     # Should not be an instance variable but a class variable, not defined in __init__, see
     # https://stackoverflow.com/questions/2970312/pyqt4-qtcore-pyqtsignal-object-has-no-attribute-connect
@@ -204,33 +212,24 @@ class InferenceWorker(GeneratorWorker):
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~inference` function.
 
+        The config contains the following attributes:
+        * device: cuda or cpu device to use for torch
+        * model_dict: the :py:attr:`~self.models_dict` dictionary to obtain the model name, class and instance
+        * weights_dict: dict with "custom" : bool to use custom weights or not; "path" : the path to weights if custom or name of the file if not custom
+        * results_path: the path to save the results to
+        * filetype: the file extension to use when saving,
+        * transforms: a dict containing transforms to perform at various times.
+        * instance: a dict containing parameters regarding instance segmentation
+        * use_window: use window inference with specific size or whole image
+        * window_infer_size: size of window if use_window is True
+        * keep_on_cpu: keep images on CPU or no
+        * stats_csv: compute stats on cells and save them to a csv file
+        * images_filepaths: the paths to the images of the dataset
+        * layer: the layer to run inference on
+
         Args:
-            * config (config.InferenceWorkerConfig): dataclass containing the proper configuration elements
-            * device: cuda or cpu device to use for torch
+            * worker_config (config.InferenceWorkerConfig): dataclass containing the proper configuration elements
 
-            * model_dict: the :py:attr:`~self.models_dict` dictionary to obtain the model name, class and instance
-
-            * weights_dict: dict with "custom" : bool to use custom weights or not; "path" : the path to weights if custom or name of the file if not custom
-
-            * results_path: the path to save the results to
-
-            * filetype: the file extension to use when saving,
-
-            * transforms: a dict containing transforms to perform at various times.
-
-            * instance: a dict containing parameters regarding instance segmentation
-
-            * use_window: use window inference with specific size or whole image
-
-            * window_infer_size: size of window if use_window is True
-
-            * keep_on_cpu: keep images on CPU or no
-
-            * stats_csv: compute stats on cells and save them to a csv file
-
-            * images_filepaths: the paths to the images of the dataset
-
-            * layer: the layer to run inference on
         Note: See :py:func:`~self.inference`
         """
 
@@ -238,6 +237,7 @@ class InferenceWorker(GeneratorWorker):
         self._signals = LogSignal()  # add custom signals
         self.log_signal = self._signals.log_signal
         self.warn_signal = self._signals.warn_signal
+        self.error_signal = self._signals.error_signal
 
         self.config = worker_config
 
@@ -269,6 +269,21 @@ class InferenceWorker(GeneratorWorker):
     def warn(self, warning):
         """Sends a warning to main thread"""
         self.warn_signal.emit(warning)
+
+    def raise_error(self, exception, msg):
+        """Raises an error in main thread"""
+        logger.error(msg, exc_info=True)
+        logger.error(exception, exc_info=True)
+
+        self.log_signal.emit("!" * 20)
+        self.log_signal.emit("Error occured")
+        # self.log_signal.emit(msg)
+        # self.log_signal.emit(str(exception))
+
+        self.error_signal.emit(exception, msg)
+        self.errored.emit(exception)
+        yield exception
+        # self.quit()
 
     def log_parameters(self):
         config = self.config
@@ -398,7 +413,7 @@ class InferenceWorker(GeneratorWorker):
         )  # for anisotropy to be monai-like, i.e. zyx # FIXME rotation not always correct
 
         dims_check = volume.shape
-        # self.log("\nChecking dimensions...")
+        self.log("Checking dimensions...")
         pad = utils.get_padding_dim(dims_check)
 
         # logger.debug(volume.shape)
@@ -449,55 +464,61 @@ class InferenceWorker(GeneratorWorker):
         #         self.config.model_info.get_model().get_output(model, inputs)
         #     )
 
-        def model_output(inputs):
-            return post_process_transforms(
-                self.config.model_info.get_model().get_output(model, inputs)
-            )
-
         if self.config.keep_on_cpu:
             dataset_device = "cpu"
         else:
             dataset_device = self.config.device
 
-        window_size = self.config.sliding_window_config.window_size
-        window_overlap = self.config.sliding_window_config.window_overlap
-
-        # FIXME
-        # import sys
-
-        # old_stdout = sys.stdout
-        # old_stderr = sys.stderr
-
-        # sys.stdout = self.downloader.log_widget
-        # sys.stdout = self.downloader.log_widget
-
-        outputs = sliding_window_inference(
-            inputs,
-            roi_size=[window_size, window_size, window_size],
-            sw_batch_size=1,  # TODO add param
-            predictor=model_output,
-            sw_device=self.config.device,
-            device=dataset_device,
-            overlap=window_overlap,
-            progress=True,
-        )
-
-        # sys.stdout = old_stdout
-        # sys.stderr = old_stderr
-
-        out = outputs.detach().cpu()
-
-        if aniso_transform is not None:
-            out = aniso_transform(out)
-
-        if post_process:
-            out = np.array(out).astype(np.float32)
-            out = np.squeeze(out)
-            return out
+        if self.config.sliding_window_config.is_enabled():
+            window_size = self.config.sliding_window_config.window_size
+            window_size = [window_size, window_size, window_size]
+            window_overlap = self.config.sliding_window_config.window_overlap
         else:
-            return out
+            window_size = None
+            window_overlap = 0
+        try:
+            # logger.debug(f"model : {model}")
+            logger.debug(f"inputs shape : {inputs.shape}")
+            logger.debug(f"inputs type : {inputs.dtype}")
+            try:
+                # outputs = model(inputs)
 
-    def create_result_dict(  # FIXME replace with result class
+                def model_output_wrapper(inputs):
+                    result = model(inputs)
+                    return post_process_transforms(result)
+
+                outputs = sliding_window_inference(
+                    inputs,
+                    roi_size=window_size,
+                    sw_batch_size=1,  # TODO add param
+                    predictor=model_output_wrapper,
+                    sw_device=self.config.device,
+                    device=dataset_device,
+                    overlap=window_overlap,
+                    progress=True,
+                )
+            except Exception as e:
+                logger.error(e, exc_info=True)
+                logger.debug("failed to run sliding window inference")
+                self.raise_error(e, "Error during sliding window inference")
+            logger.debug(f"Inference output shape: {outputs.shape}")
+            self.log("Post-processing...")
+            out = outputs.detach().cpu().numpy()
+            if aniso_transform is not None:
+                out = aniso_transform(out)
+            if post_process:
+                out = np.array(out).astype(np.float32)
+                out = np.squeeze(out)
+                return out
+            else:
+                return out
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            self.raise_error(e, "Error during sliding window inference")
+            # sys.stdout = old_stdout
+            # sys.stderr = old_stderr
+
+    def create_inference_result(
         self,
         semantic_labels,
         instance_labels,
@@ -573,7 +594,10 @@ class InferenceWorker(GeneratorWorker):
             + f"_{time}_"
             + self.config.filetype
         )
-        imwrite(file_path, image)
+        try:
+            imwrite(file_path, image)
+        except ValueError as e:
+            self.raise_error(e, "Error during image saving")
         filename = Path(file_path).stem
 
         if from_layer:
@@ -638,7 +662,7 @@ class InferenceWorker(GeneratorWorker):
 
         self.log(f"Inference completed on image n°{i+1}")
 
-        return self.create_result_dict(
+        return self.create_inference_result(
             out,
             instance_labels,
             from_layer=False,
@@ -649,9 +673,7 @@ class InferenceWorker(GeneratorWorker):
 
     def stats_csv(self, instance_labels):
         if self.config.compute_stats:
-            stats = volume_stats(
-                instance_labels
-            )  # TODO test with area mesh function
+            stats = volume_stats(instance_labels)
             return stats
 
         # except ValueError as e:
@@ -677,13 +699,14 @@ class InferenceWorker(GeneratorWorker):
 
         instance_labels, stats = self.get_instance_result(out, from_layer=True)
 
-        return self.create_result_dict(
+        return self.create_inference_result(
             semantic_labels=out,
             instance_labels=instance_labels,
             from_layer=True,
             stats=stats,
         )
 
+    # @thread_worker(connect={"errored": self.raise_error})
     def inference(self):
         """
         Requires:
@@ -726,34 +749,67 @@ class InferenceWorker(GeneratorWorker):
 
         try:
             dims = self.config.model_info.model_input_size
-            # self.log(f"MODEL DIMS : {dims}")
+            self.log(f"MODEL DIMS : {dims}")
             model_name = self.config.model_info.name
             model_class = self.config.model_info.get_model()
-            self.log(model_name)
+            self.log(f"Model name : {model_name}")
 
             weights_config = self.config.weights_config
             post_process_config = self.config.post_process_config
 
-            if model_name == "SegResNet":
-                model = model_class.get_net(
-                    input_image_size=[
-                        dims,
-                        dims,
-                        dims,
-                    ],  # TODO FIX ! find a better way & remove model-specific code
-                )
-            elif model_name == "SwinUNetR":
-                model = model_class.get_net(
-                    img_size=[dims, dims, dims],
-                    use_checkpoint=False,
-                )
-            else:
-                model = model_class.get_net()
+            # try:
+            self.log("Instantiating model...")
+            model = model_class(  # FIXME test if works
+                input_img_size=[128, 128, 128],
+            )
+            # try:
             model = model.to(self.config.device)
+            # except Exception as e:
+            #     self.raise_error(e, "Issue loading model to device")
+            # logger.debug(f"model : {model}")
+            if model is None:
+                raise ValueError("Model is None")
+            # try:
+            self.log("\nLoading weights...")
+            if weights_config.custom:
+                weights = weights_config.path
+            else:
+                self.downloader.download_weights(
+                    model_name,
+                    model_class.weights_file,
+                )
+                weights = str(
+                    PRETRAINED_WEIGHTS_DIR / Path(model_class.weights_file)
+                )
+            model.load_state_dict(
+                torch.load(
+                    weights,
+                    map_location=self.config.device,
+                )
+            )
+            self.log("Done")
+            # except Exception as e:
+            #     self.raise_error(e, "Issue loading weights")
+            # except Exception as e:
+            #     self.raise_error(e, "Issue instantiating model")
+
+            # if model_name == "SegResNet":
+            #     model = model_class(
+            #         input_image_size=[
+            #             dims,
+            #             dims,
+            #             dims,
+            #         ],
+            #     )
+            # elif model_name == "SwinUNetR":
+            #     model = model_class(
+            #         img_size=[dims, dims, dims],
+            #         use_checkpoint=False,
+            #     )
+            # else:
+            #     model = model_class.get_net()
 
             self.log_parameters()
-
-            model.to(self.config.device)
 
             # load_transforms = Compose(
             #     [
@@ -774,25 +830,6 @@ class InferenceWorker(GeneratorWorker):
                 post_process_transforms = Compose(
                     AsDiscrete(threshold=t), EnsureType()
                 )
-
-            self.log("\nLoading weights...")
-            if weights_config.custom:
-                weights = weights_config.path
-            else:
-                self.downloader.download_weights(
-                    model_name,
-                    model_class.get_weights_file(),
-                )
-                weights = str(
-                    WEIGHTS_DIR / Path(model_class.get_weights_file())
-                )
-            model.load_state_dict(
-                torch.load(
-                    weights,
-                    map_location=self.config.device,
-                )
-            )
-            self.log("Done")
 
             is_folder = self.config.images_filepaths is not None
             is_layer = self.config.layer is not None
@@ -818,6 +855,9 @@ class InferenceWorker(GeneratorWorker):
             else:
                 raise ValueError("No data has been provided. Aborting.")
 
+            if model is None:
+                raise ValueError("Model is None")
+
             model.eval()
             with torch.no_grad():
                 ################################
@@ -833,9 +873,10 @@ class InferenceWorker(GeneratorWorker):
                         input_image, model, post_process_transforms
                     )
             model.to("cpu")
-
+            # self.quit()
         except Exception as e:
-            self.log(f"Error during inference : {e}")
+            logger.error(e, exc_info=True)
+            self.raise_error(e, "Inference failed")
             self.quit()
         finally:
             self.quit()
@@ -845,10 +886,10 @@ class InferenceWorker(GeneratorWorker):
 class TrainingReport:
     show_plot: bool = True
     epoch: int = 0
-    loss_values: List = None
-    validation_metric: List = None
+    loss_values: t.Dict = None  # TODO(cyril) : change to dict and unpack different losses for e.g. WNet with several losses
+    validation_metric: t.List = None
     weights: np.array = None
-    images: List[np.array] = None
+    images: t.List[np.array] = None
 
 
 class TrainingWorker(GeneratorWorker):
@@ -900,6 +941,7 @@ class TrainingWorker(GeneratorWorker):
         self._signals = LogSignal()
         self.log_signal = self._signals.log_signal
         self.warn_signal = self._signals.warn_signal
+        self.error_signal = self._signals.error_signal
 
         self._weight_error = False
         #############################################
@@ -924,6 +966,14 @@ class TrainingWorker(GeneratorWorker):
     def warn(self, warning):
         """Sends a warning to main thread"""
         self.warn_signal.emit(warning)
+
+    def raise_error(self, exception, msg):
+        """Sends an error to main thread"""
+        logger.error(msg, exc_info=True)
+        logger.error(exception, exc_info=True)
+        self.error_signal.emit(exception, msg)
+        self.errored.emit(exception)
+        self.quit()
 
     def log_parameters(self):
         self.log("-" * 20)
@@ -1054,29 +1104,14 @@ class TrainingWorker(GeneratorWorker):
 
             do_sampling = self.config.sampling
 
-            if model_name == "SegResNet":
-                if do_sampling:
-                    size = self.config.sample_size
-                else:
-                    size = check
-                logger.info(f"Size of image : {size}")
-                model = model_class.get_net(
-                    input_image_size=utils.get_padding_dim(size),
-                    # out_channels=1,
-                    # dropout_prob=0.3,
-                )
-            elif model_name == "SwinUNetR":
-                if do_sampling:
-                    size = self.sample_size
-                else:
-                    size = check
-                logger.info(f"Size of image : {size}")
-                model = model_class.get_net(
-                    img_size=utils.get_padding_dim(size),
-                    use_checkpoint=True,
-                )
+            if do_sampling:
+                size = self.config.sample_size
             else:
-                model = model_class.get_net()  # get an instance of the model
+                size = check
+
+            model = model_class(  # FIXME check if correct
+                input_img_size=utils.get_padding_dim(size), use_checkpoint=True
+            )
             model = model.to(self.config.device)
 
             epoch_loss_values = []
@@ -1216,7 +1251,11 @@ class TrainingWorker(GeneratorWorker):
             else:
                 load_whole_images = Compose(
                     [
-                        LoadImaged(keys=["image", "label"]),
+                        LoadImaged(
+                            keys=["image", "label"],
+                            # image_only=True,
+                            # reader=WSIReader(backend="tifffile")
+                        ),
                         EnsureChannelFirstd(keys=["image", "label"]),
                         Orientationd(keys=["image", "label"], axcodes="PLI"),
                         SpatialPadd(
@@ -1263,9 +1302,9 @@ class TrainingWorker(GeneratorWorker):
 
             if weights_config.custom:
                 if weights_config.use_pretrained:
-                    weights_file = model_class.get_weights_file()
+                    weights_file = model_class.weights_file
                     self.downloader.download_weights(model_name, weights_file)
-                    weights = WEIGHTS_DIR / Path(weights_file)
+                    weights = PRETRAINED_WEIGHTS_DIR / Path(weights_file)
                     weights_config.path = weights
                 else:
                     weights = str(Path(weights_config.path))
@@ -1279,6 +1318,7 @@ class TrainingWorker(GeneratorWorker):
                     )
                 except RuntimeError as e:
                     logger.error(f"Error when loading weights : {e}")
+                    logger.error(e, exc_info=True)
                     warn = (
                         "WARNING:\nIt'd seem that the weights were incompatible with the model,\n"
                         "the model will be trained from random weights"
@@ -1326,7 +1366,7 @@ class TrainingWorker(GeneratorWorker):
                         batch_data["label"].to(device),
                     )
                     optimizer.zero_grad()
-                    outputs = model_class.get_output(model, inputs)
+                    outputs = model(inputs)
                     # self.log(f"Output dimensions : {outputs.shape}")
                     loss = self.config.loss_function(outputs, labels)
                     loss.backward()
@@ -1357,10 +1397,24 @@ class TrainingWorker(GeneratorWorker):
                                 val_data["image"].to(device),
                                 val_data["label"].to(device),
                             )
-
-                            val_outputs = model_class.get_validation(
-                                model, val_inputs
+                            self.log("Performing validation...")
+                            try:
+                                val_outputs = sliding_window_inference(
+                                    val_inputs,
+                                    roi_size=size,
+                                    sw_batch_size=self.config.batch_size,
+                                    predictor=model,
+                                    overlap=0.25,
+                                    sw_device=self.config.device,
+                                    device=self.config.device,
+                                    progress=True,
+                                )
+                            except Exception as e:
+                                self.raise_error(e, "Error during validation")
+                            logger.debug(
+                                f"val_outputs shape : {val_outputs.shape}"
                             )
+                            # val_outputs = model(val_inputs)
 
                             pred = decollate_batch(val_outputs)
 
@@ -1407,7 +1461,7 @@ class TrainingWorker(GeneratorWorker):
                             weights=model.state_dict(),
                             images=checkpoint_output,
                         )
-
+                        self.log("Validation completed")
                         yield train_report
 
                         weights_filename = (
@@ -1440,7 +1494,7 @@ class TrainingWorker(GeneratorWorker):
             model.to("cpu")
 
         except Exception as e:
-            self.log(f"Error in training : {e}")
+            self.raise_error(e, "Error in training")
             self.quit()
         finally:
             self.quit()

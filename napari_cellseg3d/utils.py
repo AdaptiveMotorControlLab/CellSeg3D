@@ -2,10 +2,8 @@ import logging
 import warnings
 from datetime import datetime
 from pathlib import Path
-
 import numpy as np
-
-# from dask import delayed
+from monai.transforms import Zoom
 from skimage import io
 from skimage.filters import gaussian
 from tifffile import imread as tfl_imread
@@ -38,6 +36,18 @@ class Singleton(type):
         return cls._instances[cls]
 
 
+# class TiffFileReader(ImageReader):
+#     def __init__(self):
+#         super().__init__()
+#
+#     def verify_suffix(self, filename):
+#         if filename == "tif":
+#             return True
+#     def read(self, data, **kwargs):
+#         return tfl_imread(data)
+#
+#     def get_data(self, data):
+#         return data, {}
 def normalize_x(image):
     """Normalizes the values of an image array to be between [-1;1] rather than [0;255]
 
@@ -122,8 +132,6 @@ def dice_coeff(y_true, y_pred):
 
 
 def resize(image, zoom_factors):
-    from monai.transforms import Zoom
-
     isotropic_image = Zoom(
         zoom_factors,
         keep_size=False,
