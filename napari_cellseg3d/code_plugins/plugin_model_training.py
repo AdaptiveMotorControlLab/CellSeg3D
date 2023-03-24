@@ -985,7 +985,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                         self.result_layers[i].data = report.images[i]
                         self.result_layers[i].refresh()
             except Exception as e:
-                logger.error(e)
+                logger.error(e, exc_info=True)
 
             self.progress.setValue(
                 100 * (report.epoch + 1) // self.worker_config.max_epochs
@@ -1153,7 +1153,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 )
                 self.plot_dock._close_btn = False
             except AttributeError as e:
-                logger.error(e)
+                logger.error(e, exc_info=True)
                 logger.error(
                     "Plot dock widget could not be added. Should occur in testing only"
                 )

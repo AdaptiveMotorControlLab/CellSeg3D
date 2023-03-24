@@ -159,6 +159,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.window_size_choice = ui.DropdownMenu(
             sizes_window, label="Window size"
         )
+        self.window_size_choice.setCurrentIndex(3)  # set to 64 by default
 
         self.window_overlap_slider = ui.Slider(
             default=config.SlidingWindowConfig.window_overlap * 100,
@@ -601,10 +602,13 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.worker.set_download_log(self.log)
 
             self.worker.started.connect(self.on_start)
+
             self.worker.log_signal.connect(self.log.print_and_log)
             self.worker.warn_signal.connect(self.log.warn)
+            self.worker.error_signal.connect(self.log.error)
+
             self.worker.yielded.connect(partial(self.on_yield))  #
-            self.worker.errored.connect(partial(self.on_yield))
+            self.worker.errored.connect(partial(self.on_error))
             self.worker.finished.connect(self.on_finish)
 
             if self.get_device(show=False) == "cuda":
@@ -641,15 +645,18 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.log.print_and_log(f"Saving results to : {self.results_path}")
         self.log.print_and_log("Worker is running...")
 
-    def on_error(self):
-        """Catches errors and tries to clean up. TODO : upgrade"""
+    def on_error(self, error):
+        """Catches errors and tries to clean up."""
+        self.log.print_and_log("!" * 20)
         self.log.print_and_log("Worker errored...")
-        self.log.print_and_log("Trying to clean up...")
+        self.log.error(error)
+        # self.log.print_and_log("Trying to clean up...")
+        self.worker.quit()
         self.btn_start.setText("Start")
         self.btn_close.setVisible(True)
 
-        self.worker = None
         self.worker_config = None
+        self.worker = None
         self.empty_cuda_cache()
 
     def on_finish(self):
@@ -672,83 +679,91 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             data (dict): dict yielded by :py:func:`~inference()`, contains : "image_id" : index of the returned image, "original" : original volume used for inference, "result" : inference result
             widget (QWidget): widget for accessing attributes
         """
+
+        if isinstance(result, Exception):
+            self.on_error(result)
+            # raise result
         # viewer, progress, show_res, show_res_number, zoon, show_original
 
         # check that viewer checkbox is on and that max number of displays has not been reached.
         # widget.log.print_and_log(result)
+        try:
+            image_id = result.image_id
+            model_name = result.model_name
+            if self.worker_config.images_filepaths is not None:
+                total = len(self.worker_config.images_filepaths)
+            else:
+                total = 1
 
-        image_id = result.image_id
-        model_name = result.model_name
-        if self.worker_config.images_filepaths is not None:
-            total = len(self.worker_config.images_filepaths)
-        else:
-            total = 1
+            viewer = self._viewer
 
-        viewer = self._viewer
+            pbar_value = image_id // total
+            if pbar_value == 0:
+                pbar_value = 1
 
-        pbar_value = image_id // total
-        if pbar_value == 0:
-            pbar_value = 1
+            self.progress.setValue(100 * pbar_value)
 
-        self.progress.setValue(100 * pbar_value)
+            if (
+                self.config.show_results
+                and image_id <= self.config.show_results_count
+            ):
+                zoom = self.worker_config.post_process_config.zoom.zoom_values
 
-        if (
-            self.config.show_results
-            and image_id <= self.config.show_results_count
-        ):
-            zoom = self.worker_config.post_process_config.zoom.zoom_values
+                viewer.dims.ndisplay = 3
+                viewer.scale_bar.visible = True
 
-            viewer.dims.ndisplay = 3
-            viewer.scale_bar.visible = True
+                if self.config.show_original and result.original is not None:
+                    viewer.add_image(
+                        result.original,
+                        colormap="inferno",
+                        name=f"original_{image_id}",
+                        scale=zoom,
+                        opacity=0.7,
+                    )
 
-            if self.config.show_original and result.original is not None:
+                out_colormap = "twilight"
+                if self.worker_config.post_process_config.thresholding.enabled:
+                    out_colormap = "turbo"
+
                 viewer.add_image(
-                    result.original,
-                    colormap="inferno",
-                    name=f"original_{image_id}",
-                    scale=zoom,
-                    opacity=0.7,
+                    result.result,
+                    colormap=out_colormap,
+                    name=f"pred_{image_id}_{model_name}",
+                    opacity=0.8,
                 )
 
-            out_colormap = "twilight"
-            if self.worker_config.post_process_config.thresholding.enabled:
-                out_colormap = "turbo"
-
-            viewer.add_image(
-                result.result,
-                colormap=out_colormap,
-                name=f"pred_{image_id}_{model_name}",
-                opacity=0.8,
-            )
-
-            if result.instance_labels is not None:
-                labels = result.instance_labels
-                method_name = self.worker_config.post_process_config.instance.method.name
-
-                number_cells = (
-                    np.unique(labels.flatten()).size - 1
-                )  # remove background
-
-                name = f"({number_cells} objects)_{method_name}_instance_labels_{image_id}"
-
-                viewer.add_labels(labels, name=name)
-
-                stats = result.stats
-
-                if self.worker_config.compute_stats and stats is not None:
-                    stats_dict = stats.get_dict()
-                    stats_df = pd.DataFrame(stats_dict)
-
-                    self.log.print_and_log(
-                        f"Number of instances : {stats.number_objects}"
+                if result.instance_labels is not None:
+                    labels = result.instance_labels
+                    method_name = (
+                        self.worker_config.post_process_config.instance.method.name
                     )
 
-                    csv_name = f"/{method_name}_seg_results_{image_id}_{utils.get_date_time()}.csv"
-                    stats_df.to_csv(
-                        self.worker_config.results_path + csv_name,
-                        index=False,
-                    )
+                    number_cells = (
+                        np.unique(labels.flatten()).size - 1
+                    )  # remove background
 
-                    # self.log.print_and_log(
-                    #     f"OBJECTS DETECTED : {number_cells}\n"
-                    # )
+                    name = f"({number_cells} objects)_{method_name}_instance_labels_{image_id}"
+
+                    viewer.add_labels(labels, name=name)
+
+                    stats = result.stats
+
+                    if self.worker_config.compute_stats and stats is not None:
+                        stats_dict = stats.get_dict()
+                        stats_df = pd.DataFrame(stats_dict)
+
+                        self.log.print_and_log(
+                            f"Number of instances : {stats.number_objects}"
+                        )
+
+                        csv_name = f"/{method_name}_seg_results_{image_id}_{utils.get_date_time()}.csv"
+                        stats_df.to_csv(
+                            self.worker_config.results_path + csv_name,
+                            index=False,
+                        )
+
+                        # self.log.print_and_log(
+                        #     f"OBJECTS DETECTED : {number_cells}\n"
+                        # )
+        except Exception as e:
+            self.on_error(e)

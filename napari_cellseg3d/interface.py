@@ -295,6 +295,22 @@ class Log(QTextEdit):
         finally:
             self.lock.release()
 
+    def error(self, error, msg=None):
+        """Show exception and message from another thread"""
+        self.lock.acquire()
+        try:
+            logger.error(error, exc_info=True)
+            if msg is not None:
+                self.print_and_log(f"{msg} : {error}", printing=False)
+            else:
+                self.print_and_log(
+                    f"Excepetion caught in another thread : {error}",
+                    printing=False,
+                )
+            raise error
+        finally:
+            self.lock.release()
+
 
 ##############
 # UI elements
@@ -1199,7 +1215,7 @@ def open_folder_dialog(
 
     logger.info(f"Default : {default_path}")
     filenames = QFileDialog.getExistingDirectory(
-        widget, "Open directory", default_path
+        widget, "Open directory", default_path + "/.."
     )
     return filenames
 
