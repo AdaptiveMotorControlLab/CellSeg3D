@@ -1,12 +1,8 @@
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
-
-import napari
 import numpy as np
-
-# from dask import delayed
+from monai.transforms import Zoom
 from skimage import io
 from skimage.filters import gaussian
 from tifffile import imread, imwrite
@@ -120,7 +116,7 @@ class Singleton(type):
 #         if filename == "tif":
 #             return True
 #     def read(self, data, **kwargs):
-#         return imread(data)
+#         return tfl_imread(data)
 #
 #     def get_data(self, data):
 #         return data, {}
@@ -206,39 +202,6 @@ def dice_coeff(y_true, y_pred):
     return (2.0 * intersection + smooth) / (
         np.sum(y_true_f) + np.sum(y_pred_f) + smooth
     )
-
-
-def correct_rotation(image):
-    """Rotates the exes 0 and 2 in [DHW] section of image array"""
-    extra_dims = len(image.shape) - 3
-    return np.swapaxes(image, 0 + extra_dims, 2 + extra_dims)
-
-
-def normalize_max(image):
-    """Normalizes an image using the max and min value"""
-    shape = image.shape
-    image = image.flatten()
-    image = (image - image.min()) / (image.max() - image.min())
-    image = image.reshape(shape)
-    return image
-
-
-def remap_image(
-    image: Union["np.ndarray", "torch.Tensor"],
-    new_max=100,
-    new_min=0,
-    prev_max=None,
-    prev_min=None,
-):
-    """Normalizes a numpy array or Tensor using the max and min value"""
-    shape = image.shape
-    image = image.flatten()
-    im_max = prev_max if prev_max is not None else image.max()
-    im_min = prev_min if prev_min is not None else image.min()
-    image = (image - im_min) / (im_max - im_min)
-    image = image * (new_max - new_min) + new_min
-    image = image.reshape(shape)
-    return image
 
 
 def resize(image, zoom_factors):

@@ -168,9 +168,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.window_size_choice = ui.DropdownMenu(
             sizes_window, text_label="Window size"
         )
-        self.window_size_choice.setCurrentIndex(
-            self._default_window_size
-        )  # set to 64 by default
+        self.window_size_choice.setCurrentIndex(3)  # set to 64 by default
 
         self.window_overlap_slider = ui.Slider(
             default=config.SlidingWindowConfig.window_overlap * 100,
@@ -831,23 +829,27 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             ):
                 zoom = self.worker_config.post_process_config.zoom.zoom_values
 
-        if (
-            self.config.show_results
-            and image_id <= self.config.show_results_count
-        ):
-            zoom = self.worker_config.post_process_config.zoom.zoom_values
+                viewer.dims.ndisplay = 3
+                viewer.scale_bar.visible = True
+
+                if self.config.show_original and result.original is not None:
+                    viewer.add_image(
+                        result.original,
+                        colormap="inferno",
+                        name=f"original_{image_id}",
+                        scale=zoom,
+                        opacity=0.7,
+                    )
 
                 out_colormap = "twilight"
                 if self.worker_config.post_process_config.thresholding.enabled:
                     out_colormap = "turbo"
 
-            if self.config.show_original and result.original is not None:
                 viewer.add_image(
-                    result.original,
-                    colormap="inferno",
-                    name=f"original_{image_id}",
-                    scale=zoom,
-                    opacity=0.7,
+                    result.result,
+                    colormap=out_colormap,
+                    name=f"pred_{image_id}_{model_name}",
+                    opacity=0.8,
                 )
                 if result.crf_results is not None:
                     logger.debug(
@@ -866,52 +868,38 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                         self.worker_config.post_process_config.instance.method.name
                     )
 
-            out_colormap = "twilight"
-            if self.worker_config.post_process_config.thresholding.enabled:
-                out_colormap = "turbo"
-
-            viewer.add_image(
-                result.result,
-                colormap=out_colormap,
-                name=f"pred_{image_id}_{model_name}",
-                opacity=0.8,
-            )
-
-            if result.instance_labels is not None:
-                labels = result.instance_labels
-                method_name = (
-                    self.worker_config.post_process_config.instance.method.name
-                )
-
-                number_cells = (
-                    np.unique(labels.flatten()).size - 1
-                )  # remove background
-
-                name = f"({number_cells} objects)_{method_name}_instance_labels_{image_id}"
-
-                viewer.add_labels(labels, name=name)
-
-                    if result.stats is not None and isinstance(
-                        result.stats, list
-                    ):
-                        log.debug(f"len stats : {len(result.stats)}")
-
-                if self.worker_config.compute_stats and stats is not None:
-                    stats_dict = stats.get_dict()
-                    stats_df = pd.DataFrame(stats_dict)
-
-                                self.log.print_and_log(
-                                    f"Number of instances in channel {i} : {stats.number_objects[0]}"
-                                )
-
-                    csv_name = f"/{method_name}_seg_results_{image_id}_{utils.get_date_time()}.csv"
-                    stats_df.to_csv(
-                        self.worker_config.results_path + csv_name,
-                        index=False,
+                if result.instance_labels is not None:
+                    labels = result.instance_labels
+                    method_name = (
+                        self.worker_config.post_process_config.instance.method.name
                     )
 
-                            # self.log.print_and_log(
-                            #     f"OBJECTS DETECTED : {number_cells}\n"
-                            # )
+                    number_cells = (
+                        np.unique(labels.flatten()).size - 1
+                    )  # remove background
+
+                    name = f"({number_cells} objects)_{method_name}_instance_labels_{image_id}"
+
+                    viewer.add_labels(labels, name=name)
+
+                    stats = result.stats
+
+                    if self.worker_config.compute_stats and stats is not None:
+                        stats_dict = stats.get_dict()
+                        stats_df = pd.DataFrame(stats_dict)
+
+                        self.log.print_and_log(
+                            f"Number of instances : {stats.number_objects}"
+                        )
+
+                        csv_name = f"/{method_name}_seg_results_{image_id}_{utils.get_date_time()}.csv"
+                        stats_df.to_csv(
+                            self.worker_config.results_path + csv_name,
+                            index=False,
+                        )
+
+                        # self.log.print_and_log(
+                        #     f"OBJECTS DETECTED : {number_cells}\n"
+                        # )
         except Exception as e:
             self.on_error(e)

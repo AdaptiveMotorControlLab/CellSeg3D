@@ -400,7 +400,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
                     )
                     canvas.draw_idle()
                 except Exception as e:
-                    logger.exception(e)
+                    logger.error(e, exc_info=True)
 
         # Qt widget defined in docker.py
         dmg = Datamanager(parent=viewer)

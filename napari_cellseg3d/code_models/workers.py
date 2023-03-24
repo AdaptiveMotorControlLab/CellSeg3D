@@ -4,6 +4,7 @@ import typing as t
 from dataclasses import dataclass
 from math import ceil
 from pathlib import Path
+import typing as t
 
 import numpy as np
 import torch
@@ -43,7 +44,10 @@ from monai.utils import set_determinism
 
 # from napari.qt.threading import thread_worker
 # threads
-from napari.qt.threading import GeneratorWorker, WorkerBaseSignals
+from napari.qt.threading import GeneratorWorker
+
+# from napari.qt.threading import thread_worker
+from napari.qt.threading import WorkerBaseSignals
 
 # Qt
 from qtpy.QtCore import Signal
@@ -61,10 +65,19 @@ from napari_cellseg3d.code_models.model_instance_seg import volume_stats
 
 logger = utils.LOGGER
 
+"""
+Writing something to log messages from outside the main thread is rather problematic (plenty of silent crashes...)
+so instead, following the instructions in the guides below to have a worker with custom signals, I implemented
+a custom worker function."""
+
+# FutureReference():
+# https://python-forum.io/thread-31349.html
+# https://www.pythoncentral.io/pysidepyqt-tutorial-creating-your-own-signals-and-slots/
+# https://napari-staging-site.github.io/guides/stable/threading.html
+
 PRETRAINED_WEIGHTS_DIR = Path(__file__).parent.resolve() / Path(
     "models/pretrained"
 )
-VERBOSE_SCHEDULER = True
 logger.debug(f"PRETRAINED WEIGHT DIR LOCATION : {PRETRAINED_WEIGHTS_DIR}")
 
 
@@ -178,9 +191,9 @@ a custom worker function was implemented.
 class LogSignal(WorkerBaseSignals):
     """Signal to send messages to be logged from another thread.
 
-    Separate from Worker instances as indicated `on this post`_
+    Separate from Worker instances as indicated `here`_
 
-    .. _on this post: https://stackoverflow.com/questions/2970312/pyqt4-qtcore-pyqtsignal-object-has-no-attribute-connect
+    .. _here: https://stackoverflow.com/questions/2970312/pyqt4-qtcore-pyqtsignal-object-has-no-attribute-connect
     """  # TODO link ?
 
     log_signal = Signal(str)
@@ -314,6 +327,21 @@ class InferenceWorker(GeneratorWorker):
     def warn(self, warning):
         """Sends a warning to main thread"""
         self.warn_signal.emit(warning)
+
+    def raise_error(self, exception, msg):
+        """Raises an error in main thread"""
+        logger.error(msg, exc_info=True)
+        logger.error(exception, exc_info=True)
+
+        self.log_signal.emit("!" * 20)
+        self.log_signal.emit("Error occured")
+        # self.log_signal.emit(msg)
+        # self.log_signal.emit(str(exception))
+
+        self.error_signal.emit(exception, msg)
+        self.errored.emit(exception)
+        yield exception
+        # self.quit()
 
     def log_parameters(self):
         config = self.config
@@ -495,31 +523,10 @@ class InferenceWorker(GeneratorWorker):
         #         self.config.model_info.get_model().get_output(model, inputs)
         #     )
 
-        def model_output(inputs):
-            return post_process_transforms(
-                self.config.model_info.get_model().get_output(model, inputs)
-            )
-
         if self.config.keep_on_cpu:
             dataset_device = "cpu"
         else:
             dataset_device = self.config.device
-
-        window_size = self.config.sliding_window_config.window_size
-        window_overlap = self.config.sliding_window_config.window_overlap
-
-        # FIXME
-        # import sys
-
-        # old_stdout = sys.stdout
-        # old_stderr = sys.stderr
-
-        # sys.stdout = self.downloader.log_widget
-        # sys.stdout = self.downloader.log_widget
-
-        dataset_device = (
-            "cpu" if self.config.keep_on_cpu else self.config.device
-        )
 
         if self.config.sliding_window_config.is_enabled():
             window_size = self.config.sliding_window_config.window_size
@@ -534,27 +541,23 @@ class InferenceWorker(GeneratorWorker):
             logger.debug(f"inputs type : {inputs.dtype}")
             try:
                 # outputs = model(inputs)
-                inputs = utils.remap_image(inputs)
 
                 def model_output_wrapper(inputs):
                     result = model(inputs)
                     return post_process_transforms(result)
 
-                with torch.no_grad():
-                    outputs = sliding_window_inference(
-                        inputs,
-                        roi_size=window_size,
-                        sw_batch_size=1,  # TODO add param
-                        predictor=model_output_wrapper,
-                        sw_device=self.config.device,
-                        device=dataset_device,
-                        overlap=window_overlap,
-                        mode="gaussian",
-                        sigma_scale=0.01,
-                        progress=True,
-                    )
+                outputs = sliding_window_inference(
+                    inputs,
+                    roi_size=window_size,
+                    sw_batch_size=1,  # TODO add param
+                    predictor=model_output_wrapper,
+                    sw_device=self.config.device,
+                    device=dataset_device,
+                    overlap=window_overlap,
+                    progress=True,
+                )
             except Exception as e:
-                logger.exception(e)
+                logger.error(e, exc_info=True)
                 logger.debug("failed to run sliding window inference")
                 self.raise_error(e, "Error during sliding window inference")
             logger.debug(f"Inference output shape: {outputs.shape}")
@@ -565,9 +568,11 @@ class InferenceWorker(GeneratorWorker):
             if post_process:
                 out = np.array(out).astype(np.float32)
                 out = np.squeeze(out)
-            return out
+                return out
+            else:
+                return out
         except Exception as e:
-            logger.exception(e)
+            logger.error(e, exc_info=True)
             self.raise_error(e, "Error during sliding window inference")
             # sys.stdout = old_stdout
             # sys.stderr = old_stderr
@@ -766,14 +771,8 @@ class InferenceWorker(GeneratorWorker):
             return None
 
     def stats_csv(self, instance_labels):
-        try:
-            if self.config.compute_stats:
-                if len(instance_labels.shape) == 4:
-                    stats = [volume_stats(c) for c in instance_labels]
-                else:
-                    stats = [volume_stats(instance_labels)]
-            else:
-                stats = None
+        if self.config.compute_stats:
+            stats = volume_stats(instance_labels)
             return stats
         except ValueError as e:
             self.log(f"Error occurred during stats computing : {e}")
@@ -858,47 +857,38 @@ class InferenceWorker(GeneratorWorker):
 
             weights_config = self.config.weights_config
             post_process_config = self.config.post_process_config
-            if Path(weights_config.path).suffix == ".pt":
-                self.log("Instantiating PyTorch jit model...")
-                model = torch.jit.load(weights_config.path)
-            # try:
-            elif Path(weights_config.path).suffix == ".onnx":
-                self.log("Instantiating ONNX model...")
-                model = ONNXModelWrapper(weights_config.path)
-            else:  # assume is .pth
-                self.log("Instantiating model...")
-                model = model_class(  # FIXME test if works
-                    input_img_size=[dims, dims, dims],
-                    device=self.config.device,
-                    num_classes=self.config.model_info.num_classes,
-                )
-                # try:
-                model = model.to(self.config.device)
-                # except Exception as e:
-                #     self.raise_error(e, "Issue loading model to device")
-                # logger.debug(f"model : {model}")
-                if model is None:
-                    raise ValueError("Model is None")
-                # try:
-                self.log("\nLoading weights...")
-                if weights_config.custom:
-                    weights = weights_config.path
-                else:
-                    self.downloader.download_weights(
-                        model_name,
-                        model_class.weights_file,
-                    )
-                    weights = str(
-                        PRETRAINED_WEIGHTS_DIR / Path(model_class.weights_file)
-                    )
 
-                model.load_state_dict(  # note that this is redefined in WNet_
-                    torch.load(
-                        weights,
-                        map_location=self.config.device,
-                    )
+            # try:
+            self.log("Instantiating model...")
+            model = model_class(  # FIXME test if works
+                input_img_size=[128, 128, 128],
+            )
+            # try:
+            model = model.to(self.config.device)
+            # except Exception as e:
+            #     self.raise_error(e, "Issue loading model to device")
+            # logger.debug(f"model : {model}")
+            if model is None:
+                raise ValueError("Model is None")
+            # try:
+            self.log("\nLoading weights...")
+            if weights_config.custom:
+                weights = weights_config.path
+            else:
+                self.downloader.download_weights(
+                    model_name,
+                    model_class.weights_file,
                 )
-                self.log("Done")
+                weights = str(
+                    PRETRAINED_WEIGHTS_DIR / Path(model_class.weights_file)
+                )
+            model.load_state_dict(
+                torch.load(
+                    weights,
+                    map_location=self.config.device,
+                )
+            )
+            self.log("Done")
             # except Exception as e:
             #     self.raise_error(e, "Issue loading weights")
             # except Exception as e:
@@ -986,7 +976,7 @@ class InferenceWorker(GeneratorWorker):
             model.to("cpu")
             # self.quit()
         except Exception as e:
-            logger.exception(e)
+            logger.error(e, exc_info=True)
             self.raise_error(e, "Inference failed")
             self.quit()
         finally:
@@ -1077,6 +1067,14 @@ class TrainingWorker(GeneratorWorker):
     def warn(self, warning):
         """Sends a warning to main thread"""
         self.warn_signal.emit(warning)
+
+    def raise_error(self, exception, msg):
+        """Sends an error to main thread"""
+        logger.error(msg, exc_info=True)
+        logger.error(exception, exc_info=True)
+        self.error_signal.emit(exception, msg)
+        self.errored.emit(exception)
+        self.quit()
 
     def log_parameters(self):
         self.log("-" * 20)
@@ -1209,7 +1207,10 @@ class TrainingWorker(GeneratorWorker):
 
             do_sampling = self.config.sampling
 
-            size = self.config.sample_size if do_sampling else check
+            if do_sampling:
+                size = self.config.sample_size
+            else:
+                size = check
 
             model = model_class(  # FIXME check if correct
                 input_img_size=utils.get_padding_dim(size), use_checkpoint=True
@@ -1417,7 +1418,7 @@ class TrainingWorker(GeneratorWorker):
                     )
                 except RuntimeError as e:
                     logger.error(f"Error when loading weights : {e}")
-                    logger.exception(e)
+                    logger.error(e, exc_info=True)
                     warn = (
                         "WARNING:\nIt'd seem that the weights were incompatible with the model,\n"
                         "the model will be trained from random weights"
@@ -1512,18 +1513,18 @@ class TrainingWorker(GeneratorWorker):
                                 val_data["image"].to(device),
                                 val_data["label"].to(device),
                             )
+                            self.log("Performing validation...")
                             try:
-                                with torch.no_grad():
-                                    val_outputs = sliding_window_inference(
-                                        val_inputs,
-                                        roi_size=size,
-                                        sw_batch_size=self.config.batch_size,
-                                        predictor=model,
-                                        overlap=0.25,
-                                        sw_device=self.config.device,
-                                        device=self.config.device,
-                                        progress=False,
-                                    )
+                                val_outputs = sliding_window_inference(
+                                    val_inputs,
+                                    roi_size=size,
+                                    sw_batch_size=self.config.batch_size,
+                                    predictor=model,
+                                    overlap=0.25,
+                                    sw_device=self.config.device,
+                                    device=self.config.device,
+                                    progress=True,
+                                )
                             except Exception as e:
                                 self.raise_error(e, "Error during validation")
                             logger.debug(

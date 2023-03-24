@@ -9,12 +9,11 @@ import numpy as np
 from napari_cellseg3d.code_models.model_instance_seg import InstanceMethod
 
 # from napari_cellseg3d.models import model_TRAILMAP as TRAILMAP
-from napari_cellseg3d.code_models.models import model_SegResNet as SegResNet
-from napari_cellseg3d.code_models.models import model_SwinUNetR as SwinUNetR
-from napari_cellseg3d.code_models.models import (
-    model_TRAILMAP_MS as TRAILMAP_MS,
-)
-from napari_cellseg3d.code_models.models import model_VNet as VNet
+from napari_cellseg3d.code_models.models.model_SegResNet import SegResNet_
+from napari_cellseg3d.code_models.models.model_SwinUNetR import SwinUNETR_
+from napari_cellseg3d.code_models.models.model_TRAILMAP_MS import TRAILMAP_MS_
+from napari_cellseg3d.code_models.models.model_VNet import VNet_
+
 from napari_cellseg3d.utils import LOGGER
 
 logger = LOGGER
@@ -28,12 +27,10 @@ MODEL_LIST = {
     # "TRAILMAP": TRAILMAP,
     "TRAILMAP_MS": TRAILMAP_MS_,
     "SwinUNetR": SwinUNETR_,
-    "WNet": WNet_,
     # "test" : DO NOT USE, reserved for testing
 }
 
-
-WEIGHTS_DIR = str(
+PRETRAINED_WEIGHTS_DIR = str(
     Path(__file__).parent.resolve() / Path("code_models/models/pretrained")
 )
 
@@ -73,7 +70,6 @@ class ModelInfo:
     Args:
         name (str): name of the model
         model_input_size (Optional[List[int]]): input size of the model
-        num_classes (int): number of classes for the model
     """
 
     name: str = next(iter(MODEL_LIST))

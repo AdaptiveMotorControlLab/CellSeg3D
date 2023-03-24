@@ -2,26 +2,6 @@ import torch
 from torch import nn
 
 
-def get_weights_file():
-    # model additionally trained on Mathis/Wyss mesoSPIM data
-    return "TRAILMAP_PyTorch.pth"
-    # FIXME currently incorrect, find good weights from TRAILMAP_test and upload them
-
-
-def get_net():
-    return TRAILMAP(1, 1)
-
-
-def get_output(model, input):
-    out = model(input)
-
-    return out
-
-
-def get_validation(model, val_inputs):
-    return model(val_inputs)
-
-
 class TRAILMAP(nn.Module):
     def __init__(self, in_ch, out_ch, *args, **kwargs):
         super().__init__()
@@ -107,6 +87,7 @@ class TRAILMAP(nn.Module):
         out = nn.Sequential(
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
         )
+        return out
 
 
 class TRAILMAP_(TRAILMAP):
