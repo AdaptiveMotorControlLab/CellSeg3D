@@ -1,25 +1,23 @@
-import torch
 from monai.networks.nets import SwinUNETR
 
 
-def get_weights_file():
-    return "Swin64_best_metric.pth"
+class SwinUNETR_(SwinUNETR):
+    use_default_training = True
+    weights_file = "Swin64_best_metric.pth"
 
+    def __init__(self, input_img_size, use_checkpoint=True, **kwargs):
+        super().__init__(
+            input_img_size,
+            in_channels=1,
+            out_channels=1,
+            feature_size=48,
+            use_checkpoint=use_checkpoint,
+            **kwargs
+        )
 
-def get_net(img_size, use_checkpoint=True):
-    return SwinUNETR(
-        img_size,
-        in_channels=1,
-        out_channels=1,
-        feature_size=48,
-        use_checkpoint=use_checkpoint,
-    )
+    # def get_output(self, input):
+    #     out = self(input)
+    #     return torch.sigmoid(out)
 
-
-def get_output(model, input):
-    out = model(input)
-    return torch.sigmoid(out)
-
-
-def get_validation(model, val_inputs):
-    return model(val_inputs)
+    # def get_validation(self, val_inputs):
+    #     return self(val_inputs)
