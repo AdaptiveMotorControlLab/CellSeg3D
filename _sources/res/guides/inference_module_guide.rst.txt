@@ -3,12 +3,12 @@
 Inference module guide
 =================================
 
-This module allows you to use  pre-trained segmentation algorithms (written in Pytorch) on 3D volumes
+This module allows you to use pre-trained segmentation algorithms (written in Pytorch) on 3D volumes
 to automatically label cells.
 
 .. important::
     Currently, only inference on **3D volumes is supported**. Your image and label folders should both contain a set of
-    **3D image files**, currently either **.tif** or **.tiff**. Loading a folder of 2D images as a stack is not supported as of yet.
+    **3D image files**, currently either **.tif** or **.tiff**.
 
 Currently, the following pre-trained models are available :
 
@@ -17,14 +17,16 @@ Model            Link to original paper
 ==============   ================================================================================================
 VNet             `Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation`_
 SegResNet        `3D MRI brain tumor segmentation using autoencoder regularization`_
-TRAILMAP_MS       A PyTorch implementation of the `TRAILMAP project on GitHub`_ pretrained with MesoSpim data
+TRAILMAP_MS       A PyTorch implementation of the `TRAILMAP project on GitHub`_ pretrained with mesoSPIM data
 TRAILMAP          An implementation of the `TRAILMAP project on GitHub`_ using a `3DUNet for PyTorch`_
+SwinUNetR         `Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images`_
 ==============   ================================================================================================
 
 .. _Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation: https://arxiv.org/pdf/1606.04797.pdf
 .. _3D MRI brain tumor segmentation using autoencoder regularization: https://arxiv.org/pdf/1810.11654.pdf
 .. _TRAILMAP project on GitHub: https://github.com/AlbertPun/TRAILMAP
 .. _3DUnet for Pytorch: https://github.com/wolny/pytorch-3dunet
+.. _Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images: https://arxiv.org/abs/2201.01266
 
 Interface and functionalities
 --------------------------------
@@ -35,27 +37,28 @@ Interface and functionalities
 
 * **Loading data** :
 
-  | When launching the module, you will be asked to provide an **image folder** containing all the 3D volumes you'd like to be labeled.
-  | All images with the chosen extension (**.tif** or **.tiff** currently supported) in this folder will be labeled.
+  | When launching the module, you will be asked to provide an **image layer** or an **image folder** with the 3D volumes you'd like to be labeled.
+  | If loading from folder : All images with the chosen extension (**.tif** or **.tiff** currently supported) in this folder will be labeled.
   | You can then choose an **output folder**, where all the results will be saved.
-
 
 * **Model choice** :
 
   | You can then choose one of the provided **models** above, which will be used for inference.
   | You may also choose to **load custom weights** rather than the pre-trained ones, simply ensure they are **compatible** (e.g. produced from the training module for the same model)
-  | If you choose to use a SegResNet with custom weights, you will have to provide the size of images it was trained on to ensure compatibility. (See note below)
+  | If you choose to use SegResNet or SwinUNetR with custom weights, you will have to provide the size of images it was trained on to ensure compatibility. (See note below)
+
+.. note::
+    Currently the SegResNet and SwinUNetR models requires you to provide the size of the images the model was trained with.
+    Provided weights use a size of 128, please leave it on the default value if you're not using custom weights.
 
 * **Inference parameters** :
 
   | You can choose to use inference on the whole image at once, which generally yields better performance at the cost of more memory, or you can use a specific window size to run inference on smaller chunks one by one, for lower memory usage.
   | You can also choose to keep the dataset in the RAM rather than the VRAM (cpu vs cuda device) to avoid running out of VRAM if you have several images.
 
-
 * **Anisotropy** :
 
   | If you want to see your results without **anisotropy** when you have anisotropic images, you can specify that you have anisotropic data and set the **resolution of your imaging method in micron**, this wil save and show the results without anisotropy.
-
 
 * **Thresholding** :
 
@@ -105,11 +108,6 @@ Interface and functionalities
 When you are done choosing your parameters, you can press the **Start** button to begin the inference process.
 Once it has finished, results will be saved then displayed in napari; each output will be paired with its original.
 On the left side, a progress bar and a log will keep you informed on the process.
-
-
-.. note::
-    Currently the SegResNet model requires you to provide the size of the images the model was trained with due to the VAE module.
-    Provided weights use a size of 128, please leave it as is if you're not using custom weights.
 
 
 .. note::

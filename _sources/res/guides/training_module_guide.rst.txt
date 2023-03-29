@@ -60,6 +60,7 @@ The training module is comprised of several tabs.
     * The size of patches to be extracted (ideally, please use a value **close or equal to a power of two**, such as 120 or 60 to ensure correct size. See above note.)
     * The number of samples to extract from each of your images. A larger number will likely mean better performances, but longer training and larger memory usage.
 
+.. note:: If you're using a single image (preferably large) it is recommended to enable patch extraction.
 
 * Whether to perform data augmentation or not (elastic deforms, intensity shifts. random flipping,etc).
   Ideally it should always be enabled, but you can disable it if it causes issues.
@@ -73,6 +74,7 @@ The training module is comprised of several tabs.
 * The **batch size** (larger means quicker training and possibly better performance but increased memory usage)
 * The **number of epochs** (a possibility is to start with 60 epochs, and decrease or increase depending on performance.)
 * The **epoch interval** for validation (for example, if set to two, the module will use the validation dataset to evaluate the model with the dice metric every two epochs.)
+* Whether to use deterministic training, and the seed to use.
 
 .. note::
     If the dice metric is better on a given validation interval, the model weights will be saved in the results folder.

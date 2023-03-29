@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>plugin_convert.py &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>plugin_convert.py &mdash; napari-cellseg3d  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -26,46 +27,60 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html"><img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../../index.html">
+            
+              <img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Main modules guides:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Main modules guides:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/review_module_guide.html">Review module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/inference_module_guide.html">Inference module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/training_module_guide.html">Training module guide</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Utilities :</span></p>
+<p class="caption" role="heading"><span class="caption-text">Utilities :</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/metrics_module_guide.html">Metrics utility guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../guides/convert_module_guide.html">Label conversion utility guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/utils_module_guide.html">Label conversion utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/cropping_module_guide.html">Cropping utility guide</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Advanced guides and walk-through:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/detailed_walkthrough.html">Detailed walkthrough</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Source files:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="interface.html">interface.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin_base.html">plugin_base.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin_review.html">plugin_review.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="launch_review.html">launch_review.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plugin_dock.html">plugin_dock.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_review_dock.html">plugin_dock.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin_crop.html">plugin_crop.py</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">plugin_convert.py</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#class-convertutils">Class : ConvertUtils</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#methods">Methods</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#attributes">Attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#classes">Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#anisoutils">AnisoUtils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#removesmallutils">RemoveSmallUtils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tosemanticutils">ToSemanticUtils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#instancewidgets">InstanceWidgets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#toinstanceutils">ToInstanceUtils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#thresholdutils">ThresholdUtils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#functions">Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#save-folder">save_folder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#save-layer">save_layer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#show-result">show_result</a></li>
 </ul>
 </li>
 </ul>
@@ -92,7 +107,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a></li>
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">plugin_convert.py</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../_sources/res/code/plugin_convert.rst.txt" rel="nofollow"> View page source</a>
@@ -103,22 +118,217 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="plugin-convert-py">
-<h1>plugin_convert.py<a class="headerlink" href="#plugin-convert-py" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="class-convertutils">
-<h2>Class : ConvertUtils<a class="headerlink" href="#class-convertutils" title="Permalink to this headline">¶</a></h2>
-<div class="admonition important">
-<p class="admonition-title">Important</p>
-<p>Inherits from : <a class="reference internal" href="plugin_base.html"><span class="doc">plugin_base.py</span></a></p>
-</div>
-<div class="section" id="methods">
-<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="attributes">
-<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
-</div>
+  <section id="plugin-convert-py">
+<h1>plugin_convert.py<a class="headerlink" href="#plugin-convert-py" title="Permalink to this headline"></a></h1>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline"></a></h2>
+<section id="anisoutils">
+<h3>AnisoUtils<a class="headerlink" href="#anisoutils" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_convert.AnisoUtils">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.code_plugins.plugin_convert.</span></span><span class="sig-name descname"><span class="pre">AnisoUtils</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_convert.AnisoUtils" title="Permalink to this definition"></a></dt>
+<dd><p>Class to correct anisotropy in images</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_convert.AnisoUtils.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_convert.AnisoUtils.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a AnisoUtils widget</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>viewer</strong> – viewer in which to process data</p></li>
+<li><p><strong>parent</strong> – parent widget</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="removesmallutils">
+<h3>RemoveSmallUtils<a class="headerlink" href="#removesmallutils" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_convert.RemoveSmallUtils">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.code_plugins.plugin_convert.</span></span><span class="sig-name descname"><span class="pre">RemoveSmallUtils</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_convert.RemoveSmallUtils" title="Permalink to this definition"></a></dt>
+<dd><p>Widget to remove small objects</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_convert.RemoveSmallUtils.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_convert.RemoveSmallUtils.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a RemoveSmallUtils widget</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>viewer</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Viewer</span></code>) – viewer in which to process data</p></li>
+<li><p><strong>parent</strong> – parent widget</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="tosemanticutils">
+<h3>ToSemanticUtils<a class="headerlink" href="#tosemanticutils" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_convert.ToSemanticUtils">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.code_plugins.plugin_convert.</span></span><span class="sig-name descname"><span class="pre">ToSemanticUtils</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_convert.ToSemanticUtils" title="Permalink to this definition"></a></dt>
+<dd><p>Widget to create semantic labels from instance labels</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_convert.ToSemanticUtils.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_convert.ToSemanticUtils.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a ToSemanticUtils widget</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>viewer</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Viewer</span></code>) – viewer in which to process data</p></li>
+<li><p><strong>parent</strong> – parent widget</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="instancewidgets">
+<h3>InstanceWidgets<a class="headerlink" href="#instancewidgets" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_convert.InstanceWidgets">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.code_plugins.plugin_convert.</span></span><span class="sig-name descname"><span class="pre">InstanceWidgets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_convert.InstanceWidgets" title="Permalink to this definition"></a></dt>
+<dd><p>Base widget with several sliders, for use in instance segmentation parameters</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_convert.InstanceWidgets.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_convert.InstanceWidgets.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Creates an InstanceWidgets widget</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>parent</strong> – parent widget</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_convert.InstanceWidgets.run_method">
+<span class="sig-name descname"><span class="pre">run_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_convert.InstanceWidgets.run_method" title="Permalink to this definition"></a></dt>
+<dd><p>Calls instance function with chosen parameters
+:param volume: image data to run method on</p>
+<p>Returns: processed image from self._method</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="toinstanceutils">
+<h3>ToInstanceUtils<a class="headerlink" href="#toinstanceutils" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_convert.ToInstanceUtils">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.code_plugins.plugin_convert.</span></span><span class="sig-name descname"><span class="pre">ToInstanceUtils</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_convert.ToInstanceUtils" title="Permalink to this definition"></a></dt>
+<dd><p>Widget to convert semantic labels to instance labels</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_convert.ToInstanceUtils.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_convert.ToInstanceUtils.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a ToInstanceUtils widget</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>viewer</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Viewer</span></code>) – viewer in which to process data</p></li>
+<li><p><strong>parent</strong> – parent widget</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="thresholdutils">
+<h3>ThresholdUtils<a class="headerlink" href="#thresholdutils" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_convert.ThresholdUtils">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.code_plugins.plugin_convert.</span></span><span class="sig-name descname"><span class="pre">ThresholdUtils</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_convert.ThresholdUtils" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a ThresholdUtils widget
+:type viewer: <code class="xref py py-class docutils literal notranslate"><span class="pre">Viewer</span></code>
+:param viewer: viewer in which to process data
+:param parent: parent widget</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_convert.ThresholdUtils.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_convert.ThresholdUtils.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a plugin template with the following widgets defined but not added in a layout :</p>
+<ul class="simple">
+<li><p>A button to load a folder of images</p></li>
+<li><p>A button to load a folder of labels</p></li>
+<li><p>A button to set a results folder</p></li>
+<li><p>A dropdown menu to select the file extension to be loaded from the folders</p></li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline"></a></h2>
+<section id="save-folder">
+<h3>save_folder<a class="headerlink" href="#save-folder" title="Permalink to this headline"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_convert.save_folder">
+<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.code_plugins.plugin_convert.</span></span><span class="sig-name descname"><span class="pre">save_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_paths</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_convert.save_folder" title="Permalink to this definition"></a></dt>
+<dd><p>Saves a list of images in a folder</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>results_path</strong> – Path to the folder containing results</p></li>
+<li><p><strong>folder_name</strong> – Name of the folder containing results</p></li>
+<li><p><strong>images</strong> – List of images to save</p></li>
+<li><p><strong>image_paths</strong> – list of filenames of images</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="save-layer">
+<h3>save_layer<a class="headerlink" href="#save-layer" title="Permalink to this headline"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_convert.save_layer">
+<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.code_plugins.plugin_convert.</span></span><span class="sig-name descname"><span class="pre">save_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_convert.save_layer" title="Permalink to this definition"></a></dt>
+<dd><p>Saves an image layer at the specified path</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>results_path</strong> – path to folder containing result</p></li>
+<li><p><strong>image_name</strong> – image name for saving</p></li>
+<li><p><strong>image</strong> – data array containing image</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+</section>
+<section id="show-result">
+<h3>show_result<a class="headerlink" href="#show-result" title="Permalink to this headline"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_convert.show_result">
+<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.code_plugins.plugin_convert.</span></span><span class="sig-name descname"><span class="pre">show_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_convert.show_result" title="Permalink to this definition"></a></dt>
+<dd><p>Adds layers to a viewer to show result to user</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>viewer</strong> – viewer to add layer in</p></li>
+<li><p><strong>layer</strong> – type of the original layer the operation was run on, to determine whether it should be an Image or Labels layer</p></li>
+<li><p><strong>image</strong> – the data array containing the image</p></li>
+<li><p><strong>name</strong> – name of the added layer</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+</section>
+</section>
+</section>
 
 
            </div>
@@ -131,7 +341,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2022, Cyril Achard, Maxime Vidal.</p>
+    <p>&#169; Copyright 2022-2023, Cyril Achard, Maxime Vidal.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

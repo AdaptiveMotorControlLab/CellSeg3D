@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>model_workers.py &mdash; napari-cellseg3d  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>model_workers.py &mdash; napari-cellseg3d  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -26,41 +27,45 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html"><img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../../index.html">
+            
+              <img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Main modules guides:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Main modules guides:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/review_module_guide.html">Review module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/inference_module_guide.html">Inference module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/training_module_guide.html">Training module guide</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Utilities :</span></p>
+<p class="caption" role="heading"><span class="caption-text">Utilities :</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/metrics_module_guide.html">Metrics utility guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../guides/convert_module_guide.html">Label conversion utility guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/utils_module_guide.html">Label conversion utility guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/cropping_module_guide.html">Cropping utility guide</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Advanced guides and walk-through:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guides/detailed_walkthrough.html">Detailed walkthrough</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Source files:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="interface.html">interface.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin_base.html">plugin_base.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin_review.html">plugin_review.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="launch_review.html">launch_review.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plugin_dock.html">plugin_dock.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_review_dock.html">plugin_dock.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin_crop.html">plugin_crop.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin_convert.html">plugin_convert.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin_metrics.html">plugin_metrics.py</a></li>
@@ -99,7 +104,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a></li>
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">model_workers.py</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../_sources/res/code/model_workers.rst.txt" rel="nofollow"> View page source</a>
@@ -110,39 +115,223 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="model-workers-py">
-<h1>model_workers.py<a class="headerlink" href="#model-workers-py" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="class-logsignal">
-<h2>Class : LogSignal<a class="headerlink" href="#class-logsignal" title="Permalink to this headline">¶</a></h2>
+  <section id="model-workers-py">
+<h1>model_workers.py<a class="headerlink" href="#model-workers-py" title="Permalink to this headline"></a></h1>
+<section id="class-logsignal">
+<h2>Class : LogSignal<a class="headerlink" href="#class-logsignal" title="Permalink to this headline"></a></h2>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
 <p>Inherits from <code class="xref py py-class docutils literal notranslate"><span class="pre">napari.qt.threading.WorkerBaseSignals</span></code></p>
 </div>
-<div class="section" id="attributes">
-<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
-<div class="section" id="class-inferenceworker">
-<h2>Class : InferenceWorker<a class="headerlink" href="#class-inferenceworker" title="Permalink to this headline">¶</a></h2>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.code_models.model_workers.</span></span><span class="sig-name descname"><span class="pre">LogSignal</span></span></dt>
+<dd><p>Signal to send messages to be logged from another thread.</p>
+<p>Separate from Worker instances as indicated <a class="reference external" href="https://napari-staging-site.github.io/guides/stable/threading.html">here</a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">log_signal</span></span></dt>
+<dd><p>signal to be sent when some text should be logged</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>qtpy.QtCore.Signal</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="class-inferenceworker">
+<h2>Class : InferenceWorker<a class="headerlink" href="#class-inferenceworker" title="Permalink to this headline"></a></h2>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
 <p>Inherits from <code class="xref py py-class docutils literal notranslate"><span class="pre">napari.qt.threading.GeneratorWorker</span></code></p>
 </div>
-<div class="section" id="methods">
-<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
-<div class="section" id="class-trainingworker">
-<h2>Class : TrainingWorker<a class="headerlink" href="#class-trainingworker" title="Permalink to this headline">¶</a></h2>
+<section id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.code_models.model_workers.</span></span><span class="sig-name descname"><span class="pre">InferenceWorker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">worker_config</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>A custom worker to run inference jobs in.
+Inherits from <code class="xref py py-class docutils literal notranslate"><span class="pre">napari.qt.threading.GeneratorWorker</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">worker_config</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Initializes a worker for inference with the arguments needed by the <code class="xref py py-func docutils literal notranslate"><span class="pre">inference()</span></code> function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>*</em>) – dataclass containing the proper configuration elements</p></li>
+<li><p><strong>device</strong> (<em>*</em>) – cuda or cpu device to use for torch</p></li>
+<li><p><strong>model_dict</strong> (<em>*</em>) – the <code class="xref py py-attr docutils literal notranslate"><span class="pre">models_dict</span></code> dictionary to obtain the model name, class and instance</p></li>
+<li><p><strong>weights_dict</strong> (<em>*</em>) – dict with “custom” : bool to use custom weights or not; “path” : the path to weights if custom or name of the file if not custom</p></li>
+<li><p><strong>results_path</strong> (<em>*</em>) – the path to save the results to</p></li>
+<li><p><strong>filetype</strong> (<em>*</em>) – the file extension to use when saving,</p></li>
+<li><p><strong>transforms</strong> (<em>*</em>) – a dict containing transforms to perform at various times.</p></li>
+<li><p><strong>instance</strong> (<em>*</em>) – a dict containing parameters regarding instance segmentation</p></li>
+<li><p><strong>use_window</strong> (<em>*</em>) – use window inference with specific size or whole image</p></li>
+<li><p><strong>window_infer_size</strong> (<em>*</em>) – size of window if use_window is True</p></li>
+<li><p><strong>keep_on_cpu</strong> (<em>*</em>) – keep images on CPU or no</p></li>
+<li><p><strong>stats_csv</strong> (<em>*</em>) – compute stats on cells and save them to a csv file</p></li>
+<li><p><strong>images_filepaths</strong> (<em>*</em>) – the paths to the images of the dataset</p></li>
+<li><p><strong>layer</strong> (<em>*</em>) – the layer to run inference on</p></li>
+</ul>
+</dd>
+</dl>
+<p>Note: See <code class="xref py py-func docutils literal notranslate"><span class="pre">inference()</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_inference_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images_filepaths</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Create a dict for MONAI with “image” keys with all image paths in <code class="xref py py-attr docutils literal notranslate"><span class="pre">images_filepaths</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of image paths from loaded folder</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">inference</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><dl class="simple">
+<dt>Requires:</dt><dd><ul class="simple">
+<li><p>device: cuda or cpu device to use for torch</p></li>
+<li><p>model_dict: the <code class="xref py py-attr docutils literal notranslate"><span class="pre">models_dict</span></code> dictionary to obtain the model name, class and instance</p></li>
+<li><p>weights: the loaded weights from the model</p></li>
+<li><p>images_filepaths: the paths to the images of the dataset</p></li>
+<li><p>results_path: the path to save the results to</p></li>
+<li><p>filetype: the file extension to use when saving,</p></li>
+<li><p>transforms: a dict containing transforms to perform at various times.</p></li>
+<li><p>use_window: use window inference with specific size or whole image</p></li>
+<li><p>window_infer_size: size of window if use_window is True</p></li>
+<li><p>keep_on_cpu: keep images on CPU or no</p></li>
+<li><p>stats_csv: compute stats on cells and save them to a csv file</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list">
+<dt class="field-odd">Yields</dt>
+<dd class="field-odd"><p><em>dict</em> –</p>
+<dl class="simple">
+<dt>contains :</dt><dd><ul class="simple">
+<li><p>“image_id” : index of the returned image</p></li>
+<li><p>“original” : original volume used for inference</p></li>
+<li><p>“result” : inference result</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Sends a signal that <code class="docutils literal notranslate"><span class="pre">text</span></code> should be logged</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>text</strong> (<em>str</em>) – text to logged</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="class-trainingworker">
+<h2>Class : TrainingWorker<a class="headerlink" href="#class-trainingworker" title="Permalink to this headline"></a></h2>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
 <p>Inherits from <code class="xref py py-class docutils literal notranslate"><span class="pre">napari.qt.threading.GeneratorWorker</span></code></p>
 </div>
-<div class="section" id="id1">
-<h3>Methods<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
-</div>
+<section id="id1">
+<h3>Methods<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.code_models.model_workers.</span></span><span class="sig-name descname"><span class="pre">TrainingWorker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>A custom worker to run training jobs in.
+Inherits from <code class="xref py py-class docutils literal notranslate"><span class="pre">napari.qt.threading.GeneratorWorker</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Initializes a worker for inference with the arguments needed by the <code class="xref py py-func docutils literal notranslate"><span class="pre">train()</span></code> function. Note: See <code class="xref py py-func docutils literal notranslate"><span class="pre">train()</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>device</strong> (<em>*</em>) – device to train on, cuda or cpu</p></li>
+<li><p><strong>model_dict</strong> (<em>*</em>) – dict containing the model’s “name” and “class”</p></li>
+<li><p><strong>weights_path</strong> (<em>*</em>) – path to weights files if transfer learning is to be used</p></li>
+<li><p><strong>data_dicts</strong> (<em>*</em>) – dict from <code class="xref py py-func docutils literal notranslate"><span class="pre">Trainer.create_train_dataset_dict()</span></code></p></li>
+<li><p><strong>validation_percent</strong> (<em>*</em>) – percentage of images to use as validation</p></li>
+<li><p><strong>max_epochs</strong> (<em>*</em>) – the amout of epochs to train for</p></li>
+<li><p><strong>loss_function</strong> (<em>*</em>) – the loss function to use for training</p></li>
+<li><p><strong>learning_rate</strong> (<em>*</em>) – the learning rate of the optimizer</p></li>
+<li><p><strong>val_interval</strong> (<em>*</em>) – the interval at which to perform validation (e.g. if 2 will validate once every 2 epochs.) Also determines frequency of saving, depending on whether the metric is better or not</p></li>
+<li><p><strong>batch_size</strong> (<em>*</em>) – the batch size to use for training</p></li>
+<li><p><strong>results_path</strong> (<em>*</em>) – the path to save results in</p></li>
+<li><p><strong>sampling</strong> (<em>*</em>) – whether to extract patches from images or not</p></li>
+<li><p><strong>num_samples</strong> (<em>*</em>) – the number of samples to extract from an image for training</p></li>
+<li><p><strong>sample_size</strong> (<em>*</em>) – the size of the patches to extract when sampling</p></li>
+<li><p><strong>do_augmentation</strong> (<em>*</em>) – whether to perform data augmentation or not</p></li>
+<li><p><strong>deterministic</strong> (<em>*</em>) – dict with “use deterministic” : bool, whether to use deterministic training, “seed”: seed for RNG</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Sends a signal that <code class="docutils literal notranslate"><span class="pre">text</span></code> should be logged</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>text</strong> (<em>str</em>) – text to logged</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Trains the PyTorch model for the given number of epochs, with the selected model and data,
+using the chosen batch size, validation interval, loss function, and number of samples.
+Will perform validation once every <code class="xref py py-obj docutils literal notranslate"><span class="pre">val_interval</span></code> and save results if the mean dice is better</p>
+<p>Requires:</p>
+<ul class="simple">
+<li><p>device : device to train on, cuda or cpu</p></li>
+<li><p>model_dict : dict containing the model’s “name” and “class”</p></li>
+<li><p>weights_path : path to weights files if transfer learning is to be used</p></li>
+<li><p>data_dicts : dict from <code class="xref py py-func docutils literal notranslate"><span class="pre">Trainer.create_train_dataset_dict()</span></code></p></li>
+<li><p>validation_percent : percentage of images to use as validation</p></li>
+<li><p>max_epochs : the amount of epochs to train for</p></li>
+<li><p>loss_function : the loss function to use for training</p></li>
+<li><p>learning rate : the learning rate of the optimizer</p></li>
+<li><p>val_interval : the interval at which to perform validation (e.g. if 2 will validate once every 2 epochs.) Also determines frequency of saving, depending on whether the metric is better or not</p></li>
+<li><p>batch_size : the batch size to use for training</p></li>
+<li><p>results_path : the path to save results in</p></li>
+<li><p>sampling : whether to extract patches from images or not</p></li>
+<li><p>num_samples : the number of samples to extract from an image for training</p></li>
+<li><p>sample_size : the size of the patches to extract when sampling</p></li>
+<li><p>do_augmentation : whether to perform data augmentation or not</p></li>
+<li><p>deterministic : dict with “use deterministic” : bool, whether to use deterministic training, “seed”: seed for RNG</p></li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
 
 
            </div>
@@ -155,7 +344,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2022, Cyril Achard, Maxime Vidal.</p>
+    <p>&#169; Copyright 2022-2023, Cyril Achard, Maxime Vidal.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
