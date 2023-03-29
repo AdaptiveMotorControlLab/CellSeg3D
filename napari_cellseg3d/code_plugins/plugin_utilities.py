@@ -43,7 +43,7 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
         # self.small = RemoveSmallUtils(self._viewer)
 
         self.utils_choice = ui.DropdownMenu(
-            UTILITIES_WIDGETS.keys(), label="Utilities"
+            UTILITIES_WIDGETS.keys(), text_label="Utilities"
         )
 
         self._build()

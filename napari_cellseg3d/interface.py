@@ -408,21 +408,21 @@ class DropdownMenu(QComboBox):
         self,
         entries: Optional[list] = None,
         parent: Optional[QWidget] = None,
-        label: Optional[str] = None,
+        text_label: Optional[str] = None,
         fixed: Optional[bool] = True,
     ):
         """Args:
         entries (array(str)): Entries to add to the dropdown menu. Defaults to None, no entries if None
         parent (QWidget): parent QWidget to add dropdown menu to. Defaults to None, no parent is set if None
-        label (str) : if not None, creates a QLabel with the contents of 'label', and returns the label as well
+        text_label (str) : if not None, creates a QLabel with the contents of 'label', and returns the label as well
         fixed (bool): if True, will set the size policy of the dropdown menu to Fixed in h and w. Defaults to True.
         """
         super().__init__(parent)
         self.label = None
         if entries is not None:
             self.addItems(entries)
-        if label is not None:
-            self.label = QLabel(label)
+        if text_label is not None:
+            self.label = QLabel(text_label)
         if fixed:
             self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
@@ -473,9 +473,10 @@ class Slider(QSlider):
 
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-        self.text_label = None
+        self.label = None
         self.container = ContainerWidget(
-            # parent=self.parent
+            # parent=self.parent,
+            b=0,
         )
 
         self._divide_factor = divide_factor
@@ -498,7 +499,7 @@ class Slider(QSlider):
         )
 
         if text_label is not None:
-            self.text_label = make_label(text_label, parent=self)
+            self.label = make_label(text_label, parent=self)
 
         if default < lower:
             self._warn_outside_bounds(default)
@@ -517,14 +518,14 @@ class Slider(QSlider):
     def set_visibility(self, visible: bool):
         self.container.setVisible(visible)
         self.setVisible(visible)
-        self.text_label.setVisible(visible)
+        self.label.setVisible(visible)
 
     def _build_container(self):
-        if self.text_label is not None:
+        if self.label is not None:
             add_widgets(
                 self.container.layout,
                 [
-                    self.text_label,
+                    self.label,
                     combine_blocks(self._value_label, self, b=0),
                 ],
             )
@@ -568,8 +569,8 @@ class Slider(QSlider):
         self.setToolTip(tooltip)
         self._value_label.setToolTip(tooltip)
 
-        if self.text_label is not None:
-            self.text_label.setToolTip(tooltip)
+        if self.label is not None:
+            self.label.setToolTip(tooltip)
 
     @property
     def slider_value(self):
@@ -739,7 +740,9 @@ class LayerSelecter(ContainerWidget):
         self.image = None
         self.layer_type = layer_type
 
-        self.layer_list = DropdownMenu(parent=self, label=name, fixed=False)
+        self.layer_list = DropdownMenu(
+            parent=self, text_label=name, fixed=False
+        )
         # self.layer_list.setSizeAdjustPolicy(QComboBox.AdjustToContents) # use tooltip instead ?
 
         self._viewer.layers.events.inserted.connect(partial(self._add_layer))
@@ -1044,7 +1047,7 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         step: Optional[float] = 1.0,
         parent: Optional[QWidget] = None,
         fixed: Optional[bool] = True,
-        label: Optional[str] = None,
+        text_label: Optional[str] = None,
     ):
         """Args:
         lower (Optional[float]): minimum value, defaults to 0
@@ -1053,7 +1056,7 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         step (Optional[float]): step value, defaults to 1
         parent: parent widget, defaults to None
         fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed
-        label (Optional[str]): if provided, creates a label with the chosen title to use with the counter
+        text_label (Optional[str]): if provided, creates a label with the chosen title to use with the counter
         """
 
         super().__init__(parent)
@@ -1061,8 +1064,8 @@ class DoubleIncrementCounter(QDoubleSpinBox):
 
         self.layout = None
 
-        if label is not None:
-            self.label = make_label(name=label)
+        if text_label is not None:
+            self.label = make_label(name=text_label)
         self.valueChanged.connect(self._update_step)
 
     def _update_step(self):
@@ -1122,7 +1125,7 @@ class IntIncrementCounter(QSpinBox):
         step=1,
         parent: Optional[QWidget] = None,
         fixed: Optional[bool] = True,
-        label: Optional[str] = None,
+        text_label: Optional[str] = None,
     ):
         """Args:
         lower (Optional[int]): minimum value, defaults to 0
@@ -1138,8 +1141,8 @@ class IntIncrementCounter(QSpinBox):
         self.label = None
         self.container = None
 
-        if label is not None:
-            self.label = make_label(name=label)
+        if text_label is not None:
+            self.label = make_label(name=text_label)
 
     @property
     def tooltips(self):

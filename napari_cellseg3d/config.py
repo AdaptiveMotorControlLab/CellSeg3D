@@ -230,6 +230,8 @@ class TrainingWorkerConfig:
     max_epochs: int = 5
     loss_function: callable = None
     learning_rate: np.float64 = 1e-3
+    scheduler_patience: int = 10
+    scheduler_factor: float = 0.5
     validation_interval: int = 2
     batch_size: int = 1
     results_path_folder: str = str(Path.home() / Path("cellseg3d/training"))

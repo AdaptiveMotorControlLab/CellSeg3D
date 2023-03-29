@@ -73,7 +73,7 @@ class InstanceMethod:
                 setattr(
                     self,
                     widget,
-                    ui.DoubleIncrementCounter(label="", parent=None),
+                    ui.DoubleIncrementCounter(text_label="", parent=None),
                 )
                 self.counters.append(getattr(self, widget))
 
@@ -426,13 +426,13 @@ class Watershed(InstanceMethod, metaclass=Singleton):
             num_counters=2,
         )
 
-        self.sliders[0].text_label.setText("Foreground probability threshold")
+        self.sliders[0].label.setText("Foreground probability threshold")
         self.sliders[
             0
         ].tooltips = "Probability threshold for foreground object"
         self.sliders[0].setValue(50)
 
-        self.sliders[1].text_label.setText("Seed probability threshold")
+        self.sliders[1].label.setText("Seed probability threshold")
         self.sliders[1].tooltips = "Probability threshold for seeding"
         self.sliders[1].setValue(90)
 
@@ -469,7 +469,7 @@ class ConnectedComponents(InstanceMethod, metaclass=Singleton):
             num_counters=1,
         )
 
-        self.sliders[0].text_label.setText("Foreground probability threshold")
+        self.sliders[0].label.setText("Foreground probability threshold")
         self.sliders[
             0
         ].tooltips = "Probability threshold for foreground object"

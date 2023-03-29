@@ -46,6 +46,8 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
     Features parameter selection for training, dynamic loss plotting and automatic saving of the best weights during
     training through validation."""
 
+    default_config = config.TrainingWorkerConfig()
+
     def __init__(
         self,
         viewer: "napari.viewer.Viewer",
@@ -168,14 +170,13 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         ################################
         # interface
-        default = config.TrainingWorkerConfig()
 
         self.zip_choice = ui.CheckBox("Compress results")
 
         self.validation_percent_choice = ui.Slider(
             lower=10,
             upper=90,
-            default=default.validation_percent * 100,
+            default=self.default_config.validation_percent * 100,
             step=5,
             parent=self,
         )
@@ -183,12 +184,12 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.epoch_choice = ui.IntIncrementCounter(
             lower=2,
             upper=200,
-            default=default.max_epochs,
-            label="Number of epochs : ",
+            default=self.default_config.max_epochs,
+            text_label="Number of epochs : ",
         )
 
         self.loss_choice = ui.DropdownMenu(
-            sorted(self.loss_dict.keys()), label="Loss function"
+            sorted(self.loss_dict.keys()), text_label="Loss function"
         )
         self.lbl_loss_choice = self.loss_choice.label
         self.loss_choice.setCurrentIndex(0)
@@ -196,7 +197,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.sample_choice_slider = ui.Slider(
             lower=2,
             upper=50,
-            default=default.num_samples,
+            default=self.default_config.num_samples,
             text_label="Number of patches per image : ",
         )
 
@@ -205,13 +206,13 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.batch_choice = ui.Slider(
             lower=1,
             upper=10,
-            default=default.batch_size,
+            default=self.default_config.batch_size,
             text_label="Batch size : ",
         )
 
         self.val_interval_choice = ui.IntIncrementCounter(
-            default=default.validation_interval,
-            label="Validation interval : ",
+            default=self.default_config.validation_interval,
+            text_label="Validation interval : ",
         )
 
         self.epoch_choice.valueChanged.connect(self._update_validation_choice)
@@ -228,11 +229,23 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ]
 
         self.learning_rate_choice = ui.DropdownMenu(
-            learning_rate_vals, label="Learning rate"
+            learning_rate_vals, text_label="Learning rate"
         )
         self.lbl_learning_rate_choice = self.learning_rate_choice.label
 
         self.learning_rate_choice.setCurrentIndex(1)
+
+        self.scheduler_patience_choice = ui.IntIncrementCounter(
+            1,
+            99,
+            default=self.default_config.scheduler_patience,
+            text_label="Scheduler patience",
+        )
+        self.scheduler_factor_choice = ui.Slider(
+            divide_factor=100,
+            default=self.default_config.scheduler_factor * 100,
+            text_label="Scheduler factor :",
+        )
 
         self.augment_choice = ui.CheckBox("Augment data")
 
@@ -268,7 +281,8 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             "Deterministic training", func=self._toggle_deterministic_param
         )
         self.box_seed = ui.IntIncrementCounter(
-            upper=10000000, default=default.deterministic_config.seed
+            upper=10000000,
+            default=self.default_config.deterministic_config.seed,
         )
         self.lbl_seed = ui.make_label("Seed", self)
         self.container_seed = ui.combine_blocks(
@@ -308,6 +322,12 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             )
             self.learning_rate_choice.setToolTip(
                 "The learning rate to use in the optimizer. \nUse a lower value if you're using pre-trained weights"
+            )
+            self.scheduler_factor_choice.setToolTip(
+                "The factor by which to reduce the learning rate once the loss reaches a plateau"
+            )
+            self.scheduler_patience_choice.setToolTip(
+                "The amount of epochs to wait for before reducing the learning rate"
             )
             self.augment_choice.setToolTip(
                 "Check this to enable data augmentation, which will randomly deform, flip and shift the intensity in images"
@@ -632,26 +652,20 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             "Training parameters", r=1, b=5, t=11
         )
 
-        spacing = 20
-
         ui.add_widgets(
             train_param_group_l,
             [
                 self.batch_choice.container,  # batch size
-                ui.combine_blocks(
-                    self.learning_rate_choice,
-                    self.lbl_learning_rate_choice,
-                    min_spacing=spacing,
-                    horizontal=False,
-                    l=5,
-                    t=5,
-                    r=5,
-                    b=5,
-                ),  # learning rate
+                self.lbl_learning_rate_choice,
+                self.learning_rate_choice,
                 self.epoch_choice.label,  # epochs
                 self.epoch_choice,
                 self.val_interval_choice.label,
                 self.val_interval_choice,  # validation interval
+                self.scheduler_patience_choice.label,
+                self.scheduler_patience_choice,
+                self.scheduler_factor_choice.label,
+                self.scheduler_factor_choice.container,
             ],
             None,
         )
@@ -833,6 +847,8 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 max_epochs=self.epoch_choice.value(),
                 loss_function=self.get_loss(self.loss_choice.currentText()),
                 learning_rate=float(self.learning_rate_choice.currentText()),
+                scheduler_patience=self.scheduler_patience_choice.value(),
+                scheduler_factor=self.scheduler_factor_choice.value(),
                 validation_interval=self.val_interval_choice.value(),
                 batch_size=self.batch_choice.slider_value,
                 results_path_folder=str(results_path_folder),
