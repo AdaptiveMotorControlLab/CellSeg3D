@@ -21,13 +21,13 @@ dev = [
 ]
 docs = [
     "sphinx",
-    "sphinx-autodoc-typehints",
-    "sphinx-rtd-theme",
+    "sphinx_autodoc_typehints",
+    "sphinx_rtd_theme",
     "twine",
 ]
 test = [
     "pytest",
-    "pytest-qt",
+    "pytest_qt",
     "coverage",
     "tox",
     "twine",
