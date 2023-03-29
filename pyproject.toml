@@ -3,6 +3,8 @@ name = "napari_cellseg3d"
 version = "0.0.2rc1"
 authors = [
     {name = "Cyril Achard", email = "cyril.achard@epfl.ch"},
+    {name = "Maxime Vidal", email = "maxime.vidal@epfl.ch"},
+    {name = "Mackenzie Mathis", email = "mackenzie@post.harvard.edu"},
 ]
 requires-python = ">=3.8"
 dependencies = [
