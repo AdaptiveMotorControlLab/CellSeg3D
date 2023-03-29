@@ -1,6 +1,6 @@
 name: docs-env
 dependencies:
-  - python=3.8
+  - python>=3.8
   - anaconda
   - pip
   - numpy  # pin version for conda
