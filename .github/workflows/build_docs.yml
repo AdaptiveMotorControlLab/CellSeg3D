@@ -4,7 +4,6 @@ on:
   push:
     branches: # branch to trigger deployment
       - main
-      - cy/docs-action
 
 jobs:
   pages:
