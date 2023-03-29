@@ -7,21 +7,30 @@ on:
       - cy/docs-action
 
 jobs:
-  build:
-
+  sphinx_docs_to_gh-pages:
     runs-on: ubuntu-latest
-
+    name: Sphinx docs to gh-pages
     steps:
-    - run: sudo apt-get update && sudo apt-get install libgl1
-    - uses: actions/checkout@v1
-    # Standard drop-in approach that should work for most people.
-    - uses: ammaraskar/sphinx-action@master
-      with:
-        pre-build-command: "pip install --upgrade pip \ pip install -r requirements.txt napari-cellseg3d opencv-python-headless"
-        docs-folder: "docs/"
-
-    - name: GitHub Pages action
-      uses: peaceiris/actions-gh-pages@v3.7.3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./docs/_build/html
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Make conda environment
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          python-version: 3.9    # Python version to build the html sphinx documentation
+          environment-file: devtools/conda-envs/docs_env.yaml    # Path to the documentation conda environment
+          auto-update-conda: false
+          auto-activate-base: false
+          show-channel-urls: true
+      - name: Installing the library
+        shell: bash -l {0}
+        run: |
+          python setup.py install
+      - name: Running the Sphinx to gh-pages Action
+        uses: uibcdf/action-sphinx-docs-to-gh-pages@v1.1.0
+        with:
+          branch: main
+          dir_docs: docs
+          sphinxapiopts: '--separate -o . ../'
+          sphinxapiexclude: '../*setup* ../*.ipynb'
+          sphinxopts: ''
