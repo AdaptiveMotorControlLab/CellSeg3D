@@ -1,28 +1,20 @@
-name: CI
+name: Deploy Sphinx documentation to Pages
 
 on:
   push:
-    branches:
+    branches: # branch to trigger deployment
       - main
       - cy/docs-action
 
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
+  pages:
+    runs-on: ubuntu-20.04
     steps:
-    - run: sudo apt-get update && sudo apt-get install libgl1
-    - uses: actions/checkout@v3
-    # Standard drop-in approach that should work for most people.
-    - uses: ammaraskar/sphinx-action@master
+    - id: deployment
+      uses: sphinx-notes/pages@v3
       with:
-        pre-build-command: "pip install -r requirements.txt napari-cellseg3d opencv-python-headless"
-        docs-folder: "docs/"
-
-    - name: GitHub Pages action
-      uses: peaceiris/actions-gh-pages@v3.7.3
+        publish: false
+    - uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./docs/_build/html
-
+        publish_dir: ${{ steps.deployment.outputs.artifact }}
