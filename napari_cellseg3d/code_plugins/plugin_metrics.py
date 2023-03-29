@@ -11,8 +11,8 @@ from tifffile import imread
 
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
-from napari_cellseg3d.model_instance_seg import to_semantic
-from napari_cellseg3d.plugin_base import BasePluginFolder
+from napari_cellseg3d.code_models.model_instance_seg import to_semantic
+from napari_cellseg3d.code_plugins.plugin_base import BasePluginFolder
 
 DEFAULT_THRESHOLD = 0.5
 
@@ -26,7 +26,7 @@ class MetricsUtils(BasePluginFolder):
             viewer: viewer to display the widget in
             parent : parent widget
         """
-        super().__init__(viewer, parent)
+        super().__init__(viewer, parent, has_results=False)
 
         self._viewer = viewer
         """Viewer to display widget in"""
@@ -40,24 +40,25 @@ class MetricsUtils(BasePluginFolder):
 
         ######################################
         # interface
+        self.io_panel = self._build_io_panel()
 
         # set new descriptions for Filewidgets
-        self.image_filewidget.set_description("Ground truth")
-        self.label_filewidget.set_description("Prediction")
+        self.image_filewidget.description = "Ground truth"
+        self.labels_filewidget.description = "Prediction"
 
         self.btn_compute_dice = ui.Button("Compute Dice", self.compute_dice)
 
-        self.rotate_choice = ui.make_checkbox("Find best orientation")
+        self.rotate_choice = ui.CheckBox("Find best orientation")
 
         self.btn_reset_plot = ui.Button("Clear plots", self.remove_plots)
 
         self.lbl_threshold_box = ui.make_label("Score threshold", self)
         self.threshold_box = ui.DoubleIncrementCounter(
-            min=0.1, max=1, default=DEFAULT_THRESHOLD, step=0.1
+            lower=0.1, upper=1, default=DEFAULT_THRESHOLD, step=0.1
         )
 
-        self.btn_result_path.setVisible(False)
-        self.lbl_result_path.setVisible(False)
+        self.results_filewidget.button.setVisible(False)
+        self.results_filewidget.text_field.setVisible(False)
 
         self.rotate_choice.setToolTip(
             "This will rotate and flip your images to find the orientation with the best Dice coefficient.\n"
@@ -68,14 +69,15 @@ class MetricsUtils(BasePluginFolder):
         )
         self.btn_reset_plot.setToolTip("Erase all plots")
 
-        self.build()
+        self._build()
 
-    def build(self):
+    def _build(self):
         """Builds the layout of the widget."""
 
-        self.lbl_filetype.setVisible(False)
+        self.filetype_choice.label.setVisible(False)
 
-        w, self.layout = ui.make_container()
+        w = ui.ContainerWidget()
+        self.layout = w.layout
 
         metrics_group_w, metrics_group_l = ui.make_group("Data")
 
@@ -83,13 +85,13 @@ class MetricsUtils(BasePluginFolder):
             metrics_group_l,
             [
                 ui.combine_blocks(
-                    right_or_below=self.btn_image_files,
-                    left_or_above=self.lbl_image_files,
+                    right_or_below=self.image_filewidget.button,
+                    left_or_above=self.image_filewidget.text_field,
                     min_spacing=70,
                 ),  # images -> ground truth
                 ui.combine_blocks(
-                    right_or_below=self.btn_label_files,
-                    left_or_above=self.lbl_label_files,
+                    right_or_below=self.labels_filewidget.button,
+                    left_or_above=self.labels_filewidget.text_field,
                     min_spacing=70,
                 ),  # labels -> prediction
             ],
@@ -117,7 +119,7 @@ class MetricsUtils(BasePluginFolder):
                 metrics_group_w,
                 param_group_w,
                 self.btn_compute_dice,
-                self.make_close_button(),
+                self._make_close_button(),
                 self.btn_reset_plot,
             ],
         )

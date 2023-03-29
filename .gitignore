@@ -95,7 +95,12 @@ venv/
 ########
 #project specific
 #dataset, weights, old logos, requirements
-/napari_cellseg3d/models/dataset/
-/napari_cellseg3d/models/saved_weights/
+/napari_cellseg3d/code_models/models/dataset/
+/napari_cellseg3d/code_models/models/saved_weights/
 /docs/res/logo/old_logo/
 /reqs/
+/Loss_plots/
+notebooks/csv_cell_plot.html
+notebooks/full_plot.html
+*.csv
+*.png

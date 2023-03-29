@@ -1,7 +1,11 @@
 from __future__ import division
 from __future__ import print_function
 
+from dataclasses import dataclass
+from typing import List
+
 import numpy as np
+from skimage.filters import thresholding
 
 # from skimage.measure import marching_cubes
 # from skimage.measure import mesh_surface_area
@@ -18,8 +22,48 @@ from napari_cellseg3d.utils import sphericity_axis
 # from napari_cellseg3d.utils import sphericity_volume_area
 
 
+@dataclass
+class ImageStats:
+    volume: List[float]
+    centroid_x: List[float]
+    centroid_y: List[float]
+    centroid_z: List[float]
+    sphericity_ax: List[float]
+    image_size: List[int]
+    total_image_volume: int
+    total_filled_volume: int
+    filling_ratio: float
+    number_objects: int
+
+    def get_dict(self):
+        return {
+            "Volume": self.volume,
+            "Centroid x": self.centroid_x,
+            "Centroid y": self.centroid_y,
+            "Centroid z": self.centroid_z,
+            # "Sphericity (volume/area)": sphericity_va,
+            "Sphericity (axes)": self.sphericity_ax,
+            "Image size": self.image_size,
+            "Total image volume": self.total_image_volume,
+            "Total object volume (pixels)": self.total_filled_volume,
+            "Filling ratio": self.filling_ratio,
+            "Number objects": self.number_objects,
+        }
+
+
+def threshold(volume, thresh):
+    im = np.squeeze(volume)
+    binary = im > thresh
+    return np.where(binary, im, np.zeros_like(im))
+
+
 def binary_connected(
-    volume, thres=0.5, thres_small=3, scale_factors=(1.0, 1.0, 1.0)
+    volume,
+    thres=0.5,
+    thres_small=3,
+    # scale_factors=(1.0, 1.0, 1.0),
+    *args,
+    **kwargs
 ):
     r"""Convert binary foreground probability maps to instance masks via
     connected-component labeling.
@@ -35,30 +79,32 @@ def binary_connected(
     segm = label(foreground)
     segm = remove_small_objects(segm, thres_small)
 
-    if not all(x == 1.0 for x in scale_factors):
-        target_size = (
-            int(semantic.shape[0] * scale_factors[0]),
-            int(semantic.shape[1] * scale_factors[1]),
-            int(semantic.shape[2] * scale_factors[2]),
-        )
-        segm = resize(
-            segm,
-            target_size,
-            order=0,
-            anti_aliasing=False,
-            preserve_range=True,
-        )
+    # if not all(x == 1.0 for x in scale_factors):
+    #     target_size = (
+    #         int(semantic.shape[0] * scale_factors[0]),
+    #         int(semantic.shape[1] * scale_factors[1]),
+    #         int(semantic.shape[2] * scale_factors[2]),
+    #     )
+    #     segm = resize(
+    #         segm,
+    #         target_size,
+    #         order=0,
+    #         anti_aliasing=False,
+    #         preserve_range=True,
+    #     )
 
     return segm
 
 
 def binary_watershed(
     volume,
-    thres_seeding=0.9,
-    thres_small=10,
     thres_objects=0.3,
-    scale_factors=(1.0, 1.0, 1.0),
+    thres_small=10,
+    thres_seeding=0.9,
+    # scale_factors=(1.0, 1.0, 1.0),
     rem_seed_thres=3,
+    *args,
+    **kwargs
 ):
     r"""Convert binary foreground probability maps to instance masks via
     watershed segmentation algorithm.
@@ -83,19 +129,19 @@ def binary_watershed(
     segm = watershed(-semantic.astype(np.float64), seed, mask=foreground)
     segm = remove_small_objects(segm, thres_small)
 
-    if not all(x == 1.0 for x in scale_factors):
-        target_size = (
-            int(semantic.shape[0] * scale_factors[0]),
-            int(semantic.shape[1] * scale_factors[1]),
-            int(semantic.shape[2] * scale_factors[2]),
-        )
-        segm = resize(
-            segm,
-            target_size,
-            order=0,
-            anti_aliasing=False,
-            preserve_range=True,
-        )
+    # if not all(x == 1.0 for x in scale_factors):
+    #     target_size = (
+    #         int(semantic.shape[0] * scale_factors[0]),
+    #         int(semantic.shape[1] * scale_factors[1]),
+    #         int(semantic.shape[2] * scale_factors[2]),
+    #     )
+    #     segm = resize(
+    #         segm,
+    #         target_size,
+    #         order=0,
+    #         anti_aliasing=False,
+    #         preserve_range=True,
+    #     )
 
     return np.array(segm)
 
@@ -227,16 +273,15 @@ def volume_stats(volume_image):
     else:
         ratio = 0
 
-    return {
-        "Volume": volume,
-        "Centroid x": [region.centroid[0] for region in properties],
-        "Centroid y": [region.centroid[1] for region in properties],
-        "Centroid z": [region.centroid[2] for region in properties],
-        # "Sphericity (volume/area)": sphericity_va,
-        "Sphericity (axes)": sphericity_ax,
-        "Image size": fill([volume_image.shape]),
-        "Total image volume": fill([len(volume_image.flatten())]),
-        "Total object volume (pixels)": fill([np.sum(volume)]),
-        "Filling ratio": ratio,
-        "Number objects": fill([len(properties)]),
-    }
+    return ImageStats(
+        volume,
+        [region.centroid[0] for region in properties],
+        [region.centroid[0] for region in properties],
+        [region.centroid[2] for region in properties],
+        sphericity_ax,
+        fill([volume_image.shape]),
+        fill([len(volume_image.flatten())]),
+        fill([np.sum(volume)]),
+        ratio,
+        fill([len(properties)]),
+    )

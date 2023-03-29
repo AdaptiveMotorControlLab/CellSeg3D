@@ -52,7 +52,7 @@ main_doc = "index"
 
 # General information about the project.
 project = "napari-cellseg3d"
-copyright = "2022, Cyril Achard, Maxime Vidal"
+copyright = "2022-2023, Cyril Achard, Maxime Vidal"
 author = "Cyril Achard, Maxime Vidal"
 
 # The version info for the project you're documenting, acts as replacement for

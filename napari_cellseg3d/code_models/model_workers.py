@@ -1,13 +1,12 @@
-import os
 import platform
+from dataclasses import dataclass
+from math import ceil
 from pathlib import Path
-import importlib.util
+from typing import List
 from typing import Optional
 
 import numpy as np
-from tifffile import imwrite
 import torch
-from tqdm import tqdm
 
 # MONAI
 from monai.data import CacheDataset
@@ -44,14 +43,20 @@ from napari.qt.threading import WorkerBaseSignals
 
 # Qt
 from qtpy.QtCore import Signal
+from tifffile import imwrite
+from tqdm import tqdm
 
+from napari_cellseg3d import config
+from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
-from napari_cellseg3d import log_utility
 
 # local
-from napari_cellseg3d.model_instance_seg import binary_connected
-from napari_cellseg3d.model_instance_seg import binary_watershed
-from napari_cellseg3d.model_instance_seg import volume_stats
+from napari_cellseg3d.code_models.model_instance_seg import binary_connected
+from napari_cellseg3d.code_models.model_instance_seg import binary_watershed
+from napari_cellseg3d.code_models.model_instance_seg import ImageStats
+from napari_cellseg3d.code_models.model_instance_seg import volume_stats
+
+logger = utils.LOGGER
 
 """
 Writing something to log messages from outside the main thread is rather problematic (plenty of silent crashes...)
@@ -63,20 +68,19 @@ a custom worker function."""
 # https://www.pythoncentral.io/pysidepyqt-tutorial-creating-your-own-signals-and-slots/
 # https://napari-staging-site.github.io/guides/stable/threading.html
 
-WEIGHTS_DIR = os.path.dirname(os.path.realpath(__file__)) + str(
-    Path("/models/pretrained")
-)
+WEIGHTS_DIR = Path(__file__).parent.resolve() / Path("models/pretrained")
+logger.debug(f"PRETRAINED WEIGHT DIR LOCATION : {WEIGHTS_DIR}")
 
 
 class WeightsDownloader:
     """A utility class the downloads the weights of a model when needed."""
 
-    def __init__(self, log_widget: Optional[log_utility.Log] = None):
+    def __init__(self, log_widget: Optional[ui.Log] = None):
         """
         Creates a WeightsDownloader, optionally with a log widget to display the progress.
 
         Args:
-            log_widget (log_utility.Log): a Log to display the progress bar in. If None, uses print()
+            log_widget (log_utility.Log): a Log to display the progress bar in. If None, uses logger.info()
         """
         self.log_widget = log_widget
 
@@ -96,24 +100,17 @@ class WeightsDownloader:
         def show_progress(count, block_size, total_size):
             pbar.update(block_size)
 
-        cellseg3d_path = os.path.split(
-            importlib.util.find_spec("napari_cellseg3d").origin
-        )[0]
-        pretrained_folder_path = os.path.join(
-            cellseg3d_path, "models", "pretrained"
-        )
-        json_path = os.path.join(
-            pretrained_folder_path, "pretrained_model_urls.json"
-        )
+        logger.info("*" * 20)
+        pretrained_folder_path = WEIGHTS_DIR
+        json_path = pretrained_folder_path / Path("pretrained_model_urls.json")
 
-        check_path = os.path.join(
-            pretrained_folder_path, model_weights_filename
-        )
-        if os.path.exists(check_path):
+        check_path = pretrained_folder_path / Path(model_weights_filename)
+
+        if Path(check_path).is_file():
             message = f"Weight file {model_weights_filename} already exists, skipping download"
             if self.log_widget is not None:
                 self.log_widget.print_and_log(message, printing=False)
-            print(message)
+            logger.info(message)
             return
 
         with open(json_path) as f:
@@ -122,10 +119,10 @@ class WeightsDownloader:
             url = neturls[model_name]
             response = urllib.request.urlopen(url)
 
-            start_message = f"Downloading the model from the M.W. Mathis Lab server {url}...."
+            start_message = f"Downloading the model from HuggingFace {url}...."
             total_size = int(response.getheader("Content-Length"))
             if self.log_widget is None:
-                print(start_message)
+                logger.info(start_message)
                 pbar = tqdm(unit="B", total=total_size, position=0)
             else:
                 self.log_widget.print_and_log(start_message)
@@ -140,26 +137,33 @@ class WeightsDownloader:
                 url, reporthook=show_progress
             )
             with tarfile.open(filename, mode="r:gz") as tar:
+
                 def is_within_directory(directory, target):
-                    
-                    abs_directory = os.path.abspath(directory)
-                    abs_target = os.path.abspath(target)
-                
-                    prefix = os.path.commonprefix([abs_directory, abs_target])
-                    
-                    return prefix == abs_directory
-                
-                def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
-                
+
+                    abs_directory = Path(directory).resolve()
+                    abs_target = Path(target).resolve()
+                    # prefix = os.path.commonprefix([abs_directory, abs_target])
+                    logger.debug(abs_directory)
+                    logger.debug(abs_target)
+                    logger.debug(abs_directory.parents)
+
+                    return abs_directory in abs_target.parents
+
+                def safe_extract(
+                    tar, path=".", members=None, *, numeric_owner=False
+                ):
+
                     for member in tar.getmembers():
-                        member_path = os.path.join(path, member.name)
+                        member_path = str(Path(path) / member.name)
                         if not is_within_directory(path, member_path):
-                            raise Exception("Attempted Path Traversal in Tar File")
-                
-                    tar.extractall(path, members, numeric_owner=numeric_owner) 
-                    
-                
+                            raise Exception(
+                                "Attempted Path Traversal in Tar File"
+                            )
+
+                    tar.extractall(path, members, numeric_owner=numeric_owner)
+
                 safe_extract(tar, pretrained_folder_path)
+                # tar.extractall(pretrained_folder_path)
         else:
             raise ValueError(
                 f"Unknown model: {model_name}. Should be one of {', '.join(neturls)}"
@@ -183,7 +187,16 @@ class LogSignal(WorkerBaseSignals):
         super().__init__()
 
 
-# TODO : use dataclass for config instead ?
+@dataclass
+class InferenceResult:
+    """Class to record results of a segmentation job"""
+
+    image_id: int = 0
+    original: np.array = None
+    instance_labels: np.array = None
+    stats: ImageStats = None
+    result: np.array = None
+    model_name: str = None
 
 
 class InferenceWorker(GeneratorWorker):
@@ -192,24 +205,12 @@ class InferenceWorker(GeneratorWorker):
 
     def __init__(
         self,
-        device,
-        model_dict,
-        weights_dict,
-        results_path,
-        filetype,
-        transforms,
-        instance,
-        use_window,
-        window_infer_size,
-        window_overlap,
-        keep_on_cpu,
-        stats_csv,
-        images_filepaths=None,
-        layer=None,  # FIXME
+        worker_config: config.InferenceWorkerConfig,
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~inference` function.
 
         Args:
+            * config (config.InferenceWorkerConfig): dataclass containing the proper configuration elements
             * device: cuda or cpu device to use for torch
 
             * model_dict: the :py:attr:`~self.models_dict` dictionary to obtain the model name, class and instance
@@ -242,26 +243,8 @@ class InferenceWorker(GeneratorWorker):
         self._signals = LogSignal()  # add custom signals
         self.log_signal = self._signals.log_signal
         self.warn_signal = self._signals.warn_signal
-        ###########################################
-        ###########################################
-        self.device = device
-        self.model_dict = model_dict
-        self.weights_dict = weights_dict
-        self.results_path = results_path
-        self.filetype = filetype
-        self.transforms = transforms
-        self.instance_params = instance
-        self.use_window = use_window
-        self.window_infer_size = window_infer_size
-        self.window_overlap_percentage = window_overlap
-        self.keep_on_cpu = keep_on_cpu
-        self.stats_to_csv = stats_csv
-        ############################################
-        ############################################
-        self.layer = layer
-        self.images_filepaths = images_filepaths
-        ############################################
-        ############################################
+
+        self.config = worker_config
 
         """These attributes are all arguments of :py:func:~inference, please see that for reference"""
 
@@ -294,48 +277,60 @@ class InferenceWorker(GeneratorWorker):
 
     def log_parameters(self):
 
+        config = self.config
+
         self.log("-" * 20)
         self.log("\nParameters summary :")
 
-        self.log(f"Model is : {self.model_dict['name']}")
-        if self.transforms["thresh"][0]:
+        self.log(f"Model is : {config.model_info.name}")
+        if config.post_process_config.thresholding.enabled:
             self.log(
-                f"Thresholding is enabled at {self.transforms['thresh'][1]}"
+                f"Thresholding is enabled at {config.post_process_config.thresholding.threshold_value}"
             )
 
-        if self.use_window:
+        if config.sliding_window_config.is_enabled():
             status = "enabled"
         else:
             status = "disabled"
 
         self.log(f"Window inference is {status}\n")
+        if status == "enabled":
+            self.log(
+                f"Window size is {self.config.sliding_window_config.window_size}"
+            )
+            self.log(
+                f"Window overlap is {self.config.sliding_window_config.window_overlap}"
+            )
 
-        if self.keep_on_cpu:
+        if config.keep_on_cpu:
             self.log(f"Dataset loaded to CPU")
         else:
-            self.log(f"Dataset loaded on {self.device}")
+            self.log(f"Dataset loaded on {config.device}")
 
-        if self.transforms["zoom"][0]:
-            self.log(f"Scaling factor : {self.transforms['zoom'][1]} (x,y,z)")
-
-        if self.instance_params["do_instance"]:
+        if config.post_process_config.zoom.enabled:
             self.log(
-                f"Instance segmentation enabled, method : {self.instance_params['method']}\n"
-                f"Probability threshold is {self.instance_params['threshold']:.2f}\n"
-                f"Objects smaller than {self.instance_params['size_small']} pixels will be removed\n"
+                f"Scaling factor : {config.post_process_config.zoom.zoom_values} (x,y,z)"
+            )
+
+        instance_config = config.post_process_config.instance
+        if instance_config.enabled:
+            self.log(
+                f"Instance segmentation enabled, method : {instance_config.method}\n"
+                f"Probability threshold is {instance_config.threshold.threshold_value:.2f}\n"
+                f"Objects smaller than {instance_config.small_object_removal_threshold.threshold_value} pixels will be removed\n"
             )
         self.log("-" * 20)
 
     def load_folder(self):
 
-        images_dict = self.create_inference_dict(self.images_filepaths)
+        images_dict = self.create_inference_dict(self.config.images_filepaths)
 
         # TODO : better solution than loading first image always ?
         data_check = LoadImaged(keys=["image"])(images_dict[0])
 
         check = data_check["image"].shape
 
-        self.log("\nChecking dimensions...")
+        # self.log("\nChecking dimensions...")
         pad = utils.get_padding_dim(check)
 
         # dims = self.model_dict["model_input_size"]
@@ -358,11 +353,11 @@ class InferenceWorker(GeneratorWorker):
         #
         # self.log_parameters()
         #
-        # model.to(self.device)
+        # model.to(self.config.device)
 
-        # print("FILEPATHS PRINT")
-        # print(self.images_filepaths)
-        if self.use_window:
+        # logger.debug("FILEPATHS PRINT")
+        # logger.debug(self.images_filepaths)
+        if self.config.sliding_window_config.is_enabled():
             load_transforms = Compose(
                 [
                     LoadImaged(keys=["image"]),
@@ -395,8 +390,8 @@ class InferenceWorker(GeneratorWorker):
         return inference_loader
 
     def load_layer(self):
-
-        data = np.squeeze(self.layer.data)
+        self.log("Loading layer\n")
+        data = np.squeeze(self.config.layer)
 
         volume = np.array(data, dtype=np.int16)
 
@@ -410,14 +405,14 @@ class InferenceWorker(GeneratorWorker):
         volume = np.swapaxes(
             volume, 0, 2
         )  # for anisotropy to be monai-like, i.e. zyx # FIXME rotation not always correct
-        print("Loading layer\n")
+
         dims_check = volume.shape
-        self.log("\nChecking dimensions...")
+        # self.log("\nChecking dimensions...")
         pad = utils.get_padding_dim(dims_check)
 
-        # print(volume.shape)
-        # print(volume.dtype)
-        if self.use_window:
+        # logger.debug(volume.shape)
+        # logger.debug(volume.dtype)
+        if self.config.sliding_window_config.is_enabled():
             load_transforms = Compose(
                 [
                     ToTensor(),
@@ -444,7 +439,6 @@ class InferenceWorker(GeneratorWorker):
                 log_stats=True,
             )
 
-        self.log("\nLoading dataset...")
         input_image = load_transforms(volume)
         self.log("Done")
         return input_image
@@ -461,30 +455,46 @@ class InferenceWorker(GeneratorWorker):
         inputs = inputs.to("cpu")
 
         model_output = lambda inputs: post_process_transforms(
-            self.model_dict["class"].get_output(model, inputs)
+            self.config.model_info.get_model().get_output(
+                model, inputs
+            )  # TODO(cyril) refactor those functions
         )
 
-        if self.keep_on_cpu:
+        def model_output(inputs):
+            return post_process_transforms(
+                self.config.model_info.get_model().get_output(model, inputs)
+            )
+
+        if self.config.keep_on_cpu:
             dataset_device = "cpu"
         else:
-            dataset_device = self.device
+            dataset_device = self.config.device
 
-        if self.use_window:
-            window_size = self.window_infer_size
-            window_overlap = self.window_overlap_percentage
-        else:
-            window_size = None
-            window_overlap = 0.25
+        window_size = self.config.sliding_window_config.window_size
+        window_overlap = self.config.sliding_window_config.window_overlap
+
+        # FIXME
+        # import sys
+
+        # old_stdout = sys.stdout
+        # old_stderr = sys.stderr
+
+        # sys.stdout = self.downloader.log_widget
+        # sys.stdout = self.downloader.log_widget
 
         outputs = sliding_window_inference(
             inputs,
-            roi_size=window_size,
-            sw_batch_size=1,
+            roi_size=[window_size, window_size, window_size],
+            sw_batch_size=1,  # TODO add param
             predictor=model_output,
-            sw_device=self.device,
+            sw_device=self.config.device,
             device=dataset_device,
             overlap=window_overlap,
+            progress=True,
         )
+
+        # sys.stdout = old_stdout
+        # sys.stderr = old_stderr
 
         out = outputs.detach().cpu()
 
@@ -498,13 +508,13 @@ class InferenceWorker(GeneratorWorker):
         else:
             return out
 
-    def create_result_dict(
+    def create_result_dict(  # FIXME replace with result class
         self,
         semantic_labels,
         instance_labels,
         from_layer: bool,
         original=None,
-        data_dict=None,
+        stats=None,
         i=0,
     ):
 
@@ -520,17 +530,17 @@ class InferenceWorker(GeneratorWorker):
                 )
             semantic_labels = np.swapaxes(semantic_labels, 0, 2)
 
-        return {
-            "image_id": i + 1,
-            "original": original,
-            "instance_labels": instance_labels,
-            "object stats": data_dict,
-            "result": semantic_labels,
-            "model_name": self.model_dict["name"],
-        }
+        return InferenceResult(
+            image_id=i + 1,
+            original=original,
+            instance_labels=instance_labels,
+            stats=stats,
+            result=semantic_labels,
+            model_name=self.config.model_info.name,
+        )
 
     def get_original_filename(self, i):
-        return os.path.basename(self.images_filepaths[i]).split(".")[0]
+        return Path(self.config.images_filepaths[i]).stem
 
     def get_instance_result(self, semantic_labels, from_layer=False, i=-1):
 
@@ -539,7 +549,7 @@ class InferenceWorker(GeneratorWorker):
                 "An ID should be provided when running from a file"
             )
 
-        if self.instance_params["do_instance"]:
+        if self.config.post_process_config.instance.enabled:
             instance_labels = self.instance_seg(
                 semantic_labels,
                 i + 1,
@@ -567,17 +577,16 @@ class InferenceWorker(GeneratorWorker):
         time = utils.get_date_time()
 
         file_path = (
-            self.results_path
+            self.config.results_path
             + "/"
             + f"Prediction_{i+1}"
             + original_filename
-            + self.model_dict["name"]
+            + self.config.model_info.name
             + f"_{time}_"
-            + self.filetype
+            + self.config.filetype
         )
-
         imwrite(file_path, image)
-        filename = os.path.split(file_path)[1]
+        filename = Path(file_path).stem
 
         if from_layer:
             self.log(f"\nLayer prediction saved as : {filename}")
@@ -585,24 +594,32 @@ class InferenceWorker(GeneratorWorker):
             self.log(f"\nFile n°{i+1} saved as : {filename}")
 
     def aniso_transform(self, image):
-        zoom = self.transforms["zoom"][1]
-        anisotropic_transform = Zoom(
-            zoom=zoom,
-            keep_size=False,
-            padding_mode="empty",
-        )
-        return anisotropic_transform(image[0])
+
+        if self.config.post_process_config.zoom.enabled:
+            zoom = self.config.post_process_config.zoom.zoom_values
+            anisotropic_transform = Zoom(
+                zoom=zoom,
+                keep_size=False,
+                padding_mode="empty",
+            )
+            return anisotropic_transform(image[0])
+        else:
+            return image
 
     def instance_seg(self, to_instance, image_id=0, original_filename="layer"):
 
         if image_id is not None:
             self.log(f"\nRunning instance segmentation for image n°{image_id}")
 
-        threshold = self.instance_params["threshold"]
-        size_small = self.instance_params["size_small"]
-        method_name = self.instance_params["method"]
+        threshold = (
+            self.config.post_process_config.instance.threshold.threshold_value
+        )
+        size_small = (
+            self.config.post_process_config.instance.small_object_removal_threshold.threshold_value
+        )
+        method_name = self.config.post_process_config.instance.method
 
-        if method_name == "Watershed":
+        if method_name == "Watershed":  # FIXME use dict in config instead
 
             def method(image):
                 return binary_watershed(image, threshold, size_small)
@@ -620,21 +637,21 @@ class InferenceWorker(GeneratorWorker):
         instance_labels = method(to_instance)
 
         instance_filepath = (
-            self.results_path
+            self.config.results_path
             + "/"
             + f"Instance_seg_labels_{image_id}_"
             + original_filename
             + "_"
-            + self.model_dict["name"]
+            + self.config.model_info.name
             + f"_{utils.get_date_time()}_"
-            + self.filetype
+            + self.config.filetype
         )
 
         imwrite(instance_filepath, instance_labels)
         self.log(
             f"Instance segmentation results for image n°{image_id} have been saved as:"
         )
-        self.log(os.path.split(instance_filepath)[1])
+        self.log(Path(instance_filepath).name)
         return instance_labels
 
     def inference_on_folder(self, inf_data, i, model, post_process_transforms):
@@ -652,30 +669,27 @@ class InferenceWorker(GeneratorWorker):
         )
 
         self.save_image(out, i=i)
-        instance_labels, data_dict = self.get_instance_result(out, i=i)
+        instance_labels, stats = self.get_instance_result(out, i=i)
 
         original = np.array(inf_data["image"]).astype(np.float32)
 
-        self.log(f"Inference completed on layer")
+        self.log(f"Inference completed on image n°{i+1}")
 
         return self.create_result_dict(
             out,
             instance_labels,
             from_layer=False,
             original=original,
-            data_dict=data_dict,
+            stats=stats,
             i=i,
         )
 
     def stats_csv(self, instance_labels):
-        if self.stats_to_csv:
-
-            # try:
-
-            data_dict = volume_stats(
+        if self.config.compute_stats:
+            stats = volume_stats(
                 instance_labels
             )  # TODO test with area mesh function
-            return data_dict
+            return stats
 
         # except ValueError as e:
         #     self.log(f"Error occurred during stats computing : {e}")
@@ -698,12 +712,13 @@ class InferenceWorker(GeneratorWorker):
 
         self.save_image(out, from_layer=True)
 
-        instance_labels, data_dict = self.get_instance_result(
-            out, from_layer=True
-        )
+        instance_labels, stats = self.get_instance_result(out, from_layer=True)
 
         return self.create_result_dict(
-            out, instance_labels, from_layer=True, data_dict=data_dict
+            semantic_labels=out,
+            instance_labels=instance_labels,
+            from_layer=True,
+            stats=stats,
         )
 
     def inference(self):
@@ -741,36 +756,41 @@ class InferenceWorker(GeneratorWorker):
 
         """
         sys = platform.system()
-        print(f"OS is {sys}")
+        logger.debug(f"OS is {sys}")
         if sys == "Darwin":
             torch.set_num_threads(1)  # required for threading on macOS ?
             self.log("Number of threads has been set to 1 for macOS")
 
         try:
-            dims = self.model_dict["model_input_size"]
-            self.log(f"MODEL DIMS : {dims}")
-            self.log(self.model_dict["name"])
+            dims = self.config.model_info.model_input_size
+            # self.log(f"MODEL DIMS : {dims}")
+            model_name = self.config.model_info.name
+            model_class = self.config.model_info.get_model()
+            self.log(model_name)
 
-            if self.model_dict["name"] == "SegResNet":
-                model = self.model_dict["class"].get_net(
+            weights_config = self.config.weights_config
+            post_process_config = self.config.post_process_config
+
+            if model_name == "SegResNet":
+                model = model_class.get_net(
                     input_image_size=[
                         dims,
                         dims,
                         dims,
                     ],  # TODO FIX ! find a better way & remove model-specific code
                 )
-            elif self.model_dict["name"] == "SwinUNetR":
-                model = self.model_dict["class"].get_net(
+            elif model_name == "SwinUNetR":
+                model = model_class.get_net(
                     img_size=[dims, dims, dims],
                     use_checkpoint=False,
                 )
             else:
-                model = self.model_dict["class"].get_net()
-            model = model.to(self.device)
+                model = model_class.get_net()
+            model = model.to(self.config.device)
 
             self.log_parameters()
 
-            model.to(self.device)
+            model.to(self.config.device)
 
             # load_transforms = Compose(
             #     [
@@ -784,37 +804,35 @@ class InferenceWorker(GeneratorWorker):
             #     ]
             # )
 
-            if not self.transforms["thresh"][0]:
+            if not post_process_config.thresholding.enabled:
                 post_process_transforms = EnsureType()
             else:
-                t = self.transforms["thresh"][1]
+                t = post_process_config.thresholding.threshold_value
                 post_process_transforms = Compose(
                     AsDiscrete(threshold=t), EnsureType()
                 )
 
             self.log("\nLoading weights...")
-
-            if self.weights_dict["custom"]:
-                weights = self.weights_dict["path"]
+            if weights_config.custom:
+                weights = weights_config.path
             else:
                 self.downloader.download_weights(
-                    self.model_dict["name"],
-                    self.model_dict["class"].get_weights_file(),
+                    model_name,
+                    model_class.get_weights_file(),
                 )
-                weights = os.path.join(
-                    WEIGHTS_DIR, self.model_dict["class"].get_weights_file()
+                weights = str(
+                    WEIGHTS_DIR / Path(model_class.get_weights_file())
                 )
-
             model.load_state_dict(
                 torch.load(
                     weights,
-                    map_location=self.device,
+                    map_location=self.config.device,
                 )
             )
             self.log("Done")
 
-            is_folder = self.images_filepaths is not None
-            is_layer = self.layer is not None
+            is_folder = self.config.images_filepaths is not None
+            is_layer = self.config.layer is not None
 
             if is_layer and is_folder:
                 raise ValueError(
@@ -829,7 +847,7 @@ class InferenceWorker(GeneratorWorker):
                 #
                 # check_data = first(inference_loader)
                 # image = check_data[0][0]
-                # print(image.shape)
+                # logger.debug(image.shape)
                 ##################
                 ##################
             elif is_layer:
@@ -854,10 +872,20 @@ class InferenceWorker(GeneratorWorker):
             model.to("cpu")
 
         except Exception as e:
-            self.log(f"Error : {e}")
+            self.log(f"Error during inference : {e}")
             self.quit()
         finally:
             self.quit()
+
+
+@dataclass
+class TrainingReport:
+    show_plot: bool = True
+    epoch: int = 0
+    loss_values: List = None
+    validation_metric: List = None
+    weights: np.array = None
+    images: List[np.array] = None
 
 
 class TrainingWorker(GeneratorWorker):
@@ -866,22 +894,7 @@ class TrainingWorker(GeneratorWorker):
 
     def __init__(
         self,
-        device,
-        model_dict,
-        weights_path,
-        data_dicts,
-        validation_percent,
-        max_epochs,
-        loss_function,
-        learning_rate,
-        val_interval,
-        batch_size,
-        results_path,
-        sampling,
-        num_samples,
-        sample_size,
-        do_augmentation,
-        deterministic,
+        config: config.TrainingWorkerConfig,
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~train` function. Note: See :py:func:`~train`
 
@@ -927,24 +940,7 @@ class TrainingWorker(GeneratorWorker):
 
         self._weight_error = False
         #############################################
-        self.device = device
-        self.model_dict = model_dict
-        self.weights_path = weights_path
-        self.data_dicts = data_dicts
-        self.validation_percent = validation_percent
-        self.max_epochs = max_epochs
-        self.loss_function = loss_function
-        self.learning_rate = learning_rate
-        self.val_interval = val_interval
-        self.batch_size = batch_size
-        self.results_path = results_path
-
-        self.num_samples = num_samples
-        self.sampling = sampling
-        self.sample_size = sample_size
-
-        self.do_augment = do_augmentation
-        self.seed_dict = deterministic
+        self.config = config
 
         self.train_files = []
         self.val_files = []
@@ -972,43 +968,47 @@ class TrainingWorker(GeneratorWorker):
         self.log("Parameters summary :\n")
 
         self.log(
-            f"Percentage of dataset used for validation : {self.validation_percent * 100}%"
+            f"Percentage of dataset used for validation : {self.config.validation_percent * 100}%"
         )
+
         self.log("-" * 10)
         self.log("Training files :\n")
         [
-            self.log(f"{os.path.basename(str(train_file)[:-2])}\n")
+            self.log(f"{Path(train_file['image']).name}\n")
             for train_file in self.train_files
         ]
         self.log("-" * 10)
         self.log("Validation files :\n")
         [
-            self.log(f"{os.path.basename(str(val_file)[:-2])}\n")
+            self.log(f"{Path(val_file['image']).name}\n")
             for val_file in self.val_files
         ]
         self.log("-" * 10)
-        if self.seed_dict["use deterministic"]:
+
+        if self.config.deterministic_config.enabled:
             self.log(f"Deterministic training is enabled")
-            self.log(f"Seed is {self.seed_dict['seed']}")
+            self.log(f"Seed is {self.config.deterministic_config.seed}")
 
-        self.log(f"Training for {self.max_epochs} epochs")
-        self.log(f"Loss function is : {str(self.loss_function)}")
-        self.log(f"Validation is performed every {self.val_interval} epochs")
-        self.log(f"Batch size is {self.batch_size}")
-        self.log(f"Learning rate is {self.learning_rate}")
+        self.log(f"Training for {self.config.max_epochs} epochs")
+        self.log(f"Loss function is : {str(self.config.loss_function)}")
+        self.log(
+            f"Validation is performed every {self.config.validation_interval} epochs"
+        )
+        self.log(f"Batch size is {self.config.batch_size}")
+        self.log(f"Learning rate is {self.config.learning_rate}")
 
-        if self.sampling:
+        if self.config.sampling:
             self.log(
-                f"Extracting {self.num_samples} patches of size {self.sample_size}"
+                f"Extracting {self.config.num_samples} patches of size {self.config.sample_size}"
             )
         else:
             self.log("Using whole images as dataset")
 
-        if self.do_augment:
+        if self.config.do_augmentation:
             self.log("Data augmentation is enabled")
 
-        if self.weights_path is not None:
-            self.log(f"Using weights from : {self.weights_path}")
+        if not self.config.weights_info.use_pretrained:
+            self.log(f"Using weights from : {self.config.weights_info.path}")
             if self._weight_error:
                 self.log(
                     ">>>>>>>>>>>>>>>>>\n"
@@ -1064,66 +1064,102 @@ class TrainingWorker(GeneratorWorker):
         # error_log = open(results_path +"/error_log.log" % multiprocessing.current_process().name, 'x')
         # faulthandler.enable(file=error_log, all_threads=True)
         #########################
+        model_config = self.config.model_info
+        weights_config = self.config.weights_info
+        deterministic_config = self.config.deterministic_config
+
         try:
-            if self.seed_dict["use deterministic"]:
+            if deterministic_config.enabled:
                 set_determinism(
-                    seed=self.seed_dict["seed"]
+                    seed=deterministic_config.seed
                 )  # use_deterministic_algorithms = True causes cuda error
 
             sys = platform.system()
-            print(sys)
+            logger.debug(sys)
             if sys == "Darwin":  # required for macOS ?
                 torch.set_num_threads(1)
                 self.log("Number of threads has been set to 1 for macOS")
 
-            model_name = self.model_dict["name"]
-            model_class = self.model_dict["class"]
+            self.log(f"config model : {self.config.model_info.name}")
+            model_name = model_config.name
+            model_class = model_config.get_model()
 
-            if not self.sampling:
-                data_check = LoadImaged(keys=["image"])(self.data_dicts[0])
+            if not self.config.sampling:
+                data_check = LoadImaged(keys=["image"])(
+                    self.config.train_data_dict[0]
+                )
                 check = data_check["image"].shape
 
+            do_sampling = self.config.sampling
+
             if model_name == "SegResNet":
-                if self.sampling:
-                    size = self.sample_size
+                if do_sampling:
+                    size = self.config.sample_size
                 else:
                     size = check
-                print(f"Size of image : {size}")
+                logger.info(f"Size of image : {size}")
                 model = model_class.get_net(
                     input_image_size=utils.get_padding_dim(size),
-                    out_channels=1,
-                    dropout_prob=0.3,
+                    # out_channels=1,
+                    # dropout_prob=0.3,
                 )
             elif model_name == "SwinUNetR":
-                if self.sampling:
+                if do_sampling:
                     size = self.sample_size
                 else:
                     size = check
-                print(f"Size of image : {size}")
+                logger.info(f"Size of image : {size}")
                 model = model_class.get_net(
                     img_size=utils.get_padding_dim(size),
                     use_checkpoint=True,
                 )
             else:
                 model = model_class.get_net()  # get an instance of the model
-            model = model.to(self.device)
+            model = model.to(self.config.device)
 
             epoch_loss_values = []
             val_metric_values = []
 
-            self.train_files, self.val_files = (
-                self.data_dicts[
-                    0 : int(len(self.data_dicts) * self.validation_percent)
-                ],
-                self.data_dicts[
-                    int(len(self.data_dicts) * self.validation_percent) :
-                ],
+            if len(self.config.train_data_dict) > 1:
+                self.train_files, self.val_files = (
+                    self.config.train_data_dict[
+                        0 : int(
+                            len(self.config.train_data_dict)
+                            * self.config.validation_percent
+                        )
+                    ],
+                    self.config.train_data_dict[
+                        int(
+                            len(self.config.train_data_dict)
+                            * self.config.validation_percent
+                        ) :
+                    ],
+                )
+            else:
+                self.train_files = self.val_files = self.config.train_data_dict
+                msg = f"Only one image file was provided : {self.config.train_data_dict[0]['image']}.\n"
+
+                logger.debug(f"SAMPLING is {self.config.sampling}")
+                if not self.config.sampling:
+                    msg += f"Sampling is not in use, the only image provided will be used as the validation file."
+                    self.warn(msg)
+                else:
+                    msg += f"Samples for validation will be cropped for the same only volume that is being used for training"
+
+                logger.warning(msg)
+
+            logger.debug(
+                f"Data dict from config is {self.config.train_data_dict}"
             )
+            logger.debug(f"Train files : {self.train_files}")
+            logger.debug(f"Val. files : {self.val_files}")
 
-            if self.train_files == [] or self.val_files == []:
-                self.log("ERROR : datasets are empty")
+            if len(self.train_files) == 0:
+                raise ValueError("Training dataset is empty")
+            if len(self.val_files) == 0:
+                raise ValueError("Validation dataset is empty")
 
-            if self.sampling:
+            if do_sampling:
                 sample_loader = Compose(
                     [
                         LoadImaged(keys=["image", "label"]),
@@ -1131,24 +1167,24 @@ class TrainingWorker(GeneratorWorker):
                         RandSpatialCropSamplesd(
                             keys=["image", "label"],
                             roi_size=(
-                                self.sample_size
+                                self.config.sample_size
                             ),  # multiply by axis_stretch_factor if anisotropy
                             # max_roi_size=(120, 120, 120),
                             random_size=False,
-                            num_samples=self.num_samples,
+                            num_samples=self.config.num_samples,
                         ),
                         Orientationd(keys=["image", "label"], axcodes="PLI"),
                         SpatialPadd(
                             keys=["image", "label"],
                             spatial_size=(
-                                utils.get_padding_dim(self.sample_size)
+                                utils.get_padding_dim(self.config.sample_size)
                             ),
                         ),
                         EnsureTyped(keys=["image", "label"]),
                     ]
                 )
 
-            if self.do_augment:
+            if self.config.do_augmentation:
                 train_transforms = (
                     Compose(  # TODO : figure out which ones and values ?
                         [
@@ -1178,24 +1214,46 @@ class TrainingWorker(GeneratorWorker):
                 ]
             )
             # self.log("Loading dataset...\n")
-            if self.sampling:
-                print("train_ds")
+            if do_sampling:
+
+                # if there is only one volume, split samples
+                # TODO(cyril) : maybe implement something in user config to toggle this behavior
+                if len(self.config.train_data_dict) < 2:
+                    num_train_samples = ceil(
+                        self.config.num_samples
+                        * self.config.validation_percent
+                    )
+                    num_val_samples = ceil(
+                        self.config.num_samples
+                        * (1 - self.config.validation_percent)
+                    )
+                else:
+                    num_train_samples = (
+                        num_val_samples
+                    ) = self.config.num_samples
+
+                logger.debug(f"AMOUNT of train samples : {num_train_samples}")
+                logger.debug(
+                    f"AMOUNT of validation samples : {num_val_samples}"
+                )
+
+                logger.debug("train_ds")
                 train_ds = PatchDataset(
                     data=self.train_files,
                     transform=train_transforms,
                     patch_func=sample_loader,
-                    samples_per_image=self.num_samples,
+                    samples_per_image=num_train_samples,
                 )
-                print("val_ds")
+                logger.debug("val_ds")
                 val_ds = PatchDataset(
                     data=self.val_files,
                     transform=val_transforms,
                     patch_func=sample_loader,
-                    samples_per_image=self.num_samples,
+                    samples_per_image=num_val_samples,
                 )
 
             else:
-                load_single_images = Compose(
+                load_whole_images = Compose(
                     [
                         LoadImaged(keys=["image", "label"]),
                         EnsureChannelFirstd(keys=["image", "label"]),
@@ -1207,32 +1265,32 @@ class TrainingWorker(GeneratorWorker):
                         EnsureTyped(keys=["image", "label"]),
                     ]
                 )
-                print("Cache dataset : train")
+                logger.debug("Cache dataset : train")
                 train_ds = CacheDataset(
                     data=self.train_files,
-                    transform=Compose(load_single_images, train_transforms),
+                    transform=Compose(load_whole_images, train_transforms),
                 )
-                print("Cache dataset : val")
+                logger.debug("Cache dataset : val")
                 val_ds = CacheDataset(
-                    data=self.val_files, transform=load_single_images
+                    data=self.val_files, transform=load_whole_images
                 )
-            print("Dataloader")
+            logger.debug("Dataloader")
             train_loader = DataLoader(
                 train_ds,
-                batch_size=self.batch_size,
+                batch_size=self.config.batch_size,
                 shuffle=True,
                 num_workers=2,
                 collate_fn=pad_list_data_collate,
             )
 
             val_loader = DataLoader(
-                val_ds, batch_size=self.batch_size, num_workers=2
+                val_ds, batch_size=self.config.batch_size, num_workers=2
             )
-            print("\nDone")
+            logger.info("\nDone")
 
-            print("Optimizer")
+            logger.debug("Optimizer")
             optimizer = torch.optim.Adam(
-                model.parameters(), self.learning_rate
+                model.parameters(), self.config.learning_rate
             )
             dice_metric = DiceMetric(include_background=True, reduction="mean")
 
@@ -1240,25 +1298,26 @@ class TrainingWorker(GeneratorWorker):
             best_metric_epoch = -1
 
             # time = utils.get_date_time()
-            print("Weights")
-            if self.weights_path is not None:
-                if self.weights_path == "use_pretrained":
+            logger.debug("Weights")
+
+            if weights_config.custom:
+                if weights_config.use_pretrained:
                     weights_file = model_class.get_weights_file()
                     self.downloader.download_weights(model_name, weights_file)
-                    weights = os.path.join(WEIGHTS_DIR, weights_file)
-                    self.weights_path = weights
+                    weights = WEIGHTS_DIR / Path(weights_file)
+                    weights_config.path = weights
                 else:
-                    weights = os.path.join(self.weights_path)
+                    weights = str(Path(weights_config.path))
 
                 try:
                     model.load_state_dict(
                         torch.load(
                             weights,
-                            map_location=self.device,
+                            map_location=self.config.device,
                         )
                     )
                 except RuntimeError as e:
-                    print(f"Error : {e}")
+                    logger.error(f"Error when loading weights : {e}")
                     warn = (
                         "WARNING:\nIt'd seem that the weights were incompatible with the model,\n"
                         "the model will be trained from random weights"
@@ -1267,7 +1326,7 @@ class TrainingWorker(GeneratorWorker):
                     self.warn(warn)
                     self._weight_error = True
 
-            if self.device.type == "cuda":
+            if self.config.device.type == "cuda":
                 self.log("\nUsing GPU :")
                 self.log(torch.cuda.get_device_name(0))
             else:
@@ -1275,11 +1334,17 @@ class TrainingWorker(GeneratorWorker):
 
             self.log_parameters()
 
-            for epoch in range(self.max_epochs):
+            device = self.config.device
+
+            if model_name == "test":
+                self.quit()
+                yield TrainingReport(False)
+
+            for epoch in range(self.config.max_epochs):
                 # self.log("\n")
                 self.log("-" * 10)
-                self.log(f"Epoch {epoch + 1}/{self.max_epochs}")
-                if self.device.type == "cuda":
+                self.log(f"Epoch {epoch + 1}/{self.config.max_epochs}")
+                if device.type == "cuda":
                     self.log("Memory Usage:")
                     alloc_mem = round(
                         torch.cuda.memory_allocated(0) / 1024**3, 1
@@ -1296,13 +1361,13 @@ class TrainingWorker(GeneratorWorker):
                 for batch_data in train_loader:
                     step += 1
                     inputs, labels = (
-                        batch_data["image"].to(self.device),
-                        batch_data["label"].to(self.device),
+                        batch_data["image"].to(device),
+                        batch_data["label"].to(device),
                     )
                     optimizer.zero_grad()
                     outputs = model_class.get_output(model, inputs)
-                    # print(f"OUT : {outputs.shape}")
-                    loss = self.loss_function(outputs, labels)
+                    # self.log(f"Output dimensions : {outputs.shape}")
+                    loss = self.config.loss_function(outputs, labels)
                     loss.backward()
                     optimizer.step()
                     epoch_loss += loss.detach().item()
@@ -1310,19 +1375,26 @@ class TrainingWorker(GeneratorWorker):
                         f"* {step}/{len(train_ds) // train_loader.batch_size}, "
                         f"Train loss: {loss.detach().item():.4f}"
                     )
-                    yield {"plot": False, "weights": model.state_dict()}
+                    yield TrainingReport(
+                        show_plot=False, weights=model.state_dict()
+                    )
 
                 epoch_loss /= step
                 epoch_loss_values.append(epoch_loss)
                 self.log(f"Epoch: {epoch + 1}, Average loss: {epoch_loss:.4f}")
 
-                if (epoch + 1) % self.val_interval == 0:
+                checkpoint_output = []
+
+                if (
+                    (epoch + 1) % self.config.validation_interval == 0
+                    or epoch + 1 == self.config.max_epochs
+                ):
                     model.eval()
                     with torch.no_grad():
                         for val_data in val_loader:
                             val_inputs, val_labels = (
-                                val_data["image"].to(self.device),
-                                val_data["label"].to(self.device),
+                                val_data["image"].to(device),
+                                val_data["label"].to(device),
                             )
 
                             val_outputs = model_class.get_validation(
@@ -1347,23 +1419,34 @@ class TrainingWorker(GeneratorWorker):
                                 post_label(res_tensor) for res_tensor in labs
                             ]
 
-                            # print(len(val_outputs))
-                            # print(len(val_labels))
+                            # logger.debug(len(val_outputs))
+                            # logger.debug(len(val_labels))
 
                             dice_metric(y_pred=val_outputs, y=val_labels)
+                            checkpoint_output.append(
+                                [res.detach().cpu() for res in val_outputs]
+                            )
+
+                        checkpoint_output = [
+                            item.numpy()
+                            for batch in checkpoint_output
+                            for item in batch
+                        ]
 
                         metric = dice_metric.aggregate().detach().item()
                         dice_metric.reset()
 
                         val_metric_values.append(metric)
 
-                        train_report = {
-                            "plot": True,
-                            "epoch": epoch,
-                            "losses": epoch_loss_values,
-                            "val_metrics": val_metric_values,
-                            "weights": model.state_dict(),
-                        }
+                        train_report = TrainingReport(
+                            show_plot=True,
+                            epoch=epoch,
+                            loss_values=epoch_loss_values,
+                            validation_metric=val_metric_values,
+                            weights=model.state_dict(),
+                            images=checkpoint_output,
+                        )
+
                         yield train_report
 
                         weights_filename = (
@@ -1377,8 +1460,9 @@ class TrainingWorker(GeneratorWorker):
                             self.log("Saving best metric model")
                             torch.save(
                                 model.state_dict(),
-                                os.path.join(
-                                    self.results_path, weights_filename
+                                Path(self.config.results_path_folder)
+                                / Path(
+                                    weights_filename,
                                 ),
                             )
                             self.log("Saving complete")
@@ -1395,7 +1479,7 @@ class TrainingWorker(GeneratorWorker):
             model.to("cpu")
 
         except Exception as e:
-            self.log(f"Error : {e}")
+            self.log(f"Error in training : {e}")
             self.quit()
         finally:
             self.quit()

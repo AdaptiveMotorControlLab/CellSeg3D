@@ -1,4 +1,4 @@
-.. _convert_module_guide:
+.. _utils_module_guide:
 
 Label conversion utility guide
 ==================================
@@ -18,16 +18,18 @@ You can :
     You can specify a size threshold in pixels; all objects smaller than this size will be removed in the image.
 
 * Resize anisotropic images :
-    Specifiy the resolution of your microscope to remove anisotropy from images.
+    Specify the resolution of your microscope to remove anisotropy from images.
 
 .. important:: Does not work for instance labels currently.
 
+* Threshold images :
+    Remove all values below a threshold in an image.
 
 .. figure:: ../images/converted_labels.png
    :scale: 30 %
    :align: center
 
-   Example of instance labels (left) converted to instance labels (right)
+   Example of instance labels (left) converted to semantic labels (right)
 
 Source code
 -------------------------------------------------

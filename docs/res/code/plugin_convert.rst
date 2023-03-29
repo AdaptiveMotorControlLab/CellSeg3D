@@ -1,21 +1,50 @@
 plugin_convert.py
 ==================================
 
+Classes
+----------------------------------
 
-Class : ConvertUtils
-------------------------------------------
+AnisoUtils
+**********************************
+.. autoclass:: napari_cellseg3d.code_plugins.plugin_convert::AnisoUtils
+    :members: __init__
 
-.. important::
-    Inherits from : :doc:`plugin_base`
+RemoveSmallUtils
+**********************************
+.. autoclass:: napari_cellseg3d.code_plugins.plugin_convert::RemoveSmallUtils
+    :members: __init__
 
-Methods
-**********************
-.. autoclass:: napari_cellseg3d.plugin_convert::ConvertUtils
-    :members:  __init__, build, folder_to_semantic, layer_to_semantic, folder_to_instance, layer_to_instance, layer_remove_small, folder_remove_small , check_ready_layer,check_ready_folder
-    :noindex:
+ToSemanticUtils
+**********************************
+.. autoclass:: napari_cellseg3d.code_plugins.plugin_convert::ToSemanticUtils
+    :members: __init__
 
-Attributes
-*********************
+InstanceWidgets
+**********************************
+.. autoclass:: napari_cellseg3d.code_plugins.plugin_convert::InstanceWidgets
+    :members: __init__, run_method
 
-.. autoclass:: napari_cellseg3d.plugin_convert::ConvertUtils
-   :members:  _viewer
+ToInstanceUtils
+**********************************
+.. autoclass:: napari_cellseg3d.code_plugins.plugin_convert::ToInstanceUtils
+    :members: __init__
+
+ThresholdUtils
+**********************************
+.. autoclass:: napari_cellseg3d.code_plugins.plugin_convert::ThresholdUtils
+    :members: __init__
+
+Functions
+-----------------------------------
+
+save_folder
+*****************************************
+.. autofunction:: napari_cellseg3d.code_plugins.plugin_convert::save_folder
+
+save_layer
+****************************************
+.. autofunction:: napari_cellseg3d.code_plugins.plugin_convert::save_layer
+
+show_result
+****************************************
+.. autofunction:: napari_cellseg3d.code_plugins.plugin_convert::show_result

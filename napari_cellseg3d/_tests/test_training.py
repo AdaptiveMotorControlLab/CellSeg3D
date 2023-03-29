@@ -1,28 +1,55 @@
-from napari_cellseg3d import plugin_model_training as train
+from pathlib import Path
+
+from napari_cellseg3d import config
+from napari_cellseg3d.code_plugins.plugin_model_training import Trainer
+from napari_cellseg3d._tests.fixtures import LogFixture
+from napari_cellseg3d.config import MODEL_LIST
+from napari_cellseg3d.code_models.models.model_test import TestModel
 
 
-def test_check_ready(make_napari_viewer):
-    view = make_napari_viewer()
-    widget = train.Trainer(view)
+def test_training(make_napari_viewer, qtbot):
+    im_path = str(Path(__file__).resolve().parent / "res/test.tif")
 
-    widget.images_filepath = [""]
-    widget.labels_filepaths = [""]
+    viewer = make_napari_viewer()
+    widget = Trainer(viewer)
+    widget.log = LogFixture()
+    viewer.window.add_dock_widget(widget)
 
-    res = widget.check_ready()
-    assert not res
+    widget.images_filepath = None
+    widget.labels_filepaths = None
 
-    # widget.images_filepath = ["C:/test/something.tif"]
-    # widget.labels_filepaths = ["C:/test/lab_something.tif"]
-    # res = widget.check_ready()
-    #
-    # assert res
+    assert not widget.check_ready()
+
+    assert widget.filetype_choice.currentText() == ".tif"
+
+    widget.images_filepaths = [im_path]
+    widget.labels_filepaths = [im_path]
+    widget.epoch_choice.setValue(1)
+    widget.val_interval_choice.setValue(1)
+
+    assert widget.check_ready()
+
+    #################
+    # Training is too long to test properly this way. Do not use on Github
+    #################
+    MODEL_LIST["test"] = TestModel()
+    widget.model_choice.addItem("test")
+    widget.model_choice.setCurrentIndex(len(MODEL_LIST.keys()) - 1)
+
+    # widget.start()
+    # assert widget.worker is not None
+
+    # with qtbot.waitSignal(signal=widget.worker.finished, timeout=10000, raising=False) as blocker:  # wait only for 60 seconds.
+    #     blocker.connect(widget.worker.errored)
 
 
 def test_update_loss_plot(make_napari_viewer):
     view = make_napari_viewer()
-    widget = train.Trainer(view)
+    widget = Trainer(view)
 
-    widget.val_interval = 1
+    widget.worker_config = config.TrainingWorkerConfig()
+    widget.worker_config.validation_interval = 1
+    widget.worker_config.results_path_folder = "."
 
     epoch_loss_values = [1]
     metric_values = []
@@ -32,7 +59,7 @@ def test_update_loss_plot(make_napari_viewer):
     assert widget.dice_metric_plot is None
     assert widget.train_loss_plot is None
 
-    widget.val_interval = 2
+    widget.worker_config.validation_interval = 2
 
     epoch_loss_values = [0, 1]
     metric_values = [0.2]

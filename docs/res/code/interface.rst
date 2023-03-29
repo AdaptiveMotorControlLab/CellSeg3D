@@ -4,6 +4,27 @@ interface.py
 Classes
 -------------
 
+QWidgetSingleton
+**************************************
+.. autoclass:: napari_cellseg3d.interface::QWidgetSingleton
+    :members: __call__
+
+UtilsDropdown
+**************************************
+.. autoclass:: napari_cellseg3d.interface::UtilsDropdown
+    :members: __init__, dropdown_menu_call, show_utils_menu
+
+Log
+**************************************
+.. autoclass:: napari_cellseg3d.interface::Log
+    :members: __init__, write, replace_last_line, print_and_log, warn
+
+
+ContainerWidget
+**************************************
+.. autoclass:: napari_cellseg3d.interface::ContainerWidget
+    :members: __init__
+
 Button
 **************************************
 .. autoclass:: napari_cellseg3d.interface::Button
@@ -22,13 +43,13 @@ CheckBox
 AnisotropyWidgets
 **************************************
 .. autoclass:: napari_cellseg3d.interface::AnisotropyWidgets
-   :members: __init__, build, get_anisotropy_resolution_xyz, get_anisotropy_resolution_zyx, anisotropy_zoom_factor,is_enabled,toggle_permanent_visibility
+   :members: __init__, build, scaling_zyx, resolution_zyx, scaling_xyz, resolution_xyz,enabled
 
 
 FilePathWidget
 **************************************
 .. autoclass:: napari_cellseg3d.interface::FilePathWidget
-   :members: __init__, build, get_text_field, get_button, check_ready, set_required, update_field_color, set_description
+   :members: __init__, build, text_field, button, check_ready, required, update_field_color, tooltips
 
 ScrollArea
 **************************************
@@ -38,7 +59,7 @@ ScrollArea
 DoubleIncrementCounter
 **************************************
 .. autoclass:: napari_cellseg3d.interface::DoubleIncrementCounter
-   :members: __init__, set_precision, make_n
+   :members: __init__, precision, make_n
 
 IntIncrementCounter
 **************************************
@@ -49,22 +70,21 @@ IntIncrementCounter
 Functions
 -------------
 
+handle_adjust_errors
+**************************************
+.. autofunction:: napari_cellseg3d.interface::handle_adjust_errors
+
+handle_adjust_errors_wrapper
+**************************************
+.. autofunction:: napari_cellseg3d.interface::handle_adjust_errors_wrapper
+
 open_url
 **************************************
 .. autofunction:: napari_cellseg3d.interface::open_url
 
-
 make_group
 **************************************
 .. autofunction:: napari_cellseg3d.interface::make_group
-
-add_to_group
-**************************************
-.. autofunction:: napari_cellseg3d.interface::add_to_group
-
-make_container
-**************************************
-.. autofunction:: napari_cellseg3d.interface::make_container
 
 combine_blocks
 **************************************
@@ -73,6 +93,10 @@ combine_blocks
 add_blank
 **************************************
 .. autofunction:: napari_cellseg3d.interface::add_blank
+
+add_label
+**************************************
+.. autofunction:: napari_cellseg3d.interface::add_label
 
 toggle_visibility
 **************************************

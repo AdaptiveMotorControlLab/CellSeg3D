@@ -23,7 +23,7 @@ Launching the review process
     This will scale the images to visually remove the anisotropy, so as to make review easier.
 
 .. important::
-    Results will still be saved as anisotropic images. If you wish to resize your images, see the :doc:`convert_module_guide`
+    Results will still be saved as anisotropic images. If you wish to resize your images, see the :doc:`utils_module_guide`
 
 * CSV file name :
     You can then provide a model name, which will be used to name the csv file recording the status of each slice.
@@ -59,5 +59,5 @@ Source code
 -------------------------------------------------
 
 * :doc:`../code/plugin_review`
-* :doc:`../code/launch_review`
+* :doc:`../code/plugin_review_dock`
 * :doc:`../code/plugin_base`

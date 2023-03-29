@@ -1,34 +1,40 @@
-from napari_cellseg3d import model_framework
+from pathlib import Path
+
+from napari_cellseg3d.code_models import model_framework
+
+
+def pth(path):
+    return str(Path(path))
 
 
 def test_update_default(make_napari_viewer):
     view = make_napari_viewer()
     widget = model_framework.ModelFramework(view)
 
-    widget.images_filepaths = [""]
-    widget.results_path = ""
+    widget.images_filepaths = []
+    widget.results_path = None
 
-    widget.update_default()
+    widget._update_default()
 
-    assert widget._default_path == []
+    assert widget._default_folders == []
 
     widget.images_filepaths = [
-        "C:/test/test/images.tif",
-        "C:/images/test/data.png",
+        pth("C:/test/test/images.tif"),
+        pth("C:/images/test/data.png"),
     ]
     widget.labels_filepaths = [
-        "C:/dataset/labels/lab1.tif",
-        "C:/data/labels/lab2.tif",
+        pth("C:/dataset/labels/lab1.tif"),
+        pth("C:/data/labels/lab2.tif"),
     ]
-    widget.results_path = "D:/dataset/res"
-    widget.model_path = ""
+    widget.results_path = pth("D:/dataset/res")
+    # widget.model_path = None
 
-    widget.update_default()
+    widget._update_default()
 
-    assert widget._default_path == [
-        "C:/test/test",
-        "C:/dataset/labels",
-        "D:/dataset/res",
+    assert widget._default_folders == [
+        pth("C:/test/test"),
+        pth("C:/dataset/labels"),
+        pth("D:/dataset/res"),
     ]
 
 

@@ -1,6 +1,6 @@
-import os
 import warnings
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from pathlib import Path
 
 import napari
@@ -50,10 +50,11 @@ class Datamanager(QWidget):
         self.time_label.setVisible(False)
 
         self.pause_box = ui.CheckBox(
-            "Pause", self.pause_timer, parent=self, fixed=True
+            "Pause timer", self.pause_timer, parent=self, fixed=True
         )
 
-        io_panel, io_layout = ui.make_container()
+        io_panel = ui.ContainerWidget()
+        io_layout = io_panel.layout
         io_layout.addWidget(self.button, alignment=ui.ABS_AL)
         io_layout.addWidget(
             ui.combine_blocks(
@@ -72,8 +73,8 @@ class Datamanager(QWidget):
         # self.setMaximumHeight(GUI_MAXIMUM_HEIGHT)
         # self.setMaximumWidth(GUI_MAXIMUM_WIDTH)
 
-        self.df = ""
-        self.csv_path = ""
+        self.df = None
+        self.csv_path = None
         self.slice_num = 0
         self.filetype = ""
         self.filename = None
@@ -117,7 +118,7 @@ class Datamanager(QWidget):
         self.df.at[0, "time"] = str_time
         self.df.to_csv(self.csv_path)
 
-    def prepare(self, label_dir, filetype, model_type, checkbox, as_folder):
+    def prepare(self, label_dir, filetype, model_type, checkbox):
         """Initialize the Datamanager, which loads the csv file and updates it
         with the index of the current slice.
 
@@ -133,11 +134,11 @@ class Datamanager(QWidget):
         print("csv path try :")
         print(label_dir)
         self.filetype = filetype
-        self.as_folder = as_folder
 
         if not self.as_folder:
-            self.filename = os.path.split(label_dir)[1]
-            label_dir = os.path.split(label_dir)[0]
+            p = Path(label_dir)
+            self.filename = p.name
+            label_dir = p.parent
             print("Loading single image")
             print(self.filename)
             print(label_dir)
@@ -146,7 +147,7 @@ class Datamanager(QWidget):
 
         print(self.csv_path, checkbox)
         # print(self.viewer.dims.current_step[0])
-        self.update(self.viewer.dims.current_step[0])
+        self.update_dm(self.viewer.dims.current_step[0])
 
     def load_csv(self, label_dir, model_type, checkbox):
         """
@@ -164,7 +165,7 @@ class Datamanager(QWidget):
         #     label_dir = os.path.dirname(label_dir)
         print("label dir")
         print(label_dir)
-        csvs = sorted(list(Path(label_dir).glob(f"{model_type}*.csv")))
+        csvs = sorted(list(Path(str(label_dir)).glob(f"{model_type}*.csv")))
         if len(csvs) == 0:
             df, csv_path = self.create_csv(
                 label_dir, model_type
@@ -176,10 +177,7 @@ class Datamanager(QWidget):
                 csv_path = (
                     csv_path.split("_train")[0]
                     + "_train"
-                    + str(
-                        int(os.path.splitext(csv_path.split("_train")[1])[0])
-                        + 1
-                    )
+                    + str(int(Path(csv_path.split("_train")[1]).parent) + 1)
                     + ".csv"
                 )  # adds 1 to current csv name number
                 df.to_csv(csv_path)
@@ -210,7 +208,9 @@ class Datamanager(QWidget):
             labels = sorted(
                 list(
                     path.name
-                    for path in Path(label_dir).glob("./*" + self.filetype)
+                    for path in Path(str(label_dir)).glob(
+                        "./*" + self.filetype
+                    )
                 )
             )
         else:
@@ -230,7 +230,7 @@ class Datamanager(QWidget):
         )
         df.at[0, "time"] = "00:00:00"
 
-        csv_path = os.path.join(label_dir, f"{model_type}_train0.csv")
+        csv_path = str(Path(label_dir) / Path(f"{model_type}_train0.csv"))
         print("csv path for create")
         print(csv_path)
         df.to_csv(csv_path)
@@ -243,13 +243,12 @@ class Datamanager(QWidget):
                 self.df.at[self.df.index[self.slice_num], "train"]
             )  # puts  button values at value of 1st csv item
 
-    def update(self, slice_num):
+    def update_dm(self, slice_num):
         """Updates the Datamanager with the index of the current slice, and updates
         the text with the status contained in the csv (e.g. checked/not checked).
 
         Args:
             slice_num (int): index of the current slice
-
         """
         self.slice_num = slice_num
         self.update_time_csv()
@@ -280,22 +279,6 @@ class Datamanager(QWidget):
             self.df.at[self.df.index[self.slice_num], "train"] = "Not checked"
             self.df.to_csv(self.csv_path)
 
-    # def move_data(self):
-    #     shutil.copy(
-    #         self.df.at[self.df.index[self.slice_num], "filename"],
-    #         self.train_data_dir,
-    #     )
-    #
-    # def delete_data(self):
-    #     os.remove(
-    #         os.path.join(
-    #             self.train_data_dir,
-    #             os.path.basename(
-    #                 self.df.at[self.df.index[self.slice_num], "filename"]
-    #             ),
-    #         )
-    #     )
-    #
     # def check_all_data_and_mod(self):
     #     for i in range(len(self.df)):
     #         if self.df.at[self.df.index[i], "train"] == "Checked":

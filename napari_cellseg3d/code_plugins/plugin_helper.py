@@ -1,11 +1,11 @@
 import pathlib
 
 import napari
+
+# Qt
 from qtpy.QtCore import QSize
 from qtpy.QtGui import QIcon
 from qtpy.QtGui import QPixmap
-
-# Qt
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
 
@@ -13,21 +13,18 @@ from qtpy.QtWidgets import QWidget
 from napari_cellseg3d import interface as ui
 
 
-class Helper(QWidget):
-    # widget testing
+class Helper(QWidget, metaclass=ui.QWidgetSingleton):
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
 
-        self.help_url = (
-            "https://adaptivemotorcontrollab.github.io/cellseg3d-docs/"
-        )
+        self.help_url = "https://adaptivemotorcontrollab.github.io/CellSeg3d/"
 
         self.about_url = "https://wysscenter.ch/advances/3d-computer-vision-for-brain-analysis"
         self.repo_url = "https://github.com/AdaptiveMotorControlLab/CellSeg3d"
         self._viewer = viewer
 
         path = pathlib.Path(__file__).parent.resolve()
-        url = str(path) + "/res/logo_alpha.png"
+        url = str(path) + "../res/logo_alpha.png"
         image = QPixmap(url)
 
         self.logo_label = ui.Button(func=lambda: ui.open_url(self.repo_url))
@@ -40,7 +37,7 @@ class Helper(QWidget):
         self.logo_label.setToolTip("Open Github page")
 
         self.info_label = ui.make_label(
-            f"You are using napari-cellseg3d v.{'0.0.1rc4'}\n\n"
+            f"You are using napari-cellseg3d v.{'0.0.2rc1'}\n\n"
             f"Plugin for cell segmentation developed\n"
             f"by the Mathis Lab of Adaptive Motor Control\n\n"
             f"Code by :\nCyril Achard\nMaxime Vidal\nJessy Lauer\nMackenzie Mathis\n"
@@ -69,8 +66,6 @@ class Helper(QWidget):
         ]
         ui.add_widgets(vbox, widgets)
         self.setLayout(vbox)
-        # self.show()
-        # self._viewer.window.add_dock_widget(self, name="Help/About...", area="right")
 
     def remove_from_viewer(self):
         self._viewer.window.remove_dock_widget(self)

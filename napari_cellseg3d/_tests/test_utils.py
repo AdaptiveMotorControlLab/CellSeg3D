@@ -112,10 +112,10 @@ def test_normalize_x():
 def test_parse_default_path():
 
     user_path = os.path.expanduser("~")
-    assert utils.parse_default_path([""]) == user_path
+    assert utils.parse_default_path([None]) == user_path
 
-    path = ["C:/test/test", "", [""]]
+    path = ["C:/test/test", None, None]
     assert utils.parse_default_path(path) == "C:/test/test"
 
-    path = ["C:/test/test", "", [""], "D:/very/long/path/what/a/bore", ""]
+    path = ["C:/test/test", None, None, "D:/very/long/path/what/a/bore", ""]
     assert utils.parse_default_path(path) == "D:/very/long/path/what/a/bore"

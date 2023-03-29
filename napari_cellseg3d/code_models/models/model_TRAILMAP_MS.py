@@ -1,4 +1,4 @@
-from napari_cellseg3d.models.unet.model import UNet3D
+from napari_cellseg3d.code_models.models.unet.model import UNet3D
 
 
 def get_weights_file():

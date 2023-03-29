@@ -1,5 +1,5 @@
-import os
 import warnings
+from pathlib import Path
 
 import napari
 import torch
@@ -9,24 +9,26 @@ from qtpy.QtWidgets import QProgressBar
 from qtpy.QtWidgets import QSizePolicy
 
 # local
+from napari_cellseg3d import config
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
-from napari_cellseg3d.log_utility import Log
-from napari_cellseg3d.models import model_SegResNet as SegResNet
-from napari_cellseg3d.models import model_SwinUNetR as SwinUNetR
-
-# from napari_cellseg3d.models import model_TRAILMAP as TRAILMAP
-from napari_cellseg3d.models import model_VNet as VNet
-from napari_cellseg3d.models import model_TRAILMAP_MS as TRAILMAP_MS
-from napari_cellseg3d.plugin_base import BasePluginFolder
+from napari_cellseg3d.code_plugins.plugin_base import BasePluginFolder
 
 warnings.formatwarning = utils.format_Warning
+logger = utils.LOGGER
 
 
 class ModelFramework(BasePluginFolder):
     """A framework with buttons to use for loading images, labels, models, etc. for both inference and training"""
 
-    def __init__(self, viewer: "napari.viewer.Viewer"):
+    def __init__(
+        self,
+        viewer: "napari.viewer.Viewer",
+        parent=None,
+        loads_images=True,
+        loads_labels=True,
+        has_results=True,
+    ):
         """Creates a plugin framework with the following elements :
 
         * A button to choose an image folder containing the images of a dataset (e.g. dataset/images)
@@ -41,36 +43,30 @@ class ModelFramework(BasePluginFolder):
 
         Args:
             viewer (napari.viewer.Viewer): viewer to load the widget in
+            parent: parent QWidget
+            loads_images: if True, will contain UI elements used to load napari image layers
+            loads_labels: if True, will contain UI elements used to load napari label layers
+            has_results: if True, will add UI to choose a results path
         """
-        super().__init__(viewer)
+        super().__init__(
+            viewer, parent, loads_images, loads_labels, has_results
+        )
 
         self._viewer = viewer
         """Viewer to display the widget in"""
 
-        self.model_path = ""
-        """str: path to custom model defined by user"""
-        self.weights_path = ""
+        # self.model_path = "" # TODO add custom models
+        # """str: path to custom model defined by user"""
+
+        self.weights_config = config.WeightsInfo()
         """str : path to custom weights defined by user"""
 
-        self._default_path = [
-            self.images_filepaths,
-            self.labels_filepaths,
-            self.model_path,
-            self.weights_path,
-            self.results_path,
-        ]
-        """Update defaults from PluginBaseFolder with model_path"""
+        self._default_weights_folder = self.weights_config.path
+        """Default path for plugin weights"""
 
-        self.models_dict = {
-            "VNet": VNet,
-            "SegResNet": SegResNet,
-            # "TRAILMAP": TRAILMAP,
-            "TRAILMAP_MS": TRAILMAP_MS,
-            "SwinUNetR": SwinUNetR,
-        }
-        """dict: dictionary of available models, with string for widget display as key
+        self.available_models = config.MODEL_LIST
 
-        Currently implemented : SegResNet, VNet, TRAILMAP_MS"""
+        """dict: dictionary of available models, with string as key for name in widget display"""
 
         self.worker = None
         """Worker from model_workers.py, either inference or training"""
@@ -79,81 +75,73 @@ class ModelFramework(BasePluginFolder):
         # interface
 
         # TODO : implement custom model
-        self.model_filewidget = ui.FilePathWidget(
-            "Model path", self.load_model_path, self
-        )
-        self.btn_model_path = self.model_filewidget.get_button()
-        self.lbl_model_path = self.model_filewidget.get_text_field()
+        # self.model_filewidget = ui.FilePathWidget(
+        #     "Model path", self.load_model_path, self
+        # )
 
         self.model_choice = ui.DropdownMenu(
-            sorted(self.models_dict.keys()), label="Model name"
+            sorted(self.available_models.keys()), label="Model name"
         )
-        self.lbl_model_choice = self.model_choice.label
 
         self.weights_filewidget = ui.FilePathWidget(
-            "Weights path", self.load_weights_path, self
+            "Weights path", self._load_weights_path, self
         )
-        self.btn_weights_path = self.weights_filewidget.get_button()
-        self.lbl_weights_path = self.weights_filewidget.get_text_field()
 
-        self.weights_path_container = ui.combine_blocks(
-            self.btn_weights_path, self.lbl_weights_path, b=0
-        )
-        self.weights_path_container.setVisible(False)
-
-        self.custom_weights_choice = ui.make_checkbox(
-            "Load custom weights", self.toggle_weights_path, self
+        self.custom_weights_choice = ui.CheckBox(
+            "Load custom weights", self._toggle_weights_path, self
         )
 
         ###################################################
         # status report docked widget
-        (
-            self.container_report,
-            self.container_report_layout,
-        ) = ui.make_container(10, 5, 5, 5)
-        self.container_report.setSizePolicy(
+
+        self.report_container = ui.ContainerWidget(l=10, t=5, r=5, b=5)
+
+        self.report_container.setSizePolicy(
             QSizePolicy.Fixed, QSizePolicy.Minimum
         )
         self.container_docked = False  # check if already docked
 
-        self.progress = QProgressBar(self.container_report)
+        self.progress = QProgressBar(self.report_container)
         self.progress.setVisible(False)
         """Widget for the progress bar"""
 
-        self.log = Log(self.container_report)
+        self.log = ui.Log(self.report_container)
         self.log.setVisible(False)
         """Read-only display for process-related info. Use only for info destined to user."""
 
         self.btn_save_log = ui.Button(
             "Save log in results folder",
             func=self.save_log,
-            parent=self.container_report,
+            parent=self.report_container,
             fixed=False,
         )
         self.btn_save_log.setVisible(False)
-        #####################################################
 
     def send_log(self, text):
         """Emit a signal to print in a Log"""
-        self.log.print_and_log(text)
+        if self.log is not None:
+            self.log.print_and_log(text)
 
     def save_log(self):
         """Saves the worker's log to disk at self.results_path when called"""
-        log = self.log.toPlainText()
+        if self.log is not None:
+            log = self.log.toPlainText()
 
-        path = self.results_path
+            path = self.results_path
 
-        if len(log) != 0:
-            with open(
-                path + f"/Log_report_{utils.get_date_time()}.txt",
-                "x",
-            ) as f:
-                f.write(log)
-                f.close()
+            if len(log) != 0:
+                with open(
+                    path + f"/Log_report_{utils.get_date_time()}.txt",
+                    "x",
+                ) as f:
+                    f.write(log)
+                    f.close()
+            else:
+                warnings.warn(
+                    "No job has been completed yet, please start one or re-open the log window."
+                )
         else:
-            warnings.warn(
-                "No job has been completed yet, please start one or re-open the log window."
-            )
+            warnings.warn(f"No logger defined : Log is {self.log}")
 
     def save_log_to_path(self, path):
         """Saves the worker log to a specific path. Cannot be used with connect.
@@ -163,10 +151,13 @@ class ModelFramework(BasePluginFolder):
         """
 
         log = self.log.toPlainText()
+        path = str(
+            Path(path) / Path(f"Log_report_{utils.get_date_time()}.txt")
+        )
 
         if len(log) != 0:
             with open(
-                path + f"/Log_report_{utils.get_date_time()}.txt",
+                path,
                 "x",
             ) as f:
                 f.write(log)
@@ -202,19 +193,26 @@ class ModelFramework(BasePluginFolder):
         elif not self.container_docked:
 
             ui.add_widgets(
-                self.container_report_layout,
+                self.report_container.layout,
                 [self.progress, self.log, self.btn_save_log],
                 alignment=None,
             )
 
-            self.container_report.setLayout(self.container_report_layout)
+            self.report_container.setLayout(self.report_container.layout)
 
             report_dock = self._viewer.window.add_dock_widget(
-                self.container_report,
+                self.report_container,
                 name="Status report",
                 area="left",
                 allowed_areas=["left"],
             )
+            report_dock._close_btn = False
+
+            # TODO move to activity log once they figure out _qt_window access and private attrib.
+            # activity_log = self._viewer.window._qt_window._activity_dialog
+            # activity_layout = activity_log._activityLayout
+            # activity_layout.addWidget(self.container_report)
+
             self.docked_widgets.append(report_dock)
             self.container_docked = True
 
@@ -223,33 +221,32 @@ class ModelFramework(BasePluginFolder):
         self.btn_save_log.setVisible(True)
         self.progress.setValue(0)
 
-    def toggle_weights_path(self):
+    def _toggle_weights_path(self):
         """Toggle visibility of weight path"""
         ui.toggle_visibility(
-            self.custom_weights_choice, self.weights_path_container
+            self.custom_weights_choice, self.weights_filewidget
         )
 
     def create_train_dataset_dict(self):
         """Creates data dictionary for MONAI transforms and training.
 
-        Returns: a dict with the following :
-            **Keys:**
+        Returns:
+            A dict with the following keys
 
             * "image": image
-
             * "label" : corresponding label
         """
 
         if len(self.images_filepaths) == 0 or len(self.labels_filepaths) == 0:
             raise ValueError("Data folders are empty")
 
-        print("Images :\n")
+        logger.info("Images :\n")
         for file in self.images_filepaths:
-            print(os.path.basename(file).split(".")[0])
-        print("*" * 10)
-        print("\nLabels :\n")
+            logger.info(Path(file).name)
+        logger.info("*" * 10)
+        logger.info("Labels :\n")
         for file in self.labels_filepaths:
-            print(os.path.basename(file).split(".")[0])
+            logger.info(Path(file).name)
 
         data_dicts = [
             {"image": image_name, "label": label_name}
@@ -257,34 +254,44 @@ class ModelFramework(BasePluginFolder):
                 self.images_filepaths, self.labels_filepaths
             )
         ]
+        logger.debug(f"Training data dict : {data_dicts}")
 
         return data_dicts
 
-    def get_model(self, key):
+    def get_model(self, key):  # TODO remove
         """Getter for module (class and functions) associated to currently selected model"""
         return self.models_dict[key]
 
-    def get_loss(self, key):
-        """Getter for loss function selected by user"""
-        return self.loss_dict[key]
+    @staticmethod
+    def get_available_models():
+        """Getter for module (class and functions) associated to currently selected model"""
+        return config.MODEL_LIST
 
-    def load_model_path(self):
-        """Show file dialog to set :py:attr:`model_path`"""
-        dir = ui.open_file_dialog(self, self._default_path)
-        if dir != "" and type(dir) is str and os.path.isdir(dir):
-            self.model_path = dir
-            self.lbl_model_path.setText(self.results_path)
-            # self.update_default()
+    # def load_model_path(self): # TODO add custom models
+    #     """Show file dialog to set :py:attr:`model_path`"""
+    #     folder = ui.open_folder_dialog(self, self._default_folders)
+    #     if folder is not None and type(folder) is str and os.path.isdir(folder):
+    #         self.model_path = folder
+    #         self.lbl_model_path.setText(self.model_path)
+    #         # self.update_default()
 
-    def load_weights_path(self):
+    def _load_weights_path(self):
         """Show file dialog to set :py:attr:`model_path`"""
+
+        # logger.debug(self._default_weights_folder)
+
         file = ui.open_file_dialog(
-            self, self._default_path, filetype="Weights file (*.pth)"
+            self,
+            [self._default_weights_folder],
+            filetype="Weights file (*.pth)",
         )
-        if file != "":
-            self.weights_path = file[0]
-            self.lbl_weights_path.setText(self.weights_path)
-            self.update_default()
+        if file[0] == self._default_weights_folder:
+            return
+        if file is not None:
+            if file[0] != "":
+                self.weights_config.path = file[0]
+                self.weights_filewidget.text_field.setText(file[0])
+                self._default_weights_folder = str(Path(file[0]).parent)
 
     @staticmethod
     def get_device(show=True):
@@ -292,30 +299,43 @@ class ModelFramework(BasePluginFolder):
         If none is available (CUDA not installed), uses cpu instead."""
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         if show:
-            print(f"Using {device} device")
-            print("Using torch :")
-            print(torch.__version__)
+            logger.info(f"Using {device} device")
+            logger.info("Using torch :")
+            logger.info(torch.__version__)
         return device
 
     def empty_cuda_cache(self):
         """Empties the cuda cache if the device is a cuda device"""
         if self.get_device(show=False).type == "cuda":
-            print("Empyting cache...")
+            logger.info("Attempting to empty cache...")
             torch.cuda.empty_cache()
-            print("Cache emptied")
+            logger.info("Attempt complete : Cache emptied")
 
-    def update_default(self):
-        """Update default path for smoother file dialogs, here with :py:attr:`~model_path` included"""
-        self._default_path = [
-            path
-            for path in [
-                os.path.dirname(self.images_filepaths[0]),
-                os.path.dirname(self.labels_filepaths[0]),
-                self.model_path,
-                self.results_path,
-            ]
-            if (path != [""] and path != "")
-        ]
+    # def update_default(self): # TODO add custom models
+    #     """Update default path for smoother file dialogs, here with :py:attr:`~model_path` included"""
+    #
+    #     if len(self.images_filepaths) != 0:
+    #         from_images = str(Path(self.images_filepaths[0]).parent)
+    #     else:
+    #         from_images = None
+    #
+    #     if len(self.labels_filepaths) != 0:
+    #         from_labels = str(Path(self.labels_filepaths[0]).parent)
+    #     else:
+    #         from_labels = None
+    #
+    #     possible_paths = [
+    #         path
+    #         for path in [
+    #             from_images,
+    #             from_labels,
+    #             # self.model_path,
+    #             self.results_path,
+    #         ]
+    #         if path is not None
+    #     ]
+    #     self._default_folders = possible_paths
+    # update if model_path is used again
 
-    def build(self):
+    def _build(self):
         raise NotImplementedError("Should be defined in children classes")

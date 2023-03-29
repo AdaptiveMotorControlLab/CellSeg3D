@@ -4,7 +4,7 @@ name: napari hub Preview Page # we use this name to find your preview page artif
 on:
   pull_request:
     branches:
-      - '**'
+      - 'test' # '**' for all
 
 jobs:
   preview-page:
@@ -16,6 +16,6 @@ jobs:
         uses: actions/checkout@v2
 
       - name: napari hub Preview Page Builder
-        uses: chanzuckerberg/napari-hub-preview-action@v0.1.5
+        uses: chanzuckerberg/napari-hub-preview-action@v0.1.6
         with:
           hub-ref: main

@@ -1,9 +1,15 @@
 utils.py
 =============
 
-Functions
+Classes
 -------------
 
+Singleton
+**************************************
+.. autoclass:: napari_cellseg3d.utils::Singleton
+
+Functions
+-------------
 
 get_date_time
 **************************************
