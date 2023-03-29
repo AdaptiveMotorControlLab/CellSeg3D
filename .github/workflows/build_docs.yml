@@ -12,6 +12,7 @@ jobs:
 
     steps:
     - run: sudo apt-get update && sudo apt-get install libgl1
+    - run: /usr/local/bin/python -m pip install --upgrade pip
     - uses: actions/checkout@v1
     # Standard drop-in approach that should work for most people.
     - uses: ammaraskar/sphinx-action@master
