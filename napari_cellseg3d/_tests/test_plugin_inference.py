@@ -38,4 +38,4 @@ def test_inference(make_napari_viewer, qtbot):
     # with qtbot.waitSignal(signal=widget.worker.finished, timeout=60000, raising=False) as blocker:
     #     blocker.connect(widget.worker.errored)
 
-    # assert len(viewer.layers) == 2
+    #### assert len(viewer.layers) == 2
