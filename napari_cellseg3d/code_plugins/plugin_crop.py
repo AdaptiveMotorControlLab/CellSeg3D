@@ -536,7 +536,7 @@ class Cropping(BasePluginSingleImage):
         # container_widget.extend(sliders)
         ui.add_widgets(
             container_widget.layout,
-            [ui.combine_blocks(s, s.text_label) for s in sliders],
+            [ui.combine_blocks(s, s.label) for s in sliders],
         )
         # vw.window.add_dock_widget([spinbox, container_widget], area="right")
         wdgts = vw.window.add_dock_widget(

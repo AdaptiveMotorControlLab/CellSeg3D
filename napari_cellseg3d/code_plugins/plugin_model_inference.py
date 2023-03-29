@@ -106,7 +106,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ######################
         # TODO : better way to handle SegResNet size reqs ?
         self.model_input_size = ui.IntIncrementCounter(
-            lower=1, upper=1024, default=128, label="\nModel input size"
+            lower=1, upper=1024, default=128, text_label="\nModel input size"
         )
         self.model_choice.currentIndexChanged.connect(
             self._toggle_display_model_input_size
@@ -158,7 +158,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         # )
 
         self.window_size_choice = ui.DropdownMenu(
-            sizes_window, label="Window size"
+            sizes_window, text_label="Window size"
         )
         self.window_size_choice.setCurrentIndex(3)  # set to 64 by default
 

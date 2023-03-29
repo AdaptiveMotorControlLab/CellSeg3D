@@ -100,7 +100,7 @@ class BasePluginSingleImage(QTabWidget):
         )
 
         self.filetype_choice = ui.DropdownMenu(
-            [".tif", ".tiff"], label="File format"
+            [".tif", ".tiff"], text_label="File format"
         )
         ########
         qInstallMessageHandler(ui.handle_adjust_errors_wrapper(self))

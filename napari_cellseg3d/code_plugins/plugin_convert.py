@@ -209,7 +209,7 @@ class RemoveSmallUtils(BasePluginFolder):
             lower=1,
             upper=100000,
             default=10,
-            label="Remove all smaller than (pxs):",
+            text_label="Remove all smaller than (pxs):",
         )
 
         self.results_path = Path.home() / Path("cellseg3d/small_removed")
@@ -469,7 +469,7 @@ class ThresholdUtils(BasePluginFolder):
             upper=100000.0,
             step=0.5,
             default=10.0,
-            label="Remove all smaller than (value):",
+            text_label="Remove all smaller than (value):",
         )
 
         self.results_path = Path.home() / Path("cellseg3d/threshold")

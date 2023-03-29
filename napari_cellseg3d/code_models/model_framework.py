@@ -80,7 +80,7 @@ class ModelFramework(BasePluginFolder):
         # )
 
         self.model_choice = ui.DropdownMenu(
-            sorted(self.available_models.keys()), label="Model name"
+            sorted(self.available_models.keys()), text_label="Model name"
         )
 
         self.weights_filewidget = ui.FilePathWidget(

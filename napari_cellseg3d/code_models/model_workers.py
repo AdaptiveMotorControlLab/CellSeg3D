@@ -69,6 +69,7 @@ a custom worker function."""
 PRETRAINED_WEIGHTS_DIR = Path(__file__).parent.resolve() / Path(
     "models/pretrained"
 )
+VERBOSE_SCHEDULER = True
 logger.debug(f"PRETRAINED WEIGHT DIR LOCATION : {PRETRAINED_WEIGHTS_DIR}")
 
 
@@ -1292,6 +1293,13 @@ class TrainingWorker(GeneratorWorker):
             optimizer = torch.optim.Adam(
                 model.parameters(), self.config.learning_rate
             )
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+                optimizer=optimizer,
+                mode="min",
+                factor=self.config.scheduler_factor,
+                patience=self.config.scheduler_patience,
+                verbose=VERBOSE_SCHEDULER,
+            )
             dice_metric = DiceMetric(include_background=True, reduction="mean")
 
             best_metric = -1
@@ -1383,6 +1391,9 @@ class TrainingWorker(GeneratorWorker):
                 epoch_loss /= step
                 epoch_loss_values.append(epoch_loss)
                 self.log(f"Epoch: {epoch + 1}, Average loss: {epoch_loss:.4f}")
+
+                self.log("Updating scheduler...")
+                scheduler.step(epoch_loss)
 
                 checkpoint_output = []
 
