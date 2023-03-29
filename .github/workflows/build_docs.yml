@@ -13,12 +13,11 @@ jobs:
 
     steps:
     - run: sudo apt-get update && sudo apt-get install libgl1
-    - run: pip install --upgrade pip
     - uses: actions/checkout@v1
     # Standard drop-in approach that should work for most people.
     - uses: ammaraskar/sphinx-action@master
       with:
-        pre-build-command: "pip install -r requirements.txt napari-cellseg3d opencv-python-headless"
+        pre-build-command: "pip install --upgrade pip \ pip install -r requirements.txt napari-cellseg3d opencv-python-headless"
         docs-folder: "docs/"
 
     - name: GitHub Pages action
