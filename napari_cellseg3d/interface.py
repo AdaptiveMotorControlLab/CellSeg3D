@@ -544,10 +544,10 @@ class Slider(QSlider):
     def set_visibility(self, visible: bool):
         self.container.setVisible(visible)
         self.setVisible(visible)
-        self.text_label.setVisible(visible)
+        self.label.setVisible(visible)
 
     def _build_container(self):
-        if self.text_label is not None:
+        if self.label is not None:
             add_widgets(
                 self.container.layout,
                 [
@@ -1093,7 +1093,7 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         step (Optional[float]): step value, defaults to 1
         parent: parent widget, defaults to None
         fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed
-        label (Optional[str]): if provided, creates a label with the chosen title to use with the counter
+        text_label (Optional[str]): if provided, creates a label with the chosen title to use with the counter
         """
 
         super().__init__(parent)
@@ -1101,8 +1101,8 @@ class DoubleIncrementCounter(QDoubleSpinBox):
 
         self.layout = None
 
-        if label is not None:
-            self.label = make_label(name=label)
+        if text_label is not None:
+            self.label = make_label(name=text_label)
         self.valueChanged.connect(self._update_step)
 
     def _update_step(self):

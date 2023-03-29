@@ -15,7 +15,7 @@ class LogFixture(QTextEdit):
         print(text)
 
     def warn(self, warning):
-        logger.warning(warning)
+        warnings.warn(warning)
 
     def error(self, e):
         raise (e)

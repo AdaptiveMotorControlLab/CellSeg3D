@@ -74,7 +74,7 @@ class InstanceMethod:
                 setattr(
                     self,
                     widget,
-                    ui.DoubleIncrementCounter(label="", parent=None),
+                    ui.DoubleIncrementCounter(text_label="", parent=None),
                 )
                 self.counters.append(getattr(self, widget))
 
