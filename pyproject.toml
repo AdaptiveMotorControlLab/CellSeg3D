@@ -1,6 +1,6 @@
 [project]
 name = "napari_cellseg3d"
-version = "0.0.2rc4"
+version = "0.0.2rc5"
 authors = [
     {name = "Cyril Achard", email = "cyril.achard@epfl.ch"},
     {name = "Maxime Vidal", email = "maxime.vidal@epfl.ch"},
@@ -37,7 +37,7 @@ build-backend = "setuptools.build_meta"
 where = ["."]
 
 [tool.setuptools.package-data]
-"*" = ["napari_cellseg3d/res/*.png", "napari_cellseg3d/code_models/models/pretrained/*.json"]
+"*" = ["napari_cellseg3d/res/*.png", "napari_cellseg3d/code_models/models/pretrained/*.json", "*.yaml"]
 
 [tool.ruff]
 # Never enforce `E501` (line length violations).
