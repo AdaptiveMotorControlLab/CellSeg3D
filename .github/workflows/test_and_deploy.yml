@@ -1,7 +1,7 @@
 # This workflows will upload a Python Package using Twine when a release is created
 # For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
 
-name: tests
+name: test and deploy
 
 on:
   push:
@@ -71,7 +71,7 @@ jobs:
 # github secrets (see readme for details)
     needs: [test]
     runs-on: ubuntu-latest
-    if: contains(github.ref, 'tags')
+#    if: contains(github.ref, 'tags')
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
