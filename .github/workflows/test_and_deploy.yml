@@ -71,7 +71,7 @@ jobs:
 # github secrets (see readme for details)
     needs: [test]
     runs-on: ubuntu-latest
-#    if: contains(github.ref, 'tags')
+    if: contains(github.ref, 'tags')
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
