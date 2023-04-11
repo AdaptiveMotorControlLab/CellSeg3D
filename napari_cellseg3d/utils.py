@@ -14,8 +14,8 @@ from tifffile import imread as tfl_imread
 LOGGER = logging.getLogger(__name__)
 ###############
 # Global logging level setting
-LOGGER.setLevel(logging.DEBUG)
-# LOGGER.setLevel(logging.INFO)
+# LOGGER.setLevel(logging.DEBUG)
+LOGGER.setLevel(logging.INFO)
 ###############
 
 """
@@ -161,7 +161,7 @@ def align_array_sizes(array_shape, target_shape):
     for i in range(len(targets)):
         targets[i] = reverse_mapping[targets[i]]
     infos = np.unique(origins, return_index=True, return_counts=True)
-    info_dict = {"origins": infos[0], "index": infos[1], "counts": infos[2]}
+    {"origins": infos[0], "index": infos[1], "counts": infos[2]}
     # print(info_dict)
 
     final_orig = []

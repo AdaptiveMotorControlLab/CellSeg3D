@@ -581,7 +581,7 @@ class Slider(QSlider):
                 f"The value for the slider ({value}) cannot be out of ({self.minimum()};{self.maximum()}) "
             )
 
-        self.setValue(value)
+        self.setValue(int(value))
 
         divided = value / self._divide_factor
         if self._divide_factor == 1.0:
