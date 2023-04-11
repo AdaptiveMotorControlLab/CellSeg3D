@@ -23,9 +23,11 @@ class Helper(QWidget, metaclass=ui.QWidgetSingleton):
         self.repo_url = "https://github.com/AdaptiveMotorControlLab/CellSeg3d"
         self._viewer = viewer
 
-        path = pathlib.Path(__file__).parent.resolve()
-        url = str(path) + "../res/logo_alpha.png"
-        image = QPixmap(url)
+        logo_path = str(
+            pathlib.Path(__file__).parent.resolve() / "../res/logo_alpha.png"
+        )
+        print(logo_path)
+        image = QPixmap(logo_path)
 
         self.logo_label = ui.Button(func=lambda: ui.open_url(self.repo_url))
         self.logo_label.setIcon(QIcon(image))

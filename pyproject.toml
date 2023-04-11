@@ -33,11 +33,14 @@ dependencies = [
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+include-package-data = true
+
 [tool.setuptools.packages.find]
 where = ["."]
 
 [tool.setuptools.package-data]
-"*" = ["napari_cellseg3d/res/*.png", "napari_cellseg3d/code_models/models/pretrained/*.json", "*.yaml"]
+"*" = ["res/*.png", "code_models/models/pretrained/*.json", "*.yaml"]
 
 [tool.ruff]
 # Never enforce `E501` (line length violations).
