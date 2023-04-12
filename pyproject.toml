@@ -1,6 +1,6 @@
 [project]
 name = "napari_cellseg3d"
-version = "0.0.3rc1"
+version = "0.0.2rc6"
 authors = [
     {name = "Cyril Achard", email = "cyril.achard@epfl.ch"},
     {name = "Maxime Vidal", email = "maxime.vidal@epfl.ch"},
@@ -34,6 +34,15 @@ dependencies = [
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+"*" = ["res/*.png", "code_models/models/pretrained/*.json", "*.yaml"]
+
 [tool.ruff]
 # Never enforce `E501` (line length violations).
 ignore = ["E501", "E741"]
@@ -46,15 +55,10 @@ profile = "black"
 line_length = 79
 
 [project.optional-dependencies]
-crf = [
-    "pydensecrf@git+https://github.com/lucasb-eyer/pydensecrf.git#egg=master",
-]
 dev = [
     "isort",
     "black",
     "ruff",
-    "pre-commit",
-
 ]
 docs = [
     "sphinx",
@@ -65,17 +69,7 @@ docs = [
 test = [
     "pytest",
     "pytest_qt",
-    "pytest-cov",
     "coverage",
     "tox",
     "twine",
-    "pydensecrf@git+https://github.com/lucasb-eyer/pydensecrf.git#egg=master",
-]
-onnx-cpu = [
-    "onnx",
-    "onnxruntime"
-]
-onnx-gpu = [
-    "onnx",
-    "onnxruntime-gpu"
 ]
