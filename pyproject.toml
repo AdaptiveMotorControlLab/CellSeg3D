@@ -22,6 +22,7 @@ dependencies = [
     "nibabel",
     "scikit-image",
     "pillow",
+    "pyclesperanto-prototype",
     "tqdm",
     "matplotlib",
     "vispy>=0.9.6",
@@ -61,6 +62,7 @@ dev = [
     "ruff",
     "tuna",
     "pre-commit",
+
 ]
 docs = [
     "sphinx",
@@ -75,3 +77,4 @@ test = [
     "tox",
     "twine",
 ]
+
