@@ -102,7 +102,7 @@ dev = [
     "black",
     "ruff",
     "pre-commit",
-    "tuna",
+
 ]
 docs = [
     "sphinx",
@@ -127,3 +127,4 @@ onnx-gpu = [
     "onnx",
     "onnxruntime-gpu"
 ]
+
