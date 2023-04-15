@@ -163,6 +163,9 @@ def voronoi_otsu(
     """
     # remove_small_size (float): remove all objects smaller than the specified size in pixels
     semantic = np.squeeze(volume)
+    logger.debug(
+        f"Running voronoi otsu segmentation with spot_sigma={spot_sigma} and outline_sigma={outline_sigma}"
+    )
     instance = cle.voronoi_otsu_labeling(
         volume, spot_sigma=spot_sigma, outline_sigma=outline_sigma
     )
@@ -562,7 +565,7 @@ class InstanceWidgets(QWidget):
                 method_class = method(widget_parent=self.parent())
                 self.methods[name] = method_class
                 self.instance_widgets[name] = []
-                # moderately unsafe way to init those widgets
+                # moderately unsafe way to init those widgets ?
                 if len(method_class.sliders) > 0:
                     for slider in method_class.sliders:
                         group.layout.addWidget(slider.container)
@@ -572,8 +575,10 @@ class InstanceWidgets(QWidget):
                         group.layout.addWidget(counter.label)
                         group.layout.addWidget(counter)
                         self.instance_widgets[name].append(counter)
-        except RuntimeError:
-            logger.debug("Caught runtime error, most likely during testing")
+        except RuntimeError as e:
+            logger.debug(
+                f"Caught runtime error {e}, most likely during testing"
+            )
 
         self.setLayout(group.layout)
         self._set_visibility()
