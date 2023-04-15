@@ -456,7 +456,7 @@ class ConnectedComponents(InstanceMethod):
 class VoronoiOtsu(InstanceMethod):
     """Widget class for Voronoi-Otsu labeling from pyclesperanto. Requires 2 parameter, see voronoi_otsu"""
 
-    def __init__(self, widget_parent):
+    def __init__(self, widget_parent=None):
         super().__init__(
             name=VORONOI_OTSU,
             function=voronoi_otsu,
