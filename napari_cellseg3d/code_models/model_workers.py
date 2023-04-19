@@ -761,7 +761,9 @@ class InferenceWorker(GeneratorWorker):
             # try:
             self.log("Instantiating model...")
             model = model_class(  # FIXME test if works
-                input_img_size=[128, 128, 128],
+                input_img_size=dims,
+                device=self.config.device,
+                num_classes=self.config.model_info.num_classes,
             )
             # try:
             model = model.to(self.config.device)
