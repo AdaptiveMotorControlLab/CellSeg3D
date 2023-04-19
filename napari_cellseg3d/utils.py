@@ -4,6 +4,8 @@ from datetime import datetime
 from pathlib import Path
 
 import numpy as np
+
+# from dask import delayed
 from skimage import io
 from skimage.filters import gaussian
 from tifffile import imread as tfl_imread
@@ -455,13 +457,10 @@ def load_images(
         raise ValueError("If loading as a folder, filetype must be specified")
 
     if as_folder:
-        try:
-            images_original = tfl_imread(filename_pattern_original)
-        except ValueError:
-            LOGGER.error(
-                "Loading a stack this way is no longer supported. Use napari to load a stack."
-            )
-
+        raise NotImplementedError(
+            "Loading as folder not implemented yet. Use napari to load as folder"
+        )
+        # images_original = dask_imread(filename_pattern_original)
     else:
         images_original = tfl_imread(
             filename_pattern_original
