@@ -2,7 +2,6 @@ import logging
 import warnings
 from datetime import datetime
 from pathlib import Path
-
 import numpy as np
 from pandas import DataFrame
 from pandas import Series
@@ -16,7 +15,6 @@ LOGGER = logging.getLogger(__name__)
 # LOGGER.setLevel(logging.DEBUG)
 LOGGER.setLevel(logging.INFO)
 ###############
-
 """
 utils.py
 ====================================
@@ -276,52 +274,51 @@ def annotation_to_input(label_ermito):
     anno = normalize_x(anno[np.newaxis, :, :, :])
     return anno
 
-
-def check_csv(project_path, ext):
-    if not Path(Path(project_path) / Path(project_path).name).is_file():
-        cols = [
-            "project",
-            "type",
-            "ext",
-            "z",
-            "y",
-            "x",
-            "z_size",
-            "y_size",
-            "x_size",
-            "created_date",
-            "update_date",
-            "path",
-            "notes",
-        ]
-        df = DataFrame(index=[], columns=cols)
-        filename_pattern_original = Path(project_path) / Path(
-            f"dataset/Original_size/Original/*{ext}"
-        )
-        images_original = tfl_imread(filename_pattern_original)
-        z, y, x = images_original.shape
-        record = Series(
-            [
-                Path(project_path).name,
-                "dataset",
-                ".tif",
-                0,
-                0,
-                0,
-                z,
-                y,
-                x,
-                datetime.datetime.now(),
-                "",
-                Path(project_path) / Path("dataset/Original_size/Original"),
-                "",
-            ],
-            index=df.columns,
-        )
-        df = df.append(record, ignore_index=True)
-        df.to_csv(Path(project_path) / Path(project_path).name)
-    else:
-        pass
+# def check_csv(project_path, ext):
+#     if not Path(Path(project_path) / Path(project_path).name).is_file():
+#         cols = [
+#             "project",
+#             "type",
+#             "ext",
+#             "z",
+#             "y",
+#             "x",
+#             "z_size",
+#             "y_size",
+#             "x_size",
+#             "created_date",
+#             "update_date",
+#             "path",
+#             "notes",
+#         ]
+#         df = DataFrame(index=[], columns=cols)
+#         filename_pattern_original = Path(project_path) / Path(
+#             f"dataset/Original_size/Original/*{ext}"
+#         )
+#         images_original = dask_imread(filename_pattern_original)
+#         z, y, x = images_original.shape
+#         record = Series(
+#             [
+#                 Path(project_path).name,
+#                 "dataset",
+#                 ".tif",
+#                 0,
+#                 0,
+#                 0,
+#                 z,
+#                 y,
+#                 x,
+#                 datetime.datetime.now(),
+#                 "",
+#                 Path(project_path) / Path("dataset/Original_size/Original"),
+#                 "",
+#             ],
+#             index=df.columns,
+#         )
+#         df = df.append(record, ignore_index=True)
+#         df.to_csv(Path(project_path) / Path(project_path).name)
+#     else:
+#         pass
 
 
 # def check_annotations_dir(project_path):
@@ -464,6 +461,7 @@ def load_images(
             LOGGER.error(
                 "Loading a stack this way is no longer supported. Use napari to load a stack."
             )
+
     else:
         images_original = tfl_imread(
             filename_pattern_original
@@ -484,12 +482,12 @@ def load_images(
 #     return base_label
 
 
-def load_saved_masks(mod_mask_dir, filetype, as_folder: bool):
-    images_label = load_images(mod_mask_dir, filetype, as_folder)
-    if as_folder:
-        images_label = images_label.compute()
-    base_label = images_label
-    return base_label
+# def load_saved_masks(mod_mask_dir, filetype, as_folder: bool):
+#     images_label = load_images(mod_mask_dir, filetype, as_folder)
+#     if as_folder:
+#         images_label = images_label.compute()
+#     base_label = images_label
+#     return base_label
 
 
 def save_stack(images, out_path, filetype=".png", check_warnings=False):

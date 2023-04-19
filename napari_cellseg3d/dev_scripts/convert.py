@@ -20,7 +20,6 @@ for filename in glob.glob(os.path.join(input_seg_path, "*" + filetype)):
     # print(os.path.basename(filename))
 for file in paths:
     image = imread(file)
-    # image = img.compute()
 
     image[image >= 1] = 1
     image = image.astype(np.uint16)
