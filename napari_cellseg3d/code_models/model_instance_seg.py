@@ -137,12 +137,12 @@ def voronoi_otsu(
 
     """
     # remove_small_size (float): remove all objects smaller than the specified size in pixels
-    semantic = np.squeeze(volume)
+    # semantic = np.squeeze(volume)
     logger.debug(
         f"Running voronoi otsu segmentation with spot_sigma={spot_sigma} and outline_sigma={outline_sigma}"
     )
     instance = cle.voronoi_otsu_labeling(
-        semantic, spot_sigma=spot_sigma, outline_sigma=outline_sigma
+        volume, spot_sigma=spot_sigma, outline_sigma=outline_sigma
     )
     # instance = remove_small_objects(instance, remove_small_size)
     return np.array(instance)
@@ -489,6 +489,15 @@ class VoronoiOtsu(InstanceMethod):
         # self.counters[2].setValue(30)
 
     def run_method(self, image):
+
+        ################
+        # For debugging
+        # import napari
+        # view = napari.Viewer()
+        # view.add_image(image)
+        # napari.run()
+        ################
+
         return self.function(
             image,
             self.counters[0].value(),
