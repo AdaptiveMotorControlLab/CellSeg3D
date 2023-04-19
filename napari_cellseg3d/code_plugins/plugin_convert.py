@@ -95,19 +95,18 @@ class AnisoUtils(BasePluginFolder):
                     f"isotropic_{layer.name}",
                 )
 
-        elif (
-            self.folder_choice.isChecked() and len(self.images_filepaths) != 0
-        ):
-            images = [
-                utils.resize(np.array(imread(file)), zoom)
-                for file in self.images_filepaths
-            ]
-            utils.save_folder(
-                self.results_path,
-                f"isotropic_results_{utils.get_date_time()}",
-                images,
-                self.images_filepaths,
-            )
+        elif self.folder_choice.isChecked():
+            if len(self.images_filepaths) != 0:
+                images = [
+                    utils.resize(np.array(imread(file)), zoom)
+                    for file in self.images_filepaths
+                ]
+                save_folder(
+                    self.results_path,
+                    f"isotropic_results_{utils.get_date_time()}",
+                    images,
+                    self.images_filepaths,
+                )
 
 
 class RemoveSmallUtils(BasePluginFolder):
