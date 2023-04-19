@@ -104,6 +104,7 @@ notebooks/csv_cell_plot.html
 notebooks/full_plot.html
 *.csv
 *.png
+notebooks/instance_test.ipynb
 *.prof
 
 #include test data
