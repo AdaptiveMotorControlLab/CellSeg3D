@@ -2,7 +2,7 @@ import glob
 import os
 
 import numpy as np
-from dask_image.imread import imread
+from tifffile import imread
 from tifffile import imwrite
 
 # input_seg_path = "C:/Users/Cyril/Desktop/Proj_bachelor/code/pytorch-test3dunet/cropped_visual/train/lab"
@@ -19,8 +19,7 @@ for filename in glob.glob(os.path.join(input_seg_path, "*" + filetype)):
     filenames.append(os.path.basename(filename))
     # print(os.path.basename(filename))
 for file in paths:
-    img = imread(file)
-    image = img.compute()
+    image = imread(file)
 
     image[image >= 1] = 1
     image = image.astype(np.uint16)
