@@ -1,4 +1,7 @@
 from monai.networks.nets import SwinUNETR
+from napari_cellseg3d.utils import LOGGER
+
+logger = LOGGER
 
 from napari_cellseg3d.utils import LOGGER
 
@@ -7,14 +10,24 @@ class SwinUNETR_(SwinUNETR):
     weights_file = "Swin64_best_metric.pth"
 
     def __init__(self, input_img_size, use_checkpoint=True, **kwargs):
-        super().__init__(
-            input_img_size,
-            in_channels=1,
-            out_channels=1,
-            feature_size=48,
-            use_checkpoint=use_checkpoint,
-            **kwargs
-        )
+        try:
+            super().__init__(
+                input_img_size,
+                in_channels=1,
+                out_channels=1,
+                feature_size=48,
+                use_checkpoint=use_checkpoint,
+                **kwargs,
+            )
+        except TypeError as e:
+            logger.warn(f"Caught TypeError: {e}")
+            super().__init__(
+                input_img_size,
+                in_channels=1,
+                out_channels=1,
+                feature_size=48,
+                use_checkpoint=use_checkpoint,
+            )
 
     # def get_output(self, input):
     #     out = self(input)

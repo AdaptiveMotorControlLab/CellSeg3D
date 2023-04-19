@@ -13,6 +13,7 @@ from napari_cellseg3d.code_models.models.model_SegResNet import SegResNet_
 from napari_cellseg3d.code_models.models.model_SwinUNetR import SwinUNETR_
 from napari_cellseg3d.code_models.models.model_TRAILMAP_MS import TRAILMAP_MS_
 from napari_cellseg3d.code_models.models.model_VNet import VNet_
+from napari_cellseg3d.code_models.models.model_WNet import WNet_
 
 from napari_cellseg3d.utils import LOGGER
 
@@ -27,6 +28,7 @@ MODEL_LIST = {
     # "TRAILMAP": TRAILMAP,
     "TRAILMAP_MS": TRAILMAP_MS_,
     "SwinUNetR": SwinUNETR_,
+    "WNet": WNet_,
     # "test" : DO NOT USE, reserved for testing
 }
 
@@ -70,6 +72,7 @@ class ModelInfo:
     Args:
         name (str): name of the model
         model_input_size (Optional[List[int]]): input size of the model
+        num_classes (int): number of classes for the model
     """
 
     name: str = next(iter(MODEL_LIST))
