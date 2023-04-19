@@ -4,13 +4,11 @@ from typing import List
 import numpy as np
 import pyclesperanto_prototype as cle
 from qtpy.QtWidgets import QWidget
-
 from skimage.measure import label
 from skimage.measure import regionprops
 from skimage.morphology import remove_small_objects
 from skimage.segmentation import watershed
-from skimage.filters import thresholding
-from skimage.transform import resize
+
 # from skimage.measure import mesh_surface_area
 # from skimage.measure import marching_cubes
 from tifffile import imread
@@ -19,10 +17,6 @@ from napari_cellseg3d import interface as ui
 from napari_cellseg3d.utils import fill_list_in_between
 from napari_cellseg3d.utils import sphericity_axis
 from napari_cellseg3d.utils import LOGGER as logger
-
-# from skimage.measure import mesh_surface_area
-# from skimage.measure import marching_cubes
-
 
 # from napari_cellseg3d.utils import sphericity_volume_area
 
@@ -86,6 +80,7 @@ class InstanceMethod:
     def run_method(self, image):
         raise NotImplementedError("Must be defined in child classes")
 
+
 @dataclass
 class ImageStats:
     volume: List[float]
@@ -126,6 +121,7 @@ def voronoi_otsu(
     volume: np.ndarray,
     spot_sigma: float,
     outline_sigma: float,
+    # remove_small_size: float,
 ):
     """
     Voronoi-Otsu labeling from pyclesperanto.
@@ -165,6 +161,8 @@ def binary_connected(
         volume (numpy.ndarray): foreground probability of shape :math:`(C, Z, Y, X)`.
         thres (float): threshold of foreground. Default: 0.8
         thres_small (int): size threshold of small objects to remove. Default: 128
+        scale_factors (tuple): scale factors for resizing in :math:`(Z, Y, X)` order. Default: (1.0, 1.0, 1.0)
+
     """
     logger.debug(
         f"Running connected components segmentation with thres={thres} and thres_small={thres_small}"
@@ -429,6 +427,7 @@ class Watershed(InstanceMethod):
             self.counters[1].value(),
         )
 
+
 class ConnectedComponents(InstanceMethod):
     """Widget class for Connected Components instance segmentation. Requires 2 parameters, see binary_connected."""
 
@@ -477,6 +476,7 @@ class VoronoiOtsu(InstanceMethod):
         ].tooltips = "Determines how close detected objects can be"
         self.counters[0].setMaximum(100)
         self.counters[0].setValue(2)
+
         self.counters[1].label.setText("Outline sigma")  # smoothness
         self.counters[
             1
@@ -492,6 +492,7 @@ class VoronoiOtsu(InstanceMethod):
         # self.counters[2].setValue(30)
 
     def run_method(self, image):
+
         ################
         # For debugging
         # import napari
@@ -536,6 +537,7 @@ class InstanceWidgets(QWidget):
     def _build(self):
         group = ui.GroupedWidget("Instance segmentation")
         group.layout.addWidget(self.method_choice)
+
         try:
             for name, method in INSTANCE_SEGMENTATION_METHOD_LIST.items():
                 method_class = method(widget_parent=self.parent())
@@ -555,11 +557,11 @@ class InstanceWidgets(QWidget):
             logger.debug(
                 f"Caught runtime error {e}, most likely during testing"
             )
+
         self.setLayout(group.layout)
         self._set_visibility()
 
     def _set_visibility(self):
-
         for name in self.instance_widgets.keys():
             if name != self.method_choice.currentText():
                 for widget in self.instance_widgets[name]:
