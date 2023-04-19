@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING, Union
 
 import napari
 import numpy as np
-from monai.transforms import Zoom
+
+# from dask import delayed
 from skimage import io
 from skimage.filters import gaussian
 from tifffile import imread, imwrite
@@ -579,6 +580,10 @@ def load_images(
             "Loading as folder not implemented yet. Use napari to load as folder"
         )
         # images_original = dask_imread(filename_pattern_original)
+    else:
+        images_original = tfl_imread(
+            filename_pattern_original
+        )  # tifffile imread
 
     return imread(filename_pattern_original)  # tifffile imread
 
