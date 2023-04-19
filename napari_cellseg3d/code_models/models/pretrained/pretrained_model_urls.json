@@ -3,5 +3,6 @@
   "SegResNet": "https://huggingface.co/C-Achard/cellseg3d/resolve/main/SegResNet.tar.gz",
   "VNet": "https://huggingface.co/C-Achard/cellseg3d/resolve/main/VNet.tar.gz",
   "SwinUNetR": "https://huggingface.co/C-Achard/cellseg3d/resolve/main/Swin64.tar.gz",
+  "WNet": "https://huggingface.co/C-Achard/cellseg3d/resolve/main/wnet.tar.gz",
   "test": "https://huggingface.co/C-Achard/cellseg3d/resolve/main/test.tar.gz"
 }
