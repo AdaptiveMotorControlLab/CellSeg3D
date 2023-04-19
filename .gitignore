@@ -105,3 +105,4 @@ notebooks/full_plot.html
 *.csv
 *.png
 
+*.prof
