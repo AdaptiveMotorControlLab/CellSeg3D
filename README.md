@@ -22,6 +22,9 @@ A napari plugin for 3D cell segmentation: training, inference, and data review. 
 
 **This is an alpha version, please expect bugs and issues, and help us make the code better by reporting them as an issue!**
 
+## Demo
+
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/0d16a71b-3ff2-477a-9d83-18d96cb1ce28/full_demo.gif?format=2500w" title="cellseg3d demo" alt="A demo of cellseg3d including cropping, inference and review" width="1000"/>
 
 
 ## Installation
