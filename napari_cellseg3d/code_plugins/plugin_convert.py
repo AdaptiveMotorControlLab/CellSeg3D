@@ -151,7 +151,7 @@ class AnisoUtils(BasePluginFolder):
             if self.image_layer_loader.layer_data() is not None:
                 layer = self.image_layer_loader.layer()
 
-                data = np.array(layer.data, dtype=np.int16)
+                data = np.array(layer.data)
                 isotropic_image = utils.resize(data, zoom)
 
                 save_layer(
@@ -169,7 +169,7 @@ class AnisoUtils(BasePluginFolder):
         elif self.folder_choice.isChecked():
             if len(self.images_filepaths) != 0:
                 images = [
-                    utils.resize(np.array(imread(file), dtype=np.int16), zoom)
+                    utils.resize(np.array(imread(file)), zoom)
                     for file in self.images_filepaths
                 ]
                 save_folder(
@@ -250,7 +250,7 @@ class RemoveSmallUtils(BasePluginFolder):
             if self.image_layer_loader.layer_data() is not None:
                 layer = self.image_layer_loader.layer()
 
-                data = np.array(layer.data, dtype=np.int16)
+                data = np.array(layer.data)
                 removed = self.function(data, remove_size)
 
                 save_layer(
@@ -331,7 +331,7 @@ class ToSemanticUtils(BasePluginFolder):
             if self.label_layer_loader.layer_data() is not None:
                 layer = self.label_layer_loader.layer()
 
-                data = np.array(layer.data, dtype=np.int16)
+                data = np.array(layer.data)
                 semantic = to_semantic(data)
 
                 save_layer(
@@ -416,7 +416,7 @@ class ToInstanceUtils(BasePluginFolder):
             if self.label_layer_loader.layer_data() is not None:
                 layer = self.label_layer_loader.layer()
 
-                data = np.array(layer.data, dtype=np.int16)
+                data = np.array(layer.data)
                 instance = self.instance_widgets.run_method(data)
 
                 save_layer(
@@ -511,7 +511,7 @@ class ThresholdUtils(BasePluginFolder):
             if self.image_layer_loader.layer_data() is not None:
                 layer = self.image_layer_loader.layer()
 
-                data = np.array(layer.data, dtype=np.int16)
+                data = np.array(layer.data)
                 removed = self.function(data, remove_size)
 
                 save_layer(
