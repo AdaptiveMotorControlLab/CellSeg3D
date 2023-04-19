@@ -24,7 +24,7 @@ A napari plugin for 3D cell segmentation: training, inference, and data review. 
 
 ## Demo
 
-![demo](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/0d16a71b-3ff2-477a-9d83-18d96cb1ce28/full_demo.gif?format=500w)
+![demo](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/0d16a71b-3ff2-477a-9d83-18d96cb1ce28/full_demo.gif?format=700w)
 
 
 ## Installation
