@@ -17,7 +17,10 @@ A napari plugin for 3D cell segmentation: training, inference, and data review. 
 
 ## News
 
-**June 2022: This is an alpha version, please expect bugs and issues, and help us make the code better by reporting them as an issue!**
+*April 2023: New version with interface overhaul published ! New model and utilities coming soon* 
+
+
+**This is an alpha version, please expect bugs and issues, and help us make the code better by reporting them as an issue!**
 
 
 
