@@ -2,7 +2,6 @@ import logging
 import warnings
 from datetime import datetime
 from pathlib import Path
-
 import numpy as np
 from skimage import io
 from skimage.filters import gaussian
@@ -271,7 +270,6 @@ def annotation_to_input(label_ermito):
     )
     anno = normalize_x(anno[np.newaxis, :, :, :])
     return anno
-
 
 # def check_csv(project_path, ext):
 #     if not Path(Path(project_path) / Path(project_path).name).is_file():
