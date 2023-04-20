@@ -547,16 +547,17 @@ class InferenceWorker(GeneratorWorker):
                     result = model(inputs)
                     return post_process_transforms(result)
 
-                outputs = sliding_window_inference(
-                    inputs,
-                    roi_size=window_size,
-                    sw_batch_size=1,  # TODO add param
-                    predictor=model_output_wrapper,
-                    sw_device=self.config.device,
-                    device=dataset_device,
-                    overlap=window_overlap,
-                    progress=True,
-                )
+                with torch.no_grad():
+                    outputs = sliding_window_inference(
+                        inputs,
+                        roi_size=window_size,
+                        sw_batch_size=1,  # TODO add param
+                        predictor=model_output_wrapper,
+                        sw_device=self.config.device,
+                        device=dataset_device,
+                        overlap=window_overlap,
+                        progress=True,
+                    )
             except Exception as e:
                 logger.error(e, exc_info=True)
                 logger.debug("failed to run sliding window inference")
@@ -1509,16 +1510,17 @@ class TrainingWorker(GeneratorWorker):
                             )
                             self.log("Performing validation...")
                             try:
-                                val_outputs = sliding_window_inference(
-                                    val_inputs,
-                                    roi_size=size,
-                                    sw_batch_size=self.config.batch_size,
-                                    predictor=model,
-                                    overlap=0.25,
-                                    sw_device=self.config.device,
-                                    device=self.config.device,
-                                    progress=True,
-                                )
+                                with torch.no_grad():
+                                    val_outputs = sliding_window_inference(
+                                        val_inputs,
+                                        roi_size=size,
+                                        sw_batch_size=self.config.batch_size,
+                                        predictor=model,
+                                        overlap=0.25,
+                                        sw_device=self.config.device,
+                                        device=self.config.device,
+                                        progress=True,
+                                    )
                             except Exception as e:
                                 self.raise_error(e, "Error during validation")
                             logger.debug(
