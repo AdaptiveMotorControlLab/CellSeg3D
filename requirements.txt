@@ -18,6 +18,6 @@ tifffile>=2022.2.9
 imageio-ffmpeg>=0.4.5
 torch>=1.11
 monai[nibabel,scikit-image,einops]>=0.9.0
-# itk
+ # itk
 pillow
 vispy>=0.9.6
