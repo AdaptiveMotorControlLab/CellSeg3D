@@ -199,7 +199,7 @@ class InferenceResult:
     image_id: int = 0
     original: np.array = None
     instance_labels: np.array = None
-    stats: ImageStats = None
+    stats: "np.array[ImageStats]" = None
     result: np.array = None
     model_name: str = None
 
@@ -541,7 +541,10 @@ class InferenceWorker(GeneratorWorker):
                 raise ValueError(
                     "A layer's ID should always be 0 (default value)"
                 )
-            semantic_labels = np.swapaxes(semantic_labels, 0, 2)
+            total_dims = len(semantic_labels.shape) - 3
+            semantic_labels = np.swapaxes(
+                semantic_labels, 0 + total_dims, 2 + total_dims
+            )
 
         return InferenceResult(
             image_id=i + 1,
@@ -582,8 +585,10 @@ class InferenceWorker(GeneratorWorker):
     ):
         if not from_layer:
             original_filename = "_" + self.get_original_filename(i) + "_"
+            filetype = self.config.filetype
         else:
             original_filename = "_"
+            filetype = ""
 
         time = utils.get_date_time()
 
@@ -594,7 +599,7 @@ class InferenceWorker(GeneratorWorker):
             + original_filename
             + self.config.model_info.name
             + f"_{time}_"
-            + self.config.filetype
+            + filetype
         )
         try:
             imwrite(file_path, image)
@@ -619,22 +624,35 @@ class InferenceWorker(GeneratorWorker):
         else:
             return image
 
-    def instance_seg(self, to_instance, image_id=0, original_filename="layer"):
+    def instance_seg(
+        self, to_instance, image_id=0, original_filename="layer", channel=None
+    ):
         if image_id is not None:
             self.log(f"\nRunning instance segmentation for image n°{image_id}")
 
         method = self.config.post_process_config.instance.method
         instance_labels = method.run_method(image=to_instance)
 
+        if channel is not None:
+            channel_id = f"_{channel}"
+        else:
+            channel_id = ""
+
+        if self.config.filetype == "":
+            filetype = ""
+        else:
+            filetype = "_" + self.config.filetype
+
         instance_filepath = (
             self.config.results_path
             + "/"
             + f"Instance_seg_labels_{image_id}_"
             + original_filename
+            + channel_id
             + "_"
             + self.config.model_info.name
-            + f"_{utils.get_date_time()}_"
-            + self.config.filetype
+            + f"_{utils.get_date_time()}"
+            + filetype
         )
 
         imwrite(instance_filepath, instance_labels)
@@ -699,13 +717,21 @@ class InferenceWorker(GeneratorWorker):
 
         self.save_image(out, from_layer=True)
 
-        instance_labels, stats = self.get_instance_result(out, from_layer=True)
+        instance_labels_results = []
+        stats_results = []
+
+        for channel in out:
+            instance_labels, stats = self.get_instance_result(
+                channel, from_layer=True
+            )
+            instance_labels_results.append(instance_labels)
+            stats_results.append(stats)
 
         return self.create_inference_result(
             semantic_labels=out,
-            instance_labels=instance_labels,
+            instance_labels=instance_labels_results,
             from_layer=True,
-            stats=stats,
+            stats=stats_results,
         )
 
     # @thread_worker(connect={"errored": self.raise_error})
@@ -762,7 +788,7 @@ class InferenceWorker(GeneratorWorker):
             # try:
             self.log("Instantiating model...")
             model = model_class(  # FIXME test if works
-                input_img_size=dims,
+                input_img_size=[dims, dims, dims],
                 device=self.config.device,
                 num_classes=self.config.model_info.num_classes,
             )

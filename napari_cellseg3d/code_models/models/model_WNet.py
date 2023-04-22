@@ -21,7 +21,8 @@ class WNet_(WNet):
         )
 
     def forward(self, x):
-        """Forward pass of the W-Net model."""
+        """Forward ENCODER pass of the W-Net model.
+        Done this way to allow inference on the encoder only when called by sliding_window_inference."""
         enc = self.forward_encoder(x)
         # dec = self.forward_decoder(enc)
         return enc
