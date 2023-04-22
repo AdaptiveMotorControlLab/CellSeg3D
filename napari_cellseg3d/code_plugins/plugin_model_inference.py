@@ -734,37 +734,46 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 )
 
                 if result.instance_labels is not None:
-                    labels = result.instance_labels
-                    method_name = (
-                        self.worker_config.post_process_config.instance.method.name
-                    )
-
-                    number_cells = (
-                        np.unique(labels.flatten()).size - 1
-                    )  # remove background
-
-                    name = f"({number_cells} objects)_{method_name}_instance_labels_{image_id}"
-
-                    viewer.add_labels(labels, name=name)
-
-                    stats = result.stats
-
-                    if self.worker_config.compute_stats and stats is not None:
-                        stats_dict = stats.get_dict()
-                        stats_df = pd.DataFrame(stats_dict)
-
-                        self.log.print_and_log(
-                            f"Number of instances : {stats.number_objects}"
+                    for i, labels in enumerate(result.instance_labels):
+                        # labels = result.instance_labels
+                        method_name = (
+                            self.worker_config.post_process_config.instance.method.name
                         )
 
-                        csv_name = f"/{method_name}_seg_results_{image_id}_{utils.get_date_time()}.csv"
-                        stats_df.to_csv(
-                            self.worker_config.results_path + csv_name,
-                            index=False,
-                        )
+                        number_cells = (
+                            np.unique(labels.flatten()).size - 1
+                        )  # remove background
 
-                        # self.log.print_and_log(
-                        #     f"OBJECTS DETECTED : {number_cells}\n"
-                        # )
+                        name = f"({number_cells} objects)_{method_name}_channel_{i}_instance_labels_{image_id}"
+
+                        viewer.add_labels(labels, name=name)
+
+                    from napari_cellseg3d.utils import LOGGER as log
+
+                    log.debug(f"len stats : {len(result.stats)}")
+
+                    for i, stats in enumerate(result.stats):
+                        # stats = result.stats
+
+                        if (
+                            self.worker_config.compute_stats
+                            and stats is not None
+                        ):
+                            stats_dict = stats.get_dict()
+                            stats_df = pd.DataFrame(stats_dict)
+
+                            self.log.print_and_log(
+                                f"Number of instances in channel {i} : {stats.number_objects[0]}"
+                            )
+
+                            csv_name = f"/{method_name}_seg_results_{image_id}_channel_{i}_{utils.get_date_time()}.csv"
+                            stats_df.to_csv(
+                                self.worker_config.results_path + csv_name,
+                                index=False,
+                            )
+
+                            # self.log.print_and_log(
+                            #     f"OBJECTS DETECTED : {number_cells}\n"
+                            # )
         except Exception as e:
             self.on_error(e)
