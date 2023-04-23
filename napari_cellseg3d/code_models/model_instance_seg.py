@@ -15,7 +15,7 @@ from tifffile import imread
 
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.utils import fill_list_in_between
-from napari_cellseg3d.utils import Singleton
+from napari_cellseg3d.utils import LOGGER as logger
 from napari_cellseg3d.utils import sphericity_axis
 
 # from napari_cellseg3d.utils import sphericity_volume_area
@@ -517,6 +517,14 @@ class VoronoiOtsu(InstanceMethod, metaclass=Singleton):
         )
 
     def run_method(self, image):
+        ################
+        # For debugging
+        # import napari
+        # view = napari.Viewer()
+        # view.add_image(image)
+        # napari.run()
+        ################
+
         return self.function(
             image,
             self.counters[0].value(),

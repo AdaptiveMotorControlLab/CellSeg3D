@@ -1,21 +1,23 @@
-import numpy as np
-from tifffile import imread
-from tifffile import imwrite
-import scipy.ndimage as ndimage
-import napari
-from pathlib import Path
-from functools import partial
+import threading
 import time
 import warnings
+from functools import partial
+from pathlib import Path
+
+import napari
+import numpy as np
+import scipy.ndimage as ndimage
 from napari.qt.threading import thread_worker
+from tifffile import imread
+from tifffile import imwrite
 from tqdm import tqdm
-import threading
+
+import napari_cellseg3d.dev_scripts.artefact_labeling as make_artefact_labels
+from napari_cellseg3d.code_models.model_instance_seg import binary_watershed
 
 # import sys
 # sys.path.append(str(Path(__file__) / "../../"))
 
-from napari_cellseg3d.code_models.model_instance_seg import binary_watershed
-import napari_cellseg3d.dev_scripts.artefact_labeling as make_artefact_labels
 
 """
 New code by Yves Paychère
