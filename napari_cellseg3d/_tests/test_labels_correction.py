@@ -1,7 +1,6 @@
 from pathlib import Path
-
-import numpy as np
 from tifffile import imread
+import numpy as np
 
 from napari_cellseg3d.dev_scripts import artefact_labeling as al
 from napari_cellseg3d.dev_scripts import correct_labels as cl
