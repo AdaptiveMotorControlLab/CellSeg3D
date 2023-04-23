@@ -60,7 +60,7 @@ dev = [
     "black",
     "ruff",
     "pre-commit",
-
+    "tuna",
 ]
 docs = [
     "sphinx",
