@@ -1,7 +1,5 @@
 import numpy as np
-from tifffile import imread
-from tifffile import imwrite
-from pathlib import Path
+from tifffile import imwrite, imread
 import scipy.ndimage as ndimage
 import os
 import napari
@@ -64,7 +62,7 @@ def map_labels(labels, artefacts):
 
 
 def make_labels(
-    path_image,
+    image,
     path_labels_out,
     threshold_factor=1,
     threshold_size=30,
@@ -76,7 +74,7 @@ def make_labels(
     """Detect nucleus. using a binary watershed algorithm and otsu thresholding.
     Parameters
     ----------
-    path_image : str
+    image : str
         Path to image.
     path_labels_out : str
         Path of the output labelled image.
@@ -96,7 +94,7 @@ def make_labels(
         Label image with nucleus labelled with 1 value per nucleus.
     """
 
-    image = imread(path_image)
+    # image = imread(image)
     image = (image - np.min(image)) / (np.max(image) - np.min(image))
 
     threshold_brightness = threshold_otsu(image) * threshold_factor
@@ -126,28 +124,26 @@ def make_labels(
     )
 
 
-def select_image_by_labels(
-    path_image, path_labels, path_image_out, label_values
-):
+def select_image_by_labels(image, labels, path_image_out, label_values):
     """Select image by labels.
     Parameters
     ----------
-    path_image : str
-        Path to image.
-    path_labels : str
-        Path to labels.
+    image : np.array
+        image.
+    labels : np.array
+        labels.
     path_image_out : str
         Path of the output image.
     label_values : list
         List of label values to select.
     """
-    image = imread(path_image)
-    labels = imread(path_labels)
+    # image = imread(image)
+    # labels = imread(labels)
     image = np.where(np.isin(labels, label_values), image, 0)
     imwrite(path_image_out, image.astype(np.float32))
 
 
-# select the smalles cube that contains all the none zero pixel of an 3d image
+# select the smallest cube that contains all the non-zero pixels of a 3d image
 def get_bounding_box(img):
     height = np.any(img, axis=(0, 1))
     rows = np.any(img, axis=(0, 2))
@@ -165,16 +161,15 @@ def crop_image(img):
     return img[xmin:xmax, ymin:ymax, zmin:zmax]
 
 
-def crop_image_path(path_image, path_image_out):
+def crop_image_path(image, path_image_out):
     """Crop image.
     Parameters
     ----------
-    path_image : str
-        Path to image.
+    image : np.array
+        image
     path_image_out : str
         Path of the output image.
     """
-    image = imread(path_image)
     image = crop_image(image)
     imwrite(path_image_out, image.astype(np.float32))
 
@@ -307,8 +302,8 @@ def select_artefacts_by_size(artefacts, min_size, is_labeled=False):
 
 
 def create_artefact_labels(
-    image_path,
-    labels_path,
+    image,
+    labels,
     output_path,
     threshold_artefact_brightness_percent=40,
     threshold_artefact_size_percent=1,
@@ -317,10 +312,10 @@ def create_artefact_labels(
     """Create a new label image with artefacts labelled as 2 and neurons labelled as 1.
     Parameters
     ----------
-    image_path : str
-        Path to image file.
-    labels_path : str
-        Path to label image file with each neurons labelled as a different value.
+    image : np.array
+        image for artefact detection.
+    labels : np.array
+        label image array with each neurons labelled as a different int value.
     output_path : str
         Path to save the output label image file.
     threshold_artefact_brightness_percent : int, optional
@@ -330,9 +325,6 @@ def create_artefact_labels(
     contrast_power : int, optional
         Power for contrast enhancement.
     """
-    image = imread(image_path)
-    labels = imread(labels_path)
-
     artefacts = make_artefact_labels(
         image,
         labels,
@@ -352,11 +344,12 @@ def visualize_images(paths):
     Parameters
     ----------
     paths : list
-        List of paths to images to visualize.
+        List of images to visualize.
     """
     viewer = napari.Viewer(ndisplay=3)
     for path in paths:
-        viewer.add_image(imread(path), name=os.path.basename(path))
+        image = imread(path)
+        viewer.add_image(image)
     # wait for the user to close the viewer
     napari.run()
 
@@ -416,22 +409,22 @@ def create_artefact_labels_from_folder(
             )
 
 
-if __name__ == "__main__":
-    repo_path = Path(__file__).resolve().parents[1]
-    print(f"REPO PATH : {repo_path}")
-    paths = [
-        "dataset_clean/cropped_visual/train",
-        "dataset_clean/cropped_visual/val",
-        "dataset_clean/somatomotor",
-        "dataset_clean/visual_tif",
-    ]
-    for data_path in paths:
-        path = str(repo_path / data_path)
-        print(path)
-        create_artefact_labels_from_folder(
-            path,
-            do_visualize=False,
-            threshold_artefact_brightness_percent=20,
-            threshold_artefact_size_percent=1,
-            contrast_power=20,
-        )
+# if __name__ == "__main__":
+#     repo_path = Path(__file__).resolve().parents[1]
+#     print(f"REPO PATH : {repo_path}")
+#     paths = [
+#         "dataset_clean/cropped_visual/train",
+#         "dataset_clean/cropped_visual/val",
+#         "dataset_clean/somatomotor",
+#         "dataset_clean/visual_tif",
+#     ]
+#     for data_path in paths:
+#         path = str(repo_path / data_path)
+#         print(path)
+#         create_artefact_labels_from_folder(
+#             path,
+#             do_visualize=False,
+#             threshold_artefact_brightness_percent=20,
+#             threshold_artefact_size_percent=1,
+#             contrast_power=20,
+#         )
