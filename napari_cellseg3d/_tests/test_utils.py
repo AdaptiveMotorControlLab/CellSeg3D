@@ -9,7 +9,6 @@ from napari_cellseg3d import utils
 
 
 def test_fill_list_in_between():
-
     list = [1, 2, 3, 4, 5, 6]
     res = [
         1,
@@ -36,7 +35,6 @@ def test_fill_list_in_between():
 
 
 def test_align_array_sizes():
-
     im = np.zeros((128, 512, 256))
     print(im.shape)
 
@@ -71,7 +69,6 @@ def test_align_array_sizes():
 
 
 def test_get_padding_dim():
-
     tensor = torch.randn(100, 30, 40)
     size = tensor.size()
 
@@ -103,14 +100,12 @@ def test_get_padding_dim():
 
 
 def test_normalize_x():
-
     test_array = utils.normalize_x(np.array([0, 255, 127.5]))
     expected = np.array([-1, 1, 0])
     assert np.all(test_array == expected)
 
 
 def test_parse_default_path():
-
     user_path = os.path.expanduser("~")
     assert utils.parse_default_path([None]) == user_path
 

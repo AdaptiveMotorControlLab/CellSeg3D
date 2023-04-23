@@ -19,5 +19,3 @@ Attributes
 
 .. autoclass:: napari_cellseg3d.code_plugins.plugin_review_dock::Datamanager
    :members:  viewer
-
-

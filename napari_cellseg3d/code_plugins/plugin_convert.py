@@ -11,7 +11,9 @@ from tifffile import imwrite
 import napari_cellseg3d.interface as ui
 from napari_cellseg3d import config
 from napari_cellseg3d import utils
-from napari_cellseg3d.code_models.model_instance_seg import clear_small_objects
+from napari_cellseg3d.code_models.model_instance_seg import (
+    clear_small_objects,
+)
 from napari_cellseg3d.code_models.model_instance_seg import threshold
 from napari_cellseg3d.code_models.model_instance_seg import to_semantic
 from napari_cellseg3d.code_plugins.plugin_base import BasePluginFolder
@@ -122,7 +124,6 @@ class AnisoUtils(BasePluginFolder):
         self._build()
 
     def _build(self):
-
         container = ui.ContainerWidget()
 
         ui.add_widgets(
@@ -146,7 +147,6 @@ class AnisoUtils(BasePluginFolder):
         )
 
     def _start(self):
-
         self.results_path.mkdir(exist_ok=True)
         zoom = self.aniso_widgets.scaling_zyx()
 
@@ -224,7 +224,6 @@ class RemoveSmallUtils(BasePluginFolder):
         self.function = clear_small_objects
 
     def _build(self):
-
         container = ui.ContainerWidget()
 
         ui.add_widgets(
@@ -310,7 +309,6 @@ class ToSemanticUtils(BasePluginFolder):
         self._build()
 
     def _build(self):
-
         container = ui.ContainerWidget()
 
         ui.add_widgets(
@@ -439,7 +437,6 @@ class InstanceWidgets(QWidget):
         )
 
     def _build(self):
-
         group = ui.GroupedWidget("Instance segmentation")
 
         ui.add_widgets(
@@ -459,7 +456,6 @@ class InstanceWidgets(QWidget):
         self._set_tooltips()
 
     def _set_tooltips(self):
-
         self.method_choice.setToolTip(
             "Choose which method to use for instance segmentation"
             "\nConnected components : all separated objects will be assigned an unique ID. "
@@ -484,7 +480,6 @@ class InstanceWidgets(QWidget):
     def _show_watershed(self):
         name = "Watershed"
         if self.method_choice.currentText() == name:
-
             self._show_slider1()
             self._show_slider2()
             self._show_counter1()
@@ -495,7 +490,6 @@ class InstanceWidgets(QWidget):
     def _show_connected(self):
         name = "Connected components"
         if self.method_choice.currentText() == name:
-
             self._show_slider1()
             self._show_slider2(False)
             self._show_counter1()
@@ -551,7 +545,6 @@ class ToInstanceUtils(BasePluginFolder):
         self._build()
 
     def _build(self):
-
         container = ui.ContainerWidget()
 
         ui.add_widgets(
@@ -614,7 +607,6 @@ class ThresholdUtils(BasePluginFolder):
     """
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
-
         super().__init__(
             viewer,
             parent,
@@ -645,7 +637,6 @@ class ThresholdUtils(BasePluginFolder):
         self.function = threshold
 
     def _build(self):
-
         container = ui.ContainerWidget()
 
         ui.add_widgets(

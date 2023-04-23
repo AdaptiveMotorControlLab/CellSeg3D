@@ -10,7 +10,9 @@ from qtpy.QtWidgets import QWidget
 # local
 import napari_cellseg3d.interface as ui
 from napari_cellseg3d.code_plugins.plugin_convert import AnisoUtils
-from napari_cellseg3d.code_plugins.plugin_convert import RemoveSmallUtils
+from napari_cellseg3d.code_plugins.plugin_convert import (
+    RemoveSmallUtils,
+)
 from napari_cellseg3d.code_plugins.plugin_convert import ThresholdUtils
 from napari_cellseg3d.code_plugins.plugin_convert import ToInstanceUtils
 from napari_cellseg3d.code_plugins.plugin_convert import ToSemanticUtils
@@ -53,7 +55,6 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
         qInstallMessageHandler(ui.handle_adjust_errors_wrapper(self))
 
     def _build(self):
-
         layout = QVBoxLayout()
         ui.add_widgets(layout, self.utils_widgets)
         layout.addWidget(self.utils_choice.label, alignment=ui.BOTT_AL)

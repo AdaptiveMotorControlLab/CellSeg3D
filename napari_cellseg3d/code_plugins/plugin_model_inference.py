@@ -595,12 +595,10 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             #####################
 
             if self.folder_choice.isChecked():
-
                 self.worker_config.images_filepaths = self.images_filepaths
                 self.worker = InferenceWorker(worker_config=self.worker_config)
 
             elif self.layer_choice.isChecked():
-
                 self.worker_config.layer = self.image_layer_loader.layer_data()
                 self.worker = InferenceWorker(worker_config=self.worker_config)
 
@@ -705,14 +703,13 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.config.show_results
             and image_id <= self.config.show_results_count
         ):
-
             zoom = self.worker_config.post_process_config.zoom.zoom_values
 
             viewer.dims.ndisplay = 3
             viewer.scale_bar.visible = True
 
             if self.config.show_original and result.original is not None:
-                original_layer = viewer.add_image(
+                viewer.add_image(
                     result.original,
                     colormap="inferno",
                     name=f"original_{image_id}",
@@ -724,7 +721,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             if self.worker_config.post_process_config.thresholding.enabled:
                 out_colormap = "turbo"
 
-            out_layer = viewer.add_image(
+            viewer.add_image(
                 result.result,
                 colormap=out_colormap,
                 name=f"pred_{image_id}_{model_name}",
@@ -732,7 +729,6 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             )
 
             if result.instance_labels is not None:
-
                 labels = result.instance_labels
                 method = self.worker_config.post_process_config.instance.method
 
@@ -742,12 +738,11 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
                 name = f"({number_cells} objects)_{method}_instance_labels_{image_id}"
 
-                instance_layer = viewer.add_labels(labels, name=name)
+                viewer.add_labels(labels, name=name)
 
                 stats = result.stats
 
                 if self.worker_config.compute_stats and stats is not None:
-
                     stats_dict = stats.get_dict()
                     stats_df = pd.DataFrame(stats_dict)
 

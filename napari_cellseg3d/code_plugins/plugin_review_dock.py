@@ -36,7 +36,8 @@ class Datamanager(QWidget):
         """Creates the datamanager widget in the specified viewer window.
 
         Args:
-            parent (napari.viewer.Viewer): napari Viewer for the widget to be displayed in"""
+            parent (napari.viewer.Viewer): napari Viewer for the widget to be displayed in
+        """
 
         super().__init__()
 

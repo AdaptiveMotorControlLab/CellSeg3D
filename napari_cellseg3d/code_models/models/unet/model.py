@@ -6,7 +6,9 @@ from napari_cellseg3d.code_models.models.unet.buildingblocks import (
 from napari_cellseg3d.code_models.models.unet.buildingblocks import (
     create_encoders,
 )
-from napari_cellseg3d.code_models.models.unet.buildingblocks import DoubleConv
+from napari_cellseg3d.code_models.models.unet.buildingblocks import (
+    DoubleConv,
+)
 
 
 def number_of_features_per_level(init_channel_number, num_levels):
@@ -57,7 +59,7 @@ class Abstract3DUNet(nn.Module):
         conv_kernel_size=3,
         pool_kernel_size=2,
         conv_padding=1,
-        **kwargs
+        **kwargs,
     ):
         super(Abstract3DUNet, self).__init__()
 
@@ -153,7 +155,7 @@ class UNet3D(Abstract3DUNet):
         num_levels=4,
         is_segmentation=True,
         conv_padding=1,
-        **kwargs
+        **kwargs,
     ):
         super(UNet3D, self).__init__(
             in_channels=in_channels,
@@ -166,5 +168,5 @@ class UNet3D(Abstract3DUNet):
             num_levels=num_levels,
             is_segmentation=is_segmentation,
             conv_padding=conv_padding,
-            **kwargs
+            **kwargs,
         )

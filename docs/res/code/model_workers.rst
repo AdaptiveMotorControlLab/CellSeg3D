@@ -42,8 +42,3 @@ Methods
 .. autoclass:: napari_cellseg3d.code_models.model_workers::TrainingWorker
    :members: __init__, log, train
    :noindex:
-
-
-
-
-

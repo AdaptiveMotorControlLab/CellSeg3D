@@ -17,7 +17,7 @@ A napari plugin for 3D cell segmentation: training, inference, and data review. 
 
 ## News
 
-*April 2023: New version with interface overhaul published ! New model and utilities coming soon* 
+*April 2023: New version with interface overhaul published ! New model and utilities coming soon*
 
 
 **This is an alpha version, please expect bugs and issues, and help us make the code better by reporting them as an issue!**
@@ -34,7 +34,7 @@ Note : we recommend using conda to create a new environment for the plugin.
     conda create --name napari-cellseg3d python=3.8
     conda activate napari-cellseg3d
 
-You can install `napari-cellseg3d` via [pip]:  
+You can install `napari-cellseg3d` via [pip]:
 
     pip install napari-cellseg3d
 

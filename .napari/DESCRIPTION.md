@@ -7,8 +7,8 @@ the functionality of your plugin. Its content will be rendered on your plugin's
 napari hub page.
 
 The sections below are given as a guide for the flow of information only, and
-are in no way prescriptive. You should feel free to merge, remove, add and 
-rename sections at will to make this document work best for your plugin. 
+are in no way prescriptive. You should feel free to merge, remove, add and
+rename sections at will to make this document work best for your plugin.
 -->
 ## Description
 
@@ -17,13 +17,13 @@ A napari plugin for 3D cell segmentation: training, inference, and data review. 
 A detailed walk-through and description is available [on the documentation website](https://adaptivemotorcontrollab.github.io/cellseg3d-docs/res/welcome.html).
 
 <!--
-This should be a detailed description of the context of your plugin and its 
+This should be a detailed description of the context of your plugin and its
 intended purpose.
 
 If you have videos or screenshots of your plugin in action, you should include them
-here as well, to make them front and center for new users. 
+here as well, to make them front and center for new users.
 
-You should use absolute links to these assets, so that we can easily display them 
+You should use absolute links to these assets, so that we can easily display them
 on the hub. The easiest way to include a video is to use a GIF, for example hosted
 on imgur. You can then reference this GIF as an image.
 
@@ -84,14 +84,14 @@ then from the “Plugins” menu within the napari application, select “Instal
 This section should go through step-by-step examples of how your plugin should be used.
 Where your plugin provides multiple dock widgets or functions, you should split these
 out into separate subsections for easy browsing. Include screenshots and videos
-wherever possible to elucidate your descriptions. 
+wherever possible to elucidate your descriptions.
 
 Ideally, this section should start with minimal examples for those who just want a
 quick overview of the plugin's functionality, but you should definitely link out to
 more complex and in-depth tutorials highlighting any intricacies of your plugin, and
 more detailed documentation if you have it.
 -->
-## Additional Install Steps 
+## Additional Install Steps
 
 **Python >= 3.8 required**
 
@@ -110,8 +110,8 @@ for the majority of plugins. They will include instructions to pip install, and
 to install via napari itself.
 
 Most plugins can be installed out-of-the-box by just specifying the package requirements
-over in `setup.cfg`. However, if your plugin has any more complex dependencies, or 
-requires any additional preparation before (or after) installation, you should add 
+over in `setup.cfg`. However, if your plugin has any more complex dependencies, or
+requires any additional preparation before (or after) installation, you should add
 this information here.
 -->
 ## Getting Help
@@ -131,7 +131,7 @@ here.
 <!--
 Many plugins may be used in the course of published (or publishable) research, as well as
 during conference talks and other public facing events. If you'd like to be cited in
-a particular format, or have a DOI you'd like used, you should provide that information here. 
+a particular format, or have a DOI you'd like used, you should provide that information here.
 
 The developer has not yet provided a napari-hub specific description.
 -->

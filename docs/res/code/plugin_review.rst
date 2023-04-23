@@ -24,6 +24,3 @@ Attributes
 
 .. autoclass:: napari_cellseg3d.code_plugins.plugin_review::Reviewer
    :members:  _viewer, image_path, label_path
-
-
-

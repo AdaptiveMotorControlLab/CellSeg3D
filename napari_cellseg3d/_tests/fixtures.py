@@ -1,4 +1,5 @@
 import warnings
+
 from qtpy.QtWidgets import QTextEdit
 
 

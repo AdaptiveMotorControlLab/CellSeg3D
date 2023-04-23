@@ -345,7 +345,8 @@ class BasePluginFolder(BasePluginSingleImage):
 
         * A button to set a results folder
 
-        * A dropdown menu to select the file extension to be loaded from the folders"""
+        * A dropdown menu to select the file extension to be loaded from the folders
+        """
         super().__init__(
             viewer, parent, loads_images, loads_labels, has_results
         )

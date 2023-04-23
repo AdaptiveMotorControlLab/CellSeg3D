@@ -46,13 +46,16 @@ from qtpy.QtCore import Signal
 from tifffile import imwrite
 from tqdm import tqdm
 
+# local
 from napari_cellseg3d import config
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
-
-# local
-from napari_cellseg3d.code_models.model_instance_seg import binary_connected
-from napari_cellseg3d.code_models.model_instance_seg import binary_watershed
+from napari_cellseg3d.code_models.model_instance_seg import (
+    binary_connected,
+)
+from napari_cellseg3d.code_models.model_instance_seg import (
+    binary_watershed,
+)
 from napari_cellseg3d.code_models.model_instance_seg import ImageStats
 from napari_cellseg3d.code_models.model_instance_seg import volume_stats
 
@@ -139,7 +142,6 @@ class WeightsDownloader:
             with tarfile.open(filename, mode="r:gz") as tar:
 
                 def is_within_directory(directory, target):
-
                     abs_directory = Path(directory).resolve()
                     abs_target = Path(target).resolve()
                     # prefix = os.path.commonprefix([abs_directory, abs_target])
@@ -152,7 +154,6 @@ class WeightsDownloader:
                 def safe_extract(
                     tar, path=".", members=None, *, numeric_owner=False
                 ):
-
                     for member in tar.getmembers():
                         member_path = str(Path(path) / member.name)
                         if not is_within_directory(path, member_path):
@@ -276,7 +277,6 @@ class InferenceWorker(GeneratorWorker):
         self.warn_signal.emit(warning)
 
     def log_parameters(self):
-
         config = self.config
 
         self.log("-" * 20)
@@ -303,7 +303,7 @@ class InferenceWorker(GeneratorWorker):
             )
 
         if config.keep_on_cpu:
-            self.log(f"Dataset loaded to CPU")
+            self.log("Dataset loaded to CPU")
         else:
             self.log(f"Dataset loaded on {config.device}")
 
@@ -322,7 +322,6 @@ class InferenceWorker(GeneratorWorker):
         self.log("-" * 20)
 
     def load_folder(self):
-
         images_dict = self.create_inference_dict(self.config.images_filepaths)
 
         # TODO : better solution than loading first image always ?
@@ -451,14 +450,12 @@ class InferenceWorker(GeneratorWorker):
         post_process=True,
         aniso_transform=None,
     ):
-
         inputs = inputs.to("cpu")
 
-        model_output = lambda inputs: post_process_transforms(
-            self.config.model_info.get_model().get_output(
-                model, inputs
-            )  # TODO(cyril) refactor those functions
-        )
+        # def model_output(inputs):
+        #     return post_process_transforms(
+        #         self.config.model_info.get_model().get_output(model, inputs)
+        #     )
 
         def model_output(inputs):
             return post_process_transforms(
@@ -517,7 +514,6 @@ class InferenceWorker(GeneratorWorker):
         stats=None,
         i=0,
     ):
-
         if not from_layer and original is None:
             raise ValueError(
                 "If the image is not from a layer, an original should always be available"
@@ -543,7 +539,6 @@ class InferenceWorker(GeneratorWorker):
         return Path(self.config.images_filepaths[i]).stem
 
     def get_instance_result(self, semantic_labels, from_layer=False, i=-1):
-
         if not from_layer and i == -1:
             raise ValueError(
                 "An ID should be provided when running from a file"
@@ -568,7 +563,6 @@ class InferenceWorker(GeneratorWorker):
         from_layer=False,
         i=0,
     ):
-
         if not from_layer:
             original_filename = "_" + self.get_original_filename(i) + "_"
         else:
@@ -594,7 +588,6 @@ class InferenceWorker(GeneratorWorker):
             self.log(f"\nFile n°{i+1} saved as : {filename}")
 
     def aniso_transform(self, image):
-
         if self.config.post_process_config.zoom.enabled:
             zoom = self.config.post_process_config.zoom.zoom_values
             anisotropic_transform = Zoom(
@@ -607,7 +600,6 @@ class InferenceWorker(GeneratorWorker):
             return image
 
     def instance_seg(self, to_instance, image_id=0, original_filename="layer"):
-
         if image_id is not None:
             self.log(f"\nRunning instance segmentation for image n°{image_id}")
 
@@ -655,7 +647,6 @@ class InferenceWorker(GeneratorWorker):
         return instance_labels
 
     def inference_on_folder(self, inf_data, i, model, post_process_transforms):
-
         self.log("-" * 10)
         self.log(f"Inference started on image n°{i + 1}...")
 
@@ -699,7 +690,7 @@ class InferenceWorker(GeneratorWorker):
 
     def inference_on_layer(self, image, model, post_process_transforms):
         self.log("-" * 10)
-        self.log(f"Inference started on layer...")
+        self.log("Inference started on layer...")
 
         image = image.type(torch.FloatTensor)
 
@@ -963,7 +954,6 @@ class TrainingWorker(GeneratorWorker):
         self.warn_signal.emit(warning)
 
     def log_parameters(self):
-
         self.log("-" * 20)
         self.log("Parameters summary :\n")
 
@@ -986,7 +976,7 @@ class TrainingWorker(GeneratorWorker):
         self.log("-" * 10)
 
         if self.config.deterministic_config.enabled:
-            self.log(f"Deterministic training is enabled")
+            self.log("Deterministic training is enabled")
             self.log(f"Seed is {self.config.deterministic_config.seed}")
 
         self.log(f"Training for {self.config.max_epochs} epochs")
@@ -1141,10 +1131,10 @@ class TrainingWorker(GeneratorWorker):
 
                 logger.debug(f"SAMPLING is {self.config.sampling}")
                 if not self.config.sampling:
-                    msg += f"Sampling is not in use, the only image provided will be used as the validation file."
+                    msg += "Sampling is not in use, the only image provided will be used as the validation file."
                     self.warn(msg)
                 else:
-                    msg += f"Samples for validation will be cropped for the same only volume that is being used for training"
+                    msg += "Samples for validation will be cropped for the same only volume that is being used for training"
 
                 logger.warning(msg)
 
@@ -1215,7 +1205,6 @@ class TrainingWorker(GeneratorWorker):
             )
             # self.log("Loading dataset...\n")
             if do_sampling:
-
                 # if there is only one volume, split samples
                 # TODO(cyril) : maybe implement something in user config to toggle this behavior
                 if len(self.config.train_data_dict) < 2:

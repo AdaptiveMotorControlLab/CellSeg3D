@@ -36,9 +36,3 @@ Source code
 
 * :doc:`../code/plugin_base`
 * :doc:`../code/plugin_convert`
-
-
-
-
-
-

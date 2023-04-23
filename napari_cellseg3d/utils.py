@@ -229,7 +229,6 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
             # problems with zero divs avoided via params for spinboxes
             size = int(size / anisotropy_factor[i])
         while pad < size:
-
             # if size - pad < 30:
             #     warnings.warn(
             #         f"Your value is close to a lower power of two; you might want to choose slightly smaller"

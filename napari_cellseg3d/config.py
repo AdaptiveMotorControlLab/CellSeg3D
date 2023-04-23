@@ -8,12 +8,18 @@ from typing import Optional
 import napari
 import numpy as np
 
-from napari_cellseg3d.code_models.model_instance_seg import binary_connected
-from napari_cellseg3d.code_models.model_instance_seg import binary_watershed
-
-# from napari_cellseg3d.models import model_TRAILMAP as TRAILMAP
-from napari_cellseg3d.code_models.models import model_SegResNet as SegResNet
-from napari_cellseg3d.code_models.models import model_SwinUNetR as SwinUNetR
+from napari_cellseg3d.code_models.model_instance_seg import (
+    binary_connected,
+)
+from napari_cellseg3d.code_models.model_instance_seg import (
+    binary_watershed,
+)
+from napari_cellseg3d.code_models.models import (
+    model_SegResNet as SegResNet,
+)
+from napari_cellseg3d.code_models.models import (
+    model_SwinUNetR as SwinUNetR,
+)
 from napari_cellseg3d.code_models.models import (
     model_TRAILMAP_MS as TRAILMAP_MS,
 )
@@ -93,7 +99,7 @@ class ModelInfo:
     @staticmethod
     def get_model_name_list():
         logger.info(
-            f"Model list :\n" + str(f"{name}\n" for name in MODEL_LIST.keys())
+            "Model list :\n" + str(f"{name}\n" for name in MODEL_LIST.keys())
         )
         return MODEL_LIST.keys()
 

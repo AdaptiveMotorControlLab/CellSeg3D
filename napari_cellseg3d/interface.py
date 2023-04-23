@@ -8,10 +8,10 @@ import napari
 
 # Qt
 from qtpy import QtCore
-from qtpy.QtCore import QObject
-from qtpy.QtCore import Qt
 
 # from qtpy.QtCore import QtWarningMsg
+from qtpy.QtCore import QObject
+from qtpy.QtCore import Qt
 from qtpy.QtCore import QUrl
 from qtpy.QtGui import QCursor
 from qtpy.QtGui import QDesktopServices
@@ -350,7 +350,6 @@ class ContainerWidget(QWidget):
 
 class RadioButton(QRadioButton):
     def __init__(self, text: str = None, parent=None):
-
         super().__init__(text, parent)
 
 
@@ -451,7 +450,6 @@ class Slider(QSlider):
         orientation=Qt.Horizontal,
         text_label: str = None,
     ):
-
         super().__init__(orientation, parent)
 
         self.setMaximum(upper)
@@ -653,7 +651,8 @@ class AnisotropyWidgets(QWidget):
 
     def _toggle_display_aniso(self):
         """Shows the choices for correcting anisotropy
-        when viewing results depending on whether :py:attr:`self.checkbox` is checked"""
+        when viewing results depending on whether :py:attr:`self.checkbox` is checked
+        """
         toggle_visibility(self.checkbox, self.container)
 
     def build(self):
@@ -734,24 +733,20 @@ class LayerSelecter(ContainerWidget):
         self._check_for_layers()
 
     def _check_for_layers(self):
-
         for layer in self._viewer.layers:
             if isinstance(layer, self.layer_type):
                 self.layer_list.addItem(layer.name)
 
     def _update_tooltip(self):
-
         self.layer_list.setToolTip(self.layer_list.currentText())
 
     def _add_layer(self, event):
-
         inserted_layer = event.value
 
         if isinstance(inserted_layer, self.layer_type):
             self.layer_list.addItem(inserted_layer.name)
 
     def _remove_layer(self, event):
-
         removed_layer = event.value
 
         if isinstance(
@@ -759,7 +754,6 @@ class LayerSelecter(ContainerWidget):
         ) and removed_layer.name in [
             self.layer_list.itemText(i) for i in range(self.layer_list.count())
         ]:
-
             index = self.layer_list.findText(removed_layer.name)
             self.layer_list.removeItem(index)
 
@@ -1041,7 +1035,8 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         step (Optional[float]): step value, defaults to 1
         parent: parent widget, defaults to None
         fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed
-        label (Optional[str]): if provided, creates a label with the chosen title to use with the counter"""
+        label (Optional[str]): if provided, creates a label with the chosen title to use with the counter
+        """
 
         super().__init__(parent)
         set_spinbox(self, lower, upper, default, step, fixed)

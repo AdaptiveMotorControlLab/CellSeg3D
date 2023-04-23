@@ -191,7 +191,6 @@ class ModelFramework(BasePluginFolder):
         if self.container_docked:
             self.log.clear()
         elif not self.container_docked:
-
             ui.add_widgets(
                 self.report_container.layout,
                 [self.progress, self.log, self.btn_save_log],

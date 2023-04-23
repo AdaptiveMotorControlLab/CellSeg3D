@@ -11,7 +11,9 @@ from qtpy.QtWidgets import QSizePolicy
 # local
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
-from napari_cellseg3d.code_plugins.plugin_base import BasePluginSingleImage
+from napari_cellseg3d.code_plugins.plugin_base import (
+    BasePluginSingleImage,
+)
 
 DEFAULT_CROP_SIZE = 64
 logger = utils.LOGGER
@@ -122,7 +124,6 @@ class Cropping(BasePluginSingleImage):
             self.labels_filewidget.setVisible(crop_2nd)
 
     def _check_image_list(self):
-
         l1 = self.image_layer_loader.layer_list
         l2 = self.label_layer_loader.layer_list
 
@@ -232,7 +233,6 @@ class Cropping(BasePluginSingleImage):
             logger.info(f"Image 2 saved as: {im2_path}")
 
     def _check_ready(self):
-
         if self.image_layer_loader.layer_data() is not None:
             if self.crop_second_image:
                 if self.label_layer_loader.layer_data() is not None:
@@ -367,7 +367,6 @@ class Cropping(BasePluginSingleImage):
         return layer
 
     def _check_for_empty_layer(self, layer, volume_data):
-
         if layer.data.all() == np.zeros_like(layer.data).all():
             layer.colormap = "red"
             layer.data = np.random.random(layer.data.shape)
@@ -378,7 +377,6 @@ class Cropping(BasePluginSingleImage):
             layer.refresh()
 
     def _add_crop_layer(self, layer, cropx, cropy, cropz):
-
         crop_data = layer.data[:cropx, :cropy, :cropz]
 
         if isinstance(layer, napari.layers.Image):

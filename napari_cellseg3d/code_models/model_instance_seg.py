@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from typing import List
 
 import numpy as np
-from skimage.filters import thresholding
 
 # from skimage.measure import marching_cubes
 # from skimage.measure import mesh_surface_area
@@ -13,7 +12,6 @@ from skimage.measure import label
 from skimage.measure import regionprops
 from skimage.morphology import remove_small_objects
 from skimage.segmentation import watershed
-from skimage.transform import resize
 from tifffile import imread
 
 from napari_cellseg3d.utils import fill_list_in_between
@@ -63,7 +61,7 @@ def binary_connected(
     thres_small=3,
     # scale_factors=(1.0, 1.0, 1.0),
     *args,
-    **kwargs
+    **kwargs,
 ):
     r"""Convert binary foreground probability maps to instance masks via
     connected-component labeling.
@@ -104,7 +102,7 @@ def binary_watershed(
     # scale_factors=(1.0, 1.0, 1.0),
     rem_seed_thres=3,
     *args,
-    **kwargs
+    **kwargs,
 ):
     r"""Convert binary foreground probability maps to instance masks via
     watershed segmentation algorithm.
