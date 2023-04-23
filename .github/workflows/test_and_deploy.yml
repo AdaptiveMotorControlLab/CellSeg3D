@@ -16,6 +16,7 @@ on:
       - main
       - npe2
       - cy/voronoi-otsu
+      - cy/wnet
   workflow_dispatch:
 
 jobs:
