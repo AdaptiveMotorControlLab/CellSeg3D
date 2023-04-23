@@ -34,7 +34,7 @@ def save_folder(results_path, folder_name, images, image_paths):
         image_paths: list of filenames of images
     """
     results_folder = results_path / Path(folder_name)
-    results_folder.mkdir(exist_ok=False)
+    results_folder.mkdir(exist_ok=False, parents=True)
 
     for file, image in zip(image_paths, images):
         path = results_folder / Path(file).name
@@ -143,7 +143,7 @@ class AnisoUtils(BasePluginFolder):
         )
 
     def _start(self):
-        self.results_path.mkdir(exist_ok=True)
+        self.results_path.mkdir(exist_ok=True, parents=True)
         zoom = self.aniso_widgets.scaling_zyx()
 
         if self.layer_choice.isChecked():
@@ -242,7 +242,7 @@ class RemoveSmallUtils(BasePluginFolder):
         return container
 
     def _start(self):
-        self.results_path.mkdir(exist_ok=True)
+        self.results_path.mkdir(exist_ok=True, parents=True)
         remove_size = self.size_for_removal_counter.value()
 
         if self.layer_choice:
@@ -324,7 +324,7 @@ class ToSemanticUtils(BasePluginFolder):
         )
 
     def _start(self):
-        Path(self.results_path).mkdir(exist_ok=True)
+        Path(self.results_path).mkdir(exist_ok=True, parents=True)
 
         if self.layer_choice:
             if self.label_layer_loader.layer_data() is not None:
@@ -408,7 +408,7 @@ class ToInstanceUtils(BasePluginFolder):
         )
 
     def _start(self):
-        self.results_path.mkdir(exist_ok=True)
+        self.results_path.mkdir(exist_ok=True, parents=True)
 
         if self.layer_choice:
             if self.label_layer_loader.layer_data() is not None:
@@ -502,7 +502,7 @@ class ThresholdUtils(BasePluginFolder):
         return container
 
     def _start(self):
-        self.results_path.mkdir(exist_ok=True)
+        self.results_path.mkdir(exist_ok=True, parents=True)
         remove_size = self.binarize_counter.value()
 
         if self.layer_choice:
