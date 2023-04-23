@@ -1,10 +1,8 @@
 import platform
-import time
 import typing as t
 from dataclasses import dataclass
 from math import ceil
 from pathlib import Path
-import typing as t
 
 import numpy as np
 import torch
@@ -45,8 +43,6 @@ from monai.utils import set_determinism
 # from napari.qt.threading import thread_worker
 # threads
 from napari.qt.threading import GeneratorWorker
-
-# from napari.qt.threading import thread_worker
 from napari.qt.threading import WorkerBaseSignals
 
 # Qt

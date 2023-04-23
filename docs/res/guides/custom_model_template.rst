@@ -10,5 +10,3 @@ Advanced : Declaring a custom model
     **WIP** : Currently you must modify :ref:`model_framework.py` as well : import your model class and add it to the ``model_dict`` attribute
 
 ::
-
-
