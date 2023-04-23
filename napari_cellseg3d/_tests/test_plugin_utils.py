@@ -4,10 +4,7 @@ import numpy as np
 from tifffile import imread
 
 from napari_cellseg3d.code_plugins.plugin_utilities import Utilities
-from napari_cellseg3d.code_plugins.plugin_utilities import (
-    UTILITIES_WIDGETS,
-    Utilities,
-)
+from napari_cellseg3d.code_plugins.plugin_utilities import UTILITIES_WIDGETS
 
 
 def test_utils_plugin(make_napari_viewer):

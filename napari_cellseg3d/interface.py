@@ -7,8 +7,7 @@ import napari
 
 # Qt
 # from qtpy.QtCore import QtWarningMsg
-from qtpy.QtCore import QObject
-from qtpy.QtCore import Qt
+from qtpy import QtCore
 from qtpy.QtCore import QObject
 from qtpy.QtCore import Qt
 from qtpy.QtCore import QUrl

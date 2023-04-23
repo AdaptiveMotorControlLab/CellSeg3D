@@ -9,7 +9,6 @@ import numpy as np
 
 from napari_cellseg3d.code_models.model_instance_seg import InstanceMethod
 
-
 # from napari_cellseg3d.models import model_TRAILMAP as TRAILMAP
 from napari_cellseg3d.code_models.models import model_SegResNet as SegResNet
 from napari_cellseg3d.code_models.models import model_SwinUNetR as SwinUNetR
