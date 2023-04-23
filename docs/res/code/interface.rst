@@ -105,22 +105,3 @@ toggle_visibility
 open_file_dialog
 **************************************
 .. autofunction:: napari_cellseg3d.interface::open_file_dialog
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

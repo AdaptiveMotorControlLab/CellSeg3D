@@ -28,7 +28,7 @@ Note : we recommend using conda to create a new environment for the plugin.
     conda create --name python=3.8 napari-cellseg3d
     conda activate napari-cellseg3d
 
-You can install `napari-cellseg3d` via [pip]:  
+You can install `napari-cellseg3d` via [pip]:
 
     pip install napari-cellseg3d
 
@@ -123,7 +123,7 @@ Distributed under the terms of the [MIT] license.
 
 ## Acknowledgements
 
-This plugin was developed by Cyril Achard, Maxime Vidal, Mackenzie Mathis. 
+This plugin was developed by Cyril Achard, Maxime Vidal, Mackenzie Mathis.
 This work was funded, in part, from the Wyss Center to the [Mathis Laboratory of Adaptive Motor Control](https://www.mackenziemathislab.org/).
 Please refer to the documentation for full acknowledgements.
 
