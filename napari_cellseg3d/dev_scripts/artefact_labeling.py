@@ -1,14 +1,17 @@
-import numpy as np
-from tifffile import imwrite, imread
-import scipy.ndimage as ndimage
 import os
+
 import napari
+import numpy as np
+import scipy.ndimage as ndimage
+from skimage.filters import threshold_otsu
+from tifffile import imread
+from tifffile import imwrite
+
+from napari_cellseg3d.code_models.model_instance_seg import binary_watershed
 
 # import sys
 # sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-from napari_cellseg3d.code_models.model_instance_seg import binary_watershed
-from skimage.filters import threshold_otsu
 
 """
 New code by Yves Paychere

@@ -1,7 +1,7 @@
+import napari
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-import napari
 
 from napari_cellseg3d.utils import LOGGER as log
 
