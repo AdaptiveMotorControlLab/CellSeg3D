@@ -4,6 +4,7 @@ from tifffile import imwrite
 import scipy.ndimage as ndimage
 import napari
 from pathlib import Path
+from functools import partial
 import time
 import warnings
 from napari.qt.threading import thread_worker
@@ -85,13 +86,16 @@ def add_label(old_label, artefact, new_label_path, i_labels_to_add):
 returns = []
 
 
-def ask_labels(unique_artefact):
+def ask_labels(unique_artefact, test=False):
     global returns
     returns = []
-    i_labels_to_add_tmp = input(
-        "Which labels do you want to add (0 to skip) ? (separated by a comma):"
-    )
-    i_labels_to_add_tmp = [int(i) for i in i_labels_to_add_tmp.split(",")]
+    if not test:
+        i_labels_to_add_tmp = input(
+            "Which labels do you want to add (0 to skip) ? (separated by a comma):"
+        )
+        i_labels_to_add_tmp = [int(i) for i in i_labels_to_add_tmp.split(",")]
+    else:
+        i_labels_to_add_tmp = [0]
 
     if i_labels_to_add_tmp == [0]:
         print("no label added")
@@ -135,7 +139,13 @@ def ask_labels(unique_artefact):
 
 
 def relabel(
-    image_path, label_path, go_fast=False, check_for_unicity=True, delay=0.3
+    image_path,
+    label_path,
+    go_fast=False,
+    check_for_unicity=True,
+    delay=0.3,
+    viewer=None,
+    test=False,
 ):
     """relabel the image labelled with different label for each neuron and save it in the save_path location
     Parameters
@@ -150,6 +160,8 @@ def relabel(
         if True, the relabeling will check if the labels are unique, by default True
     delay : float, optional
         the delay between each image for the visualization, by default 0.3
+    viewer : napari.Viewer, optional
+        the napari viewer, by default None
     """
     global returns
 
@@ -164,9 +176,10 @@ def relabel(
         print(
             "visualize the relabeld image in white the previous labels and in red the new labels"
         )
-        visualize_map(
-            map_labels_existing, label_path, new_label_path, delay=delay
-        )
+        if not test:
+            visualize_map(
+                map_labels_existing, label_path, new_label_path, delay=delay
+            )
         label_path = new_label_path
     # detect artefact
     print("detection of potential neurons (in progress)")
@@ -186,15 +199,22 @@ def relabel(
     unique_artefact = list(np.unique(artefact))
     while loop:
         # visualize the artefact and ask the user which label to add to the label image
-        t = threading.Thread(target=ask_labels, args=(unique_artefact,))
+        t = threading.Thread(
+            target=partial(ask_labels, test=test), args=(unique_artefact,)
+        )
         t.start()
         artefact_copy = np.where(
             np.isin(artefact, i_labels_to_add), 0, artefact
         )
-        viewer = napari.view_image(image)
+        if viewer is None:
+            viewer = napari.view_image(image)
+        else:
+            viewer = viewer
+            viewer.add_image(image, name="image")
         viewer.add_labels(artefact_copy, name="potential neurons")
         viewer.add_labels(imread(label_path), name="labels")
-        napari.run()
+        if not test:
+            napari.run()
         t.join()
         i_labels_to_add_tmp = returns[0]
         # check if the selected labels are neurones
@@ -205,15 +225,26 @@ def relabel(
             np.isin(artefact, i_labels_to_add_tmp), artefact, 0
         )
         print("these labels will be added")
-        viewer = napari.view_image(image)
-        viewer.add_labels(artefact_copy, name="labels added")
-        napari.run()
-        revert = input("Do you want to revert? (y/n)")
+        if test:
+            viewer.close()
+        if viewer is None:
+            viewer = napari.view_image(image)
+        else:
+            viewer = viewer
+        if not test:
+            viewer.add_labels(artefact_copy, name="labels added")
+            napari.run()
+            revert = input("Do you want to revert? (y/n)")
+        if test:
+            revert = "n"
+            viewer.close()
         if revert != "y":
             i_labels_to_add = i_labels_to_add_tmp
             for i in i_labels_to_add:
                 if i in unique_artefact:
                     unique_artefact.remove(i)
+        if test:
+            break
         loop = input("Do you want to add more labels? (y/n)") == "y"
     # add the label to the label image
     new_label_path = initial_label_path[:-4] + "_new_label.tif"
@@ -334,9 +365,9 @@ def relabel_non_unique_i_folder(folder_path, end_of_new_name="relabeled"):
             )
 
 
-if __name__ == "__main__":
-    im_path = Path("C:/Users/Cyril/Desktop/test/instance_test")
-    image_path = str(im_path / "image.tif")
-    gt_labels_path = str(im_path / "labels.tif")
-
-    relabel(image_path, gt_labels_path, check_for_unicity=True, go_fast=False)
+# if __name__ == "__main__":
+#     im_path = Path("C:/Users/Cyril/Desktop/test/instance_test")
+#     image_path = str(im_path / "image.tif")
+#     gt_labels_path = str(im_path / "labels.tif")
+#
+#     relabel(image_path, gt_labels_path, check_for_unicity=True, go_fast=False)
