@@ -1,5 +1,4 @@
 import os
-
 import napari
 import numpy as np
 import scipy.ndimage as ndimage
