@@ -15,7 +15,6 @@ from napari_cellseg3d.code_models.models.model_SwinUNetR import SwinUNETR_
 from napari_cellseg3d.code_models.models.model_TRAILMAP_MS import TRAILMAP_MS_
 from napari_cellseg3d.code_models.models.model_VNet import VNet_
 from napari_cellseg3d.code_models.models.model_WNet import WNet_
-
 from napari_cellseg3d.utils import LOGGER
 
 logger = LOGGER

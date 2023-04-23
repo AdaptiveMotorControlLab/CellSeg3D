@@ -1,15 +1,15 @@
 """
 Implementation of a 3D Soft N-Cuts loss based on https://arxiv.org/abs/1711.08506 and https://ieeexplore.ieee.org/document/868688.
-The implementation was adapted and approximated to reduce computational and memory cost. 
+The implementation was adapted and approximated to reduce computational and memory cost.
 This faster version was proposed on https://github.com/fkodom/wnet-unsupervised-image-segmentation.
 """
 
 import math
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-import numpy as np
 from scipy.stats import norm
 
 __author__ = "Yves Paychère, Colin Hofmann, Cyril Achard"
@@ -56,7 +56,7 @@ class SoftNCutsLoss(nn.Module):
         # self.distances, self.indexes = self.get_distances()
 
         """
- 
+
         # Precompute the spatial distance of the pixels for the weights calculation, to avoid recomputing it at each iteration
         distances_H = torch.tensor(range(self.H)).expand(self.H, self.H)  # (H, H)
         distances_W = torch.tensor(range(self.W)).expand(self.W, self.W)  # (W, W)

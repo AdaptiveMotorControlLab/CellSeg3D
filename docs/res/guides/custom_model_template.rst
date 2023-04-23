@@ -9,5 +9,3 @@ To add a custom model, you will need a **.py** file with the following structure
     **WIP** : Currently you must modify :ref:`model_framework.py` as well : import your model class and add it to the ``model_dict`` attribute
 
 ::
-
-
