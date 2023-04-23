@@ -59,6 +59,7 @@ dev = [
     "isort",
     "black",
     "ruff",
+    "pre-commit",
 ]
 docs = [
     "sphinx",
