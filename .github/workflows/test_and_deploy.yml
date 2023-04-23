@@ -8,12 +8,14 @@ on:
     branches:
       - main
       - npe2
+      - cy/voronoi-otsu
     tags:
       - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
   pull_request:
     branches:
       - main
       - npe2
+      - cy/voronoi-otsu
   workflow_dispatch:
 
 jobs:
