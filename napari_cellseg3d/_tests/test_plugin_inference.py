@@ -7,6 +7,7 @@ from napari_cellseg3d.code_models.models.model_test import TestModel
 from napari_cellseg3d.code_plugins.plugin_model_inference import Inferer
 from napari_cellseg3d.config import MODEL_LIST
 
+
 def test_inference(make_napari_viewer, qtbot):
     im_path = str(Path(__file__).resolve().parent / "res/test.tif")
     image = imread(im_path)

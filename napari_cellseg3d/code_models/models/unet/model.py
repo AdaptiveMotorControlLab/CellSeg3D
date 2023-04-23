@@ -6,9 +6,7 @@ from napari_cellseg3d.code_models.models.unet.buildingblocks import (
 from napari_cellseg3d.code_models.models.unet.buildingblocks import (
     create_encoders,
 )
-from napari_cellseg3d.code_models.models.unet.buildingblocks import (
-    DoubleConv,
-)
+from napari_cellseg3d.code_models.models.unet.buildingblocks import DoubleConv
 
 
 def number_of_features_per_level(init_channel_number, num_levels):
