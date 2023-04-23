@@ -101,7 +101,6 @@ dev = [
     "ruff",
     "tuna",
     "pre-commit",
-
 ]
 docs = [
     "sphinx",
