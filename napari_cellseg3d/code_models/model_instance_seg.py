@@ -12,13 +12,15 @@ from skimage.segmentation import watershed
 # from skimage.measure import mesh_surface_area
 # from skimage.measure import marching_cubes
 from tifffile import imread
-# from skimage.measure import marching_cubes
-# from skimage.measure import mesh_surface_area
 
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.utils import fill_list_in_between
 from napari_cellseg3d.utils import LOGGER as logger
 from napari_cellseg3d.utils import sphericity_axis
+
+# from skimage.measure import marching_cubes
+# from skimage.measure import mesh_surface_area
+
 
 # from napari_cellseg3d.utils import sphericity_volume_area
 
