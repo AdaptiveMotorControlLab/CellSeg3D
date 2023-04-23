@@ -16,6 +16,7 @@ from tifffile import imwrite
 # local
 from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
+from napari_cellseg3d import utils
 from napari_cellseg3d.code_plugins.plugin_base import BasePluginSingleImage
 from napari_cellseg3d.code_plugins.plugin_review_dock import Datamanager
 

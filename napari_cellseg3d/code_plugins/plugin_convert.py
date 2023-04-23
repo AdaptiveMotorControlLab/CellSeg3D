@@ -1,4 +1,5 @@
 from pathlib import Path
+
 import napari
 import numpy as np
 from qtpy.QtWidgets import QSizePolicy
@@ -349,6 +350,7 @@ class ToSemanticUtils(BasePluginFolder):
                     images,
                     self.images_filepaths,
                 )
+
 
 class ToInstanceUtils(BasePluginFolder):
     """

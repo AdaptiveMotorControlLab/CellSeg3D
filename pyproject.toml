@@ -127,4 +127,3 @@ onnx-gpu = [
     "onnx",
     "onnxruntime-gpu"
 ]
-
