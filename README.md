@@ -29,7 +29,7 @@ A napari plugin for 3D cell segmentation: training, inference, and data review. 
 
 ## Installation
 
-**Note** : we recommend using conda to create a new environment for the plugin. **M1 Mac users, please see below**
+**Note** : we recommend using conda to create a new environment for the plugin. **M1 Mac users, please see the [M1 install section](#m1-mac-users)**
 
     conda create --name napari-cellseg3d python=3.8
     conda activate napari-cellseg3d
@@ -49,12 +49,12 @@ then from the “Plugins” menu within the napari application, select “Instal
 ### M1 Mac users
 
 Create a new conda env using the provided conda/napari_cellseg3d_m1.yml file :
-    
+
         conda env create -f conda/napari_cellseg3d_m1.yml
         conda activate napari_cellseg3d_m1
-    
+
 Then install PyQt5 from conda separately :
-        
+
         conda install -c anaconda PyQt5
 
 
