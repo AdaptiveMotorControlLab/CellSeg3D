@@ -66,24 +66,3 @@ load_images
 format_Warning
 **************************************
 .. autofunction:: napari_cellseg3d.utils::format_Warning
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
