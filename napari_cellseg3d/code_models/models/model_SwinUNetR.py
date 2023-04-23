@@ -1,4 +1,5 @@
 from monai.networks.nets import SwinUNETR
+
 from napari_cellseg3d.utils import LOGGER
 
 logger = LOGGER
