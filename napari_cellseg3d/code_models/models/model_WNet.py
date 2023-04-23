@@ -11,7 +11,7 @@ class WNet_(WNet):
         out_channels=1,
         num_classes=2,
         device="cpu",
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
             device=device,
