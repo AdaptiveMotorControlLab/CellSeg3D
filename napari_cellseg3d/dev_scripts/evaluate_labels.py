@@ -1,10 +1,9 @@
+import napari
 import numpy as np
 from collections import Counter
 from dataclasses import dataclass
 import pandas as pd
 from tqdm import tqdm
-from typing import Dict
-import napari
 
 from napari_cellseg3d.utils import LOGGER as log
 
