@@ -18,6 +18,71 @@ MAX_H = ui.UTILS_MAX_HEIGHT
 logger = utils.LOGGER
 
 
+def save_folder(results_path, folder_name, images, image_paths):
+    """
+    Saves a list of images in a folder
+
+    Args:
+        results_path: Path to the folder containing results
+        folder_name: Name of the folder containing results
+        images: List of images to save
+        image_paths: list of filenames of images
+    """
+    results_folder = results_path / Path(folder_name)
+    results_folder.mkdir(exist_ok=False, parents=True)
+
+    for file, image in zip(image_paths, images):
+        path = results_folder / Path(file).name
+
+        imwrite(
+            path,
+            image,
+        )
+    logger.info(f"Saved processed folder as : {results_folder}")
+
+
+def save_layer(results_path, image_name, image):
+    """
+    Saves an image layer at the specified path
+
+    Args:
+        results_path: path to folder containing result
+        image_name: image name for saving
+        image: data array containing image
+
+    Returns:
+
+    """
+    path = str(results_path / Path(image_name))  # TODO flexible filetype
+    logger.info(f"Saved as : {path}")
+    imwrite(path, image)
+
+
+def show_result(viewer, layer, image, name):
+    """
+    Adds layers to a viewer to show result to user
+
+    Args:
+        viewer: viewer to add layer in
+        layer: type of the original layer the operation was run on, to determine whether it should be an Image or Labels layer
+        image: the data array containing the image
+        name: name of the added layer
+
+    Returns:
+
+    """
+    if isinstance(layer, napari.layers.Image):
+        logger.debug("Added resulting image layer")
+        viewer.add_image(image, name=name)
+    elif isinstance(layer, napari.layers.Labels):
+        logger.debug("Added resulting label layer")
+        viewer.add_labels(image, name=name)
+    else:
+        warnings.warn(
+            f"Results not shown, unsupported layer type {type(layer)}"
+        )
+
+
 class AnisoUtils(BasePluginFolder):
     """Class to correct anisotropy in images"""
 
@@ -73,7 +138,7 @@ class AnisoUtils(BasePluginFolder):
         )
 
     def _start(self):
-        utils.mkdir_from_str(self.results_path)
+        self.results_path.mkdir(exist_ok=True, parents=True)
         zoom = self.aniso_widgets.scaling_zyx()
 
         if self.layer_choice.isChecked():
@@ -172,7 +237,7 @@ class RemoveSmallUtils(BasePluginFolder):
         return container
 
     def _start(self):
-        utils.mkdir_from_str(self.results_path)
+        self.results_path.mkdir(exist_ok=True, parents=True)
         remove_size = self.size_for_removal_counter.value()
 
         if self.layer_choice:
@@ -339,7 +404,7 @@ class ToInstanceUtils(BasePluginFolder):
         )
 
     def _start(self):
-        utils.mkdir_from_str(self.results_path)
+        self.results_path.mkdir(exist_ok=True, parents=True)
 
         if self.layer_choice:
             if self.label_layer_loader.layer_data() is not None:
@@ -434,7 +499,7 @@ class ThresholdUtils(BasePluginFolder):
         return container
 
     def _start(self):
-        utils.mkdir_from_str(self.results_path)
+        self.results_path.mkdir(exist_ok=True, parents=True)
         remove_size = self.binarize_counter.value()
 
         if self.layer_choice:
