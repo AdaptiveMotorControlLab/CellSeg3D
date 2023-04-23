@@ -151,7 +151,7 @@ Distributed under the terms of the [MIT] license.
 
 ## Acknowledgements
 
-This plugin was developed by Cyril Achard, Maxime Vidal, Mackenzie Mathis. 
+This plugin was developed by Cyril Achard, Maxime Vidal, Mackenzie Mathis.
 This work was funded, in part, from the Wyss Center to the [Mathis Laboratory of Adaptive Motor Control](https://www.mackenziemathislab.org/).
 Please refer to the documentation for full acknowledgements.
 
