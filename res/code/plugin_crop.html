@@ -118,92 +118,9 @@
 </div>
 <section id="methods">
 <h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline"></a></h3>
-<dl class="py class">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.code_plugins.plugin_crop.</span></span><span class="sig-name descname"><span class="pre">Cropping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>A utility plugin for cropping 3D volumes.</p>
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Creates a Cropping plugin with several buttons :</p>
-<ul class="simple">
-<li><p>Open file prompt to select volumes directory</p></li>
-<li><p>Open file prompt to select labels directory</p></li>
-<li><p>A dropdown menu with a choice of png or tif filetypes</p></li>
-<li><p>Three spinboxes to choose the dimensions of the cropped volume in x, y, z</p></li>
-<li><p>A button to launch the cropping process (see <a class="reference internal" href="#"><span class="doc">plugin_crop.py</span></a>)</p></li>
-<li><p>A button to close the widget</p></li>
-</ul>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">_start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Launches cropping process by loading the files from the chosen folders,
-and adds control widgets to the napari Viewer for moving the cropped volume.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">quicksave</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Quicksaves the cropped volume in the folder from which they originate, with their original file extension.</p>
-<ul class="simple">
-<li><p>If images are present, saves the cropped version as a single file or image stacks folder depending on what was loaded.</p></li>
-<li><p>If labels are present, saves the cropped version as a single file or 2D stacks folder depending on what was loaded.</p></li>
-</ul>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">remove_from_viewer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Removes the widget from the napari window.
-Can be re-implemented in children classes if needed</p>
-</dd></dl>
-
-</dd></dl>
-
 </section>
 <section id="attributes">
 <h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline"></a></h3>
-<dl class="py class">
-<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_crop.Cropping">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.code_plugins.plugin_crop.</span></span><span class="sig-name descname"><span class="pre">Cropping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_crop.Cropping" title="Permalink to this definition"></a></dt>
-<dd><p>A utility plugin for cropping 3D volumes.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_crop.Cropping._viewer">
-<span class="sig-name descname"><span class="pre">_viewer</span></span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_crop.Cropping._viewer" title="Permalink to this definition"></a></dt>
-<dd><p>viewer in which the widget is displayed</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>napari.viewer.Viewer</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_crop.Cropping.image_path">
-<span class="sig-name descname"><span class="pre">image_path</span></span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_crop.Cropping.image_path" title="Permalink to this definition"></a></dt>
-<dd><p>path to image folder</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_crop.Cropping.label_path">
-<span class="sig-name descname"><span class="pre">label_path</span></span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_crop.Cropping.label_path" title="Permalink to this definition"></a></dt>
-<dd><p>path to label folder</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
 </section>
 </section>
 </section>

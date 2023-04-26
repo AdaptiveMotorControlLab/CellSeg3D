@@ -114,92 +114,9 @@
 <h2>Datamanager<a class="headerlink" href="#datamanager" title="Permalink to this headline"></a></h2>
 <section id="methods">
 <h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline"></a></h3>
-<dl class="py class">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.code_plugins.plugin_review_dock.</span></span><span class="sig-name descname"><span class="pre">Datamanager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>A widget with a single checkbox that allows to store the status of
-a slice in csv file (checked/not checked)</p>
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Creates the datamanager widget in the specified viewer window.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>parent</strong> (<em>napari.viewer.Viewer</em>) – napari Viewer for the widget to be displayed in</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PyQt5.sip.voidptr</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initializeWindow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destroyOldWindow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">load_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkbox</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Loads newest csv or create new csv</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>label_dir</strong> (<em>str</em>) – label path</p></li>
-<li><p><strong>model_type</strong> (<em>str</em>) – model type</p></li>
-<li><p><strong>checkbox</strong> (<em>bool</em>) – create new dataset or not</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>(pandas.DataFrame, str) dataframe、csv path</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filetype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkbox</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Initialize the Datamanager, which loads the csv file and updates it
-with the index of the current slice.</p>
-<p>Args:
-label_dir (str): label path
-filetype (str) : file extension
-model_type (str): model type
-checkbox (bool): create new dataset or not
-as_folder (bool) : load as folder or as single file</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span></dt>
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">QRect</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">QRegion</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ah</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
 </section>
 <section id="attributes">
 <h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline"></a></h3>
-<dl class="py class">
-<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_review_dock.Datamanager">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.code_plugins.plugin_review_dock.</span></span><span class="sig-name descname"><span class="pre">Datamanager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_review_dock.Datamanager" title="Permalink to this definition"></a></dt>
-<dd><p>A widget with a single checkbox that allows to store the status of
-a slice in csv file (checked/not checked)</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="napari_cellseg3d.code_plugins.plugin_review_dock.Datamanager.viewer">
-<span class="sig-name descname"><span class="pre">viewer</span></span><a class="headerlink" href="#napari_cellseg3d.code_plugins.plugin_review_dock.Datamanager.viewer" title="Permalink to this definition"></a></dt>
-<dd><p>viewer in which the widget is displayed</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>napari.viewer.Viewer</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
 </section>
 </section>
 </section>
