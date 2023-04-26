@@ -7,7 +7,11 @@ from tqdm import tqdm
 
 from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d.code_models.crf import CRFWorker, crf_with_config
+from napari_cellseg3d.code_models.crf import (
+    CRF_INSTALLED,
+    CRFWorker,
+    crf_with_config,
+)
 from napari_cellseg3d.code_plugins.plugin_base import BasePluginSingleImage
 from napari_cellseg3d.utils import LOGGER as logger
 
@@ -43,6 +47,17 @@ class CRFParamsWidget(ui.GroupedWidget):
         self._set_tooltips()
 
     def _build(self):
+        if not CRF_INSTALLED:
+            ui.add_widgets(
+                self.layout,
+                [
+                    ui.make_label(
+                        "ERROR: CRF not installed.\nPlease refer to the documentation to install it."
+                    ),
+                ],
+            )
+            self.set_layout()
+            return
         ui.add_widgets(
             self.layout,
             [
@@ -113,7 +128,10 @@ class CRFWidget(BasePluginSingleImage):
             napari.layers.Image
         )  # to load all crf-compatible inputs, not int only
         self.image_layer_loader.setVisible(True)
-        self.start_button.setVisible(True)
+        if CRF_INSTALLED:
+            self.start_button.setVisible(True)
+        else:
+            self.start_button.setVisible(False)
 
         self.result_layer = None
         self.result_name = None
