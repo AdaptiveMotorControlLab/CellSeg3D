@@ -3,8 +3,10 @@ from pathlib import Path
 import numpy as np
 from tifffile import imread
 
-from napari_cellseg3d.code_plugins.plugin_utilities import Utilities
-from napari_cellseg3d.code_plugins.plugin_utilities import UTILITIES_WIDGETS
+from napari_cellseg3d.code_plugins.plugin_utilities import (
+    UTILITIES_WIDGETS,
+    Utilities,
+)
 
 
 def test_utils_plugin(make_napari_viewer):

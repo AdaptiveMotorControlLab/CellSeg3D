@@ -12,9 +12,11 @@ Implemented using the pydense libary available at https://github.com/lucasb-eyer
 
 import numpy as np
 import pydensecrf.densecrf as dcrf
-from pydensecrf.utils import create_pairwise_bilateral
-from pydensecrf.utils import create_pairwise_gaussian
-from pydensecrf.utils import unary_from_softmax
+from pydensecrf.utils import (
+    create_pairwise_bilateral,
+    create_pairwise_gaussian,
+    unary_from_softmax,
+)
 
 __author__ = "Yves Paychère, Colin Hofmann, Cyril Achard"
 __credits__ = [

@@ -16,15 +16,18 @@ import numpy as np
 
 try:
     import pydensecrf.densecrf as dcrf
-    from pydensecrf.utils import create_pairwise_bilateral
-    from pydensecrf.utils import create_pairwise_gaussian
-    from pydensecrf.utils import unary_from_softmax
+    from pydensecrf.utils import (
+        create_pairwise_bilateral,
+        create_pairwise_gaussian,
+        unary_from_softmax,
+    )
 
     CRF_INSTALLED = True
 except ImportError:
     warn(
         "pydensecrf not installed, CRF post-processing will not be available. "
-        "Please install by running pip install cellseg3d[crf]"
+        "Please install by running pip install cellseg3d[crf]",
+        stacklevel=1,
     )
     CRF_INSTALLED = False
 

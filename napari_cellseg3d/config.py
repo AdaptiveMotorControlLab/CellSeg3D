@@ -1,5 +1,4 @@
 import datetime
-import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
@@ -84,9 +83,9 @@ class ModelInfo:
             return MODEL_LIST[self.name]
         except KeyError as e:
             msg = f"Model {self.name} is not defined"
-            warnings.warn(msg)
             logger.warning(msg)
-            raise KeyError(e)
+            logger.warning(msg)
+            raise KeyError from e
 
     @staticmethod
     def get_model_name_list():

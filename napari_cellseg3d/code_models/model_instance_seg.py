@@ -1,11 +1,11 @@
 from dataclasses import dataclass
+from functools import partial
 from typing import List
 
 import numpy as np
 import pyclesperanto_prototype as cle
 from qtpy.QtWidgets import QWidget
-from skimage.measure import label
-from skimage.measure import regionprops
+from skimage.measure import label, regionprops
 from skimage.morphology import remove_small_objects
 from skimage.segmentation import watershed
 
@@ -14,9 +14,8 @@ from skimage.segmentation import watershed
 from tifffile import imread
 
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d.utils import fill_list_in_between
 from napari_cellseg3d.utils import LOGGER as logger
-from napari_cellseg3d.utils import sphericity_axis
+from napari_cellseg3d.utils import fill_list_in_between, sphericity_axis
 
 # from skimage.measure import marching_cubes
 # from skimage.measure import mesh_surface_area
@@ -399,8 +398,10 @@ def volume_stats(volume_image):
 
     volume = [region.area for region in properties]
 
-    def fill(lst, n=len(properties) - 1):
-        return fill_list_in_between(lst, n, "")
+    # def fill(lst, n=len(properties) - 1):
+    #     return fill_list_in_between(lst, n, "")
+
+    fill = partial(fill_list_in_between, n=len(properties) - 1, fill_value="")
 
     if len(volume_image.flatten()) != 0:
         ratio = fill([np.sum(volume) / len(volume_image.flatten())])

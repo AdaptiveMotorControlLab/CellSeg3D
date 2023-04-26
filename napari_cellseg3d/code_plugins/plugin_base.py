@@ -1,4 +1,3 @@
-import warnings
 from functools import partial
 from pathlib import Path
 
@@ -404,7 +403,7 @@ class BasePluginFolder(BasePluginSingleImage):
 
         file_paths = sorted(Path(directory).glob("*" + filetype))
         if len(file_paths) == 0:
-            warnings.warn(
+            logger.warning(
                 f"The folder does not contain any compatible {filetype} files.\n"
                 f"Please check the validity of the folder and images."
             )
