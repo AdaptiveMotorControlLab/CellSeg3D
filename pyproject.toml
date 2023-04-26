@@ -61,7 +61,7 @@ line_length = 79
 
 [project.optional-dependencies]
 crf = [
-    "git+https://github.com/lucasb-eyer/pydensecrf.git",
+    "pydensecrf @ git+https://github.com/lucasb-eyer/pydensecrf.git@master",
 ]
 dev = [
     "isort",
@@ -82,5 +82,5 @@ test = [
     "coverage",
     "tox",
     "twine",
-    "git+https://github.com/lucasb-eyer/pydensecrf.git",
+    "pydensecrf @ git+https://github.com/lucasb-eyer/pydensecrf.git@master",
 ]
