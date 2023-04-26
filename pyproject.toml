@@ -44,7 +44,12 @@ where = ["."]
 "*" = ["res/*.png", "code_models/models/pretrained/*.json", "*.yaml"]
 
 [tool.ruff]
-# Never enforce `E501` (line length violations).
+select = [
+    "E", "F", "W",
+    "I",
+    "B",
+]
+# Never enforce `E501` (line length violations) and 'E741' (ambiguous variable names)
 ignore = ["E501", "E741"]
 
 [tool.black]

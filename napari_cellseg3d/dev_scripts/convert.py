@@ -2,8 +2,7 @@ import glob
 import os
 
 import numpy as np
-from tifffile import imread
-from tifffile import imwrite
+from tifffile import imread, imwrite
 
 # input_seg_path = "C:/Users/Cyril/Desktop/Proj_bachelor/code/pytorch-test3dunet/cropped_visual/train/lab"
 # output_seg_path = "C:/Users/Cyril/Desktop/Proj_bachelor/code/pytorch-test3dunet/cropped_visual/train/lab_sem"

@@ -42,8 +42,7 @@ from monai.utils import set_determinism
 
 # from napari.qt.threading import thread_worker
 # threads
-from napari.qt.threading import GeneratorWorker
-from napari.qt.threading import WorkerBaseSignals
+from napari.qt.threading import GeneratorWorker, WorkerBaseSignals
 
 # Qt
 from qtpy.QtCore import Signal
@@ -51,8 +50,12 @@ from tifffile import imwrite
 from tqdm import tqdm
 
 # local
-from napari_cellseg3d.code_models.model_instance_seg import ImageStats
-from napari_cellseg3d.code_models.model_instance_seg import volume_stats
+from napari_cellseg3d import config, utils
+from napari_cellseg3d import interface as ui
+from napari_cellseg3d.code_models.model_instance_seg import (
+    ImageStats,
+    volume_stats,
+)
 
 logger = utils.LOGGER
 

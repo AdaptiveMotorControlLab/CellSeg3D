@@ -1,4 +1,3 @@
-import warnings
 from pathlib import Path
 
 import napari
@@ -245,7 +244,7 @@ class Cropping(BasePluginSingleImage):
         # maybe use singletons or make docked widgets attributes that are hidden upon opening
 
         if not self._check_ready():
-            warnings.warn("Please select at least one valid layer !")
+            logger.warning("Please select at least one valid layer !")
             return
 
         # self._viewer.window.remove_dock_widget(self.parent()) # no need to close utils ?
@@ -329,7 +328,7 @@ class Cropping(BasePluginSingleImage):
         self,
         layer,
         colormap="inferno",
-        contrast_lim=[200, 1000],  # TODO generalize ?
+        contrast_lim=(200, 1000),  # TODO generalize ?
         opacity=0.7,
         visible=True,
     ):

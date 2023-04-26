@@ -4,8 +4,7 @@ import napari
 import numpy as np
 import scipy.ndimage as ndimage
 from skimage.filters import threshold_otsu
-from tifffile import imread
-from tifffile import imwrite
+from tifffile import imread, imwrite
 
 from napari_cellseg3d.code_models.model_instance_seg import binary_watershed
 

@@ -1,5 +1,4 @@
 import shutil
-import warnings
 from functools import partial
 from pathlib import Path
 
@@ -418,8 +417,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         if self.images_filepaths != [] and self.labels_filepaths != []:
             return True
         else:
-            warnings.formatwarning = utils.format_Warning
-            warnings.warn("Image and label paths are not correctly set")
+            logger.warning("Image and label paths are not correctly set")
             return False
 
     def _build(self):
@@ -787,7 +785,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         if not self.check_ready():  # issues a warning if not ready
             err = "Aborting, please set all required paths"
             self.log.print_and_log(err)
-            warnings.warn(err)
+            logger.warning(err)
             return
 
         if self.worker is not None:
@@ -1043,7 +1041,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         size_column = range(1, self.worker_config.max_epochs + 1)
 
         if len(self.loss_values) == 0 or self.loss_values is None:
-            warnings.warn("No loss values to add to csv !")
+            logger.warning("No loss values to add to csv !")
             return
 
         self.df = pd.DataFrame(

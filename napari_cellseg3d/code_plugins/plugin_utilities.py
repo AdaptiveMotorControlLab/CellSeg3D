@@ -2,9 +2,7 @@ import napari
 
 # Qt
 from qtpy.QtCore import qInstallMessageHandler
-from qtpy.QtWidgets import QSizePolicy
-from qtpy.QtWidgets import QVBoxLayout
-from qtpy.QtWidgets import QWidget
+from qtpy.QtWidgets import QSizePolicy, QVBoxLayout, QWidget
 
 # local
 import napari_cellseg3d.interface as ui
