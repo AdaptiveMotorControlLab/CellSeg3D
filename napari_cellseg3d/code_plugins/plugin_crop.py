@@ -174,7 +174,12 @@ class Cropping(BasePluginSingleImage):
             ],
         )
 
-        ui.ScrollArea.make_scrollable(layout, self, min_wh=[200, 200])
+        ui.ScrollArea.make_scrollable(
+            layout,
+            self,
+            max_wh=[ui.UTILS_MAX_WIDTH, ui.UTILS_MAX_HEIGHT],
+            min_wh=[200, 200],
+        )
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.MinimumExpanding)
         self._set_io_visibility()
 
