@@ -55,6 +55,9 @@ profile = "black"
 line_length = 79
 
 [project.optional-dependencies]
+crf = [
+"git+https://github.com/lucasb-eyer/pydensecrf.git",
+]
 dev = [
     "isort",
     "black",
