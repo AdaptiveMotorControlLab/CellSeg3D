@@ -46,15 +46,15 @@ class BasePluginSingleImage(QTabWidget):
 
         self.image_path = None
         """str: path to image folder"""
-        self.show_image_io = loads_images
+        self._show_image_io = loads_images
 
         self.label_path = None
         """str: path to label folder"""
-        self.show_label_io = loads_labels
+        self._show_label_io = loads_labels
 
         self.results_path = None
         """str: path to results folder"""
-        self.show_results_io = has_results
+        self._show_results_io = has_results
 
         self._default_path = [self.image_path, self.label_path]
 
@@ -117,7 +117,6 @@ class BasePluginSingleImage(QTabWidget):
     def _build_io_panel(self):
         self.io_panel = ui.GroupedWidget("Data")
         self.save_label = ui.make_label("Save location :", parent=self)
-
         # self.io_panel.setToolTip("IO Panel")
 
         ui.add_widgets(
@@ -139,25 +138,25 @@ class BasePluginSingleImage(QTabWidget):
         return self.io_panel
 
     def _remove_unused(self):
-        if not self.show_label_io:
+        if not self._show_label_io:
             self.labels_filewidget = None
             self.label_layer_loader = None
 
-        if not self.show_image_io:
+        if not self._show_image_io:
             self.image_layer_loader = None
             self.image_filewidget = None
 
-        if not self.show_results_io:
+        if not self._show_results_io:
             self.results_filewidget = None
 
     def _set_io_visibility(self):
         ##################
         # Show when layer is selected
-        if self.show_image_io:
+        if self._show_image_io:
             self._show_io_element(self.image_layer_loader, self.layer_choice)
         else:
             self._hide_io_element(self.image_layer_loader)
-        if self.show_label_io:
+        if self._show_label_io:
             self._show_io_element(self.label_layer_loader, self.layer_choice)
         else:
             self._hide_io_element(self.label_layer_loader)
@@ -167,15 +166,15 @@ class BasePluginSingleImage(QTabWidget):
         f = self.folder_choice
 
         self._show_io_element(self.filetype_choice, f)
-        if self.show_image_io:
+        if self._show_image_io:
             self._show_io_element(self.image_filewidget, f)
         else:
             self._hide_io_element(self.image_filewidget)
-        if self.show_label_io:
+        if self._show_label_io:
             self._show_io_element(self.labels_filewidget, f)
         else:
             self._hide_io_element(self.labels_filewidget)
-        if not self.show_results_io:
+        if not self._show_results_io:
             self._hide_io_element(self.results_filewidget)
 
         self.folder_choice.toggle()
