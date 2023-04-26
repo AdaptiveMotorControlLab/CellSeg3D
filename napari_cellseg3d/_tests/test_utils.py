@@ -88,7 +88,7 @@ def test_get_padding_dim():
     #     "The padding value is currently 2048."
     # )
     #
-    # pad = utils.get_padding_dim(size)
+    pad = utils.get_padding_dim(size)
     #
     # pytest.warns(warn, (lambda: utils.get_padding_dim(size)))
 
