@@ -440,8 +440,8 @@ class Cropping(BasePluginSingleImage):
         for i in range(len(crop_sizes)):
             if crop_sizes[i] > im1_stack.shape[i]:
                 crop_sizes[i] = im1_stack.shape[i]
-                warnings.warn(
-                    f"WARNING : Crop dimension in axis {i} was too large at {crop_sizes[i]}, it was set to {im1_stack.shape[i]}"
+                logger.warning(
+                    f"Crop dimension in axis {i} was too large at {crop_sizes[i]}, it was set to {im1_stack.shape[i]}"
                 )
 
         cropx, cropy, cropz = crop_sizes

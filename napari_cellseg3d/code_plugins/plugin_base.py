@@ -118,6 +118,7 @@ class BasePluginSingleImage(QTabWidget):
 
     def _build_io_panel(self):
         self.io_panel = ui.GroupedWidget("Data")
+        self.save_label = ui.make_label("Save location :", parent=self)
 
         # self.io_panel.setToolTip("IO Panel")
 
@@ -130,6 +131,7 @@ class BasePluginSingleImage(QTabWidget):
                 self.filetype_choice,
                 self.image_filewidget,
                 self.labels_filewidget,
+                self.save_label,
                 self.results_filewidget,
             ],
         )

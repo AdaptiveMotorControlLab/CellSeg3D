@@ -1,5 +1,5 @@
 import napari
-from dask_image.imread import imread
+from tifffile import imread
 
 # Visual
 x = imread(

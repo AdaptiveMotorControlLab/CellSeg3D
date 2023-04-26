@@ -29,14 +29,15 @@ A napari plugin for 3D cell segmentation: training, inference, and data review. 
 
 ## Installation
 
-Note : we recommend using conda to create a new environment for the plugin.
+**Note** : we recommend using conda to create a new environment for the plugin.
+**M1 Mac users, please see the [M1 install section](#m1-mac-users)**
 
     conda create --name napari-cellseg3d python=3.8
     conda activate napari-cellseg3d
 
 You can install `napari-cellseg3d` via [pip]:
 
-    pip install napari-cellseg3d
+    pip install napari-cellseg3d[all]
 
 OR directly via [napari-hub]:
 
@@ -44,12 +45,25 @@ OR directly via [napari-hub]:
 then from the “Plugins” menu within the napari application, select “Install/Uninstall Package(s)...”
 - Copy `napari-cellseg3d` and paste it where it says “Install by name/url…”
 - Click “Install”
+- Restart napari
+
+### M1 Mac users
+
+Create a new conda env using the provided conda/napari_cellseg3d_m1.yml file :
+
+        conda env create -f conda/napari_cellseg3d_m1.yml
+        conda activate napari_cellseg3d_m1
+
+Then install PyQt5 from conda separately :
+
+        conda install -c anaconda PyQt5
+
 
 ## Documentation
 
 Available at https://AdaptiveMotorControlLab.github.io/CellSeg3d
 
-You can also generate docs by running ``make html`` in the docs folder.
+You can also generate docs by running ``make html`` in the docs/ folder.
 
 ## Usage
 

@@ -4,7 +4,6 @@ from datetime import datetime
 from pathlib import Path
 
 import numpy as np
-from dask_image.imread import imread as dask_imread
 from pandas import DataFrame
 from pandas import Series
 from skimage import io
@@ -301,7 +300,7 @@ def check_csv(project_path, ext):
         filename_pattern_original = Path(project_path) / Path(
             f"dataset/Original_size/Original/*{ext}"
         )
-        images_original = dask_imread(filename_pattern_original)
+        images_original = tfl_imread(filename_pattern_original)
         z, y, x = images_original.shape
         record = Series(
             [
@@ -426,7 +425,9 @@ def get_time_filepath():
     return "{:%H_%M_%S}".format(datetime.now())
 
 
-def load_images(dir_or_path, filetype="", as_folder: bool = False):
+def load_images(
+    dir_or_path, filetype="", as_folder: bool = False
+):  # TODO(cyril):refactor w/o as_folder
     """Loads the images in ``directory``, with different behaviour depending on ``filetype`` and ``as_folder``
 
     * If ``as_folder`` is **False**, will load the path as a single 3D **.tif** image.
@@ -446,7 +447,7 @@ def load_images(dir_or_path, filetype="", as_folder: bool = False):
         as_folder (bool): Whether to load a folder of images as stack or a single 3D image
 
     Returns:
-        dask.array.Array: dask array with loaded images
+        np.array: array with loaded images
     """
 
     if not as_folder:
@@ -459,7 +460,12 @@ def load_images(dir_or_path, filetype="", as_folder: bool = False):
         raise ValueError("If loading as a folder, filetype must be specified")
 
     if as_folder:
-        images_original = dask_imread(filename_pattern_original)
+        try:
+            images_original = tfl_imread(filename_pattern_original)
+        except ValueError:
+            LOGGER.error(
+                "Loading a stack this way is no longer supported. Use napari to load a stack."
+            )
     else:
         images_original = tfl_imread(
             filename_pattern_original

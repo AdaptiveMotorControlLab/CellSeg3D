@@ -9,17 +9,15 @@ authors = [
 requires-python = ">=3.8"
 dependencies = [
     "numpy",
-    "napari[all]>=0.4.14",
+    "napari>=0.4.14",
     "QtPy",
     "opencv-python>=4.5.5",
-    "dask-image>=0.6.0",
     "scikit-image>=0.19.2",
     "matplotlib>=3.4.1",
     "tifffile>=2022.2.9",
     "imageio-ffmpeg>=0.4.5",
     "torch>=1.11",
     "monai[nibabel,einops]>=0.9.0",
-    "itk",
     "tqdm",
     "nibabel",
     "scikit-image",
@@ -54,10 +52,14 @@ profile = "black"
 line_length = 79
 
 [project.optional-dependencies]
+all = [
+    "napari[all]>=0.4.14",
+]
 dev = [
     "isort",
     "black",
     "ruff",
+    "tuna",
     "pre-commit",
 ]
 docs = [
