@@ -1,4 +1,3 @@
-from math import floor
 from pathlib import Path
 
 import napari

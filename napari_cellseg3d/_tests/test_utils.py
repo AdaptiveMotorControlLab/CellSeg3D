@@ -1,5 +1,5 @@
+import os
 from functools import partial
-from pathlib import Path
 
 import numpy as np
 import torch
@@ -35,7 +35,8 @@ def test_fill_list_in_between():
 
     fill = partial(utils.fill_list_in_between, n=2, fill_value="")
 
-    assert fill(test_list) == res
+    assert fill(list) == res
+
 
 def test_align_array_sizes():
     im = np.zeros((128, 512, 256))
@@ -88,7 +89,7 @@ def test_get_padding_dim():
     #     "The padding value is currently 2048."
     # )
     #
-    pad = utils.get_padding_dim(size)
+    # pad = utils.get_padding_dim(size)
     #
     # pytest.warns(warn, (lambda: utils.get_padding_dim(size)))
 

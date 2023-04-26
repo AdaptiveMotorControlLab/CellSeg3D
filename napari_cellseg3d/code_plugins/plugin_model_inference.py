@@ -10,15 +10,17 @@ if TYPE_CHECKING:
 # local
 from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d.code_models.instance_segmentation import (
+from napari_cellseg3d.code_models.model_framework import ModelFramework
+from napari_cellseg3d.code_models.model_instance_seg import (
     InstanceMethod,
     InstanceWidgets,
 )
-from napari_cellseg3d.code_models.model_framework import ModelFramework
-from napari_cellseg3d.code_models.model_instance_seg import InstanceMethod
-from napari_cellseg3d.code_models.model_instance_seg import InstanceWidgets
-from napari_cellseg3d.code_models.model_workers import InferenceResult
-from napari_cellseg3d.code_models.model_workers import InferenceWorker
+from napari_cellseg3d.code_models.model_workers import (
+    InferenceResult,
+    InferenceWorker,
+)
+
+logger = utils.LOGGER
 
 
 class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
@@ -587,7 +589,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             if not self._check_results_path(save_path):
                 msg = f"ERROR: please set valid results path. Current path is {save_path}"
                 self.log.print_and_log(msg)
-                warnings.warn(msg)
+                logger.warning(msg)
             else:
                 if self.results_path is None:
                     self.results_path = save_path

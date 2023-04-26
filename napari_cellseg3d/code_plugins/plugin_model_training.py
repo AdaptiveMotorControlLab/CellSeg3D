@@ -32,7 +32,7 @@ from qtpy.QtWidgets import QSizePolicy
 from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.code_models.model_framework import ModelFramework
-from napari_cellseg3d.code_models.workers import (
+from napari_cellseg3d.code_models.model_workers import (
     TrainingReport,
     TrainingWorker,
 )
@@ -419,7 +419,9 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             * False and displays a warning if not
 
         """
-        if self.images_filepaths == [] and self.labels_filepaths != []:
+        if self.images_filepaths != [] and self.labels_filepaths != []:
+            return True
+        else:
             logger.warning("Image and label paths are not correctly set")
             return False
         return True
