@@ -8,8 +8,7 @@ import napari
 import numpy as np
 import scipy.ndimage as ndimage
 from napari.qt.threading import thread_worker
-from tifffile import imread
-from tifffile import imwrite
+from tifffile import imread, imwrite
 from tqdm import tqdm
 
 import napari_cellseg3d.dev_scripts.artefact_labeling as make_artefact_labels

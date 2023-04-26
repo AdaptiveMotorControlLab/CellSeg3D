@@ -8,38 +8,41 @@ import numpy as np
 import torch
 
 # MONAI
-from monai.data import CacheDataset
-from monai.data import DataLoader
-from monai.data import Dataset
-from monai.data import decollate_batch
-from monai.data import pad_list_data_collate
-from monai.data import PatchDataset
+from monai.data import (
+    CacheDataset,
+    DataLoader,
+    Dataset,
+    PatchDataset,
+    decollate_batch,
+    pad_list_data_collate,
+)
 from monai.inferers import sliding_window_inference
 from monai.metrics import DiceMetric
-from monai.transforms import AddChannel
-from monai.transforms import AsDiscrete
-from monai.transforms import Compose
-from monai.transforms import EnsureChannelFirstd
-from monai.transforms import EnsureType
-from monai.transforms import EnsureTyped
-from monai.transforms import LoadImaged
-from monai.transforms import Orientationd
-from monai.transforms import Rand3DElasticd
-from monai.transforms import RandAffined
-from monai.transforms import RandFlipd
-from monai.transforms import RandRotate90d
-from monai.transforms import RandShiftIntensityd
-from monai.transforms import RandSpatialCropSamplesd
-from monai.transforms import SpatialPad
-from monai.transforms import SpatialPadd
-from monai.transforms import ToTensor
-from monai.transforms import Zoom
+from monai.transforms import (
+    AddChannel,
+    AsDiscrete,
+    Compose,
+    EnsureChannelFirstd,
+    EnsureType,
+    EnsureTyped,
+    LoadImaged,
+    Orientationd,
+    Rand3DElasticd,
+    RandAffined,
+    RandFlipd,
+    RandRotate90d,
+    RandShiftIntensityd,
+    RandSpatialCropSamplesd,
+    SpatialPad,
+    SpatialPadd,
+    ToTensor,
+    Zoom,
+)
 from monai.utils import set_determinism
 
 # from napari.qt.threading import thread_worker
 # threads
-from napari.qt.threading import GeneratorWorker
-from napari.qt.threading import WorkerBaseSignals
+from napari.qt.threading import GeneratorWorker, WorkerBaseSignals
 
 # Qt
 from qtpy.QtCore import Signal
@@ -47,11 +50,12 @@ from tifffile import imwrite
 from tqdm import tqdm
 
 # local
-from napari_cellseg3d import config
+from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d import utils
-from napari_cellseg3d.code_models.model_instance_seg import ImageStats
-from napari_cellseg3d.code_models.model_instance_seg import volume_stats
+from napari_cellseg3d.code_models.model_instance_seg import (
+    ImageStats,
+    volume_stats,
+)
 
 logger = utils.LOGGER
 

@@ -1,5 +1,4 @@
 import shutil
-import warnings
 from functools import partial
 from pathlib import Path
 
@@ -14,23 +13,26 @@ from matplotlib.backends.backend_qt5agg import (
 from matplotlib.figure import Figure
 
 # MONAI
-from monai.losses import DiceCELoss
-from monai.losses import DiceFocalLoss
-from monai.losses import DiceLoss
-from monai.losses import FocalLoss
-from monai.losses import GeneralizedDiceLoss
-from monai.losses import TverskyLoss
+from monai.losses import (
+    DiceCELoss,
+    DiceFocalLoss,
+    DiceLoss,
+    FocalLoss,
+    GeneralizedDiceLoss,
+    TverskyLoss,
+)
 
 # Qt
 from qtpy.QtWidgets import QSizePolicy
 
 # local
-from napari_cellseg3d import config
+from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d import utils
 from napari_cellseg3d.code_models.model_framework import ModelFramework
-from napari_cellseg3d.code_models.model_workers import TrainingReport
-from napari_cellseg3d.code_models.model_workers import TrainingWorker
+from napari_cellseg3d.code_models.model_workers import (
+    TrainingReport,
+    TrainingWorker,
+)
 
 NUMBER_TABS = 3
 DEFAULT_PATCH_SIZE = 64
@@ -415,8 +417,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         if self.images_filepaths != [] and self.labels_filepaths != []:
             return True
         else:
-            warnings.formatwarning = utils.format_Warning
-            warnings.warn("Image and label paths are not correctly set")
+            logger.warning("Image and label paths are not correctly set")
             return False
 
     def _build(self):
@@ -784,7 +785,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         if not self.check_ready():  # issues a warning if not ready
             err = "Aborting, please set all required paths"
             self.log.print_and_log(err)
-            warnings.warn(err)
+            logger.warning(err)
             return
 
         if self.worker is not None:
@@ -1040,7 +1041,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         size_column = range(1, self.worker_config.max_epochs + 1)
 
         if len(self.loss_values) == 0 or self.loss_values is None:
-            warnings.warn("No loss values to add to csv !")
+            logger.warning("No loss values to add to csv !")
             return
 
         self.df = pd.DataFrame(

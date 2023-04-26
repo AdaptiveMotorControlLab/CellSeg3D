@@ -1,20 +1,16 @@
-import warnings
 from pathlib import Path
 
 import napari
 import torch
 
 # Qt
-from qtpy.QtWidgets import QProgressBar
-from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QProgressBar, QSizePolicy
 
 # local
-from napari_cellseg3d import config
+from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d import utils
 from napari_cellseg3d.code_plugins.plugin_base import BasePluginFolder
 
-warnings.formatwarning = utils.format_Warning
 logger = utils.LOGGER
 
 
@@ -137,11 +133,11 @@ class ModelFramework(BasePluginFolder):
                     f.write(log)
                     f.close()
             else:
-                warnings.warn(
+                logger.warning(
                     "No job has been completed yet, please start one or re-open the log window."
                 )
         else:
-            warnings.warn(f"No logger defined : Log is {self.log}")
+            logger.warning(f"No logger defined : Log is {self.log}")
 
     def save_log_to_path(self, path):
         """Saves the worker log to a specific path. Cannot be used with connect.
@@ -163,7 +159,7 @@ class ModelFramework(BasePluginFolder):
                 f.write(log)
                 f.close()
         else:
-            warnings.warn(
+            logger.warning(
                 "No job has been completed yet, please start one or re-open the log window."
             )
 
@@ -172,7 +168,7 @@ class ModelFramework(BasePluginFolder):
         (usually when starting a worker)"""
 
         # if self.container_report is None or self.log is None:
-        #     warnings.warn(
+        #     logger.warning(
         #         "Status report widget has been closed. Trying to re-instantiate..."
         #     )
         #     self.container_report = QWidget()

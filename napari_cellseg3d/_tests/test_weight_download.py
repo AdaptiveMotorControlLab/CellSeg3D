@@ -1,5 +1,7 @@
-from napari_cellseg3d.code_models.model_workers import PRETRAINED_WEIGHTS_DIR
-from napari_cellseg3d.code_models.model_workers import WeightsDownloader
+from napari_cellseg3d.code_models.model_workers import (
+    PRETRAINED_WEIGHTS_DIR,
+    WeightsDownloader,
+)
 
 
 # DISABLED, causes GitHub actions to freeze

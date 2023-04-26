@@ -1,5 +1,4 @@
 import logging
-import warnings
 from datetime import datetime
 from pathlib import Path
 
@@ -235,7 +234,7 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
             size = int(size / anisotropy_factor[i])
         while pad < size:
             # if size - pad < 30:
-            #     warnings.warn(
+            #     logger.warning(
             #         f"Your value is close to a lower power of two; you might want to choose slightly smaller"
             #         f" sizes and/or crop your images down to {pad}"
             #     )
@@ -243,7 +242,7 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
             pad = 2**n
             n += 1
             if pad >= 256:
-                warnings.warn(
+                LOGGER.warning(
                     "Warning : a very large dimension for automatic padding has been computed.\n"
                     "Ensure your images are of an appropriate size and/or that you have enough memory."
                     f"The padding value is currently {pad}."
@@ -343,14 +342,14 @@ def annotation_to_input(label_ermito):
 #         pass
 
 
-def fill_list_in_between(lst, n, elem):
+def fill_list_in_between(lst, n, fill_value):
     """Fills a list with n * elem between each member of list.
     Example with list = [1,2,3], n=2, elem='&' : returns [1, &, &,2,&,&,3,&,&]
 
     Args:
         lst: list to fill
         n: number of elements to add
-        elem: added n times after each element of list
+        fill_value: added n times after each element of list
 
     Returns :
         Filled list
@@ -359,13 +358,13 @@ def fill_list_in_between(lst, n, elem):
     for i in range(len(lst)):
         temp_list = [lst[i]]
         while len(temp_list) < n + 1:
-            temp_list.append(elem)
+            temp_list.append(fill_value)
         if i < len(lst) - 1:
             new_list += temp_list
         else:
             new_list.append(lst[i])
-            for j in range(n):
-                new_list.append(elem)
+            for _j in range(n):
+                new_list.append(fill_value)
             return new_list
 
 
@@ -533,26 +532,26 @@ def select_train_data(dataframe, ori_imgs, label_imgs, ori_filenames):
     return np.array(train_ori_imgs), np.array(train_label_imgs)
 
 
-def format_Warning(message, category, filename, lineno, line=""):
-    """Formats a warning message, use in code with ``warnings.formatwarning = utils.format_Warning``
-
-    Args:
-        message: warning message
-        category: which type of warning has been raised
-        filename: file
-        lineno: line number
-        line: unused
-
-    Returns: format
-
-    """
-    return (
-        str(filename)
-        + ":"
-        + str(lineno)
-        + ": "
-        + category.__name__
-        + ": "
-        + str(message)
-        + "\n"
-    )
+# def format_Warning(message, category, filename, lineno, line=""):
+#     """Formats a warning message, use in code with ``warnings.formatwarning = utils.format_Warning``
+#
+#     Args:
+#         message: warning message
+#         category: which type of warning has been raised
+#         filename: file
+#         lineno: line number
+#         line: unused
+#
+#     Returns: format
+#
+#     """
+#     return (
+#         str(filename)
+#         + ":"
+#         + str(lineno)
+#         + ": "
+#         + category.__name__
+#         + ": "
+#         + str(message)
+#         + "\n"
+#     )

@@ -1,8 +1,7 @@
 import os
-import warnings
+from functools import partial
 
 import numpy as np
-import pytest
 import torch
 
 from napari_cellseg3d import utils
@@ -32,6 +31,10 @@ def test_fill_list_in_between():
     ]
 
     assert utils.fill_list_in_between(list, 2, "") == res
+
+    fill = partial(utils.fill_list_in_between, n=2, fill_value="")
+
+    assert fill(list) == res
 
 
 def test_align_array_sizes():
@@ -79,15 +82,15 @@ def test_get_padding_dim():
     tensor = torch.randn(2000, 30, 40)
     size = tensor.size()
 
-    warn = warnings.warn(
-        "Warning : a very large dimension for automatic padding has been computed.\n"
-        "Ensure your images are of an appropriate size and/or that you have enough memory."
-        "The padding value is currently 2048."
-    )
-
-    pad = utils.get_padding_dim(size)
-
-    pytest.warns(warn, (lambda: utils.get_padding_dim(size)))
+    # warn = logger.warning(
+    #     "Warning : a very large dimension for automatic padding has been computed.\n"
+    #     "Ensure your images are of an appropriate size and/or that you have enough memory."
+    #     "The padding value is currently 2048."
+    # )
+    #
+    # pad = utils.get_padding_dim(size)
+    #
+    # pytest.warns(warn, (lambda: utils.get_padding_dim(size)))
 
     assert pad == [2048, 32, 64]
 
