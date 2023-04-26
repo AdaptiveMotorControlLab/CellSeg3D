@@ -52,6 +52,7 @@ from tqdm import tqdm
 # local
 from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
+from napari_cellseg3d.code_models.crf import crf_with_config
 from napari_cellseg3d.code_models.model_instance_seg import (
     ImageStats,
     volume_stats,
@@ -201,6 +202,7 @@ class InferenceResult:
     image_id: int = 0
     original: np.array = None
     instance_labels: np.array = None
+    crf_results: np.array = None
     stats: "np.array[ImageStats]" = None
     result: np.array = None
     model_name: str = None
@@ -527,7 +529,8 @@ class InferenceWorker(GeneratorWorker):
         self,
         semantic_labels,
         instance_labels,
-        from_layer: bool,
+        crf_results=None,
+        from_layer: bool = False,
         original=None,
         stats=None,
         i=0,
@@ -542,15 +545,19 @@ class InferenceWorker(GeneratorWorker):
                 raise ValueError(
                     "A layer's ID should always be 0 (default value)"
                 )
-            total_dims = len(semantic_labels.shape) - 3
+            extra_dims = len(semantic_labels.shape) - 3
             semantic_labels = np.swapaxes(
-                semantic_labels, 0 + total_dims, 2 + total_dims
+                semantic_labels, 0 + extra_dims, 2 + extra_dims
+            )
+            crf_results = np.swapaxes(
+                crf_results, 0 + extra_dims, 2 + extra_dims
             )
 
         return InferenceResult(
             image_id=i + 1,
             original=original,
             instance_labels=instance_labels,
+            crf_results=crf_results,
             stats=stats,
             result=semantic_labels,
             model_name=self.config.model_info.name,
@@ -585,6 +592,7 @@ class InferenceWorker(GeneratorWorker):
         image,
         from_layer=False,
         i=0,
+        additional_info="",
     ):
         if not from_layer:
             original_filename = "_" + self.get_original_filename(i) + "_"
@@ -598,7 +606,7 @@ class InferenceWorker(GeneratorWorker):
         file_path = (
             self.config.results_path
             + "/"
-            + f"Prediction_{i+1}"
+            + f"{additional_info}_Prediction_{i+1}"
             + original_filename
             + self.config.model_info.name
             + f"_{time}_"
@@ -680,6 +688,15 @@ class InferenceWorker(GeneratorWorker):
 
         self.save_image(out, i=i)
         instance_labels, stats = self.get_instance_result(out, i=i)
+        if self.config.use_crf:
+            try:
+                crf_results = self.run_crf(inputs, out, image_id=i)
+
+            except ValueError as e:
+                self.log(f"Error occurred during CRF : {e}")
+                crf_results = None
+        else:
+            crf_results = None
 
         original = np.array(inf_data["image"]).astype(np.float32)
 
@@ -688,11 +705,28 @@ class InferenceWorker(GeneratorWorker):
         return self.create_inference_result(
             out,
             instance_labels,
+            crf_results,
             from_layer=False,
             original=original,
             stats=stats,
             i=i,
         )
+
+    def run_crf(self, image, labels, image_id=0):
+        self.log(f"IMAGE SHAPE : {image.shape}")
+        self.log(f"LABEL SHAPE : {labels.shape}")
+
+        try:
+            crf_results = crf_with_config(
+                image, labels, config=self.config.crf_config
+            )
+            self.save_image(
+                crf_results, i=image_id, additional_info="CRF", from_layer=True
+            )
+            return crf_results
+        except ValueError as e:
+            self.log(f"Error occurred during CRF : {e}")
+            return None
 
     def stats_csv(self, instance_labels):
         if self.config.compute_stats:
@@ -730,9 +764,15 @@ class InferenceWorker(GeneratorWorker):
             instance_labels_results.append(instance_labels)
             stats_results.append(stats)
 
+        if self.config.use_crf:
+            crf_results = self.run_crf(image, out)
+        else:
+            crf_results = None
+
         return self.create_inference_result(
             semantic_labels=out,
             instance_labels=instance_labels_results,
+            crf_results=crf_results,
             from_layer=True,
             stats=stats_results,
         )

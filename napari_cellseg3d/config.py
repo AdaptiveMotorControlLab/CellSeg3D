@@ -139,6 +139,20 @@ class PostProcessConfig:
     instance: InstanceSegConfig = InstanceSegConfig()
 
 
+@dataclass
+class CRFConfig:
+    """
+    Class to record params for CRF
+    """
+
+    sa: float = 10
+    sb: float = 5
+    sg: float = 1
+    w1: float = 10
+    w2: float = 5
+    n_iters: int = 5
+
+
 ################
 # Inference configs
 
@@ -198,6 +212,8 @@ class InferenceWorkerConfig:
     compute_stats: bool = False
     post_process_config: PostProcessConfig = PostProcessConfig()
     sliding_window_config: SlidingWindowConfig = SlidingWindowConfig()
+    use_crf: bool = False
+    crf_config: CRFConfig = CRFConfig()
 
     images_filepaths: str = None
     layer: napari.layers.Layer = None

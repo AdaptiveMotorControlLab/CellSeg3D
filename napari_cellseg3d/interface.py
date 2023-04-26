@@ -58,6 +58,8 @@ ABS_AL = Qt.AlignmentFlag.AlignAbsolute
 """Alias for Qt.AlignmentFlag.AlignAbsolute, to use in addWidget"""
 BOTT_AL = Qt.AlignmentFlag.AlignBottom
 """Alias for Qt.AlignmentFlag.AlignBottom, to use in addWidget"""
+TOP_AL = Qt.AlignmentFlag.AlignTop
+"""Alias for Qt.AlignmentFlag.AlignTop, to use in addWidget"""
 ###############
 # colors
 dark_red = "#72071d"  # crimson red
@@ -66,6 +68,9 @@ napari_grey = "#262930"  # napari background color (grey)
 napari_param_grey = "#414851"  # napari parameters menu color (lighter gray)
 napari_param_darkgrey = "#202228"  # napari default LineEdit color
 ###############
+# dimensions for utils ScrollArea
+UTILS_MAX_WIDTH = 300
+UTILS_MAX_HEIGHT = 500
 
 logger = utils.LOGGER
 
@@ -792,7 +797,7 @@ class LayerSelecter(ContainerWidget):
             logger.warning("Please select a valid layer !")
             return
 
-        return self._viewer.layers[self.layer_name()].data
+        return self.layer().data
 
 
 class FilePathWidget(QWidget):  # TODO include load as folder
@@ -1278,12 +1283,20 @@ class GroupedWidget(QGroupBox):
 
     @classmethod
     def create_single_widget_group(
-        cls, title, widget, layout, l=7, t=20, r=7, b=11
+        cls,
+        title,
+        widget,
+        layout,
+        l=7,
+        t=20,
+        r=7,
+        b=11,
+        alignment=LEFT_AL,
     ):
         group = cls(title, l, t, r, b)
         group.layout.addWidget(widget)
         group.setLayout(group.layout)
-        layout.addWidget(group)
+        layout.addWidget(group, alignment=alignment)
 
 
 def add_widgets(layout, widgets, alignment=LEFT_AL):

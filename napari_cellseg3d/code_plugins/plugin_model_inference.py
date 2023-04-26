@@ -16,6 +16,7 @@ from napari_cellseg3d.code_models.model_workers import (
     InferenceResult,
     InferenceWorker,
 )
+from napari_cellseg3d.code_plugins.plugin_crf import CRFParamsWidget
 
 logger = utils.LOGGER
 
@@ -195,9 +196,17 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ##################
         # instance segmentation widgets
         self.instance_widgets = InstanceWidgets(parent=self)
+        self.crf_widgets = CRFParamsWidget(parent=self)
 
         self.use_instance_choice = ui.CheckBox(
-            "Run instance segmentation", func=self._toggle_display_instance
+            "Run instance segmentation",
+            func=self._toggle_display_instance,
+            parent=self,
+        )
+        self.use_crf = ui.CheckBox(
+            "Use CRF post-processing",
+            func=self._toggle_display_crf,
+            parent=self,
         )
 
         self.save_stats_to_csv_box = ui.CheckBox(
@@ -306,6 +315,10 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ui.toggle_visibility(
             self.thresholding_checkbox, self.thresholding_slider.container
         )
+
+    def _toggle_display_crf(self):
+        """Shows the choices for CRF post-processing depending on whether :py:attr:`self.use_crf` is checked"""
+        ui.toggle_visibility(self.use_crf, self.crf_widgets)
 
     def _toggle_display_instance(self):
         """Shows or hides the options for instance segmentation based on current user selection"""
@@ -424,6 +437,8 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.thresholding_slider.container,  # thresholding
                 self.use_instance_choice,
                 self.instance_widgets,
+                self.use_crf,
+                self.crf_widgets,
                 self.save_stats_to_csv_box,
                 # self.instance_param_container,  # instance segmentation
             ],
@@ -435,6 +450,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.anisotropy_wdgt.container.setVisible(False)
         self.thresholding_slider.container.setVisible(False)
         self.instance_widgets.setVisible(False)
+        self.crf_widgets.setVisible(False)
         self.save_stats_to_csv_box.setVisible(False)
 
         post_proc_group.setLayout(post_proc_layout)
@@ -588,6 +604,8 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 compute_stats=self.save_stats_to_csv_box.isChecked(),
                 post_process_config=self.post_process_config,
                 sliding_window_config=window_config,
+                use_crf=self.use_crf.isChecked(),
+                crf_config=self.crf_widgets.make_config(),
             )
             #####################
             #####################
@@ -737,7 +755,10 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                     opacity=0.8,
                 )
 
-                if result.instance_labels is not None:
+                if (
+                    len(result.instance_labels) > 0
+                    and self.worker_config.post_process_config.instance.enabled
+                ):
                     for i, labels in enumerate(result.instance_labels):
                         # labels = result.instance_labels
                         method_name = (
@@ -779,5 +800,12 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                             # self.log.print_and_log(
                             #     f"OBJECTS DETECTED : {number_cells}\n"
                             # )
+
+                if result.crf_results is not None:
+                    viewer.add_image(
+                        result.crf_results,
+                        name=f"CRF_results_image_{image_id}",
+                        colormap="viridis",
+                    )
         except Exception as e:
             self.on_error(e)

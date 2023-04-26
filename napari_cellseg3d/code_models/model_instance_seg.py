@@ -62,7 +62,7 @@ class InstanceMethod:
                         1,
                         divide_factor=100,
                         text_label="",
-                        parent=None,
+                        parent=widget_parent,
                     ),
                 )
                 self.sliders.append(getattr(self, widget))
@@ -73,7 +73,9 @@ class InstanceMethod:
                 setattr(
                     self,
                     widget,
-                    ui.DoubleIncrementCounter(text_label="", parent=None),
+                    ui.DoubleIncrementCounter(
+                        text_label="", parent=widget_parent
+                    ),
                 )
                 self.counters.append(getattr(self, widget))
 
