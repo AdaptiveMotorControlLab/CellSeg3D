@@ -9,10 +9,7 @@ NIPS 2011
 
 Implemented using the pydense libary available at https://github.com/lucasb-eyer/pydensecrf.
 """
-
 from warnings import warn
-
-import numpy as np
 
 try:
     import pydensecrf.densecrf as dcrf
@@ -30,6 +27,12 @@ except ImportError:
         stacklevel=1,
     )
     CRF_INSTALLED = False
+
+
+import numpy as np
+from napari.qt.threading import GeneratorWorker
+
+from napari_cellseg3d.config import CRFConfig
 
 __author__ = "Yves Paychère, Colin Hofmann, Cyril Achard"
 __credits__ = [
@@ -49,6 +52,16 @@ __credits__ = [
 ]
 
 
+def correct_shape_for_crf(image):
+    if len(image.shape) == 4:
+        return image
+    if len(image.shape) > 4:
+        image = np.squeeze(image, axis=0)
+    if len(image.shape) < 4:
+        image = np.expand_dims(image, axis=0)
+    return correct_shape_for_crf(image)
+
+
 def crf_batch(images, probs, sa, sb, sg, w1, w2, n_iter=5):
     """CRF post-processing step for the W-Net, applied to a batch of images.
 
@@ -62,6 +75,8 @@ def crf_batch(images, probs, sa, sb, sg, w1, w2, n_iter=5):
     Returns:
         np.ndarray: Array of shape (N, K, H, W, D) containing the refined class probabilities for each pixel.
     """
+    if not CRF_INSTALLED:
+        return None
 
     return np.stack(
         [
@@ -83,10 +98,16 @@ def crf(image, prob, sa, sb, sg, w1, w2, n_iter=5):
         sa (float): alpha standard deviation, the scale of the spatial part of the appearance/bilateral kernel.
         sb (float): beta standard deviation, the scale of the color part of the appearance/bilateral kernel.
         sg (float): gamma standard deviation, the scale of the smoothness/gaussian kernel.
+        w1 (float): weight of the appearance/bilateral kernel.
+        w2 (float): weight of the smoothness/gaussian kernel.
 
     Returns:
         np.ndarray: Array of shape (K, H, W, D) containing the refined class probabilities for each pixel.
     """
+
+    if not CRF_INSTALLED:
+        return None
+
     d = dcrf.DenseCRF(
         image.shape[1] * image.shape[2] * image.shape[3], prob.shape[0]
     )
@@ -123,3 +144,74 @@ def crf(image, prob, sa, sb, sg, w1, w2, n_iter=5):
     return np.array(Q).reshape(
         (prob.shape[0], image.shape[1], image.shape[2], image.shape[3])
     )
+
+
+def crf_with_config(image, prob, config: CRFConfig = None):
+    if config is None:
+        config = CRFConfig()
+    if image.shape[-3:] != prob.shape[-3:]:
+        raise ValueError(
+            f"Image and probability shapes do not match: {image.shape} vs {prob.shape}"
+            f" (expected {image.shape[-3:]} == {prob.shape[-3:]})"
+        )
+
+    image = correct_shape_for_crf(image)
+
+    return crf(
+        image,
+        prob,
+        config.sa,
+        config.sb,
+        config.sg,
+        config.w1,
+        config.w2,
+        config.n_iters,
+    )
+
+
+class CRFWorker(GeneratorWorker):
+    """Worker for the CRF post-processing step for the W-Net."""
+
+    def __init__(
+        self,
+        images_list,
+        labels_list,
+        config: CRFConfig = None,
+        log=None,
+    ):
+        super().__init__(self._run_crf_job)
+
+        self.images = images_list
+        self.labels = labels_list
+        if config is None:
+            self.config = CRFConfig()
+        else:
+            self.config = config
+        self.log = log
+
+    # TODO(cyril) : add progress bar into log ? or do it in inference
+    def _run_crf_job(self):
+        """Runs the CRF post-processing step for the W-Net."""
+        if not CRF_INSTALLED:
+            raise ImportError("pydensecrf is not installed.")
+
+        for image, labels in zip(self.images, self.labels):
+            if len(image.shape) == 3:
+                image = np.expand_dims(image, axis=0)
+
+            if len(labels.shape) == 3:
+                labels = np.expand_dims(labels, axis=0)
+
+            if image.shape[-3:] != labels.shape[-3:]:
+                raise ValueError("Image and labels must have the same shape.")
+
+            yield crf(
+                image,
+                labels,
+                self.config.sa,
+                self.config.sb,
+                self.config.sg,
+                self.config.w1,
+                self.config.w2,
+                n_iter=self.config.n_iters,
+            )

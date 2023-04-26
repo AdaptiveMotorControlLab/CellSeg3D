@@ -1,4 +1,3 @@
-import contextlib
 from functools import partial
 from pathlib import Path
 
@@ -8,11 +7,7 @@ from tqdm import tqdm
 
 from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d.code_models.crf import (
-    CRF_INSTALLED,
-    CRFWorker,
-    crf_with_config,
-)
+from napari_cellseg3d.code_models.crf import CRFWorker, crf_with_config
 from napari_cellseg3d.code_plugins.plugin_base import BasePluginSingleImage
 from napari_cellseg3d.utils import LOGGER as logger
 
@@ -48,17 +43,6 @@ class CRFParamsWidget(ui.GroupedWidget):
         self._set_tooltips()
 
     def _build(self):
-        if not CRF_INSTALLED:
-            ui.add_widgets(
-                self.layout,
-                [
-                    ui.make_label(
-                        "ERROR: CRF not installed.\nPlease refer to the documentation to install it."
-                    ),
-                ],
-            )
-            self.set_layout()
-            return
         ui.add_widgets(
             self.layout,
             [
@@ -129,10 +113,7 @@ class CRFWidget(BasePluginSingleImage):
             napari.layers.Image
         )  # to load all crf-compatible inputs, not int only
         self.image_layer_loader.setVisible(True)
-        if CRF_INSTALLED:
-            self.start_button.setVisible(True)
-        else:
-            self.start_button.setVisible(False)
+        self.start_button.setVisible(True)
 
         self.result_layer = None
         self.result_name = None
@@ -178,11 +159,6 @@ class CRFWidget(BasePluginSingleImage):
 
     def make_config(self):
         return self.crf_params_widget.make_config()
-
-    def print_config(self):
-        logger.info("CRF config:")
-        for item in self.make_config().__dict__.items():
-            logger.info(f"{item[0]}: {item[1]}")
 
     def _check_ready(self):
         if len(self.label_layer_loader.layer_list) < 1:
@@ -239,7 +215,7 @@ class CRFWidget(BasePluginSingleImage):
         self.result_layer = self.label_layer_loader.layer()
         self.result_name = self.label_layer_loader.layer_name()
 
-        utils.mkdir_from_str(self.results_path)
+        self.results_path.mkdir(exist_ok=True, parents=True)
 
         image_list = [self.image_layer_loader.layer_data()]
         labels_list = [self.label_layer_loader.layer_data()]
@@ -278,10 +254,6 @@ class CRFWidget(BasePluginSingleImage):
 
     def _on_finish(self):
         self.worker = None
-        with contextlib.suppress(RuntimeError):
-            self.start_button.setText("Start")
-
-    # should only happen when testing
 
     def _on_error(self, error):
         logger.error(error)

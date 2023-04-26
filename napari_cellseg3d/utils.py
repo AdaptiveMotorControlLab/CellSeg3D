@@ -2,14 +2,12 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
+import napari
 import numpy as np
 from monai.transforms import Zoom
 from skimage import io
 from skimage.filters import gaussian
 from tifffile import imread, imwrite
-
-if TYPE_CHECKING:
-    import torch
 
 LOGGER = logging.getLogger(__name__)
 ###############
@@ -117,7 +115,7 @@ class Singleton(type):
 #         if filename == "tif":
 #             return True
 #     def read(self, data, **kwargs):
-#         return tfl_imread(data)
+#         return imread(data)
 #
 #     def get_data(self, data):
 #         return data, {}
@@ -308,7 +306,7 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
             size = int(size / anisotropy_factor[i])
         while pad < size:
             # if size - pad < 30:
-            #     logger.warning(
+            #     LOGGER.warning(
             #         f"Your value is close to a lower power of two; you might want to choose slightly smaller"
             #         f" sizes and/or crop your images down to {pad}"
             #     )
@@ -545,9 +543,7 @@ def load_images(
         )
         # images_original = dask_imread(filename_pattern_original)
     else:
-        images_original = tfl_imread(
-            filename_pattern_original
-        )  # tifffile imread
+        images_original = imread(filename_pattern_original)  # tifffile imread
 
     return imread(filename_pattern_original)  # tifffile imread
 

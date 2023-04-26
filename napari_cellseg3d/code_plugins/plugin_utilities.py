@@ -16,6 +16,7 @@ from napari_cellseg3d.code_plugins.plugin_convert import (
     ToInstanceUtils,
     ToSemanticUtils,
 )
+from napari_cellseg3d.code_plugins.plugin_crf import CRFWidget
 from napari_cellseg3d.code_plugins.plugin_crop import Cropping
 
 UTILITIES_WIDGETS = {

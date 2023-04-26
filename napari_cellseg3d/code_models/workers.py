@@ -52,6 +52,7 @@ from tqdm import tqdm
 # local
 from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
+from napari_cellseg3d.code_models.crf import crf_with_config
 from napari_cellseg3d.code_models.model_instance_seg import (
     ImageStats,
     volume_stats,
@@ -250,6 +251,7 @@ class InferenceResult:
     image_id: int = 0
     original: np.array = None
     instance_labels: np.array = None
+    crf_results: np.array = None
     stats: "np.array[ImageStats]" = None
     result: np.array = None
     model_name: str = None
@@ -592,9 +594,12 @@ class InferenceWorker(GeneratorWorker):
                 raise ValueError(
                     "A layer's ID should always be 0 (default value)"
                 )
-            total_dims = len(semantic_labels.shape) - 3
+            extra_dims = len(semantic_labels.shape) - 3
             semantic_labels = np.swapaxes(
-                semantic_labels, 0 + total_dims, 2 + total_dims
+                semantic_labels, 0 + extra_dims, 2 + extra_dims
+            )
+            crf_results = np.swapaxes(
+                crf_results, 0 + extra_dims, 2 + extra_dims
             )
 
         return InferenceResult(
@@ -650,8 +655,7 @@ class InferenceWorker(GeneratorWorker):
         file_path = (
             self.config.results_path
             + "/"
-            + f"{additional_info}"
-            + f"Prediction_{i+1}"
+            + f"{additional_info}_Prediction_{i+1}"
             + original_filename
             + self.config.model_info.name
             + f"_{time}_"
@@ -758,15 +762,15 @@ class InferenceWorker(GeneratorWorker):
         )
 
     def run_crf(self, image, labels, image_id=0):
+        self.log(f"IMAGE SHAPE : {image.shape}")
+        self.log(f"LABEL SHAPE : {labels.shape}")
+
         try:
             crf_results = crf_with_config(
-                image, labels, config=self.config.crf_config, log=self.log
+                image, labels, config=self.config.crf_config
             )
             self.save_image(
-                crf_results,
-                i=image_id,
-                additional_info="CRF_",
-                from_layer=True,
+                crf_results, i=image_id, additional_info="CRF", from_layer=True
             )
             return crf_results
         except ValueError as e:
@@ -806,9 +810,15 @@ class InferenceWorker(GeneratorWorker):
             instance_labels_results.append(instance_labels)
             stats_results.append(stats)
 
+        if self.config.use_crf:
+            crf_results = self.run_crf(image, out)
+        else:
+            crf_results = None
+
         return self.create_inference_result(
             semantic_labels=out,
             instance_labels=instance_labels_results,
+            crf_results=crf_results,
             from_layer=True,
             stats=stats_results,
         )
