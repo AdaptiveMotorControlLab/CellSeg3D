@@ -1,4 +1,5 @@
 import platform
+import time
 import typing as t
 from dataclasses import dataclass
 from math import ceil
@@ -648,7 +649,7 @@ class InferenceWorker(GeneratorWorker):
             filetype = self.config.filetype
         else:
             original_filename = "_"
-            filetype = ""
+            filetype = ".tif"
 
         time = utils.get_date_time()
 
@@ -762,12 +763,9 @@ class InferenceWorker(GeneratorWorker):
         )
 
     def run_crf(self, image, labels, image_id=0):
-        self.log(f"IMAGE SHAPE : {image.shape}")
-        self.log(f"LABEL SHAPE : {labels.shape}")
-
         try:
             crf_results = crf_with_config(
-                image, labels, config=self.config.crf_config
+                image, labels, config=self.config.crf_config, log=self.log
             )
             self.save_image(
                 crf_results, i=image_id, additional_info="CRF", from_layer=True
@@ -1394,14 +1392,23 @@ class TrainingWorker(GeneratorWorker):
             optimizer = torch.optim.Adam(
                 model.parameters(), self.config.learning_rate
             )
+
+            factor = self.config.scheduler_factor
+            if factor >= 1.0:
+                self.log(f"Warning : scheduler factor is {factor} >= 1.0")
+                self.log("Setting it to 0.5")
+                factor = 0.5
+
             scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
                 optimizer=optimizer,
                 mode="min",
-                factor=self.config.scheduler_factor,
+                factor=factor,
                 patience=self.config.scheduler_patience,
                 verbose=VERBOSE_SCHEDULER,
             )
-            dice_metric = DiceMetric(include_background=True, reduction="mean")
+            dice_metric = DiceMetric(
+                include_background=False, reduction="mean"
+            )
 
             best_metric = -1
             best_metric_epoch = -1
@@ -1503,12 +1510,15 @@ class TrainingWorker(GeneratorWorker):
                 scheduler.step(epoch_loss)
 
                 checkpoint_output = []
-                eta = (
-                    (time.time() - start_time)
-                    * (self.config.max_epochs / (epoch + 1) - 1)
-                    / 60
+                self.log(
+                    "ETA: "
+                    + str(
+                        (time.time() - start_time)
+                        * (self.config.max_epochs / (epoch + 1) - 1)
+                        / 60
+                    )
+                    + "minutes"
                 )
-                self.log("ETA: " + f"{eta:.2f}" + " minutes")
 
                 if (
                     (epoch + 1) % self.config.validation_interval == 0
@@ -1533,7 +1543,7 @@ class TrainingWorker(GeneratorWorker):
                                         overlap=0.25,
                                         sw_device=self.config.device,
                                         device=self.config.device,
-                                        progress=True,
+                                        progress=False,
                                     )
                             except Exception as e:
                                 self.raise_error(e, "Error during validation")

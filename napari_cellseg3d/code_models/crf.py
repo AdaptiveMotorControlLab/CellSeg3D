@@ -33,6 +33,7 @@ import numpy as np
 from napari.qt.threading import GeneratorWorker
 
 from napari_cellseg3d.config import CRFConfig
+from napari_cellseg3d.utils import LOGGER as logger
 
 __author__ = "Yves Paychère, Colin Hofmann, Cyril Achard"
 __credits__ = [
@@ -52,12 +53,16 @@ __credits__ = [
 ]
 
 
-def correct_shape_for_crf(image):
-    if len(image.shape) == 4:
+def correct_shape_for_crf(image, desired_dims=4):
+    if len(image.shape) == desired_dims:
         return image
-    if len(image.shape) > 4:
+    if len(image.shape) > desired_dims:
+        if image.shape[0] > 1:
+            raise ValueError(
+                f"Image shape {image.shape} might have several channels"
+            )
         image = np.squeeze(image, axis=0)
-    if len(image.shape) < 4:
+    if len(image.shape) < desired_dims:
         image = np.expand_dims(image, axis=0)
     return correct_shape_for_crf(image)
 
@@ -146,7 +151,7 @@ def crf(image, prob, sa, sb, sg, w1, w2, n_iter=5):
     )
 
 
-def crf_with_config(image, prob, config: CRFConfig = None):
+def crf_with_config(image, prob, config: CRFConfig = None, log=logger.info):
     if config is None:
         config = CRFConfig()
     if image.shape[-3:] != prob.shape[-3:]:
@@ -156,6 +161,12 @@ def crf_with_config(image, prob, config: CRFConfig = None):
         )
 
     image = correct_shape_for_crf(image)
+    prob = correct_shape_for_crf(prob)
+
+    if log is not None:
+        log("Running CRF post-processing step")
+        log(f"Image shape : {image.shape}")
+        log(f"Labels shape : {prob.shape}")
 
     return crf(
         image,
@@ -196,14 +207,11 @@ class CRFWorker(GeneratorWorker):
             raise ImportError("pydensecrf is not installed.")
 
         for image, labels in zip(self.images, self.labels):
-            if len(image.shape) == 3:
-                image = np.expand_dims(image, axis=0)
-
-            if len(labels.shape) == 3:
-                labels = np.expand_dims(labels, axis=0)
-
             if image.shape[-3:] != labels.shape[-3:]:
                 raise ValueError("Image and labels must have the same shape.")
+
+            image = correct_shape_for_crf(image)
+            labels = correct_shape_for_crf(labels)
 
             yield crf(
                 image,

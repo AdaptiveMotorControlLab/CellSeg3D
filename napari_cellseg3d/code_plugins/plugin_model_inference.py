@@ -923,6 +923,9 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                             # )
 
                 if result.crf_results is not None:
+                    logger.debug(
+                        f"CRF results shape : {result.crf_results.shape}"
+                    )
                     viewer.add_image(
                         result.crf_results,
                         name=f"CRF_results_image_{image_id}",
