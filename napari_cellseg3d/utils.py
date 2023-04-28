@@ -2,9 +2,8 @@ import logging
 import warnings
 from datetime import datetime
 from pathlib import Path
+
 import numpy as np
-from pandas import DataFrame
-from pandas import Series
 from skimage import io
 from skimage.filters import gaussian
 from tifffile import imread as tfl_imread
@@ -273,6 +272,7 @@ def annotation_to_input(label_ermito):
     )
     anno = normalize_x(anno[np.newaxis, :, :, :])
     return anno
+
 
 # def check_csv(project_path, ext):
 #     if not Path(Path(project_path) / Path(project_path).name).is_file():

@@ -1,4 +1,5 @@
 import os
+
 import napari
 import numpy as np
 import scipy.ndimage as ndimage
@@ -125,6 +126,7 @@ def make_labels(
         image_contrasted.astype(np.float32),
     )
 
+
 def select_image_by_labels(image, labels, path_image_out, label_values):
     """Select image by labels.
     Parameters
@@ -143,7 +145,6 @@ def select_image_by_labels(image, labels, path_image_out, label_values):
 
     image = np.where(np.isin(labels, label_values), image, 0)
     imwrite(path_image_out, image.astype(np.float32))
-
 
 
 # select the smallest cube that contains all the non-zero pixels of a 3d image

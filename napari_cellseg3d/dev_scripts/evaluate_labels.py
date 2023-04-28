@@ -7,6 +7,7 @@ from napari_cellseg3d.utils import LOGGER as log
 
 PERCENT_CORRECT = 0.5  # how much of the original label should be found by the model to be classified as correct
 
+
 def evaluate_model_performance(
     labels,
     model_labels,
@@ -284,6 +285,7 @@ def save_as_csv(results, path):
         ],
     )
     df.to_csv(path, index=False)
+
 
 #######################
 # Slower version that was used for debugging
