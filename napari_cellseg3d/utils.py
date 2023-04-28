@@ -12,8 +12,8 @@ from tifffile import imread, imwrite
 LOGGER = logging.getLogger(__name__)
 ###############
 # Global logging level setting
-# LOGGER.setLevel(logging.DEBUG)
-LOGGER.setLevel(logging.INFO)
+LOGGER.setLevel(logging.DEBUG)
+# LOGGER.setLevel(logging.INFO)
 ###############
 """
 utils.py
@@ -312,7 +312,7 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
 
             pad = 2**n
             n += 1
-            if pad >= 256:
+            if pad >= 1024:
                 LOGGER.warning(
                     "Warning : a very large dimension for automatic padding has been computed.\n"
                     "Ensure your images are of an appropriate size and/or that you have enough memory."

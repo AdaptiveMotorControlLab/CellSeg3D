@@ -178,6 +178,11 @@ class CRFWidget(BasePluginSingleImage):
     def make_config(self):
         return self.crf_params_widget.make_config()
 
+    def print_config(self):
+        logger.info("CRF config:")
+        for item in self.make_config().__dict__.items():
+            logger.info(f"{item[0]}: {item[1]}")
+
     def _check_ready(self):
         if len(self.label_layer_loader.layer_list) < 1:
             logger.warning("No label layer loaded")
@@ -272,6 +277,7 @@ class CRFWidget(BasePluginSingleImage):
 
     def _on_finish(self):
         self.worker = None
+        self.start_button.setText("Start")
 
     def _on_error(self, error):
         logger.error(error)
