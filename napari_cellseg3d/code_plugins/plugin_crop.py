@@ -306,7 +306,7 @@ class Cropping(BasePluginSingleImage):
         else:
             self.image_layer1.opacity = 0.7
             self.image_layer1.colormap = "inferno"
-            self.image_layer1.contrast_limits = [200, 1000]  # TODO generalize
+            # self.image_layer1.contrast_limits = [200, 1000]  # TODO generalize
 
             self.image_layer1.refresh()
 

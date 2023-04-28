@@ -38,22 +38,28 @@ You can install `napari-cellseg3d` via [pip]:
 
   ``pip install napari-cellseg3d``
 
-  For local installation, please run:
+For local installation after cloning, please run in the CellSeg3D folder:
 
   ``pip install -e .``
 
 Requirements
 --------------------------------------------
 
+.. note::
+    A **CUDA-capable GPU** is not needed but **very strongly recommended**, especially for training and possibly inference.
+
 .. important::
-    A **CUDA-capable GPU** is not needed but **very strongly recommended**, especially for training.
+    This package requires you have napari installed with PyQt5 or PySide2 first.
+    If you do not have a Qt backend you can use :
 
-This package requires you have napari installed first.
+        ``pip install napari-cellseg3d[all]``
+    to install PyQt5 by default.
 
-It also depends on PyTorch and some optional dependencies of MONAI. These come in the pip package above, but if
+It also depends on PyTorch and some optional dependencies of MONAI. These come in the pip package as requirements, but if
 you need further assistance see below.
 
 * For help with PyTorch, please see `PyTorch's website`_ for installation instructions, with or without CUDA depending on your hardware.
+  Depending on your setup, you might wish to install torch first.
 
 * If you get errors from MONAI regarding missing readers, please see `MONAI's optional dependencies`_ page for instructions on getting the readers required by your images.
 
@@ -70,14 +76,13 @@ To use the plugin, please run:
 
 Then go into Plugins > napari-cellseg3d, and choose which tool to use:
 
-
 - **Review**: This module allows you to review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring
 - **Inference**: This module allows you to use pre-trained segmentation algorithms on volumes to automatically label cells
 - **Training**:  This module allows you to train segmentation algorithms from labeled volumes
 - **Utilities**: This module allows you to use several utilities, e.g. to crop your volumes and labels, compute prediction scores or convert labels
 - **Help/About...** : Quick access to version info, Github page and docs
 
-See above for links to detailed guides regarding the usage of the modules.
+See the documentation for links to detailed guides regarding the usage of the modules.
 
 Acknowledgments & References
 ---------------------------------------------
@@ -98,6 +103,7 @@ This plugin mainly uses the following libraries and software:
 
 * `pyclEsperanto`_ (for the Voronoi Otsu labeling) by Robert Haase
 
+* A custom re-implementation of the `WNet model`_ by Xia and Kulis [#]_
 
 .. _Mathis Laboratory of Adaptive Motor Control: http://www.mackenziemathislab.org/
 .. _Wyss Center: https://wysscenter.ch/
@@ -107,10 +113,11 @@ This plugin mainly uses the following libraries and software:
 .. _MONAI project: https://monai.io/
 .. _on their website: https://docs.monai.io/en/stable/networks.html#nets
 .. _pyclEsperanto: https://github.com/clEsperanto/pyclesperanto_prototype
-
+.. _WNet model: https://arxiv.org/abs/1711.08506
 
 .. rubric:: References
 
 .. [#] Mapping mesoscale axonal projections in the mouse brain using a 3D convolutional network, Friedmann et al., 2020 ( https://pnas.org/cgi/doi/10.1073/pnas.1918465117 )
 .. [#] The mesoSPIM initiative: open-source light-sheet microscopes for imaging cleared tissue, Voigt et al., 2019 ( https://doi.org/10.1038/s41592-019-0554-0 )
 .. [#] MONAI Project website ( https://monai.io/ )
+.. [#] W-Net: A Deep Model for Fully Unsupervised Image Segmentation, Xia and Kulis, 2018 ( https://arxiv.org/abs/1711.08506 )
