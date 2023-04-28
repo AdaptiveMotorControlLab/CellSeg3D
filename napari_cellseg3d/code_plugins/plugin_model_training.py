@@ -846,7 +846,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 loss_function=self.get_loss(self.loss_choice.currentText()),
                 learning_rate=float(self.learning_rate_choice.currentText()),
                 scheduler_patience=self.scheduler_patience_choice.value(),
-                scheduler_factor=self.scheduler_factor_choice.value(),
+                scheduler_factor=self.scheduler_factor_choice.slider_value,
                 validation_interval=self.val_interval_choice.value(),
                 batch_size=self.batch_choice.slider_value,
                 results_path_folder=str(results_path_folder),
@@ -982,7 +982,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                         layer = self._viewer.add_image(
                             report.images[i],
                             name=layer_name + str(i),
-                            colormap="twilight",
+                            colormap="viridis",
                         )
                         self.result_layers.append(layer)
                 else:
@@ -993,7 +993,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                             new_layer = self._viewer.add_image(
                                 report.images[i],
                                 name=layer_name + str(i),
-                                colormap="twilight",
+                                colormap="viridis",
                             )
                             self.result_layers.append(new_layer)
                         self.result_layers[i].data = report.images[i]
