@@ -49,14 +49,22 @@ then from the “Plugins” menu within the napari application, select “Instal
 
 ### M1 Mac users
 
-Create a new conda env using the provided conda/napari_cellseg3d_m1.yml file :
+To avoid issues when installing on the ARM64 architecture, please follow these steps.
 
+1) Create a new conda env using the provided conda/napari_cellseg3d_m1.yml file :
+
+        git clone https://github.com/AdaptiveMotorControlLab/CellSeg3d.git
+        cd CellSeg3d
         conda env create -f conda/napari_cellseg3d_m1.yml
         conda activate napari_cellseg3d_m1
 
-Then install PyQt5 from conda separately :
+2) Then install PyQt5 from conda separately :
 
-        conda install -c anaconda PyQt5
+        conda install -c anaconda pyqt
+
+3) And install the plugin :
+
+        pip install napari-cellseg3d
 
 
 ## Documentation
