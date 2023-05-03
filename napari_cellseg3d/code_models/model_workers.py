@@ -547,12 +547,14 @@ class InferenceWorker(GeneratorWorker):
                     "A layer's ID should always be 0 (default value)"
                 )
             extra_dims = len(semantic_labels.shape) - 3
-            semantic_labels = np.swapaxes(
-                semantic_labels, 0 + extra_dims, 2 + extra_dims
-            )
-            crf_results = np.swapaxes(
-                crf_results, 0 + extra_dims, 2 + extra_dims
-            )
+            if semantic_labels is not None:
+                semantic_labels = np.swapaxes(
+                    semantic_labels, 0 + extra_dims, 2 + extra_dims
+                )
+            if crf_results is not None:
+                crf_results = np.swapaxes(
+                    crf_results, 0 + extra_dims, 2 + extra_dims
+                )
 
         return InferenceResult(
             image_id=i + 1,
@@ -1457,6 +1459,12 @@ class TrainingWorker(GeneratorWorker):
                     optimizer.zero_grad()
                     outputs = model(inputs)
                     # self.log(f"Output dimensions : {outputs.shape}")
+                    if outputs.shape[1] > 1:
+                        outputs = outputs[
+                            :, 1:, :, :
+                        ]  # FIXME fix channel number
+                        if len(outputs.shape) < 4:
+                            outputs = outputs.unsqueeze(0)
                     loss = self.config.loss_function(outputs, labels)
                     loss.backward()
                     optimizer.step()
@@ -1477,15 +1485,12 @@ class TrainingWorker(GeneratorWorker):
                 scheduler.step(epoch_loss)
 
                 checkpoint_output = []
-                self.log(
-                    "ETA: "
-                    + str(
-                        (time.time() - start_time)
-                        * (self.config.max_epochs / (epoch + 1) - 1)
-                        / 60
-                    )
-                    + "minutes"
+                eta = (
+                    (time.time() - start_time)
+                    * (self.config.max_epochs / (epoch + 1) - 1)
+                    / 60
                 )
+                self.log("ETA: " + f"{eta:.2f}" + " minutes")
 
                 if (
                     (epoch + 1) % self.config.validation_interval == 0
