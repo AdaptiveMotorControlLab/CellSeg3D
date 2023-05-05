@@ -80,7 +80,7 @@ class Cropping(BasePluginSingleImage):
         self.results_filewidget.check_ready()
 
         self.crop_size_widgets = ui.IntIncrementCounter.make_n(
-            3, 1, 1000, DEFAULT_CROP_SIZE
+            3, 1, 10000, DEFAULT_CROP_SIZE
         )
         self.crop_size_labels = [
             ui.make_label("Size in " + axis + " of cropped volume :", self)
