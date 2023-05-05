@@ -762,9 +762,8 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                         name=f"CRF_results_image_{image_id}",
                         colormap="viridis",
                     )
-
                 if (
-                    len(result.instance_labels) > 0
+                    result.instance_labels is not None
                     and self.worker_config.post_process_config.instance.enabled
                 ):
                     method_name = (
