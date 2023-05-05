@@ -470,6 +470,11 @@ class Slider(QSlider):
     ):
         super().__init__(orientation, parent)
 
+        if upper <= lower:
+            raise ValueError(
+                "The minimum value cannot be below the maximum one"
+            )
+
         self.setMaximum(upper)
         self.setMinimum(lower)
         self.setSingleStep(step)
@@ -545,23 +550,29 @@ class Slider(QSlider):
 
     def _update_slider(self):
         """Update slider when value is changed"""
-        if self._value_label.text() == "":
-            return
+        try:
+            if self._value_label.text() == "":
+                return
 
-        value = float(self._value_label.text()) * self._divide_factor
+            value = float(self._value_label.text()) * self._divide_factor
 
-        if value < self.minimum():
-            self.slider_value = self.minimum()
-            return
-        if value > self.maximum():
-            self.slider_value = self.maximum()
-            return
+            if value < self.minimum():
+                self.slider_value = self.minimum()
+                return
+            if value > self.maximum():
+                self.slider_value = self.maximum()
+                return
 
-        self.slider_value = value
+            self.slider_value = value
+        except Exception as e:
+            logger.error(e)
 
     def _update_value_label(self):
         """Update label, to connect to when slider is dragged"""
-        self._value_label.setText(str(self.value_text))
+        try:
+            self._value_label.setText(str(self.value_text))
+        except Exception as e:
+            logger.error(e)
 
     @property
     def tooltips(self):
@@ -597,16 +608,21 @@ class Slider(QSlider):
     def slider_value(self, value: int):
         """Set a value (int) divided by self._divide_factor"""
         if value < self.minimum() or value > self.maximum():
-            raise ValueError(
-                f"The value for the slider ({value}) cannot be out of ({self.minimum()};{self.maximum()}) "
+            logger.error(
+                ValueError(
+                    f"The value for the slider ({value}) cannot be out of ({self.minimum()};{self.maximum()}) "
+                )
             )
 
-        self.setValue(int(value))
+        try:
+            self.setValue(int(value))
 
-        divided = value / self._divide_factor
-        if self._divide_factor == 1.0:
-            divided = int(divided)
-        self._value_label.setText(str(divided))
+            divided = value / self._divide_factor
+            if self._divide_factor == 1.0:
+                divided = int(divided)
+            self._value_label.setText(str(divided))
+        except Exception as e:
+            logger.error(e)
 
 
 class AnisotropyWidgets(QWidget):

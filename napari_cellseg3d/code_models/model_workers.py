@@ -546,15 +546,15 @@ class InferenceWorker(GeneratorWorker):
                 raise ValueError(
                     "A layer's ID should always be 0 (default value)"
                 )
-            extra_dims = len(semantic_labels.shape) - 3
+
             if semantic_labels is not None:
-                semantic_labels = np.swapaxes(
-                    semantic_labels, 0 + extra_dims, 2 + extra_dims
-                )
+                semantic_labels = utils.correct_rotation(semantic_labels)
             if crf_results is not None:
-                crf_results = np.swapaxes(
-                    crf_results, 0 + extra_dims, 2 + extra_dims
-                )
+                crf_results = utils.correct_rotation(crf_results)
+            if instance_labels is not None:
+                instance_labels = utils.correct_rotation(
+                    instance_labels
+                )  # TODO(cyril) check if correct
 
         return InferenceResult(
             image_id=i + 1,
@@ -580,10 +580,6 @@ class InferenceWorker(GeneratorWorker):
                 semantic_labels,
                 i + 1,
             )
-            if from_layer:
-                instance_labels = np.swapaxes(
-                    instance_labels, 0, 2
-                )  # TODO(cyril) check if correct
             data_dict = self.stats_csv(instance_labels)
         else:
             instance_labels = None
@@ -609,10 +605,11 @@ class InferenceWorker(GeneratorWorker):
         file_path = (
             self.config.results_path
             + "/"
-            + f"{additional_info}_Prediction_{i+1}"
+            + f"{additional_info}"
+            + f"Prediction_{i+1}"
             + original_filename
             + self.config.model_info.name
-            + f"_{time}_"
+            + f"_{time}"
             + filetype
         )
         try:
@@ -639,18 +636,20 @@ class InferenceWorker(GeneratorWorker):
             return image
 
     def instance_seg(
-        self, to_instance, image_id=0, original_filename="layer", channel=None
+        self, semantic_labels, image_id=0, original_filename="layer"
     ):
         if image_id is not None:
             self.log(f"\nRunning instance segmentation for image n°{image_id}")
 
         method = self.config.post_process_config.instance.method
-        instance_labels = method.run_method(image=to_instance)
 
-        if channel is not None:
-            channel_id = f"_{channel}"
+        if len(semantic_labels.shape) == 4:
+            instance_labels = np.array(
+                [method.run_method(ch) for ch in semantic_labels]
+            )
+            self.log(f"DEBUG instance results shape : {instance_labels.shape}")
         else:
-            channel_id = ""
+            instance_labels = method.run_method(image=semantic_labels)
 
         if self.config.filetype == "":
             filetype = ""
@@ -662,7 +661,6 @@ class InferenceWorker(GeneratorWorker):
             + "/"
             + f"Instance_seg_labels_{image_id}_"
             + original_filename
-            + channel_id
             + "_"
             + self.config.model_info.name
             + f"_{utils.get_date_time()}"
@@ -721,7 +719,10 @@ class InferenceWorker(GeneratorWorker):
                 image, labels, config=self.config.crf_config, log=self.log
             )
             self.save_image(
-                crf_results, i=image_id, additional_info="CRF", from_layer=True
+                crf_results,
+                i=image_id,
+                additional_info="CRF_",
+                from_layer=True,
             )
             return crf_results
         except ValueError as e:
@@ -729,14 +730,17 @@ class InferenceWorker(GeneratorWorker):
             return None
 
     def stats_csv(self, instance_labels):
-        if self.config.compute_stats:
-            stats = volume_stats(instance_labels)
-            return stats
-
-        # except ValueError as e:
-        #     self.log(f"Error occurred during stats computing : {e}")
-        #     return None
-        else:
+        try:
+            if self.config.compute_stats:
+                if len(instance_labels.shape) == 4:
+                    stats = [volume_stats(c) for c in instance_labels]
+                else:
+                    stats = [volume_stats(instance_labels)]
+                return stats
+            else:
+                return None
+        except ValueError as e:
+            self.log(f"Error occurred during stats computing : {e}")
             return None
 
     def inference_on_layer(self, image, model, post_process_transforms):
@@ -754,15 +758,9 @@ class InferenceWorker(GeneratorWorker):
 
         self.save_image(out, from_layer=True)
 
-        instance_labels_results = []
-        stats_results = []
-
-        for channel in out:
-            instance_labels, stats = self.get_instance_result(
-                channel, from_layer=True
-            )
-            instance_labels_results.append(instance_labels)
-            stats_results.append(stats)
+        instance_labels, stats = self.get_instance_result(
+            semantic_labels=out, from_layer=True
+        )
 
         if self.config.use_crf:
             crf_results = self.run_crf(image, out)
@@ -771,10 +769,10 @@ class InferenceWorker(GeneratorWorker):
 
         return self.create_inference_result(
             semantic_labels=out,
-            instance_labels=instance_labels_results,
+            instance_labels=instance_labels,
             crf_results=crf_results,
             from_layer=True,
-            stats=stats_results,
+            stats=stats,
         )
 
     # @thread_worker(connect={"errored": self.raise_error})

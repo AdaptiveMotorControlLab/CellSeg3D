@@ -80,7 +80,7 @@ class Cropping(BasePluginSingleImage):
         self.results_filewidget.check_ready()
 
         self.crop_size_widgets = ui.IntIncrementCounter.make_n(
-            3, 1, 1000, DEFAULT_CROP_SIZE
+            3, 1, 10000, DEFAULT_CROP_SIZE
         )
         self.crop_size_labels = [
             ui.make_label("Size in " + axis + " of cropped volume :", self)
@@ -310,7 +310,7 @@ class Cropping(BasePluginSingleImage):
         else:
             self.image_layer1.opacity = 0.7
             self.image_layer1.colormap = "inferno"
-            self.image_layer1.contrast_limits = [200, 1000]  # TODO generalize
+            # self.image_layer1.contrast_limits = [200, 1000]  # TODO generalize
 
             self.image_layer1.refresh()
 

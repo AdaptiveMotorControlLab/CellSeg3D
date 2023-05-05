@@ -4,8 +4,8 @@ from skimage.segmentation import expand_labels
 from tqdm import tqdm
 
 
-def extract_labels_from_channels(
-    nucleus_labels: np.array,
+def extract_labels_from_channels(  # TODO add separate channels results
+    nuclei_labels: np.array,
     extra_channels: list,
     radius: int = 4,
     threshold_factor=2,
@@ -14,15 +14,14 @@ def extract_labels_from_channels(
     """
     Attemps to extract labels from other channels by expanding nuclei labels and picking the one with most pixels around it.
     Args:
-        nucleus_labels (np.array): labels for the nuclei
+        nuclei_labels (np.array): labels for the nuclei
         extra_channels (list): channels arrays to extract labels from
         radius: radius in which the approximation is made
 
     Returns:
     A list of extracted labels for each extra channel
     """
-    labeled_channels = {}
-
+    labeled_channels = []
     contrasted_channels = []
     for channel in extra_channels:
         channel = (channel - np.min(channel)) / (
@@ -39,31 +38,54 @@ def extract_labels_from_channels(
                 name="channel_contrasted",
                 colormap="viridis",
             )
-    for label_id in tqdm(np.unique(nucleus_labels)):
+    for label_id in tqdm(np.unique(nuclei_labels)):
         if label_id == 0:
             continue
-        label_nucleus = np.where(nucleus_labels == label_id, nucleus_labels, 0)
+        label_nucleus = np.where(nuclei_labels == label_id, nuclei_labels, 0)
         expanded = expand_labels(label_nucleus, distance=radius)
+        restricted = np.where(expanded != 0, nuclei_labels, 0)
+        overlap = np.where(restricted != label_id, restricted, 0)
+
         for i, channel in enumerate(contrasted_channels):
             label_contrasted = np.where(expanded != 0, channel, 0)
-            labeled_channel = np.where(label_contrasted != 0, label_id, 0)
-            labeled_channels[
-                f"label_{label_id}_channel_{i+1}"
-            ] = np.count_nonzero(labeled_channel)
-            if np.count_nonzero(labeled_channel) > 0 and viewer is not None:
-                print(np.count_nonzero(labeled_channel))
-                viewer.add_labels(
-                    labeled_channel, name=f"label_{label_id}_channel_{i+1}"
-                )
+            if overlap.any() != 0:
+                max_labeled = 0
+                for overlap_id in np.unique(overlap):
+                    if overlap_id == 0:
+                        continue
+                    assigned_pixels = np.count_nonzero(
+                        np.where(overlap == overlap_id, channel, 0)
+                    )
+                    if assigned_pixels > max_labeled:
+                        max_labeled = assigned_pixels
+                        max_label_id = overlap_id
+                        if label_id != max_label_id:
+                            labeled_channels.append(
+                                np.zeros_like(label_contrasted)
+                            )
+            else:
+                labeled_channel = np.where(label_contrasted != 0, label_id, 0)
+                labeled_channels.append(labeled_channel)
+                if (
+                    np.count_nonzero(labeled_channel) > 0
+                    and viewer is not None
+                ):
+                    viewer.add_labels(
+                        labeled_channel, name=f"label_{label_id}_channel_{i+1}"
+                    )
 
-    return labeled_channels
+    cat_labels = np.zeros_like(nuclei_labels)
+    for labels in np.unique(labeled_channels):
+        if labels == 0:
+            continue
+        cat_labels += np.where(labels != 0, labels, 0)
+    return cat_labels
 
 
 if __name__ == "__main__":
     from pathlib import Path
 
     import napari
-    import pandas as pd
     from tifffile import imread
 
     image_path = (
@@ -114,10 +136,8 @@ if __name__ == "__main__":
         radius=4,
         viewer=viewer,
     )
-    table = pd.DataFrame(
-        labeled_channels.items(), columns=["name", "pixels count"]
-    )
-    print(table)
+
+    viewer.add_labels(labeled_channels)
     # [viewer.add_labels(item, name=key) for key, item in labeled_channels.items()]
     # expanded = expand_labels(labels, 4)
     # viewer.add_labels(expanded)
