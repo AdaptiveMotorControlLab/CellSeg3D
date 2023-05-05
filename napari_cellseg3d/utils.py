@@ -202,6 +202,12 @@ def dice_coeff(y_true, y_pred):
     return score
 
 
+def correct_rotation(image):
+    """Rotates the exes 0 and 2 in [DHW] section of image array"""
+    extra_dims = len(image) - 3
+    return np.swapaxes(image, 0 + extra_dims, 2 + extra_dims)
+
+
 def resize(image, zoom_factors):
     isotropic_image = Zoom(
         zoom_factors,
