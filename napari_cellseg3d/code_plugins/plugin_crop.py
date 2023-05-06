@@ -49,7 +49,7 @@ class Cropping(BasePluginSingleImage):
         self.label_layer_loader.layer_list.label.setText("Image 2")
 
         self.crop_second_image_choice = ui.CheckBox(
-            "Crop another\nimage simultaneously",
+            "Crop another\nimage/label simultaneously",
         )
         self.crop_second_image_choice.toggled.connect(
             self._toggle_second_image_io_visibility
