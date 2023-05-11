@@ -1278,6 +1278,7 @@ class TrainingWorker(GeneratorWorker):
             if len(self.val_files) == 0:
                 raise ValueError("Validation dataset is empty")
 
+
             if self.config.do_augmentation:
                 train_transforms = (
                     Compose(  # TODO : figure out which ones and values ?
@@ -1309,6 +1310,31 @@ class TrainingWorker(GeneratorWorker):
             )
 
             # self.log("Loading dataset...\n")
+            def get_loader_func(num_samples):
+                return  Compose(
+                        [
+                            LoadImaged(keys=["image", "label"]),
+                            EnsureChannelFirstd(keys=["image", "label"]),
+                            RandSpatialCropSamplesd(
+                                keys=["image", "label"],
+                                roi_size=(
+                                    self.config.sample_size
+                                ),  # multiply by axis_stretch_factor if anisotropy
+                                # max_roi_size=(120, 120, 120),
+                                random_size=False,
+                                num_samples=num_samples,
+                            ),
+                            Orientationd(keys=["image", "label"], axcodes="PLI"),
+                            SpatialPadd(
+                                keys=["image", "label"],
+                                spatial_size=(
+                                    utils.get_padding_dim(self.config.sample_size)
+                                ),
+                            ),
+                            EnsureTyped(keys=["image", "label"]),
+                        ]
+                    )
+
             if do_sampling:
                 # if there is only one volume, split samples
                 # TODO(cyril) : maybe implement something in user config to toggle this behavior
@@ -1330,6 +1356,7 @@ class TrainingWorker(GeneratorWorker):
 
                     sample_loader_train = get_loader_func(num_train_samples)
                     sample_loader_eval = get_loader_func(num_val_samples)
+
 
                 logger.debug(f"AMOUNT of train samples : {num_train_samples}")
                 logger.debug(
