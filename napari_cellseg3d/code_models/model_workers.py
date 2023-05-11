@@ -1229,30 +1229,6 @@ class TrainingWorker(GeneratorWorker):
             if len(self.val_files) == 0:
                 raise ValueError("Validation dataset is empty")
 
-            if do_sampling:
-                sample_loader = Compose(
-                    [
-                        LoadImaged(keys=["image", "label"]),
-                        EnsureChannelFirstd(keys=["image", "label"]),
-                        RandSpatialCropSamplesd(
-                            keys=["image", "label"],
-                            roi_size=(
-                                self.config.sample_size
-                            ),  # multiply by axis_stretch_factor if anisotropy
-                            # max_roi_size=(120, 120, 120),
-                            random_size=False,
-                            num_samples=self.config.num_samples,
-                        ),
-                        Orientationd(keys=["image", "label"], axcodes="PLI"),
-                        SpatialPadd(
-                            keys=["image", "label"],
-                            spatial_size=(
-                                utils.get_padding_dim(self.config.sample_size)
-                            ),
-                        ),
-                        EnsureTyped(keys=["image", "label"]),
-                    ]
-                )
 
             if self.config.do_augmentation:
                 train_transforms = (
@@ -1284,6 +1260,31 @@ class TrainingWorker(GeneratorWorker):
                 ]
             )
             # self.log("Loading dataset...\n")
+            def get_loader_func(num_samples):
+                return  Compose(
+                        [
+                            LoadImaged(keys=["image", "label"]),
+                            EnsureChannelFirstd(keys=["image", "label"]),
+                            RandSpatialCropSamplesd(
+                                keys=["image", "label"],
+                                roi_size=(
+                                    self.config.sample_size
+                                ),  # multiply by axis_stretch_factor if anisotropy
+                                # max_roi_size=(120, 120, 120),
+                                random_size=False,
+                                num_samples=num_samples,
+                            ),
+                            Orientationd(keys=["image", "label"], axcodes="PLI"),
+                            SpatialPadd(
+                                keys=["image", "label"],
+                                spatial_size=(
+                                    utils.get_padding_dim(self.config.sample_size)
+                                ),
+                            ),
+                            EnsureTyped(keys=["image", "label"]),
+                        ]
+                    )
+
             if do_sampling:
                 # if there is only one volume, split samples
                 # TODO(cyril) : maybe implement something in user config to toggle this behavior
@@ -1296,10 +1297,16 @@ class TrainingWorker(GeneratorWorker):
                         self.config.num_samples
                         * (1 - self.config.validation_percent)
                     )
+                    sample_loader_train = get_loader_func(num_train_samples)
+                    sample_loader_eval = get_loader_func(num_val_samples)
                 else:
                     num_train_samples = (
                         num_val_samples
                     ) = self.config.num_samples
+
+                    sample_loader_train = get_loader_func(num_train_samples)
+                    sample_loader_eval = get_loader_func(num_val_samples)
+
 
                 logger.debug(f"AMOUNT of train samples : {num_train_samples}")
                 logger.debug(
@@ -1310,14 +1317,14 @@ class TrainingWorker(GeneratorWorker):
                 train_ds = PatchDataset(
                     data=self.train_files,
                     transform=train_transforms,
-                    patch_func=sample_loader,
+                    patch_func=sample_loader_train,
                     samples_per_image=num_train_samples,
                 )
                 logger.debug("val_ds")
                 val_ds = PatchDataset(
                     data=self.val_files,
                     transform=val_transforms,
-                    patch_func=sample_loader,
+                    patch_func=sample_loader_eval,
                     samples_per_image=num_val_samples,
                 )
 
