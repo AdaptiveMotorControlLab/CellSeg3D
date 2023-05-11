@@ -504,6 +504,8 @@ class InferenceWorker(GeneratorWorker):
                         sw_device=self.config.device,
                         device=dataset_device,
                         overlap=window_overlap,
+                        mode="gaussian",
+                        sigma_scale=0.01,
                         progress=True,
                     )
             except Exception as e:
