@@ -1,11 +1,5 @@
-from typing import TypeVar
-
-from torch.nn import Module
-
 # local
 from napari_cellseg3d.code_models.models.wnet.model import WNet
-
-T = TypeVar("T", bound="Module")
 
 
 class WNet_(WNet):
@@ -27,8 +21,8 @@ class WNet_(WNet):
             num_classes=num_classes,
         )
 
-    def train(self: T, mode: bool = True) -> T:
-        raise NotImplementedError("Training not implemented for WNet")
+    # def train(self: T, mode: bool = True) -> T: # FIXME makes inference raise NotImplementedError
+    #     raise NotImplementedError("Training not implemented for WNet")
 
     def forward(self, x):
         """Forward ENCODER pass of the W-Net model.
