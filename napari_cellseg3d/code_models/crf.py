@@ -57,10 +57,10 @@ def correct_shape_for_crf(image, desired_dims=4):
     if len(image.shape) == desired_dims:
         return image
     if len(image.shape) > desired_dims:
-        if image.shape[0] > 1:
-            raise ValueError(
-                f"Image shape {image.shape} might have several channels"
-            )
+        # if image.shape[0] > 1:
+        #     raise ValueError(
+        #         f"Image shape {image.shape} might have several channels"
+        #     )
         image = np.squeeze(image, axis=0)
     if len(image.shape) < desired_dims:
         image = np.expand_dims(image, axis=0)
@@ -200,7 +200,6 @@ class CRFWorker(GeneratorWorker):
             self.config = config
         self.log = log
 
-    # TODO(cyril) : add progress bar into log ? or do it in inference
     def _run_crf_job(self):
         """Runs the CRF post-processing step for the W-Net."""
         if not CRF_INSTALLED:
@@ -211,7 +210,7 @@ class CRFWorker(GeneratorWorker):
                 raise ValueError("Image and labels must have the same shape.")
 
             image = correct_shape_for_crf(image)
-            labels = correct_shape_for_crf(labels)
+            # labels = correct_shape_for_crf(labels)
 
             yield crf(
                 image,
