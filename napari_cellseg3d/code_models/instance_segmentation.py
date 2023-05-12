@@ -1,3 +1,4 @@
+import abc
 from dataclasses import dataclass
 from functools import partial
 from typing import List
@@ -93,18 +94,19 @@ class InstanceMethod:
             raise ValueError(
                 f"Image has {len(image.shape)} dimensions, but should have at most 4 dimensions (CHWD)"
             )
-        if len(image.shape) < 2:
-            raise ValueError(
-                f"Image has {len(image.shape)} dimensions, but should have at least 2 dimensions (HW)"
-            )
         if len(image.shape) == 4:
             image = np.squeeze(image)
             if len(image.shape) == 4:
                 return [im for im in image]
-        return [image]
+        elif len(image.shape) < 2:
+            raise ValueError(
+                f"Image has {len(image.shape)} dimensions, but should have at least 2 dimensions (HW)"
+            )
+        else:
+            return [image]
 
     def run_method_on_channels(self, image):
-        image_list = self._make_list_from_channels(image)
+        image_list = self._make_list_from_channels(image)  # FIXME rename
         result = np.array([self.run_method(im) for im in image_list])
         return result.squeeze()
 
@@ -607,7 +609,7 @@ class InstanceWidgets(QWidget):
 
         """
         method = self.methods[self.method_choice.currentText()]
-        return method.run_method(volume)
+        return method.run_method_on_channels(volume)
 
 
 INSTANCE_SEGMENTATION_METHOD_LIST = {

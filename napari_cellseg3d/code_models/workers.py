@@ -693,17 +693,11 @@ class InferenceWorker(GeneratorWorker):
             self.log(f"\nRunning instance segmentation for image n°{image_id}")
 
         method = self.config.post_process_config.instance.method
-
-        if len(semantic_labels.shape) == 4:
-            instance_labels = np.array(
-                [method.run_method(ch) for ch in semantic_labels]
-            )
-            self.log(f"DEBUG instance results shape : {instance_labels.shape}")
-        else:
-            instance_labels = method.run_method(image=semantic_labels)
+        instance_labels = method.run_method_on_channels(semantic_labels)
+        self.log(f"DEBUG instance results shape : {instance_labels.shape}")
 
         if self.config.filetype == "":
-            filetype = ""
+            filetype = ".tif"
         else:
             filetype = "_" + self.config.filetype
 
@@ -903,7 +897,8 @@ class InferenceWorker(GeneratorWorker):
                 weights = str(
                     PRETRAINED_WEIGHTS_DIR / Path(model_class.weights_file)
                 )
-            model.load_state_dict(
+
+            model.load_state_dict(  # note that this is redefined in WNet_
                 torch.load(
                     weights,
                     map_location=self.config.device,
@@ -1280,7 +1275,6 @@ class TrainingWorker(GeneratorWorker):
             if len(self.val_files) == 0:
                 raise ValueError("Validation dataset is empty")
 
-
             if self.config.do_augmentation:
                 train_transforms = (
                     Compose(  # TODO : figure out which ones and values ?
@@ -1313,29 +1307,29 @@ class TrainingWorker(GeneratorWorker):
 
             # self.log("Loading dataset...\n")
             def get_loader_func(num_samples):
-                return  Compose(
-                        [
-                            LoadImaged(keys=["image", "label"]),
-                            EnsureChannelFirstd(keys=["image", "label"]),
-                            RandSpatialCropSamplesd(
-                                keys=["image", "label"],
-                                roi_size=(
-                                    self.config.sample_size
-                                ),  # multiply by axis_stretch_factor if anisotropy
-                                # max_roi_size=(120, 120, 120),
-                                random_size=False,
-                                num_samples=num_samples,
+                return Compose(
+                    [
+                        LoadImaged(keys=["image", "label"]),
+                        EnsureChannelFirstd(keys=["image", "label"]),
+                        RandSpatialCropSamplesd(
+                            keys=["image", "label"],
+                            roi_size=(
+                                self.config.sample_size
+                            ),  # multiply by axis_stretch_factor if anisotropy
+                            # max_roi_size=(120, 120, 120),
+                            random_size=False,
+                            num_samples=num_samples,
+                        ),
+                        Orientationd(keys=["image", "label"], axcodes="PLI"),
+                        SpatialPadd(
+                            keys=["image", "label"],
+                            spatial_size=(
+                                utils.get_padding_dim(self.config.sample_size)
                             ),
-                            Orientationd(keys=["image", "label"], axcodes="PLI"),
-                            SpatialPadd(
-                                keys=["image", "label"],
-                                spatial_size=(
-                                    utils.get_padding_dim(self.config.sample_size)
-                                ),
-                            ),
-                            EnsureTyped(keys=["image", "label"]),
-                        ]
-                    )
+                        ),
+                        EnsureTyped(keys=["image", "label"]),
+                    ]
+                )
 
             if do_sampling:
                 # if there is only one volume, split samples
@@ -1358,7 +1352,6 @@ class TrainingWorker(GeneratorWorker):
 
                     sample_loader_train = get_loader_func(num_train_samples)
                     sample_loader_eval = get_loader_func(num_val_samples)
-
 
                 logger.debug(f"AMOUNT of train samples : {num_train_samples}")
                 logger.debug(
