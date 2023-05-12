@@ -15,6 +15,8 @@ def test_correct_shape_for_crf():
 
 def test_model_list():
     for model_name in MODEL_LIST.keys():
+        # if model_name=="test":
+        #     continue
         dims = 128
         test = MODEL_LIST[model_name](
             input_img_size=[dims, dims, dims],
@@ -39,18 +41,20 @@ def test_soft_ncuts_loss():
 
     res = loss.forward(labels, labels)
     assert isinstance(res, torch.Tensor)
-    # assert res > 0
+    assert 0 <= res <= 1
 
 
 def test_crf(qtbot):
     dims = 8
     mock_image = np.random.rand(1, dims, dims, dims)
     mock_label = np.random.rand(2, dims, dims, dims)
-
-    crf = CRFWorker(mock_image, mock_label)
+    assert len(mock_label.shape) == 4
+    crf = CRFWorker([mock_image, mock_image], [mock_label, mock_label])
 
     def on_yield(result):
         assert isinstance(result, np.ndarray)
+        assert len(result.shape) == 4
+        assert len(mock_label.shape) == 4
         assert result.shape[-3:] == mock_label.shape[-3:]
 
     crf.yielded.connect(on_yield)

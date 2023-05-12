@@ -2,9 +2,10 @@ from pathlib import Path
 
 from napari_cellseg3d import config
 from napari_cellseg3d._tests.fixtures import LogFixture
-from napari_cellseg3d.code_models.models.model_test import TestModel
 from napari_cellseg3d.code_plugins.plugin_model_training import Trainer
-from napari_cellseg3d.config import MODEL_LIST
+
+# from napari_cellseg3d.config import MODEL_LIST
+# from napari_cellseg3d.code_models.models.model_test import TestModel
 
 
 def test_training(make_napari_viewer, qtbot):
@@ -32,9 +33,9 @@ def test_training(make_napari_viewer, qtbot):
     #################
     # Training is too long to test properly this way. Do not use on Github
     #################
-    MODEL_LIST["test"] = TestModel()
-    widget.model_choice.addItem("test")
-    widget.model_choice.setCurrentIndex(len(MODEL_LIST.keys()) - 1)
+    # MODEL_LIST["test"] = TestModel()
+    # widget.model_choice.addItem("test")
+    # widget.model_choice.setCurrentIndex(len(MODEL_LIST.keys()) - 1)
 
     # widget.start()
     # assert widget.worker is not None
