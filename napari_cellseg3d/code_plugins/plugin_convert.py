@@ -363,7 +363,7 @@ class ToInstanceUtils(BasePluginFolder):
         elif self.folder_choice.isChecked():
             if len(self.images_filepaths) != 0:
                 images = [
-                    self.instance_widgets.run_method(imread(file))
+                    self.instance_widgets.run_method_on_channels(imread(file))
                     for file in self.images_filepaths
                 ]
                 utils.save_folder(
