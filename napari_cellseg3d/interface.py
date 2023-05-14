@@ -913,7 +913,8 @@ class FilePathWidget(QWidget):  # TODO include load as folder
         else:
             with contextlib.suppress(TypeError):
                 self.text_field.textChanged.disconnect(self.check_ready)
-
+            except TypeError:
+                pass
         self.check_ready()
         self._required = is_required
 
