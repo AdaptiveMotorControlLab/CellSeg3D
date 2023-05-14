@@ -131,6 +131,9 @@ def normalize_x(image):
     image = image / 127.5 - 1
     return image
 
+def mkdir_from_str(path: str, exist_ok=True, parents=True):
+    Path(path).resolve().mkdir(exist_ok=exist_ok, parents=parents)
+
 
 def normalize_y(image):
     """Normalizes the values of an image array to be between [0;1] rather than [0;255]
