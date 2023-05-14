@@ -210,7 +210,7 @@ class CRFWorker(GeneratorWorker):
                 raise ValueError("Image and labels must have the same shape.")
 
             image = correct_shape_for_crf(image)
-            # labels = correct_shape_for_crf(labels)
+            labels = correct_shape_for_crf(labels)
 
             yield crf(
                 image,
