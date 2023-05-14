@@ -854,6 +854,9 @@ class FilePathWidget(QWidget):  # TODO include load as folder
         self.build()
         self.check_ready()
 
+        if self._required:
+            self._text_field.textChanged.connect(self.check_ready)
+
     def build(self):
         """Builds the layout of the widget"""
         add_widgets(
@@ -912,7 +915,7 @@ class FilePathWidget(QWidget):  # TODO include load as folder
             try:
                 self.text_field.textChanged.disconnect(self.check_ready)
             except TypeError:
-                return
+                pass
         self.check_ready()
         self._required = is_required
 
