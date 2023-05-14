@@ -238,7 +238,7 @@ class CRFWidget(BasePluginSingleImage):
         self.result_layer = self.label_layer_loader.layer()
         self.result_name = self.label_layer_loader.layer_name()
 
-        self.results_path.mkdir(exist_ok=True, parents=True)
+        utils.mkdir_from_str(self.results_path)
 
         image_list = [self.image_layer_loader.layer_data()]
         labels_list = [self.label_layer_loader.layer_data()]

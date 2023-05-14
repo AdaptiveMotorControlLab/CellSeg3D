@@ -76,7 +76,7 @@ class AnisoUtils(BasePluginFolder):
         )
 
     def _start(self):
-        self.results_path.mkdir(exist_ok=True, parents=True)
+        utils.mkdir_from_str(self.results_path)
         zoom = self.aniso_widgets.scaling_zyx()
 
         if self.layer_choice.isChecked():
@@ -175,7 +175,7 @@ class RemoveSmallUtils(BasePluginFolder):
         return container
 
     def _start(self):
-        self.results_path.mkdir(exist_ok=True, parents=True)
+        utils.mkdir_from_str(self.results_path)
         remove_size = self.size_for_removal_counter.value()
 
         if self.layer_choice:
@@ -342,7 +342,7 @@ class ToInstanceUtils(BasePluginFolder):
         )
 
     def _start(self):
-        self.results_path.mkdir(exist_ok=True, parents=True)
+        utils.mkdir_from_str(self.results_path)
 
         if self.layer_choice:
             if self.label_layer_loader.layer_data() is not None:
@@ -436,7 +436,7 @@ class ThresholdUtils(BasePluginFolder):
         return container
 
     def _start(self):
-        self.results_path.mkdir(exist_ok=True, parents=True)
+        utils.mkdir_from_str(self.results_path)
         remove_size = self.binarize_counter.value()
 
         if self.layer_choice:
