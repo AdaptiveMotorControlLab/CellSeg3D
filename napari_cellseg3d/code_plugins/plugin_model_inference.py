@@ -593,8 +593,12 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.worker.start()
             self.btn_start.setText("Running...  Click to stop")
 
-    def _create_worker_from_config(self, config: config.InferenceWorkerConfig):
-        return InferenceWorker(worker_config=config)
+    def _create_worker_from_config(
+        self, worker_config: config.InferenceWorkerConfig
+    ):
+        if isinstance(worker_config, config.InfererConfig):
+            raise TypeError("Please provide a valid worker config object")
+        return InferenceWorker(worker_config=worker_config)
 
     def _set_worker_config(self) -> config.InferenceWorkerConfig:
         self.model_info = config.ModelInfo(

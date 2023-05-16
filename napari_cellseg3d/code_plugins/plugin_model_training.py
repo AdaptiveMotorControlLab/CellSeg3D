@@ -841,8 +841,14 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.worker.start()
             self.btn_start.setText("Running...  Click to stop")
 
-    def _create_worker_from_config(self, config: config.TrainingWorkerConfig):
-        return TrainingWorker(config=config)
+    def _create_worker_from_config(
+        self, worker_config: config.TrainingWorkerConfig
+    ):
+        if isinstance(config, config.TrainerConfig):
+            raise TypeError(
+                "Expected a TrainingWorkerConfig, got a TrainerConfig"
+            )
+        return TrainingWorker(worker_config=worker_config)
 
     def _set_worker_config(self) -> config.TrainingWorkerConfig:
         model_config = config.ModelInfo(name=self.model_choice.currentText())
