@@ -8,7 +8,7 @@ class TestModel(nn.Module):
 
     def __init__(self, **kwargs):
         super().__init__()
-        self.linear = nn.Linear(1, 1)
+        self.linear = nn.Linear(8, 8)
 
     def forward(self, x):
         return self.linear(torch.tensor(x, requires_grad=True))
