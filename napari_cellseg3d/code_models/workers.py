@@ -965,7 +965,7 @@ class TrainingWorker(GeneratorWorker):
 
     def __init__(
         self,
-        config: config.TrainingWorkerConfig,
+        worker_config: config.TrainingWorkerConfig,
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~train` function. Note: See :py:func:`~train`
 
@@ -1012,7 +1012,7 @@ class TrainingWorker(GeneratorWorker):
 
         self._weight_error = False
         #############################################
-        self.config = config
+        self.config = worker_config
 
         self.train_files = []
         self.val_files = []
