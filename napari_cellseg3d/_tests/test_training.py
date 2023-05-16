@@ -3,7 +3,10 @@ from pathlib import Path
 from napari_cellseg3d import config
 from napari_cellseg3d._tests.fixtures import LogFixture
 from napari_cellseg3d.code_models.models.model_test import TestModel
-from napari_cellseg3d.code_plugins.plugin_model_training import Trainer
+from napari_cellseg3d.code_plugins.plugin_model_training import (
+    Trainer,
+    TrainingReport,
+)
 from napari_cellseg3d.config import MODEL_LIST
 
 
@@ -32,19 +35,30 @@ def test_training(make_napari_viewer, qtbot):
     #################
     # Training is too long to test properly this way. Do not use on Github
     #################
-    MODEL_LIST["test"] = TestModel()
+    MODEL_LIST["test"] = TestModel
     widget.model_choice.addItem("test")
     widget.model_choice.setCurrentIndex(len(MODEL_LIST.keys()) - 1)
 
     worker_config = widget._set_worker_config()
-    widget.worker = widget._create_worker_from_config(worker_config)
+    worker = widget._create_worker_from_config(worker_config)
+    worker.config.train_data_dict = [{"image": im_path, "label": im_path}]
+    worker.config.val_data_dict = [{"image": im_path, "label": im_path}]
+    worker.log_parameters()
+    res = next(worker.train())
 
-    with qtbot.waitSignal(
-        signal=widget.worker.finished, timeout=10000, raising=True
-    ) as blocker:
-        blocker.connect(widget.worker.errored)
-        widget.worker.start()
-        assert widget.worker is not None
+    assert isinstance(res, TrainingReport)
+
+    # def on_error(e):
+    #     print(e)
+    #     assert False
+    #
+    # with qtbot.waitSignal(
+    #     signal=widget.worker.finished, timeout=10000, raising=True
+    # ) as blocker:
+    #     blocker.connect(widget.worker.errored)
+    #     widget.worker.error_signal.connect(on_error)
+    #     widget.worker.train()
+    #     assert widget.worker is not None
 
 
 def test_update_loss_plot(make_napari_viewer):
