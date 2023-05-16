@@ -21,7 +21,7 @@ class WNet_(WNet):
             num_classes=num_classes,
         )
 
-    # def train(self: T, mode: bool = True) -> T: # FIXME makes inference raise NotImplementedError
+    # def train(self: T, mode: bool = True) -> T:
     #     raise NotImplementedError("Training not implemented for WNet")
 
     def forward(self, x):
