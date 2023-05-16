@@ -52,7 +52,7 @@ def test_crf(qtbot):
     mock_image = rand_gen.random(size=(1, dims, dims, dims))
     mock_label = rand_gen.random(size=(2, dims, dims, dims))
     assert len(mock_label.shape) == 4
-    crf = CRFWorker([mock_image, mock_image], [mock_label, mock_label])
+    crf = CRFWorker([mock_image], [mock_label])
 
     def on_yield(result):
         assert isinstance(result, np.ndarray)
@@ -60,20 +60,20 @@ def test_crf(qtbot):
         assert len(mock_label.shape) == 4
         assert result.shape[-3:] == mock_label.shape[-3:]
 
-    crf.yielded.connect(on_yield)
-    crf.start()
     with qtbot.waitSignal(
-        signal=crf.finished, timeout=60000, raising=False
+        signal=crf.finished, timeout=20000, raising=True
     ) as blocker:
         blocker.connect(crf.errored)
+        crf.yielded.connect(on_yield)
+        crf.start()
 
     mock_image = mock_image[0]
     mock_label = mock_label[0]
 
     crf = CRFWorker(mock_image, mock_label)
-    crf.yielded.connect(on_yield)
-    crf.start()
     with qtbot.waitSignal(
-        signal=crf.finished, timeout=60000, raising=False
+        signal=crf.finished, timeout=20000, raising=False
     ) as blocker:
         blocker.connect(crf.errored)
+        crf.yielded.connect(on_yield)
+        crf.start()
