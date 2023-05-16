@@ -10,12 +10,12 @@ if TYPE_CHECKING:
 # local
 from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d.code_models.model_framework import ModelFramework
-from napari_cellseg3d.code_models.model_instance_seg import (
+from napari_cellseg3d.code_models.instance_segmentation import (
     InstanceMethod,
     InstanceWidgets,
 )
-from napari_cellseg3d.code_models.model_workers import (
+from napari_cellseg3d.code_models.model_framework import ModelFramework
+from napari_cellseg3d.code_models.workers import (
     InferenceResult,
     InferenceWorker,
 )

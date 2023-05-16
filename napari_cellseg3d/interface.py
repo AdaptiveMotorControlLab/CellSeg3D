@@ -735,8 +735,8 @@ class AnisotropyWidgets(QWidget):
 
         """
 
-        base = max(aniso_res)
-        return [res / base for res in aniso_res]
+        base = min(aniso_res)
+        return [base / res for res in aniso_res]
 
     def enabled(self):
         """Returns : whether anisotropy correction has been enabled or not"""
@@ -810,7 +810,7 @@ class LayerSelecter(ContainerWidget):
     def layer_data(self):
         if self.layer_list.count() < 1:
             logger.warning("Please select a valid layer !")
-            return
+            return None
 
         return self.layer().data
 
@@ -913,8 +913,7 @@ class FilePathWidget(QWidget):  # TODO include load as folder
         else:
             with contextlib.suppress(TypeError):
                 self.text_field.textChanged.disconnect(self.check_ready)
-            except TypeError:
-                pass
+
         self.check_ready()
         self._required = is_required
 
@@ -1051,7 +1050,7 @@ def make_n_spinboxes(
 
     boxes = []
     for _i in range(n):
-        box = class_(min, max, default, step, parent, fixed)
+        box = class_(min_value, max_value, default, step, parent, fixed)
         boxes.append(box)
     return boxes
 
@@ -1225,7 +1224,7 @@ def open_file_dialog(
     default_path = utils.parse_default_path(possible_paths)
 
     return QFileDialog.getOpenFileName(
-        widget, "Choose file", default_path, file_extension
+        widget, "Choose file", default_path, filetype
     )
 
 
@@ -1236,7 +1235,7 @@ def open_folder_dialog(
     default_path = utils.parse_default_path(possible_paths)
 
     logger.info(f"Default : {default_path}")
-    filenames = QFileDialog.getExistingDirectory(
+    return QFileDialog.getExistingDirectory(
         widget, "Open directory", default_path + "/.."
     )
 

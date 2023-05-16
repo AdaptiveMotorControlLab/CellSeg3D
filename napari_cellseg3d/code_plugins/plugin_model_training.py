@@ -32,7 +32,7 @@ from qtpy.QtWidgets import QSizePolicy
 from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.code_models.model_framework import ModelFramework
-from napari_cellseg3d.code_models.model_workers import (
+from napari_cellseg3d.code_models.workers import (
     TrainingReport,
     TrainingWorker,
 )
@@ -419,9 +419,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             * False and displays a warning if not
 
         """
-        if self.images_filepaths != [] and self.labels_filepaths != []:
-            return True
-        else:
+        if self.images_filepaths == [] and self.labels_filepaths != []:
             logger.warning("Image and label paths are not correctly set")
             return False
         return True
@@ -1060,7 +1058,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                         self.result_layers[i].data = report.images[i]
                         self.result_layers[i].refresh()
             except Exception as e:
-                logger.error(e, exc_info=True)
+                logger.exception(e)
 
             self.progress.setValue(
                 100 * (report.epoch + 1) // self.worker_config.max_epochs
@@ -1228,7 +1226,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 )
                 self.plot_dock._close_btn = False
             except AttributeError as e:
-                logger.error(e, exc_info=True)
+                logger.exception(e)
                 logger.error(
                     "Plot dock widget could not be added. Should occur in testing only"
                 )

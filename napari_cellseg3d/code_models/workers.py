@@ -54,7 +54,7 @@ from tqdm import tqdm
 from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.code_models.crf import crf_with_config
-from napari_cellseg3d.code_models.model_instance_seg import (
+from napari_cellseg3d.code_models.instance_segmentation import (
     ImageStats,
     volume_stats,
 )

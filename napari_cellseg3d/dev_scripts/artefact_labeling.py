@@ -1,4 +1,5 @@
-import os
+import os  # TODO(cyril): remove os
+from pathlib import Path
 
 import napari
 import numpy as np
@@ -6,7 +7,7 @@ import scipy.ndimage as ndimage
 from skimage.filters import threshold_otsu
 from tifffile import imread, imwrite
 
-from napari_cellseg3d.code_models.model_instance_seg import binary_watershed
+from napari_cellseg3d.code_models.instance_segmentation import binary_watershed
 
 # import sys
 # sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -289,18 +290,13 @@ def select_artefacts_by_size(artefacts, min_size, is_labeled=False):
     ndarray
         Label image with artefacts labelled and small artefacts removed.
     """
-    if not is_labeled:
-        # find all the connected components in the artefacts image
-        labels = ndimage.label(artefacts)[0]
-    else:
-        labels = artefacts
+    labels = ndimage.label(artefacts)[0] if not is_labeled else artefacts
 
     # remove the small components
     labels_i, counts = np.unique(labels, return_counts=True)
     labels_i = labels_i[counts > min_size]
     labels_i = labels_i[labels_i > 0]
-    artefacts = np.where(np.isin(labels, labels_i), labels, 0)
-    return artefacts
+    return np.where(np.isin(labels, labels_i), labels, 0)
 
 
 def create_artefact_labels(
@@ -388,7 +384,7 @@ def create_artefact_labels_from_folder(
     path_labels.sort()
     path_images.sort()
     # create the output folder
-    os.makedirs(path + "/artefact_neurons", exist_ok=True)
+    Path().mkdir(path + "/artefact_neurons", exist_ok=True)
     # create the artefact labels
     for i in range(len(path_images)):
         print(path_labels[i])

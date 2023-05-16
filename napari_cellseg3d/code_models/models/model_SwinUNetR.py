@@ -28,7 +28,7 @@ class SwinUNETR_(SwinUNETR):
                 **kwargs,
             )
         except TypeError as e:
-            logger.warn(f"Caught TypeError: {e}")
+            logger.warning(f"Caught TypeError: {e}")
             super().__init__(
                 input_img_size,
                 in_channels=1,

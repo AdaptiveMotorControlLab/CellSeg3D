@@ -291,7 +291,12 @@ class ModelFramework(BasePluginFolder):
             [self._default_weights_folder],
             file_extension="Weights file (*.pth)",
         )
-        self._update_weights_path(file)
+        if file[0] == self._default_weights_folder:
+            return
+        if file is not None and file[0] != "":
+            self.weights_config.path = file[0]
+            self.weights_filewidget.text_field.setText(file[0])
+            self._default_weights_folder = str(Path(file[0]).parent)
 
     @staticmethod
     def get_device(show=True):

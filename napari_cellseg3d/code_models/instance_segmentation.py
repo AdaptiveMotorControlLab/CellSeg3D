@@ -94,16 +94,16 @@ class InstanceMethod:
             raise ValueError(
                 f"Image has {len(image.shape)} dimensions, but should have at most 4 dimensions (CHWD)"
             )
+        if len(image.shape) < 2:
+            raise ValueError(
+                f"Image has {len(image.shape)} dimensions, but should have at least 2 dimensions (HW)"
+            )
         if len(image.shape) == 4:
             image = np.squeeze(image)
             if len(image.shape) == 4:
                 return [im for im in image]
-        elif len(image.shape) < 2:
-            raise ValueError(
-                f"Image has {len(image.shape)} dimensions, but should have at least 2 dimensions (HW)"
-            )
-        else:
             return [image]
+        return None
 
     def run_method_on_channels(self, image):
         image_list = self._make_list_from_channels(image)  # FIXME rename
@@ -590,7 +590,7 @@ class InstanceWidgets(QWidget):
         self._set_visibility()
 
     def _set_visibility(self):
-        for name in self.instance_widgets.keys():
+        for name in self.instance_widgets:
             if name != self.method_choice.currentText():
                 for widget in self.instance_widgets[name]:
                     widget.set_visibility(False)
