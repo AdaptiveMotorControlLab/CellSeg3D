@@ -808,64 +808,10 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.data = None
                 raise err
 
-            model_config = config.ModelInfo(
-                name=self.model_choice.currentText()
-            )
-
-            self.weights_config.path = self.weights_config.path
-            self.weights_config.custom = self.custom_weights_choice.isChecked()
-            self.weights_config.use_pretrained = (
-                not self.use_transfer_choice.isChecked()
-            )
-
-            deterministic_config = config.DeterministicConfig(
-                enabled=self.use_deterministic_choice.isChecked(),
-                seed=self.box_seed.value(),
-            )
-
-            validation_percent = (
-                self.validation_percent_choice.slider_value / 100
-            )
-
-            results_path_folder = Path(
-                self.results_path
-                + f"/{model_config.name}_{utils.get_date_time()}"
-            )
-            Path(results_path_folder).mkdir(
-                parents=True, exist_ok=False
-            )  # avoid overwrite where possible
-
-            patch_size = [w.value() for w in self.patch_size_widgets]
-
-            logger.debug("Loading config...")
-            self.worker_config = config.TrainingWorkerConfig(
-                device=self.get_device(),
-                model_info=model_config,
-                weights_info=self.weights_config,
-                train_data_dict=self.data,
-                validation_percent=validation_percent,
-                max_epochs=self.epoch_choice.value(),
-                loss_function=self.get_loss(self.loss_choice.currentText()),
-                learning_rate=float(self.learning_rate_choice.currentText()),
-                scheduler_patience=self.scheduler_patience_choice.value(),
-                scheduler_factor=self.scheduler_factor_choice.slider_value,
-                validation_interval=self.val_interval_choice.value(),
-                batch_size=self.batch_choice.slider_value,
-                results_path_folder=str(results_path_folder),
-                sampling=self.patch_choice.isChecked(),
-                num_samples=self.sample_choice_slider.slider_value,
-                sample_size=patch_size,
-                do_augmentation=self.augment_choice.isChecked(),
-                deterministic_config=deterministic_config,
-            )  # TODO(cyril) continue to put params in config
-
             self.config = config.TrainerConfig(
                 save_as_zip=self.zip_choice.isChecked()
             )
-
-            self.log.print_and_log(
-                f"Saving results to : {results_path_folder}"
-            )
+            self._set_worker_config()
 
             self.worker = TrainingWorker(config=self.worker_config)
             self.worker.set_download_log(self.log)
@@ -894,6 +840,58 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         else:
             self.worker.start()
             self.btn_start.setText("Running...  Click to stop")
+
+    def _create_worker_from_config(self, config: config.TrainingWorkerConfig):
+        return TrainingWorker(config=config)
+
+    def _set_worker_config(self) -> config.TrainingWorkerConfig:
+        model_config = config.ModelInfo(name=self.model_choice.currentText())
+
+        self.weights_config.path = self.weights_config.path
+        self.weights_config.custom = self.custom_weights_choice.isChecked()
+        self.weights_config.use_pretrained = (
+            not self.use_transfer_choice.isChecked()
+        )
+
+        deterministic_config = config.DeterministicConfig(
+            enabled=self.use_deterministic_choice.isChecked(),
+            seed=self.box_seed.value(),
+        )
+
+        validation_percent = self.validation_percent_choice.slider_value / 100
+
+        results_path_folder = Path(
+            self.results_path + f"/{model_config.name}_{utils.get_date_time()}"
+        )
+        Path(results_path_folder).mkdir(
+            parents=True, exist_ok=False
+        )  # avoid overwrite where possible
+
+        patch_size = [w.value() for w in self.patch_size_widgets]
+
+        logger.debug("Loading config...")
+        self.worker_config = config.TrainingWorkerConfig(
+            device=self.get_device(),
+            model_info=model_config,
+            weights_info=self.weights_config,
+            train_data_dict=self.data,
+            validation_percent=validation_percent,
+            max_epochs=self.epoch_choice.value(),
+            loss_function=self.get_loss(self.loss_choice.currentText()),
+            learning_rate=float(self.learning_rate_choice.currentText()),
+            scheduler_patience=self.scheduler_patience_choice.value(),
+            scheduler_factor=self.scheduler_factor_choice.slider_value,
+            validation_interval=self.val_interval_choice.value(),
+            batch_size=self.batch_choice.slider_value,
+            results_path_folder=str(results_path_folder),
+            sampling=self.patch_choice.isChecked(),
+            num_samples=self.sample_choice_slider.slider_value,
+            sample_size=patch_size,
+            do_augmentation=self.augment_choice.isChecked(),
+            deterministic_config=deterministic_config,
+        )  # TODO(cyril) continue to put params in config
+
+        return self.worker_config
 
     def on_start(self):
         """Catches started signal from worker"""
