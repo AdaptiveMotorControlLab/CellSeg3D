@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from pathlib import Path
+from typing import TYPE_CHECKING, Union
 
 import napari
 import numpy as np
@@ -8,6 +9,9 @@ from monai.transforms import Zoom
 from skimage import io
 from skimage.filters import gaussian
 from tifffile import imread, imwrite
+
+if TYPE_CHECKING:
+    import torch
 
 LOGGER = logging.getLogger(__name__)
 ###############
@@ -128,8 +132,8 @@ def normalize_x(image):
     Returns:
         array: normalized value for the image
     """
-    image = image / 127.5 - 1
-    return image
+    return image / 127.5 - 1
+
 
 def mkdir_from_str(path: str, exist_ok=True, parents=True):
     Path(path).resolve().mkdir(exist_ok=exist_ok, parents=parents)
@@ -144,8 +148,7 @@ def normalize_y(image):
     Returns:
         array: normalized value for the image
     """
-    image = image / 255
-    return image
+    return image / 255
 
 
 def sphericity_volume_area(volume, surface_area):
@@ -199,16 +202,36 @@ def dice_coeff(y_true, y_pred):
     y_true_f = y_true.flatten()
     y_pred_f = y_pred.flatten()
     intersection = np.sum(y_true_f * y_pred_f)
-    score = (2.0 * intersection + smooth) / (
+    return (2.0 * intersection + smooth) / (
         np.sum(y_true_f) + np.sum(y_pred_f) + smooth
     )
-    return score
 
 
 def correct_rotation(image):
     """Rotates the exes 0 and 2 in [DHW] section of image array"""
     extra_dims = len(image.shape) - 3
     return np.swapaxes(image, 0 + extra_dims, 2 + extra_dims)
+
+
+def normalize_max(image):
+    """Normalizes an image using the max and min value"""
+    shape = image.shape
+    image = image.flatten()
+    image = (image - image.min()) / (image.max() - image.min())
+    image = image.reshape(shape)
+    return image
+
+
+def remap_image(
+    image: Union["np.ndarray", "torch.Tensor"], new_max=100, new_min=0
+):
+    """Normalizes a numpy array or Tensor using the max and min value"""
+    shape = image.shape
+    image = image.flatten()
+    image = (image - image.min()) / (image.max() - image.min())
+    image = image * (new_max - new_min) + new_min
+    image = image.reshape(shape)
+    return image
 
 
 def resize(image, zoom_factors):
@@ -276,10 +299,11 @@ def time_difference(time_start, time_finish, as_string=True):
     minutes = f"{int(minutes[0])}".zfill(2)
     seconds = f"{int(seconds[0])}".zfill(2)
 
-    if as_string:
-        return f"{hours}:{minutes}:{seconds}"
-    else:
-        return [hours, minutes, seconds]
+    return (
+        f"{hours}:{minutes}:{seconds}"
+        if as_string
+        else [hours, minutes, seconds]
+    )
 
 
 def get_padding_dim(image_shape, anisotropy_factor=None):
@@ -549,10 +573,8 @@ def load_images(
             "Loading as folder not implemented yet. Use napari to load as folder"
         )
         # images_original = dask_imread(filename_pattern_original)
-    else:
-        images_original = imread(filename_pattern_original)  # tifffile imread
 
-    return images_original
+    return imread(filename_pattern_original)  # tifffile imread
 
 
 # def load_predicted_masks(mito_mask_dir, er_mask_dir, filetype):
