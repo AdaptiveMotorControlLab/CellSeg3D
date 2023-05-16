@@ -28,18 +28,3 @@ ThresholdUtils
 **********************************
 .. autoclass:: napari_cellseg3d.code_plugins.plugin_convert::ThresholdUtils
     :members: __init__
-
-Functions
------------------------------------
-
-save_folder
-*****************************************
-.. autofunction:: napari_cellseg3d.code_plugins.plugin_convert::save_folder
-
-save_layer
-****************************************
-.. autofunction:: napari_cellseg3d.code_plugins.plugin_convert::save_layer
-
-show_result
-****************************************
-.. autofunction:: napari_cellseg3d.code_plugins.plugin_convert::show_result

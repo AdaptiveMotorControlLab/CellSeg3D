@@ -128,4 +128,4 @@ Source code
 --------------------------------
 * :doc:`../code/plugin_model_training`
 * :doc:`../code/model_framework`
-* :doc:`../code/model_workers`
+* :doc:`../code/workers`
