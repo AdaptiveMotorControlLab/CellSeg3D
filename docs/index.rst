@@ -39,8 +39,8 @@ Welcome to napari-cellseg3d's documentation!
     res/code/plugin_convert
     res/code/plugin_metrics
     res/code/model_framework
-    res/code/model_workers
-    res/code/model_instance_seg
+    res/code/workers
+    res/code/instance_segmentation
     res/code/plugin_model_inference
     res/code/plugin_model_training
     res/code/utils

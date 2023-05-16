@@ -61,16 +61,6 @@ from napari_cellseg3d.code_models.instance_segmentation import (
 
 logger = utils.LOGGER
 
-"""
-Writing something to log messages from outside the main thread is rather problematic (plenty of silent crashes...)
-so instead, following the instructions in the guides below to have a worker with custom signals, I implemented
-a custom worker function."""
-
-# FutureReference():
-# https://python-forum.io/thread-31349.html
-# https://www.pythoncentral.io/pysidepyqt-tutorial-creating-your-own-signals-and-slots/
-# https://napari-staging-site.github.io/guides/stable/threading.html
-
 PRETRAINED_WEIGHTS_DIR = Path(__file__).parent.resolve() / Path(
     "models/pretrained"
 )
@@ -174,12 +164,23 @@ class WeightsDownloader:
             )
 
 
+"""
+Writing something to log messages from outside the main thread needs specific care,
+Following the instructions in the guides below to have a worker with custom signals,
+a custom worker function was implemented.
+"""
+
+# https://python-forum.io/thread-31349.html
+# https://www.pythoncentral.io/pysidepyqt-tutorial-creating-your-own-signals-and-slots/
+# https://napari-staging-site.github.io/guides/stable/threading.html
+
+
 class LogSignal(WorkerBaseSignals):
     """Signal to send messages to be logged from another thread.
 
-    Separate from Worker instances as indicated `here`_
+    Separate from Worker instances as indicated `on this post`_
 
-    .. _here: https://stackoverflow.com/questions/2970312/pyqt4-qtcore-pyqtsignal-object-has-no-attribute-connect
+    .. _on this post: https://stackoverflow.com/questions/2970312/pyqt4-qtcore-pyqtsignal-object-has-no-attribute-connect
     """  # TODO link ?
 
     log_signal = Signal(str)
@@ -194,6 +195,9 @@ class LogSignal(WorkerBaseSignals):
 
     def __init__(self):
         super().__init__()
+
+
+# TODO(cyril): move inference and training workers to separate files
 
 
 @dataclass
