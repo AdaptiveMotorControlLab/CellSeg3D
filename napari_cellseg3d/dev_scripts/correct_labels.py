@@ -12,7 +12,7 @@ from tifffile import imread, imwrite
 from tqdm import tqdm
 
 import napari_cellseg3d.dev_scripts.artefact_labeling as make_artefact_labels
-from napari_cellseg3d.code_models.model_instance_seg import binary_watershed
+from napari_cellseg3d.code_models.instance_segmentation import binary_watershed
 
 # import sys
 # sys.path.append(str(Path(__file__) / "../../"))
@@ -228,10 +228,7 @@ def relabel(
         print("these labels will be added")
         if test:
             viewer.close()
-        if viewer is None:
-            viewer = napari.view_image(image)
-        else:
-            viewer = viewer
+        viewer = napari.view_image(image) if viewer is None else viewer
         if not test:
             viewer.add_labels(artefact_copy, name="labels added")
             napari.run()

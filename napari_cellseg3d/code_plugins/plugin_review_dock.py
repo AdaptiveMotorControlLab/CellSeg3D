@@ -1,8 +1,11 @@
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import napari
 import pandas as pd
+
+if TYPE_CHECKING:
+    import napari
 
 # Qt
 from qtpy.QtWidgets import QVBoxLayout, QWidget
@@ -213,10 +216,7 @@ class Datamanager(QWidget):
             )
         else:
             # print(self.image_dims[0])
-            if self.filename is not None:
-                filename = self.filename
-            else:
-                filename = "image"
+            filename = self.filename if self.filename is not None else "image"
             labels = [str(filename) for i in range(self.image_dims[0])]
 
         df = pd.DataFrame(

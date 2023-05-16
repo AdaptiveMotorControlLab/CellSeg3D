@@ -1,20 +1,23 @@
 import numpy as np
 import torch
+from numpy.random import PCG64, Generator
 
 from napari_cellseg3d.code_models.crf import CRFWorker, correct_shape_for_crf
 from napari_cellseg3d.code_models.models.wnet.soft_Ncuts import SoftNCutsLoss
 from napari_cellseg3d.config import MODEL_LIST
 
+rand_gen = Generator(PCG64(12345))
+
 
 def test_correct_shape_for_crf():
-    test = np.random.rand(1, 1, 8, 8, 8)
+    test = rand_gen.random(size=(1, 1, 8, 8, 8))
     assert correct_shape_for_crf(test).shape == (1, 8, 8, 8)
-    test = np.random.rand(8, 8, 8)
+    test = rand_gen.random(size=(8, 8, 8))
     assert correct_shape_for_crf(test).shape == (1, 8, 8, 8)
 
 
 def test_model_list():
-    for model_name in MODEL_LIST.keys():
+    for model_name in MODEL_LIST:
         # if model_name=="test":
         #     continue
         dims = 128
@@ -46,8 +49,8 @@ def test_soft_ncuts_loss():
 
 def test_crf(qtbot):
     dims = 8
-    mock_image = np.random.rand(1, dims, dims, dims)
-    mock_label = np.random.rand(2, dims, dims, dims)
+    mock_image = rand_gen.random(size=(1, dims, dims, dims))
+    mock_label = rand_gen.random(size=(2, dims, dims, dims))
     assert len(mock_label.shape) == 4
     crf = CRFWorker([mock_image, mock_image], [mock_label, mock_label])
 

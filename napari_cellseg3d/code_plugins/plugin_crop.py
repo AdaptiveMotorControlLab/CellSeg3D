@@ -157,8 +157,10 @@ class Cropping(BasePluginSingleImage):
         dim_group_l.addWidget(self.aniso_widgets)
         [
             dim_group_l.addWidget(widget, alignment=ui.ABS_AL)
-            for list in zip(self.crop_size_labels, self.crop_size_widgets)
-            for widget in list
+            for widget_list in zip(
+                self.crop_size_labels, self.crop_size_widgets
+            )
+            for widget in widget_list
         ]
         dim_group_w.setLayout(dim_group_l)
         layout.addWidget(dim_group_w)
@@ -237,10 +239,7 @@ class Cropping(BasePluginSingleImage):
     def _check_ready(self):
         if self.image_layer_loader.layer_data() is not None:
             if self.crop_second_image:
-                if self.label_layer_loader.layer_data() is not None:
-                    return True
-                else:
-                    return False
+                return self.label_layer_loader.layer_data() is not None
             return True
         return False
 

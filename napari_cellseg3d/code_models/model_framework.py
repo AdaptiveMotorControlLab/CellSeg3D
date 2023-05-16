@@ -1,7 +1,10 @@
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import napari
 import torch
+
+if TYPE_CHECKING:
+    import napari
 
 # Qt
 from qtpy.QtWidgets import QProgressBar, QSizePolicy
@@ -126,7 +129,7 @@ class ModelFramework(BasePluginFolder):
             path = self.results_path
 
             if len(log) != 0:
-                with open(
+                with Path.open(
                     path + f"/Log_report_{utils.get_date_time()}.txt",
                     "x",
                 ) as f:
@@ -152,8 +155,8 @@ class ModelFramework(BasePluginFolder):
         )
 
         if len(log) != 0:
-            with open(
-                path,
+            with Path.open(
+                Path(path),
                 "x",
             ) as f:
                 f.write(log)
@@ -282,11 +285,10 @@ class ModelFramework(BasePluginFolder):
         )
         if file[0] == self._default_weights_folder:
             return
-        if file is not None:
-            if file[0] != "":
-                self.weights_config.path = file[0]
-                self.weights_filewidget.text_field.setText(file[0])
-                self._default_weights_folder = str(Path(file[0]).parent)
+        if file is not None and file[0] != "":
+            self.weights_config.path = file[0]
+            self.weights_filewidget.text_field.setText(file[0])
+            self._default_weights_folder = str(Path(file[0]).parent)
 
     @staticmethod
     def get_device(show=True):

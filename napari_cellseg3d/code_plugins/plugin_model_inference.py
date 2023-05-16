@@ -1,18 +1,21 @@
 from functools import partial
+from typing import TYPE_CHECKING
 
-import napari
 import numpy as np
 import pandas as pd
+
+if TYPE_CHECKING:
+    import napari
 
 # local
 from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d.code_models.model_framework import ModelFramework
-from napari_cellseg3d.code_models.model_instance_seg import (
+from napari_cellseg3d.code_models.instance_segmentation import (
     InstanceMethod,
     InstanceWidgets,
 )
-from napari_cellseg3d.code_models.model_workers import (
+from napari_cellseg3d.code_models.model_framework import ModelFramework
+from napari_cellseg3d.code_models.workers import (
     InferenceResult,
     InferenceWorker,
 )
@@ -289,9 +292,11 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         if self.layer_choice.isChecked():
             if self.image_layer_loader.layer_data() is not None:
                 return True
-        elif self.folder_choice.isChecked():
-            if self.image_filewidget.check_ready():
-                return True
+        elif (
+            self.folder_choice.isChecked()
+            and self.image_filewidget.check_ready()
+        ):
+            return True
         return False
 
     def _toggle_display_model_input_size(self):

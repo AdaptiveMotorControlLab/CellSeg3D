@@ -64,10 +64,7 @@ def create_conv(
             )
         elif char == "g":
             is_before_conv = i < order.index("c")
-            if is_before_conv:
-                num_channels = in_channels
-            else:
-                num_channels = out_channels
+            num_channels = in_channels if is_before_conv else out_channels
 
             # use only one group if the given number of groups is greater than the number of channels
             if num_channels < num_groups:
@@ -425,8 +422,7 @@ class Decoder(nn.Module):
     def _joining(encoder_features, x, concat):
         if concat:
             return torch.cat((encoder_features, x), dim=1)
-        else:
-            return encoder_features + x
+        return encoder_features + x
 
 
 def create_encoders(

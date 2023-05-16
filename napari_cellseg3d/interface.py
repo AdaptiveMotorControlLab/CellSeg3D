@@ -1,3 +1,4 @@
+import contextlib
 import threading
 from functools import partial
 from typing import List, Optional
@@ -105,12 +106,12 @@ class QWidgetSingleton(type(QObject)):
 ##################
 
 
-def handle_adjust_errors(widget, type, context, msg: str):
+def handle_adjust_errors(widget, warning_type, context, msg: str):
     """Qt message handler that attempts to react to errors when setting the window size
     and resizes the main window"""
     pass
     # head = msg.split(": ")[0]
-    # if type == QtWarningMsg and head == "QWindowsWindow::setGeometry":
+    # if warning_type == QtWarningMsg and head == "QWindowsWindow::setGeometry":
     #     logger.warning(
     #         f"Qt resize error : {msg}\nhas been handled by attempting to resize the window"
     #     )
@@ -191,7 +192,7 @@ class UtilsDropdown(metaclass=utils.Singleton):
         menu.setStyleSheet(f"background-color: {napari_grey}; color: white;")
 
         actions = []
-        for title in UTILITIES_WIDGETS.keys():
+        for title in UTILITIES_WIDGETS:
             a = menu.addAction(f"Utilities : {title}")
             actions.append(a)
 
@@ -333,8 +334,7 @@ def toggle_visibility(checkbox, widget):
 def add_label(widget, label, label_before=True, horizontal=True):
     if label_before:
         return combine_blocks(widget, label, horizontal=horizontal)
-    else:
-        return combine_blocks(label, widget, horizontal=horizontal)
+    return combine_blocks(label, widget, horizontal=horizontal)
 
 
 class ContainerWidget(QWidget):
@@ -736,8 +736,7 @@ class AnisotropyWidgets(QWidget):
         """
 
         base = min(aniso_res)
-        zoom_factors = [base / res for res in aniso_res]
-        return zoom_factors
+        return [base / res for res in aniso_res]
 
     def enabled(self):
         """Returns : whether anisotropy correction has been enabled or not"""
@@ -797,8 +796,8 @@ class LayerSelecter(ContainerWidget):
             index = self.layer_list.findText(removed_layer.name)
             self.layer_list.removeItem(index)
 
-    def set_layer_type(self, type):  # no @property due to Qt constraint
-        self.layer_type = type
+    def set_layer_type(self, layer_type):  # no @property due to Qt constraint
+        self.layer_type = layer_type
         [self.layer_list.removeItem(i) for i in range(self.layer_list.count())]
         self._check_for_layers()
 
@@ -811,7 +810,7 @@ class LayerSelecter(ContainerWidget):
     def layer_data(self):
         if self.layer_list.count() < 1:
             logger.warning("Please select a valid layer !")
-            return
+            return None
 
         return self.layer().data
 
@@ -899,9 +898,8 @@ class FilePathWidget(QWidget):  # TODO include load as folder
             self.update_field_color("indianred")
             self.text_field.setToolTip("Mandatory field !")
             return False
-        else:
-            self.update_field_color(f"{napari_param_darkgrey}")
-            return True
+        self.update_field_color(f"{napari_param_darkgrey}")
+        return True
 
     @property
     def required(self):
@@ -913,10 +911,9 @@ class FilePathWidget(QWidget):  # TODO include load as folder
         if is_required:
             self.text_field.textChanged.connect(self.check_ready)
         else:
-            try:
+            with contextlib.suppress(TypeError):
                 self.text_field.textChanged.disconnect(self.check_ready)
-            except TypeError:
-                pass
+
         self.check_ready()
         self._required = is_required
 
@@ -1003,22 +1000,22 @@ class ScrollArea(QScrollArea):
 
 def set_spinbox(
     box,
-    min=0,
-    max=10,
+    min_value=0,
+    max_value=10,
     default=0,
     step=1,
     fixed: Optional[bool] = True,
 ):
     """Args:
     box : QSpinBox or QDoubleSpinBox
-    min : minimum value, defaults to 0
-    max : maximum value, defaults to 10
+    min_value : minimum value, defaults to 0
+    max_value : maximum value, defaults to 10
     default :  default value, defaults to 0
     step : step value, defaults to 1
     fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed"""
 
-    box.setMinimum(min)
-    box.setMaximum(max)
+    box.setMinimum(min_value)
+    box.setMaximum(max_value)
     box.setSingleStep(step)
     box.setValue(default)
 
@@ -1029,8 +1026,8 @@ def set_spinbox(
 def make_n_spinboxes(
     class_,
     n: int = 2,
-    min=0,
-    max=10,
+    min_value=0,
+    max_value=10,
     default=0,
     step=1,
     parent: Optional[QWidget] = None,
@@ -1041,8 +1038,8 @@ def make_n_spinboxes(
     Args:
         class_ : QSpinBox or QDoubleSpinbox
         n (int): number of increment counters to create
-        min (Optional[int]): minimum value, defaults to 0
-        max (Optional[int]): maximum value, defaults to 10
+        min_value (Optional[int]): minimum value, defaults to 0
+        max_value (Optional[int]): maximum value, defaults to 10
         default (Optional[int]): default value, defaults to 0
         step (Optional[int]): step value, defaults to 1
         parent: parent widget, defaults to None
@@ -1053,7 +1050,7 @@ def make_n_spinboxes(
 
     boxes = []
     for _i in range(n):
-        box = class_(min, max, default, step, parent, fixed)
+        box = class_(min_value, max_value, default, step, parent, fixed)
         boxes.append(box)
     return boxes
 
@@ -1226,10 +1223,9 @@ def open_file_dialog(
 
     default_path = utils.parse_default_path(possible_paths)
 
-    f_name = QFileDialog.getOpenFileName(
+    return QFileDialog.getOpenFileName(
         widget, "Choose file", default_path, filetype
     )
-    return f_name
 
 
 def open_folder_dialog(
@@ -1239,10 +1235,9 @@ def open_folder_dialog(
     default_path = utils.parse_default_path(possible_paths)
 
     logger.info(f"Default : {default_path}")
-    filenames = QFileDialog.getExistingDirectory(
+    return QFileDialog.getExistingDirectory(
         widget, "Open directory", default_path + "/.."
     )
-    return filenames
 
 
 def make_label(name, parent=None):  # TODO update to child class
@@ -1259,12 +1254,11 @@ def make_label(name, parent=None):  # TODO update to child class
         label = QLabel(name, parent)
         if SHOW_LABELS_DEBUG_TOOLTIP:
             label.setToolTip(f"{label}")
-        return label
     else:
         label = QLabel(name)
         if SHOW_LABELS_DEBUG_TOOLTIP:
             label.setToolTip(f"{label}")
-        return label
+    return label
 
 
 def make_group(title, l=7, t=20, r=7, b=11, parent=None):

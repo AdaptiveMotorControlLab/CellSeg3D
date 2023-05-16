@@ -206,6 +206,7 @@ class SoftNCutsLoss(nn.Module):
 
         return torch.add(torch.neg(loss), K)
         """
+        return None
 
     def gaussian_kernel(self, radius, sigma):
         """Computes the Gaussian kernel.
@@ -348,5 +349,4 @@ class SoftNCutsLoss(nn.Module):
             1, 1, self.W_X.shape[0], self.W_X.shape[1]
         )  # (1, 1, H*W*D, H*W*D)
 
-        W = torch.mul(W_I, unsqueezed_W_X)  # (N, C, H*W*D, H*W*D)
-        return W
+        return torch.mul(W_I, unsqueezed_W_X)  # (N, C, H*W*D, H*W*D)

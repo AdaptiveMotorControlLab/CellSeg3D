@@ -82,6 +82,8 @@ exclude = [
     "dist",
     "node_modules",
     "venv",
+    "docs/conf.py",
+    "napari_cellseg3d/_tests/conftest.py",
 ]
 
 [tool.black]

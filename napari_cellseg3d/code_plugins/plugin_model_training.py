@@ -1,9 +1,9 @@
 import shutil
 from functools import partial
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
-import napari
 import numpy as np
 import pandas as pd
 import torch
@@ -11,6 +11,9 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
+
+if TYPE_CHECKING:
+    import napari
 
 # MONAI
 from monai.losses import (
@@ -29,7 +32,7 @@ from qtpy.QtWidgets import QSizePolicy
 from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.code_models.model_framework import ModelFramework
-from napari_cellseg3d.code_models.model_workers import (
+from napari_cellseg3d.code_models.workers import (
     TrainingReport,
     TrainingWorker,
 )
@@ -414,11 +417,10 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             * False and displays a warning if not
 
         """
-        if self.images_filepaths != [] and self.labels_filepaths != []:
-            return True
-        else:
+        if self.images_filepaths == [] and self.labels_filepaths != []:
             logger.warning("Image and label paths are not correctly set")
             return False
+        return True
 
     def _build(self):
         """Builds the layout of the widget and creates the following tabs and prompts:
@@ -999,7 +1001,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                         self.result_layers[i].data = report.images[i]
                         self.result_layers[i].refresh()
             except Exception as e:
-                logger.error(e, exc_info=True)
+                logger.exception(e)
 
             self.progress.setValue(
                 100 * (report.epoch + 1) // self.worker_config.max_epochs
@@ -1131,7 +1133,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         epoch = len(loss)
         if epoch < self.worker_config.validation_interval * 2:
             return
-        elif epoch == self.worker_config.validation_interval * 2:
+        if epoch == self.worker_config.validation_interval * 2:
             bckgrd_color = (0, 0, 0, 0)  # '#262930'
             with plt.style.context("dark_background"):
                 self.canvas = FigureCanvas(Figure(figsize=(10, 1.5)))
@@ -1167,7 +1169,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 )
                 self.plot_dock._close_btn = False
             except AttributeError as e:
-                logger.error(e, exc_info=True)
+                logger.exception(e)
                 logger.error(
                     "Plot dock widget could not be added. Should occur in testing only"
                 )

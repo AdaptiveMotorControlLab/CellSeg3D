@@ -178,11 +178,10 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         if cfg.image is None:
             raise ValueError("Review requires at least one image")
 
-        if cfg.labels is not None:
-            if cfg.image.shape != cfg.labels.shape:
-                logger.warning(
-                    "Image and label dimensions do not match ! Please load matching images"
-                )
+        if cfg.labels is not None and cfg.image.shape != cfg.labels.shape:
+            logger.warning(
+                "Image and label dimensions do not match ! Please load matching images"
+            )
 
     def _prepare_data(self):
         if self.layer_choice.isChecked():
@@ -400,7 +399,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
                     )
                     canvas.draw_idle()
                 except Exception as e:
-                    logger.error(e, exc_info=True)
+                    logger.exception(e)
 
         # Qt widget defined in docker.py
         dmg = Datamanager(parent=viewer)

@@ -91,16 +91,16 @@ class InstanceMethod:
             raise ValueError(
                 f"Image has {len(image.shape)} dimensions, but should have at most 4 dimensions (CHWD)"
             )
+        if len(image.shape) < 2:
+            raise ValueError(
+                f"Image has {len(image.shape)} dimensions, but should have at least 2 dimensions (HW)"
+            )
         if len(image.shape) == 4:
             image = np.squeeze(image)
             if len(image.shape) == 4:
                 return [im for im in image]
-        elif len(image.shape) < 2:
-            raise ValueError(
-                f"Image has {len(image.shape)} dimensions, but should have at least 2 dimensions (HW)"
-            )
-        else:
             return [image]
+        return None
 
     def run_method_on_channels(self, image):
         image_list = self._make_list_from_channels(image)  # FIXME rename
@@ -313,11 +313,9 @@ def to_instance(image, is_file_path=False):
         image = [imread(image)]
         # image = image.compute()
 
-    result = binary_watershed(
+    return binary_watershed(
         image, thres_small=0, thres_seeding=0.3, rem_seed_thres=0
     )  # FIXME add params from utils plugin
-
-    return result
 
 
 def to_semantic(image, is_file_path=False):
@@ -335,8 +333,7 @@ def to_semantic(image, is_file_path=False):
         # image = image.compute()
 
     image[image >= 1] = 1
-    result = image.astype(np.uint16)
-    return result
+    return image.astype(np.uint16)
 
 
 def volume_stats(volume_image):
@@ -588,7 +585,7 @@ class InstanceWidgets(QWidget):
         self._set_visibility()
 
     def _set_visibility(self):
-        for name in self.instance_widgets.keys():
+        for name in self.instance_widgets:
             if name != self.method_choice.currentText():
                 for widget in self.instance_widgets[name]:
                     widget.set_visibility(False)

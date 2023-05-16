@@ -1,4 +1,4 @@
-from napari_cellseg3d.code_models.model_workers import (
+from napari_cellseg3d.code_models.workers import (
     PRETRAINED_WEIGHTS_DIR,
     WeightsDownloader,
 )
