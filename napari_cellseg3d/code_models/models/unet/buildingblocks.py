@@ -422,8 +422,7 @@ class Decoder(nn.Module):
     def _joining(encoder_features, x, concat):
         if concat:
             return torch.cat((encoder_features, x), dim=1)
-        else:
-            return encoder_features + x
+        return encoder_features + x
 
 
 def create_encoders(

@@ -157,8 +157,10 @@ class Cropping(BasePluginSingleImage):
         dim_group_l.addWidget(self.aniso_widgets)
         [
             dim_group_l.addWidget(widget, alignment=ui.ABS_AL)
-            for list in zip(self.crop_size_labels, self.crop_size_widgets)
-            for widget in list
+            for widget_list in zip(
+                self.crop_size_labels, self.crop_size_widgets
+            )
+            for widget in widget_list
         ]
         dim_group_w.setLayout(dim_group_l)
         layout.addWidget(dim_group_w)

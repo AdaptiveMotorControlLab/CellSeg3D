@@ -1,8 +1,11 @@
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import napari
 import pandas as pd
+
+if TYPE_CHECKING:
+    import napari
 
 # Qt
 from qtpy.QtWidgets import QVBoxLayout, QWidget

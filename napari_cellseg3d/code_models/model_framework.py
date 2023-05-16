@@ -1,7 +1,10 @@
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import napari
 import torch
+
+if TYPE_CHECKING:
+    import napari
 
 # Qt
 from qtpy.QtWidgets import QProgressBar, QSizePolicy
@@ -126,7 +129,7 @@ class ModelFramework(BasePluginFolder):
             path = self.results_path
 
             if len(log) != 0:
-                with open(
+                with Path.open(
                     path + f"/Log_report_{utils.get_date_time()}.txt",
                     "x",
                 ) as f:
@@ -152,8 +155,8 @@ class ModelFramework(BasePluginFolder):
         )
 
         if len(log) != 0:
-            with open(
-                path,
+            with Path.open(
+                Path(path),
                 "x",
             ) as f:
                 f.write(log)
