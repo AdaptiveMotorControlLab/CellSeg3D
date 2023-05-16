@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from pathlib import Path
+from typing import TYPE_CHECKING, Union
 
 import napari
 import numpy as np
@@ -8,6 +9,9 @@ from monai.transforms import Zoom
 from skimage import io
 from skimage.filters import gaussian
 from tifffile import imread, imwrite
+
+if TYPE_CHECKING:
+    import torch
 
 LOGGER = logging.getLogger(__name__)
 ###############
@@ -134,9 +138,6 @@ def normalize_x(image):
 def mkdir_from_str(path: str, exist_ok=True, parents=True):
     Path(path).resolve().mkdir(exist_ok=exist_ok, parents=parents)
 
-def mkdir_from_str(path: str, exist_ok=True, parents=True):
-    Path(path).resolve().mkdir(exist_ok=exist_ok, parents=parents)
-
 
 def normalize_y(image):
     """Normalizes the values of an image array to be between [0;1] rather than [0;255]
@@ -210,6 +211,27 @@ def correct_rotation(image):
     """Rotates the exes 0 and 2 in [DHW] section of image array"""
     extra_dims = len(image.shape) - 3
     return np.swapaxes(image, 0 + extra_dims, 2 + extra_dims)
+
+
+def normalize_max(image):
+    """Normalizes an image using the max and min value"""
+    shape = image.shape
+    image = image.flatten()
+    image = (image - image.min()) / (image.max() - image.min())
+    image = image.reshape(shape)
+    return image
+
+
+def remap_image(
+    image: Union["np.ndarray", "torch.Tensor"], new_max=100, new_min=0
+):
+    """Normalizes a numpy array or Tensor using the max and min value"""
+    shape = image.shape
+    image = image.flatten()
+    image = (image - image.min()) / (image.max() - image.min())
+    image = image * (new_max - new_min) + new_min
+    image = image.reshape(shape)
+    return image
 
 
 def resize(image, zoom_factors):
@@ -551,8 +573,6 @@ def load_images(
             "Loading as folder not implemented yet. Use napari to load as folder"
         )
         # images_original = dask_imread(filename_pattern_original)
-    else:
-        images_original = imread(filename_pattern_original)  # tifffile imread
 
     return imread(filename_pattern_original)  # tifffile imread
 
