@@ -102,11 +102,10 @@ class InstanceMethod:
             image = np.squeeze(image)
             if len(image.shape) == 4:
                 return [im for im in image]
-            return [image]
-        return None
+        return [image]
 
     def run_method_on_channels(self, image):
-        image_list = self._make_list_from_channels(image)  # FIXME rename
+        image_list = self._make_list_from_channels(image)
         result = np.array([self.run_method(im) for im in image_list])
         return result.squeeze()
 
