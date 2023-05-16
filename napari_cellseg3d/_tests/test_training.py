@@ -43,6 +43,7 @@ def test_training(make_napari_viewer, qtbot):
     worker = widget._create_worker_from_config(worker_config)
     worker.config.train_data_dict = [{"image": im_path, "label": im_path}]
     worker.config.val_data_dict = [{"image": im_path, "label": im_path}]
+    worker.config.max_epochs = 1
     worker.log_parameters()
     res = next(worker.train())
 
