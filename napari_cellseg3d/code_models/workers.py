@@ -61,16 +61,6 @@ from napari_cellseg3d.code_models.instance_segmentation import (
 
 logger = utils.LOGGER
 
-"""
-Writing something to log messages from outside the main thread is rather problematic (plenty of silent crashes...)
-so instead, following the instructions in the guides below to have a worker with custom signals, I implemented
-a custom worker function."""
-
-# FutureReference():
-# https://python-forum.io/thread-31349.html
-# https://www.pythoncentral.io/pysidepyqt-tutorial-creating-your-own-signals-and-slots/
-# https://napari-staging-site.github.io/guides/stable/threading.html
-
 PRETRAINED_WEIGHTS_DIR = Path(__file__).parent.resolve() / Path(
     "models/pretrained"
 )
@@ -188,9 +178,9 @@ a custom worker function was implemented.
 class LogSignal(WorkerBaseSignals):
     """Signal to send messages to be logged from another thread.
 
-    Separate from Worker instances as indicated `here`_
+    Separate from Worker instances as indicated `on this post`_
 
-    .. _here: https://stackoverflow.com/questions/2970312/pyqt4-qtcore-pyqtsignal-object-has-no-attribute-connect
+    .. _on this post: https://stackoverflow.com/questions/2970312/pyqt4-qtcore-pyqtsignal-object-has-no-attribute-connect
     """  # TODO link ?
 
     log_signal = Signal(str)
@@ -208,41 +198,6 @@ class LogSignal(WorkerBaseSignals):
 
 
 # TODO(cyril): move inference and training workers to separate files
-
-
-class ONNXModelWrapper(torch.nn.Module):
-    """Class to replace torch model by ONNX Runtime session"""
-
-    def __init__(self, file_location):
-        super().__init__()
-        try:
-            import onnxruntime as ort
-        except ImportError as e:
-            logger.error("ONNX is not installed but ONNX model was loaded")
-            logger.error(e)
-            msg = "PLEASE INSTALL ONNX CPU OR GPU USING pip install napari-cellseg3d[onnx-cpu] OR napari-cellseg3d[onnx-gpu]"
-            logger.error(msg)
-            raise ImportError(msg) from e
-
-        self.ort_session = ort.InferenceSession(
-            file_location,
-            providers=["CUDAExecutionProvider", "CPUExecutionProvider"],
-        )
-
-    def forward(self, modeL_input):
-        """Wraps ONNX output in a torch tensor"""
-        outputs = self.ort_session.run(
-            None, {"input": modeL_input.cpu().numpy()}
-        )
-        return torch.tensor(outputs[0])
-
-    def eval(self):
-        """Dummy function to replace model.eval()"""
-        pass
-
-    def to(self, device):
-        """Dummy function to replace model.to(device)"""
-        pass
 
 
 @dataclass
