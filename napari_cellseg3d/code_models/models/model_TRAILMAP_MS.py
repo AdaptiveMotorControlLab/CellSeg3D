@@ -16,7 +16,7 @@ class TRAILMAP_MS_(UNet3D):
                 in_channels=in_channels, out_channels=out_channels, **kwargs
             )
         except TypeError as e:
-            logger.warn(f"Caught TypeError: {e}")
+            logger.warning(f"Caught TypeError: {e}")
             super().__init__(
                 in_channels=in_channels, out_channels=out_channels
             )

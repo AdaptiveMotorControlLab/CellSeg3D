@@ -54,17 +54,15 @@ __credits__ = [
 
 
 def correct_shape_for_crf(image, desired_dims=4):
-    if len(image.shape) == desired_dims:
-        return image
     if len(image.shape) > desired_dims:
         # if image.shape[0] > 1:
         #     raise ValueError(
         #         f"Image shape {image.shape} might have several channels"
         #     )
         image = np.squeeze(image, axis=0)
-    if len(image.shape) < desired_dims:
+    elif len(image.shape) < desired_dims:
         image = np.expand_dims(image, axis=0)
-    return correct_shape_for_crf(image)
+    return image
 
 
 def crf_batch(images, probs, sa, sb, sg, w1, w2, n_iter=5):
@@ -185,8 +183,8 @@ class CRFWorker(GeneratorWorker):
 
     def __init__(
         self,
-        images_list,
-        labels_list,
+        images_list: list,
+        labels_list: list,
         config: CRFConfig = None,
         log=None,
     ):
@@ -205,16 +203,19 @@ class CRFWorker(GeneratorWorker):
         if not CRF_INSTALLED:
             raise ImportError("pydensecrf is not installed.")
 
-        for image, labels in zip(self.images, self.labels):
-            if image.shape[-3:] != labels.shape[-3:]:
+        if len(self.images) != len(self.labels):
+            raise ValueError("Number of images and labels must be the same.")
+
+        for i in range(len(self.images)):
+            if self.images[i].shape[-3:] != self.labels[i].shape[-3:]:
                 raise ValueError("Image and labels must have the same shape.")
 
-            image = correct_shape_for_crf(image)
-            labels = correct_shape_for_crf(labels)
+            im = correct_shape_for_crf(self.labels[i])
+            prob = correct_shape_for_crf(self.labels[i])
 
             yield crf(
-                image,
-                labels,
+                im,
+                prob,
                 self.config.sa,
                 self.config.sb,
                 self.config.sg,
