@@ -5,6 +5,9 @@ repos:
 #      - id: check-docstring-first
       - id: end-of-file-fixer
       - id: trailing-whitespace
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-toml
 #  - repo: https://github.com/pycqa/isort
 #    rev: 5.12.0
 #    hooks:

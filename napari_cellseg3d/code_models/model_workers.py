@@ -119,9 +119,9 @@ class WeightsDownloader:
             logger.info(message)
             return
 
-        with open(json_path) as f:
+        with Path.open(json_path) as f:
             neturls = json.load(f)
-        if model_name in neturls.keys():
+        if model_name in neturls:
             url = neturls[model_name]
             response = urllib.request.urlopen(url)
 
@@ -259,8 +259,7 @@ class InferenceWorker(GeneratorWorker):
 
         Returns:
             dict: list of image paths from loaded folder"""
-        data_dicts = [{"image": image_name} for image_name in images_filepaths]
-        return data_dicts
+        return [{"image": image_name} for image_name in images_filepaths]
 
     def set_download_log(self, widget):
         self.downloader.log_widget = widget
@@ -304,10 +303,11 @@ class InferenceWorker(GeneratorWorker):
                 f"Thresholding is enabled at {config.post_process_config.thresholding.threshold_value}"
             )
 
-        if config.sliding_window_config.is_enabled():
-            status = "enabled"
-        else:
-            status = "disabled"
+        status = (
+            "enabled"
+            if config.sliding_window_config.is_enabled()
+            else "disabled"
+        )
 
         self.log(f"Window inference is {status}\n")
         if status == "enabled":
@@ -471,10 +471,9 @@ class InferenceWorker(GeneratorWorker):
         #         self.config.model_info.get_model().get_output(model, inputs)
         #     )
 
-        if self.config.keep_on_cpu:
-            dataset_device = "cpu"
-        else:
-            dataset_device = self.config.device
+        dataset_device = (
+            "cpu" if self.config.keep_on_cpu else self.config.device
+        )
 
         if self.config.sliding_window_config.is_enabled():
             window_size = self.config.sliding_window_config.window_size
@@ -491,6 +490,7 @@ class InferenceWorker(GeneratorWorker):
                 # outputs = model(inputs)
 
                 def model_output_wrapper(inputs):
+                    inputs = utils.remap_image(inputs)
                     result = model(inputs)
                     return post_process_transforms(result)
 
@@ -508,7 +508,7 @@ class InferenceWorker(GeneratorWorker):
                         progress=True,
                     )
             except Exception as e:
-                logger.error(e, exc_info=True)
+                logger.exception(e)
                 logger.debug("failed to run sliding window inference")
                 self.raise_error(e, "Error during sliding window inference")
             logger.debug(f"Inference output shape: {outputs.shape}")
@@ -519,11 +519,9 @@ class InferenceWorker(GeneratorWorker):
             if post_process:
                 out = np.array(out).astype(np.float32)
                 out = np.squeeze(out)
-                return out
-            else:
-                return out
+            return out
         except Exception as e:
-            logger.error(e, exc_info=True)
+            logger.exception(e)
             self.raise_error(e, "Error during sliding window inference")
             # sys.stdout = old_stdout
             # sys.stderr = old_stderr
@@ -634,8 +632,7 @@ class InferenceWorker(GeneratorWorker):
                 padding_mode="empty",
             )
             return anisotropic_transform(image[0])
-        else:
-            return image
+        return image
 
     def instance_seg(
         self, semantic_labels, image_id=0, original_filename="layer"
@@ -647,10 +644,11 @@ class InferenceWorker(GeneratorWorker):
         instance_labels = method.run_method_on_channels(semantic_labels)
         self.log(f"DEBUG instance results shape : {instance_labels.shape}")
 
-        if self.config.filetype == "":
-            filetype = ".tif"
-        else:
-            filetype = "_" + self.config.filetype
+        filetype = (
+            ".tif"
+            if self.config.filetype == ""
+            else "_" + self.config.filetype
+        )
 
         instance_filepath = (
             self.config.results_path
@@ -732,9 +730,9 @@ class InferenceWorker(GeneratorWorker):
                     stats = [volume_stats(c) for c in instance_labels]
                 else:
                     stats = [volume_stats(instance_labels)]
-                return stats
             else:
-                return None
+                stats = None
+            return stats
         except ValueError as e:
             self.log(f"Error occurred during stats computing : {e}")
             return None
@@ -758,10 +756,7 @@ class InferenceWorker(GeneratorWorker):
             semantic_labels=out, from_layer=True
         )
 
-        if self.config.use_crf:
-            crf_results = self.run_crf(image, out)
-        else:
-            crf_results = None
+        crf_results = self.run_crf(image, out) if self.config.use_crf else None
 
         return self.create_inference_result(
             semantic_labels=out,
@@ -943,7 +938,7 @@ class InferenceWorker(GeneratorWorker):
             model.to("cpu")
             # self.quit()
         except Exception as e:
-            logger.error(e, exc_info=True)
+            logger.exception(e)
             self.raise_error(e, "Inference failed")
             self.quit()
         finally:
@@ -1174,10 +1169,7 @@ class TrainingWorker(GeneratorWorker):
 
             do_sampling = self.config.sampling
 
-            if do_sampling:
-                size = self.config.sample_size
-            else:
-                size = check
+            size = self.config.sample_size if do_sampling else check
 
             model = model_class(  # FIXME check if correct
                 input_img_size=utils.get_padding_dim(size), use_checkpoint=True
@@ -1410,7 +1402,7 @@ class TrainingWorker(GeneratorWorker):
                     )
                 except RuntimeError as e:
                     logger.error(f"Error when loading weights : {e}")
-                    logger.error(e, exc_info=True)
+                    logger.exception(e)
                     warn = (
                         "WARNING:\nIt'd seem that the weights were incompatible with the model,\n"
                         "the model will be trained from random weights"

@@ -46,11 +46,43 @@ where = ["."]
 [tool.ruff]
 select = [
     "E", "F", "W",
-    "I",
+    "A",
     "B",
+    "G",
+    "I",
+    "PT",
+    "PTH",
+    "RET",
+    "SIM",
+    "TCH",
+    "NPY",
 ]
 # Never enforce `E501` (line length violations) and 'E741' (ambiguous variable names)
-ignore = ["E501", "E741"]
+# and 'G004' (do not use f-strings in logging)
+ignore = ["E501", "E741", "G004"]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
 
 [tool.black]
 line-length = 79
