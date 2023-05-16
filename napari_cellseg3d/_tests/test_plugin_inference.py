@@ -3,6 +3,9 @@ from pathlib import Path
 from tifffile import imread
 
 from napari_cellseg3d._tests.fixtures import LogFixture
+from napari_cellseg3d.code_models.instance_segmentation import (
+    INSTANCE_SEGMENTATION_METHOD_LIST,
+)
 from napari_cellseg3d.code_models.models.model_test import TestModel
 from napari_cellseg3d.code_plugins.plugin_model_inference import (
     InferenceResult,
@@ -44,6 +47,10 @@ def test_inference(make_napari_viewer, qtbot):
     assert worker.config.model_info is not None
     worker.config.layer = viewer.layers[0].data
     worker.config.post_process_config.instance.enabled = True
+    worker.config.post_process_config.instance.method = (
+        INSTANCE_SEGMENTATION_METHOD_LIST["Watershed"]()
+    )
+
     assert worker.config.layer is not None
     worker.log_parameters()
 
