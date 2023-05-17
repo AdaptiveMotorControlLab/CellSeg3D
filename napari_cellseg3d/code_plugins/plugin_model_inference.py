@@ -171,7 +171,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.window_size_choice = ui.DropdownMenu(
             sizes_window, text_label="Window size"
         )
-        self.window_size_choice.setCurrentIndex(3)  # set to 64 by default
+        self.window_size_choice.setCurrentIndex(self._default_window_size)  # set to 64 by default
 
         self.window_overlap_slider = ui.Slider(
             default=config.SlidingWindowConfig.window_overlap * 100,
@@ -196,7 +196,6 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.window_overlap_slider.container,
             ],
         )
-        self.window_size_choice.setCurrentIndex(3)  # default size to 64
 
         ##################
         ##################
