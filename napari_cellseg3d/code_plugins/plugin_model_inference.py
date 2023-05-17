@@ -119,6 +119,9 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.model_choice.currentIndexChanged.connect(
             self._toggle_display_model_input_size
         )
+        self.model_choice.currentIndexChanged.connect(
+            self._restrict_window_size_for_model
+        )
         self.model_choice.setCurrentIndex(0)
 
         self.anisotropy_wdgt = ui.AnisotropyWidgets(
@@ -150,9 +153,10 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         )
 
         self.window_infer_box = ui.CheckBox("Use window inference")
-        self.window_infer_box.clicked.connect(self._toggle_display_window_size)
+        self.window_infer_box.toggled.connect(self._toggle_display_window_size)
 
         sizes_window = ["8", "16", "32", "64", "128", "256", "512"]
+        self._default_window_size = sizes_window.index("64")
         # (
         #     self.window_size_choice,
         #     self.window_size_choice.label,
@@ -167,7 +171,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.window_size_choice = ui.DropdownMenu(
             sizes_window, text_label="Window size"
         )
-        self.window_size_choice.setCurrentIndex(3)  # set to 64 by default
+        self.window_size_choice.setCurrentIndex(self._default_window_size)  # set to 64 by default
 
         self.window_overlap_slider = ui.Slider(
             default=config.SlidingWindowConfig.window_overlap * 100,
@@ -192,7 +196,6 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.window_overlap_slider.container,
             ],
         )
-        self.window_size_choice.setCurrentIndex(3)  # default size to 64
 
         ##################
         ##################
@@ -298,6 +301,19 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ):
             return True
         return False
+
+    def _restrict_window_size_for_model(self):
+        """Sets the window size to a value that is compatible with the chosen model"""
+        if self.model_choice.currentText() == "WNet":
+            self.window_size_choice.setCurrentIndex(self._default_window_size)
+            self.window_size_choice.setDisabled(True)
+            self.window_infer_box.setChecked(True)
+            self.window_infer_box.setDisabled(True)
+        else:
+            self.window_size_choice.setDisabled(False)
+            self.window_infer_box.setDisabled(False)
+            self.window_infer_box.setChecked(False)
+            self.window_size_choice.setCurrentIndex(self._default_window_size)
 
     def _toggle_display_model_input_size(self):
         if (
