@@ -394,7 +394,7 @@ def volume_stats(volume_image):
     return ImageStats(
         volume,
         [region.centroid[0] for region in properties],
-        [region.centroid[0] for region in properties],
+        [region.centroid[1] for region in properties],
         [region.centroid[2] for region in properties],
         sphericity_ax,
         fill([volume_image.shape]),
