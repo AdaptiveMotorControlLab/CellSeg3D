@@ -223,12 +223,18 @@ def normalize_max(image):
 
 
 def remap_image(
-    image: Union["np.ndarray", "torch.Tensor"], new_max=100, new_min=0
+    image: Union["np.ndarray", "torch.Tensor"],
+    new_max=100,
+    new_min=0,
+    prev_max=None,
+    prev_min=None,
 ):
     """Normalizes a numpy array or Tensor using the max and min value"""
     shape = image.shape
     image = image.flatten()
-    image = (image - image.min()) / (image.max() - image.min())
+    im_max = prev_max if prev_max is not None else image.max()
+    im_min = prev_min if prev_min is not None else image.min()
+    image = (image - im_min) / (im_max - im_min)
     image = image * (new_max - new_min) + new_min
     image = image.reshape(shape)
     return image
