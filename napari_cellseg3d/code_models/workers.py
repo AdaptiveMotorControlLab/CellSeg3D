@@ -492,9 +492,9 @@ class InferenceWorker(GeneratorWorker):
             logger.debug(f"inputs type : {inputs.dtype}")
             try:
                 # outputs = model(inputs)
+                inputs = utils.remap_image(inputs)
 
                 def model_output_wrapper(inputs):
-                    inputs = utils.remap_image(inputs)
                     result = model(inputs)
                     return post_process_transforms(result)
 
