@@ -1,7 +1,5 @@
-from pathlib import Path
-
 import numpy as np
-from tifffile import imread
+from numpy.random import PCG64, Generator
 
 from napari_cellseg3d.code_plugins.plugin_utilities import (
     UTILITIES_WIDGETS,
@@ -15,10 +13,9 @@ def test_utils_plugin(make_napari_viewer):
     view = make_napari_viewer()
     widget = Utilities(view)
 
-    im_path = str(Path(__file__).resolve().parent / "res/test.tif")
-    image = imread(im_path)
-    view.add_image(image)
-    view.add_labels(image.astype(np.uint8))
+    image = rand_gen.random((10, 10, 10)).astype(np.uint8)
+    image_layer = view.add_image(image, name="image")
+    label_layer = view.add_labels(image.astype(np.uint8), name="labels")
 
     view.window.add_dock_widget(widget)
     view.dims.ndisplay = 3
@@ -32,4 +29,6 @@ def test_utils_plugin(make_napari_viewer):
             menu = widget.utils_widgets[i].instance_widgets.method_choice
             menu.setCurrentIndex(menu.currentIndex() + 1)
 
+        assert len(image_layer.data.shape) == 3
+        assert len(label_layer.data.shape) == 3
         widget.utils_widgets[i]._start()
