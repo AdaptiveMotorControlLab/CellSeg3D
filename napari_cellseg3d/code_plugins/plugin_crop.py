@@ -3,6 +3,7 @@ from pathlib import Path
 import napari
 import numpy as np
 from magicgui import magicgui
+from math import floor
 
 # Qt
 from qtpy.QtWidgets import QSizePolicy
@@ -43,6 +44,7 @@ class Cropping(BasePluginSingleImage):
 
         self.image_layer_loader.set_layer_type(napari.layers.Layer)
         self.image_layer_loader.layer_list.label.setText("Image 1")
+        self.image_layer_loader.layer_list.currentIndexChanged.connect(self.auto_set_dims)
         # ui.LayerSelecter(self._viewer, "Image 1")
         # self.layer_selection2 = ui.LayerSelecter(self._viewer, "Image 2")
         self.label_layer_loader.set_layer_type(napari.layers.Layer)
@@ -112,6 +114,8 @@ class Cropping(BasePluginSingleImage):
 
         self._build()
         self._toggle_second_image_io_visibility()
+        self._check_image_list()
+        self.auto_set_dims()
 
     def _toggle_second_image_io_visibility(self):
         crop_2nd = self.crop_second_image_choice.isChecked()
@@ -131,6 +135,16 @@ class Cropping(BasePluginSingleImage):
                         l2.setCurrentIndex(i)
             except IndexError:
                 return
+
+    def auto_set_dims(self):
+        logger.debug(self.image_layer_loader.layer_name())
+        data = self.image_layer_loader.layer_data()
+        if data is not None:
+            logger.debug("auto_set_dims : {}".format(data.shape))
+            if len(data.shape) == 3:
+                for i, box in enumerate(self.crop_size_widgets):
+                    logger.debug(f"setting dim {i} to {floor(data.shape[i]/2)}")
+                    box.setValue(floor(data.shape[i] / 2))
 
     def _build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
@@ -266,9 +280,9 @@ class Cropping(BasePluginSingleImage):
             except ValueError as e:
                 logger.warning(e)
                 logger.warning(
-                    "Could not remove cropping layer programmatically!"
+                    "Could not remove the previous cropping layer programmatically."
                 )
-                logger.warning("Maybe layer has been removed by user?")
+                # logger.warning("Maybe layer has been removed by user?")
 
         self.results_path = Path(self.results_filewidget.text_field.text())
 
@@ -346,7 +360,7 @@ class Cropping(BasePluginSingleImage):
                 layer.data,
                 name=f"Scaled_{layer.name}",
                 colormap=colormap,
-                contrast_limits=contrast_lim,
+                # contrast_limits=contrast_lim,
                 opacity=opacity,
                 scale=self.aniso_factors,
                 visible=visible,
@@ -481,8 +495,8 @@ class Cropping(BasePluginSingleImage):
             """ "Update cropped volume position"""
             # self._check_for_empty_layer(highres_crop_layer, highres_crop_layer.data)
 
-            logger.debug(f"axis : {axis}")
-            logger.debug(f"value : {value}")
+            # logger.debug(f"axis : {axis}")
+            # logger.debug(f"value : {value}")
 
             idx = int(value)
             scale = np.asarray(highres_crop_layer.scale)
@@ -495,6 +509,20 @@ class Cropping(BasePluginSingleImage):
             cropx = self._crop_size_x
             cropy = self._crop_size_y
             cropz = self._crop_size_z
+
+            if i + cropx > im1_stack.shape[0]:
+                cropx = im1_stack.shape[0] - i
+            if j + cropy > im1_stack.shape[1]:
+                cropy = im1_stack.shape[1] - j
+            if k + cropz > im1_stack.shape[2]:
+                cropz = im1_stack.shape[2] - k
+
+            logger.debug(f"cropx : {cropx}")
+            logger.debug(f"cropy : {cropy}")
+            logger.debug(f"cropz : {cropz}")
+            logger.debug(f"i : {i}")
+            logger.debug(f"j : {j}")
+            logger.debug(f"k : {k}")
 
             highres_crop_layer.data = im1_stack[
                 i : i + cropx, j : j + cropy, k : k + cropz
