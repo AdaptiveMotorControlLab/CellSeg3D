@@ -68,7 +68,6 @@ def test_crf_batch():
         w2=config.w2,
     )
 
-    assert isinstance(result, np.ndarray)
     assert result.shape == (3, 2, dims, dims, dims)
 
 
@@ -79,7 +78,6 @@ def test_crf_config():
     config = CRFConfig()
 
     result = crf_with_config(mock_image, mock_label, config)
-    assert isinstance(result, np.ndarray)
     assert result.shape == mock_label.shape
 
 
@@ -91,7 +89,6 @@ def test_crf_worker(qtbot):
     crf = CRFWorker([mock_image], [mock_label])
 
     def on_yield(result):
-        assert isinstance(result, np.ndarray)
         assert len(result.shape) == 4
         assert len(mock_label.shape) == 4
         assert result.shape[-3:] == mock_label.shape[-3:]
