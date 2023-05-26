@@ -1,8 +1,8 @@
 # local
-from napari_cellseg3d.code_models.models.wnet.model import WNet
+from napari_cellseg3d.code_models.models.wnet.model import WNet_encoder
 
 
-class WNet_(WNet):
+class WNet_(WNet_encoder):
     use_default_training = False
     weights_file = "wnet.pth"
 
@@ -24,13 +24,13 @@ class WNet_(WNet):
     # def train(self: T, mode: bool = True) -> T:
     #     raise NotImplementedError("Training not implemented for WNet")
 
-    def forward(self, x):
-        """Forward ENCODER pass of the W-Net model.
-        Done this way to allow inference on the encoder only when called by sliding_window_inference.
-        """
-        return self.forward_encoder(x)
-        # enc = self.forward_encoder(x)
-        # return self.forward_decoder(enc)
+    # def forward(self, x):
+    #     """Forward ENCODER pass of the W-Net model.
+    #     Done this way to allow inference on the encoder only when called by sliding_window_inference.
+    #     """
+    #     return self.forward_encoder(x)
+    #     # enc = self.forward_encoder(x)
+    #     # return self.forward_decoder(enc)
 
     def load_state_dict(self, state_dict, strict=False):
         """Load the model state dict for inference, without the decoder weights."""

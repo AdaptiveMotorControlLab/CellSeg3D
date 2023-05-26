@@ -113,6 +113,7 @@ docs = [
 test = [
     "pytest",
     "pytest_qt",
+    "pytest-cov",
     "coverage",
     "tox",
     "twine",
