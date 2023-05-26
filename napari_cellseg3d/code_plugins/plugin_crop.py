@@ -1,9 +1,9 @@
+from math import floor
 from pathlib import Path
 
 import napari
 import numpy as np
 from magicgui import magicgui
-from math import floor
 
 # Qt
 from qtpy.QtWidgets import QSizePolicy
@@ -44,7 +44,9 @@ class Cropping(BasePluginSingleImage):
 
         self.image_layer_loader.set_layer_type(napari.layers.Layer)
         self.image_layer_loader.layer_list.label.setText("Image 1")
-        self.image_layer_loader.layer_list.currentIndexChanged.connect(self.auto_set_dims)
+        self.image_layer_loader.layer_list.currentIndexChanged.connect(
+            self.auto_set_dims
+        )
         # ui.LayerSelecter(self._viewer, "Image 1")
         # self.layer_selection2 = ui.LayerSelecter(self._viewer, "Image 2")
         self.label_layer_loader.set_layer_type(napari.layers.Layer)
@@ -140,10 +142,12 @@ class Cropping(BasePluginSingleImage):
         logger.debug(self.image_layer_loader.layer_name())
         data = self.image_layer_loader.layer_data()
         if data is not None:
-            logger.debug("auto_set_dims : {}".format(data.shape))
+            logger.debug(f"auto_set_dims : {data.shape}")
             if len(data.shape) == 3:
                 for i, box in enumerate(self.crop_size_widgets):
-                    logger.debug(f"setting dim {i} to {floor(data.shape[i]/2)}")
+                    logger.debug(
+                        f"setting dim {i} to {floor(data.shape[i]/2)}"
+                    )
                     box.setValue(floor(data.shape[i] / 2))
 
     def _build(self):
@@ -433,9 +437,8 @@ class Cropping(BasePluginSingleImage):
             box.value() for box in self.crop_size_widgets
         ]
         #############
-        dims = [self._x, self._y, self._z]
-        [logger.debug(f"{dim}") for dim in dims]
-        logger.debug("SET DIMS ATTEMPT")
+        # [logger.debug(f"{dim}") for dim in dims]
+        # logger.debug("SET DIMS ATTEMPT")
         # if not self.create_new_layer.isChecked():
         #     self._x = x
         #     self._y = y
@@ -451,6 +454,8 @@ class Cropping(BasePluginSingleImage):
 
         # define crop sizes and boundaries for the image
         crop_sizes = [self._crop_size_x, self._crop_size_y, self._crop_size_z]
+        # [logger.debug(f"{crop}") for crop in crop_sizes]
+        # logger.debug("SET CROP ATTEMPT")
 
         for i in range(len(crop_sizes)):
             if crop_sizes[i] > im1_stack.shape[i]:

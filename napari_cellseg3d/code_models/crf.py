@@ -54,6 +54,8 @@ __credits__ = [
 
 
 def correct_shape_for_crf(image, desired_dims=4):
+    logger.debug(f"Correcting shape for CRF, desired_dims={desired_dims}")
+    logger.debug(f"Image shape: {image.shape}")
     if len(image.shape) > desired_dims:
         # if image.shape[0] > 1:
         #     raise ValueError(
@@ -62,6 +64,7 @@ def correct_shape_for_crf(image, desired_dims=4):
         image = np.squeeze(image, axis=0)
     elif len(image.shape) < desired_dims:
         image = np.expand_dims(image, axis=0)
+    logger.debug(f"Corrected image shape: {image.shape}")
     return image
 
 
@@ -210,8 +213,11 @@ class CRFWorker(GeneratorWorker):
             if self.images[i].shape[-3:] != self.labels[i].shape[-3:]:
                 raise ValueError("Image and labels must have the same shape.")
 
-            im = correct_shape_for_crf(self.labels[i])
+            im = correct_shape_for_crf(self.images[i])
             prob = correct_shape_for_crf(self.labels[i])
+
+            logger.debug(f"image shape : {im.shape}")
+            logger.debug(f"labels shape : {prob.shape}")
 
             yield crf(
                 im,

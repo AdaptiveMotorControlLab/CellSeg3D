@@ -16,6 +16,19 @@ __credits__ = [
 ]
 
 
+class WNet_encoder(nn.Module):
+    """WNet with encoder only."""
+
+    def __init__(self, device, in_channels=1, out_channels=1, num_classes=2):
+        super().__init__()
+        self.device = device
+        self.encoder = UNet(device, in_channels, num_classes, encoder=True)
+
+    def forward(self, x):
+        """Forward pass of the W-Net model."""
+        return self.forward_encoder(x)
+
+
 class WNet(nn.Module):
     """Implementation of a 3D W-Net model, based on the 2D version from https://arxiv.org/abs/1711.08506.
     The model performs unsupervised segmentation of 3D images.
@@ -36,13 +49,11 @@ class WNet(nn.Module):
 
     def forward_encoder(self, x):
         """Forward pass of the encoder part of the W-Net model."""
-        enc = self.encoder(x)
-        return enc
+        return self.encoder(x)
 
     def forward_decoder(self, enc):
         """Forward pass of the decoder part of the W-Net model."""
-        dec = self.decoder(enc)
-        return dec
+        return self.decoder(enc)
 
 
 class UNet(nn.Module):
