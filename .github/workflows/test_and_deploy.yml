@@ -57,6 +57,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install setuptools tox tox-gh-actions
+          pip install git+https://github.com/lucasb-eyer/pydensecrf.git@master#egg=pydensecrf
 
 # this runs the platform-specific tests declared in tox.ini
       - name: Test with tox
@@ -86,7 +87,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -U setuptools setuptools_scm wheel twine build
-          pip install git+https://github.com/lucasb-eyer/pydensecrf.git@master#egg=pydensecrf
       - name: Build and publish
         env:
           TWINE_USERNAME: __token__
