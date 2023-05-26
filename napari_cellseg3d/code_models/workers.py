@@ -820,41 +820,43 @@ class InferenceWorker(GeneratorWorker):
 
             weights_config = self.config.weights_config
             post_process_config = self.config.post_process_config
-
+            if Path(weights_config.path).suffix == ".pt":
+                model = torch.jit.load(weights_config.path)
             # try:
-            self.log("Instantiating model...")
-            model = model_class(  # FIXME test if works
-                input_img_size=[dims, dims, dims],
-                device=self.config.device,
-                num_classes=self.config.model_info.num_classes,
-            )
-            # try:
-            model = model.to(self.config.device)
-            # except Exception as e:
-            #     self.raise_error(e, "Issue loading model to device")
-            # logger.debug(f"model : {model}")
-            if model is None:
-                raise ValueError("Model is None")
-            # try:
-            self.log("\nLoading weights...")
-            if weights_config.custom:
-                weights = weights_config.path
             else:
-                self.downloader.download_weights(
-                    model_name,
-                    model_class.weights_file,
+                self.log("Instantiating model...")
+                model = model_class(  # FIXME test if works
+                    input_img_size=[dims, dims, dims],
+                    device=self.config.device,
+                    num_classes=self.config.model_info.num_classes,
                 )
-                weights = str(
-                    PRETRAINED_WEIGHTS_DIR / Path(model_class.weights_file)
-                )
+                # try:
+                model = model.to(self.config.device)
+                # except Exception as e:
+                #     self.raise_error(e, "Issue loading model to device")
+                # logger.debug(f"model : {model}")
+                if model is None:
+                    raise ValueError("Model is None")
+                # try:
+                self.log("\nLoading weights...")
+                if weights_config.custom:
+                    weights = weights_config.path
+                else:
+                    self.downloader.download_weights(
+                        model_name,
+                        model_class.weights_file,
+                    )
+                    weights = str(
+                        PRETRAINED_WEIGHTS_DIR / Path(model_class.weights_file)
+                    )
 
-            model.load_state_dict(  # note that this is redefined in WNet_
-                torch.load(
-                    weights,
-                    map_location=self.config.device,
+                model.load_state_dict(  # note that this is redefined in WNet_
+                    torch.load(
+                        weights,
+                        map_location=self.config.device,
+                    )
                 )
-            )
-            self.log("Done")
+                self.log("Done")
             # except Exception as e:
             #     self.raise_error(e, "Issue loading weights")
             # except Exception as e:

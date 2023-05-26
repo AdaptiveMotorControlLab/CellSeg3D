@@ -289,7 +289,7 @@ class ModelFramework(BasePluginFolder):
         file = ui.open_file_dialog(
             self,
             [self._default_weights_folder],
-            file_extension="Weights file (*.pth)",
+            filetype="Weights file (*.pth, *.pt)",
         )
         if file[0] == self._default_weights_folder:
             return

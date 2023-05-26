@@ -363,9 +363,9 @@ def relabel_non_unique_i_folder(folder_path, end_of_new_name="relabeled"):
             )
 
 
-# if __name__ == "__main__":
-#     im_path = Path("C:/Users/Cyril/Desktop/Proj_bachelor/data/visual_tif")
-#
-#     image_path = str(im_path / "volumes/images.tif")
-#     gt_labels_path = str(im_path / "labels/testing_im.tif")
-#     relabel(image_path, gt_labels_path, check_for_unicity=False, go_fast=False)
+if __name__ == "__main__":
+    im_path = Path("C:/Users/Cyril/Desktop/Proj_bachelor/data/somatomotor")
+
+    image_path = str(im_path / "volumes/c1images.tif")
+    gt_labels_path = str(im_path / "labels/c1labels.tif")
+    relabel(image_path, gt_labels_path, check_for_unicity=False, go_fast=False)
