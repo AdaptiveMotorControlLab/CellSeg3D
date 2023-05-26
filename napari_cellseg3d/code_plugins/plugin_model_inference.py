@@ -43,7 +43,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             * An option to load custom weights for the selected model (e.g. from training module)
 
 
-        * Post-processing :
+        * Additional options :
             * A box to select if data is anisotropic, if checked, asks for resolution in micron for each axis
 
             * A box to choose whether to threshold, if checked asks for a threshold between 0 and 1
@@ -444,7 +444,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         #################################
         # post proc group
         post_proc_group, post_proc_layout = ui.make_group(
-            "Post-processing", parent=self
+            "Additional options", parent=self
         )
 
         self.thresholding_slider.container.setVisible(False)
