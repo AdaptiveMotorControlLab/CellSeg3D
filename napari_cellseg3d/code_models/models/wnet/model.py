@@ -59,18 +59,33 @@ class WNet(nn.Module):
 class UNet(nn.Module):
     """Half of the W-Net model, based on the U-Net architecture."""
 
-    def __init__(self, device, in_channels, out_channels, encoder=True):
+    def __init__(
+        self, device, in_channels, out_channels, encoder=True, dropout=0.65
+    ):
         super(UNet, self).__init__()
         self.device = device
-        self.in_b = InBlock(device, in_channels, 64)
-        self.conv1 = Block(device, 64, 128)
-        self.conv2 = Block(device, 128, 256)
-        self.conv3 = Block(device, 256, 512)
-        self.bot = Block(device, 512, 1024)
-        self.deconv1 = Block(device, 1024, 512)
-        self.deconv2 = Block(device, 512, 256)
-        self.deconv3 = Block(device, 256, 128)
-        self.out_b = OutBlock(device, 128, out_channels)
+        self.max_pool = nn.MaxPool3d(2)
+        self.in_b = InBlock(device, in_channels, 64, dropout=dropout)
+        self.conv1 = Block(device, 64, 128, dropout=dropout)
+        self.conv2 = Block(device, 128, 256, dropout=dropout)
+        self.conv3 = Block(device, 256, 512, dropout=dropout)
+        self.bot = Block(device, 512, 1024, dropout=dropout)
+        self.deconv1 = Block(device, 1024, 512, dropout=dropout)
+        self.conv_trans1 = nn.ConvTranspose3d(
+            1024, 512, 2, stride=2, device=self.device
+        )
+        self.deconv2 = Block(device, 512, 256, dropout=dropout)
+        self.conv_trans2 = nn.ConvTranspose3d(
+            512, 256, 2, stride=2, device=self.device
+        )
+        self.deconv3 = Block(device, 256, 128, dropout=dropout)
+        self.conv_trans3 = nn.ConvTranspose3d(
+            256, 128, 2, stride=2, device=self.device
+        )
+        self.out_b = OutBlock(device, 128, out_channels, dropout=dropout)
+        self.conv_trans_out = nn.ConvTranspose3d(
+            128, 64, 2, stride=2, device=self.device
+        )
 
         self.sm = nn.Softmax(dim=1).to(device)
         self.encoder = encoder
@@ -78,17 +93,15 @@ class UNet(nn.Module):
     def forward(self, x):
         """Forward pass of the U-Net model."""
         in_b = self.in_b(x.to(self.device))
-        c1 = self.conv1(nn.MaxPool3d(2)(in_b))
-        c2 = self.conv2(nn.MaxPool3d(2)(c1))
-        c3 = self.conv3(nn.MaxPool3d(2)(c2))
-        x = self.bot(nn.MaxPool3d(2)(c3))
+        c1 = self.conv1(self.max_pool(in_b))
+        c2 = self.conv2(self.max_pool(c1))
+        c3 = self.conv3(self.max_pool(c2))
+        x = self.bot(self.max_pool(c3))
         x = self.deconv1(
             torch.cat(
                 [
                     c3,
-                    nn.ConvTranspose3d(
-                        1024, 512, 2, stride=2, device=self.device
-                    )(x),
+                    self.conv_trans1(x),
                 ],
                 dim=1,
             )
@@ -97,9 +110,7 @@ class UNet(nn.Module):
             torch.cat(
                 [
                     c2,
-                    nn.ConvTranspose3d(
-                        512, 256, 2, stride=2, device=self.device
-                    )(x),
+                    self.conv_trans2(x),
                 ],
                 dim=1,
             )
@@ -108,9 +119,7 @@ class UNet(nn.Module):
             torch.cat(
                 [
                     c1,
-                    nn.ConvTranspose3d(
-                        256, 128, 2, stride=2, device=self.device
-                    )(x),
+                    self.conv_trans3(x),
                 ],
                 dim=1,
             )
@@ -119,9 +128,7 @@ class UNet(nn.Module):
             torch.cat(
                 [
                     in_b,
-                    nn.ConvTranspose3d(
-                        128, 64, 2, stride=2, device=self.device
-                    )(x),
+                    self.conv_trans_out(x),
                 ],
                 dim=1,
             )
