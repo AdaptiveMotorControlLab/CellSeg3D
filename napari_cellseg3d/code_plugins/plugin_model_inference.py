@@ -1,6 +1,6 @@
 from functools import partial
 from typing import TYPE_CHECKING
-
+from pathlib import Path
 import numpy as np
 import pandas as pd
 
@@ -347,6 +347,18 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
     def _toggle_display_window_size(self):
         """Show or hide window size choice depending on status of self.window_infer_box"""
         ui.toggle_visibility(self.window_infer_box, self.window_infer_params)
+
+    def _load_weights_path(self):
+        """Show file dialog to set :py:attr:`model_path`"""
+
+        # logger.debug(self._default_weights_folder)
+
+        file = ui.open_file_dialog(
+            self,
+            [self._default_weights_folder],
+            filetype="Weights file (*.pth, *.pt, *.onnx)",
+        )
+        self._update_weights_path(file)
 
     def _build(self):
         """Puts all widgets in a layout and adds them to the napari Viewer"""
