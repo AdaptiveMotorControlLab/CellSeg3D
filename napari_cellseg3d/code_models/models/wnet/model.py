@@ -141,17 +141,17 @@ class UNet(nn.Module):
 class InBlock(nn.Module):
     """Input block of the U-Net architecture."""
 
-    def __init__(self, device, in_channels, out_channels):
+    def __init__(self, device, in_channels, out_channels, dropout=0.65):
         super(InBlock, self).__init__()
         self.device = device
         self.module = nn.Sequential(
             nn.Conv3d(in_channels, out_channels, 3, padding=1, device=device),
             nn.ReLU(),
-            nn.Dropout(p=0.65),
+            nn.Dropout(p=dropout),
             nn.BatchNorm3d(out_channels, device=device),
             nn.Conv3d(out_channels, out_channels, 3, padding=1, device=device),
             nn.ReLU(),
-            nn.Dropout(p=0.65),
+            nn.Dropout(p=dropout),
             nn.BatchNorm3d(out_channels, device=device),
         ).to(device)
 
@@ -163,19 +163,19 @@ class InBlock(nn.Module):
 class Block(nn.Module):
     """Basic block of the U-Net architecture."""
 
-    def __init__(self, device, in_channels, out_channels):
+    def __init__(self, device, in_channels, out_channels, dropout=0.65):
         super(Block, self).__init__()
         self.device = device
         self.module = nn.Sequential(
             nn.Conv3d(in_channels, in_channels, 3, padding=1, device=device),
             nn.Conv3d(in_channels, out_channels, 1, device=device),
             nn.ReLU(),
-            nn.Dropout(p=0.65),
+            nn.Dropout(p=dropout),
             nn.BatchNorm3d(out_channels, device=device),
             nn.Conv3d(out_channels, out_channels, 3, padding=1, device=device),
             nn.Conv3d(out_channels, out_channels, 1, device=device),
             nn.ReLU(),
-            nn.Dropout(p=0.65),
+            nn.Dropout(p=dropout),
             nn.BatchNorm3d(out_channels, device=device),
         ).to(device)
 
@@ -187,17 +187,17 @@ class Block(nn.Module):
 class OutBlock(nn.Module):
     """Output block of the U-Net architecture."""
 
-    def __init__(self, device, in_channels, out_channels):
+    def __init__(self, device, in_channels, out_channels, dropout=0.65):
         super(OutBlock, self).__init__()
         self.device = device
         self.module = nn.Sequential(
             nn.Conv3d(in_channels, 64, 3, padding=1, device=device),
             nn.ReLU(),
-            nn.Dropout(p=0.65),
+            nn.Dropout(p=dropout),
             nn.BatchNorm3d(64, device=device),
             nn.Conv3d(64, 64, 3, padding=1, device=device),
             nn.ReLU(),
-            nn.Dropout(p=0.65),
+            nn.Dropout(p=dropout),
             nn.BatchNorm3d(64, device=device),
             nn.Conv3d(64, out_channels, 1, device=device),
         ).to(device)
