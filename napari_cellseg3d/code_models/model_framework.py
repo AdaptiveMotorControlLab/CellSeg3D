@@ -273,6 +273,14 @@ class ModelFramework(BasePluginFolder):
     #         self.lbl_model_path.setText(self.model_path)
     #         # self.update_default()
 
+    def _update_weights_path(self, file):
+        if file[0] == self._default_weights_folder:
+            return
+        if file is not None and file[0] != "":
+            self.weights_config.path = file[0]
+            self.weights_filewidget.text_field.setText(file[0])
+            self._default_weights_folder = str(Path(file[0]).parent)
+
     def _load_weights_path(self):
         """Show file dialog to set :py:attr:`model_path`"""
 
@@ -283,12 +291,7 @@ class ModelFramework(BasePluginFolder):
             [self._default_weights_folder],
             filetype="Weights file (*.pth, *.pt)",
         )
-        if file[0] == self._default_weights_folder:
-            return
-        if file is not None and file[0] != "":
-            self.weights_config.path = file[0]
-            self.weights_filewidget.text_field.setText(file[0])
-            self._default_weights_folder = str(Path(file[0]).parent)
+        self._update_weights_path(file)
 
     @staticmethod
     def get_device(show=True):

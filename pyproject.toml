@@ -119,3 +119,11 @@ test = [
     "twine",
     "pydensecrf@git+https://github.com/lucasb-eyer/pydensecrf.git#egg=master",
 ]
+onnx-cpu = [
+    "onnx",
+    "onnxruntime"
+]
+onnx-gpu = [
+    "onnx",
+    "onnxruntime-gpu"
+]
