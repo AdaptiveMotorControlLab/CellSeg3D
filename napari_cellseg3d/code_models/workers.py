@@ -200,7 +200,7 @@ class LogSignal(WorkerBaseSignals):
 # TODO(cyril): move inference and training workers to separate files
 
 class ONNXModelWrapper(torch.nn.Module):
-    """Class to replace torch model if ONNX is used"""
+    """Class to replace torch model by ONNX Runtime session"""
     def __init__(self, file_location):
         super().__init__()
         try:
@@ -219,14 +219,17 @@ class ONNXModelWrapper(torch.nn.Module):
         )
 
     def forward(self, modeL_input):
+        """Wraps ONNX output in a torch tensor"""
         outputs = self.ort_session.run(None, {'input': modeL_input.cpu().numpy()})
         return torch.tensor(outputs[0])
 
     def eval(self):
-        return True
+        """Dummy function to replace model.eval()"""
+        pass
 
     def to(self, device):
-        return True
+        """Dummy function to replace model.to(device)"""
+        pass
 
 @dataclass
 class InferenceResult:
