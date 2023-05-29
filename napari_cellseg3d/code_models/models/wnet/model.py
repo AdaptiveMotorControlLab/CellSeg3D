@@ -26,7 +26,7 @@ class WNet_encoder(nn.Module):
 
     def forward(self, x):
         """Forward pass of the W-Net model."""
-        return self.forward_encoder(x)
+        return self.encoder(x)
 
 
 class WNet(nn.Module):

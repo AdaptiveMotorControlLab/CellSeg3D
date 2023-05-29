@@ -199,6 +199,34 @@ class LogSignal(WorkerBaseSignals):
 
 # TODO(cyril): move inference and training workers to separate files
 
+class ONNXModelWrapper(torch.nn.Module):
+    """Class to replace torch model if ONNX is used"""
+    def __init__(self, file_location):
+        super().__init__()
+        try:
+            import onnx
+            import onnxruntime as ort
+        except ImportError as e:
+            logger.error("ONNX is not installed but ONNX model was loaded")
+            logger.error(e)
+            msg = "PLEASE INSTALL ONNX CPU OR GPU USING pip install napari-cellseg3d[onnx-cpu] OR napari-cellseg3d[onnx-gpu]"
+            logger.error(msg)
+            raise ImportError(msg)
+
+        self.ort_session = ort.InferenceSession(
+            file_location,
+            providers=["CUDAExecutionProvider", "CPUExecutionProvider"]
+        )
+
+    def forward(self, modeL_input):
+        outputs = self.ort_session.run(None, {'input': modeL_input.cpu().numpy()})
+        return torch.tensor(outputs[0])
+
+    def eval(self):
+        return True
+
+    def to(self, device):
+        return True
 
 @dataclass
 class InferenceResult:
@@ -821,9 +849,13 @@ class InferenceWorker(GeneratorWorker):
             weights_config = self.config.weights_config
             post_process_config = self.config.post_process_config
             if Path(weights_config.path).suffix == ".pt":
+                self.log("Instantiating PyTorch jit model...")
                 model = torch.jit.load(weights_config.path)
             # try:
-            else:
+            elif Path(weights_config.path).suffix == ".onnx":
+                self.log("Instantiating ONNX model...")
+                model = ONNXModelWrapper(weights_config.path)
+            else: # assume is .pth
                 self.log("Instantiating model...")
                 model = model_class(  # FIXME test if works
                     input_img_size=[dims, dims, dims],
