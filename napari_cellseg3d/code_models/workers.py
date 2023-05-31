@@ -1531,13 +1531,13 @@ class TrainingWorker(GeneratorWorker):
                     or epoch + 1 == self.config.max_epochs
                 ):
                     model.eval()
+                    self.log("Performing validation...")
                     with torch.no_grad():
                         for val_data in val_loader:
                             val_inputs, val_labels = (
                                 val_data["image"].to(device),
                                 val_data["label"].to(device),
                             )
-                            self.log("Performing validation...")
                             try:
                                 with torch.no_grad():
                                     val_outputs = sliding_window_inference(
@@ -1606,8 +1606,8 @@ class TrainingWorker(GeneratorWorker):
                         yield train_report
 
                         weights_filename = (
-                            f"{model_name}_best_metric"
-                            + f"_epoch_{epoch + 1}.pth"
+                                f"{model_name}_best_metric"
+                                + f"_epoch_{epoch + 1}.pth"
                         )
 
                         if metric > best_metric:
@@ -1620,7 +1620,7 @@ class TrainingWorker(GeneratorWorker):
                                 / Path(
                                     weights_filename,
                                 ),
-                            )
+                                )
                             self.log("Saving complete")
                         self.log(
                             f"Current epoch: {epoch + 1}, Current mean dice: {metric:.4f}"

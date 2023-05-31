@@ -1235,7 +1235,7 @@ def open_folder_dialog(
 
     logger.info(f"Default : {default_path}")
     return QFileDialog.getExistingDirectory(
-        widget, "Open directory", default_path + "/.."
+        widget, "Open directory", default_path  # + "/.."
     )
 
 
