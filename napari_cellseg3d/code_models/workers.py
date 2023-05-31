@@ -1538,7 +1538,6 @@ class TrainingWorker(GeneratorWorker):
                                 val_data["image"].to(device),
                                 val_data["label"].to(device),
                             )
-                            self.log("Performing validation...")
                             try:
                                 with torch.no_grad():
                                     val_outputs = sliding_window_inference(
@@ -1607,8 +1606,8 @@ class TrainingWorker(GeneratorWorker):
                         yield train_report
 
                         weights_filename = (
-                            f"{model_name}_best_metric"
-                            + f"_epoch_{epoch + 1}.pth"
+                                f"{model_name}_best_metric"
+                                + f"_epoch_{epoch + 1}.pth"
                         )
 
                         if metric > best_metric:
@@ -1621,7 +1620,7 @@ class TrainingWorker(GeneratorWorker):
                                 / Path(
                                     weights_filename,
                                 ),
-                            )
+                                )
                             self.log("Saving complete")
                         self.log(
                             f"Current epoch: {epoch + 1}, Current mean dice: {metric:.4f}"

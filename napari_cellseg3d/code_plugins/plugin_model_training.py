@@ -815,7 +815,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             )
             self._set_worker_config()
 
-            self.worker = TrainingWorker(config=self.worker_config)
+            self.worker = TrainingWorker(worker_config=self.worker_config)
             self.worker.set_download_log(self.log)
 
             [btn.setVisible(False) for btn in self.close_buttons]
