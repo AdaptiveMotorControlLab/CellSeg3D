@@ -1,4 +1,7 @@
-import napari
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import napari
 
 # Qt
 from qtpy.QtCore import qInstallMessageHandler

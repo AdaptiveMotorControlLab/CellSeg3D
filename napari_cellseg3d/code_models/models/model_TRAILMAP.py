@@ -39,13 +39,12 @@ class TRAILMAP(nn.Module):
 
         up8 = self.up8(torch.cat([up7, conv0], 1))  # l1
         # print(up8.shape)
-        out = self.out(up8)
+        return self.out(up8)
         # print("out:")
         # print(out.shape)
-        return out
 
     def encoderBlock(self, in_ch, out_ch, kernel_size, padding="same"):
-        encode = nn.Sequential(
+        return nn.Sequential(
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
             nn.BatchNorm3d(out_ch),
             nn.ReLU(),
@@ -56,10 +55,9 @@ class TRAILMAP(nn.Module):
             nn.ReLU(),
             nn.MaxPool3d(2),
         )
-        return encode
 
     def bridgeBlock(self, in_ch, out_ch, kernel_size, padding="same"):
-        encode = nn.Sequential(
+        return nn.Sequential(
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
             nn.BatchNorm3d(out_ch),
             nn.ReLU(),
@@ -69,10 +67,9 @@ class TRAILMAP(nn.Module):
             nn.BatchNorm3d(out_ch),
             nn.ReLU(),
         )
-        return encode
 
     def decoderBlock(self, in_ch, out_ch, kernel_size, padding="same"):
-        decode = nn.Sequential(
+        return nn.Sequential(
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
             nn.BatchNorm3d(out_ch),
             nn.ReLU(),
@@ -85,13 +82,11 @@ class TRAILMAP(nn.Module):
                 out_ch, out_ch, kernel_size=kernel_size, stride=(2, 2, 2)
             ),
         )
-        return decode
 
     def outBlock(self, in_ch, out_ch, kernel_size, padding="same"):
-        out = nn.Sequential(
+        return nn.Sequential(
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
         )
-        return out
 
 
 class TRAILMAP_(TRAILMAP):
