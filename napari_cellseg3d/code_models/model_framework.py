@@ -289,7 +289,7 @@ class ModelFramework(BasePluginFolder):
         file = ui.open_file_dialog(
             self,
             [self._default_weights_folder],
-            filetype="Weights file (*.pth, *.pt)",
+            file_extension="Weights file (*.pth)",
         )
         self._update_weights_path(file)
 

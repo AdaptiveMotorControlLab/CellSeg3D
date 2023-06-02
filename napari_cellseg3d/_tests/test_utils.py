@@ -1,5 +1,5 @@
-import os
 from functools import partial
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -9,7 +9,7 @@ from napari_cellseg3d.dev_scripts import thread_test
 
 
 def test_fill_list_in_between():
-    list = [1, 2, 3, 4, 5, 6]
+    test_list = [1, 2, 3, 4, 5, 6]
     res = [
         1,
         "",
@@ -35,7 +35,7 @@ def test_fill_list_in_between():
 
     fill = partial(utils.fill_list_in_between, n=2, fill_value="")
 
-    assert fill(list) == res
+    assert fill(test_list) == res
 
 
 def test_align_array_sizes():
@@ -110,8 +110,16 @@ def test_normalize_x():
 
 
 def test_parse_default_path():
-    user_path = os.path.expanduser("~")
-    assert utils.parse_default_path([None]) == user_path
+    user_path = Path().home()
+    assert utils.parse_default_path([None]) == str(user_path)
+
+    test_path = "C:/test/test"
+    path = [test_path, None, None]
+    assert utils.parse_default_path(path) == test_path
+
+    long_path = "D:/very/long/path/what/a/bore/ifonlytherewassomethingtohelpmenottypeitiallthetime"
+    path = [test_path, None, None, long_path, ""]
+    assert utils.parse_default_path(path) == long_path
 
 
 def test_thread_test(make_napari_viewer):

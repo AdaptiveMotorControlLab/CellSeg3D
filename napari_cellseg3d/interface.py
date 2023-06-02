@@ -1208,7 +1208,7 @@ def add_blank(widget, layout=None):
 def open_file_dialog(
     widget,
     possible_paths: list = (),
-    filetype: str = "Image file (*.tif *.tiff)",
+    file_extension: str = "Image file (*.tif *.tiff)",
 ):
     """Opens a window to choose a file directory using QFileDialog.
 
@@ -1224,7 +1224,7 @@ def open_file_dialog(
     default_path = utils.parse_default_path(possible_paths)
 
     return QFileDialog.getOpenFileName(
-        widget, "Choose file", default_path, filetype
+        widget, "Choose file", default_path, file_extension
     )
 
 

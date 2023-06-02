@@ -1,3 +1,4 @@
+import contextlib
 from functools import partial
 from pathlib import Path
 
@@ -277,7 +278,10 @@ class CRFWidget(BasePluginSingleImage):
 
     def _on_finish(self):
         self.worker = None
-        self.start_button.setText("Start")
+        with contextlib.suppress(RuntimeError):
+            self.start_button.setText("Start")
+
+    # should only happen when testing
 
     def _on_error(self, error):
         logger.error(error)
