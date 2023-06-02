@@ -34,9 +34,12 @@ def test_inference(make_napari_viewer, qtbot):
 
     assert widget.check_ready()
 
+    widget.model_choice.setCurrentIndex(-1)
+    assert widget.window_infer_box.isChecked()
+
     MODEL_LIST["test"] = TestModel
     widget.model_choice.addItem("test")
-    widget.setCurrentIndex(-1)
+    widget.model_choice.setCurrentIndex(-1)
 
     widget.worker_config = widget._set_worker_config()
     assert widget.worker_config is not None

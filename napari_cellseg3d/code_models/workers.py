@@ -199,28 +199,31 @@ class LogSignal(WorkerBaseSignals):
 
 # TODO(cyril): move inference and training workers to separate files
 
+
 class ONNXModelWrapper(torch.nn.Module):
     """Class to replace torch model by ONNX Runtime session"""
+
     def __init__(self, file_location):
         super().__init__()
         try:
-            import onnx
             import onnxruntime as ort
         except ImportError as e:
             logger.error("ONNX is not installed but ONNX model was loaded")
             logger.error(e)
             msg = "PLEASE INSTALL ONNX CPU OR GPU USING pip install napari-cellseg3d[onnx-cpu] OR napari-cellseg3d[onnx-gpu]"
             logger.error(msg)
-            raise ImportError(msg)
+            raise ImportError(msg) from e
 
         self.ort_session = ort.InferenceSession(
             file_location,
-            providers=["CUDAExecutionProvider", "CPUExecutionProvider"]
+            providers=["CUDAExecutionProvider", "CPUExecutionProvider"],
         )
 
     def forward(self, modeL_input):
         """Wraps ONNX output in a torch tensor"""
-        outputs = self.ort_session.run(None, {'input': modeL_input.cpu().numpy()})
+        outputs = self.ort_session.run(
+            None, {"input": modeL_input.cpu().numpy()}
+        )
         return torch.tensor(outputs[0])
 
     def eval(self):
@@ -230,6 +233,7 @@ class ONNXModelWrapper(torch.nn.Module):
     def to(self, device):
         """Dummy function to replace model.to(device)"""
         pass
+
 
 @dataclass
 class InferenceResult:
@@ -858,7 +862,7 @@ class InferenceWorker(GeneratorWorker):
             elif Path(weights_config.path).suffix == ".onnx":
                 self.log("Instantiating ONNX model...")
                 model = ONNXModelWrapper(weights_config.path)
-            else: # assume is .pth
+            else:  # assume is .pth
                 self.log("Instantiating model...")
                 model = model_class(  # FIXME test if works
                     input_img_size=[dims, dims, dims],
@@ -1606,8 +1610,8 @@ class TrainingWorker(GeneratorWorker):
                         yield train_report
 
                         weights_filename = (
-                                f"{model_name}_best_metric"
-                                + f"_epoch_{epoch + 1}.pth"
+                            f"{model_name}_best_metric"
+                            + f"_epoch_{epoch + 1}.pth"
                         )
 
                         if metric > best_metric:
@@ -1620,7 +1624,7 @@ class TrainingWorker(GeneratorWorker):
                                 / Path(
                                     weights_filename,
                                 ),
-                                )
+                            )
                             self.log("Saving complete")
                         self.log(
                             f"Current epoch: {epoch + 1}, Current mean dice: {metric:.4f}"

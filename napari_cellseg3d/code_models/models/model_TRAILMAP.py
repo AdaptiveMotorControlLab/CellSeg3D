@@ -44,7 +44,7 @@ class TRAILMAP(nn.Module):
         # print(out.shape)
 
     def encoderBlock(self, in_ch, out_ch, kernel_size, padding="same"):
-        encode = nn.Sequential(
+        return nn.Sequential(
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
             nn.BatchNorm3d(out_ch),
             nn.ReLU(),
@@ -57,7 +57,7 @@ class TRAILMAP(nn.Module):
         )
 
     def bridgeBlock(self, in_ch, out_ch, kernel_size, padding="same"):
-        encode = nn.Sequential(
+        return nn.Sequential(
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
             nn.BatchNorm3d(out_ch),
             nn.ReLU(),
@@ -69,7 +69,7 @@ class TRAILMAP(nn.Module):
         )
 
     def decoderBlock(self, in_ch, out_ch, kernel_size, padding="same"):
-        decode = nn.Sequential(
+        return nn.Sequential(
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
             nn.BatchNorm3d(out_ch),
             nn.ReLU(),
@@ -84,10 +84,9 @@ class TRAILMAP(nn.Module):
         )
 
     def outBlock(self, in_ch, out_ch, kernel_size, padding="same"):
-        out = nn.Sequential(
+        return nn.Sequential(
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
         )
-        return out
 
 
 class TRAILMAP_(TRAILMAP):
