@@ -20,13 +20,13 @@ class TestModel(nn.Module):
     #     return val_inputs
 
 
-# if __name__ == "__main__":
-#
-#     model = TestModel()
-#     model.train()
-#     model.zero_grad()
-#     from napari_cellseg3d.config import PRETRAINED_WEIGHTS_DIR
-#     torch.save(
-#         model.state_dict(),
-#         PRETRAINED_WEIGHTS_DIR + f"/{get_weights_file()}"
-#     )
+if __name__ == "__main__":
+    model = TestModel()
+    model.train()
+    model.zero_grad()
+    from napari_cellseg3d.config import PRETRAINED_WEIGHTS_DIR
+
+    torch.save(
+        model.state_dict(),
+        PRETRAINED_WEIGHTS_DIR + f"/{TestModel.weights_file}",
+    )
