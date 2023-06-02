@@ -227,17 +227,16 @@ class BasePluginSingleImage(QTabWidget):
     def _show_file_dialog(self):
         """Open file dialog and process path depending on single file/folder loading behaviour"""
         if self.load_as_stack_choice.isChecked():
-            folder = ui.open_folder_dialog(
+            choice = ui.open_folder_dialog(
                 self,
                 self._default_path,
                 filetype=f"Image file (*{self.filetype_choice.currentText()})",
             )
-            return folder
         else:
             f_name = ui.open_file_dialog(self, self._default_path)
-            f_name = str(f_name[0])
-            self.filetype = str(Path(f_name).suffix)
-            return f_name
+            choice = str(f_name[0])
+            self.filetype = str(Path(choice).suffix)
+        return choice
 
     def _show_dialog_images(self):
         """Show file dialog and set image path"""
@@ -291,16 +290,14 @@ class BasePluginSingleImage(QTabWidget):
         return btn
 
     def _make_prev_button(self):
-        btn = ui.Button(
+        return ui.Button(
             "Previous", lambda: self.setCurrentIndex(self.currentIndex() - 1)
         )
-        return btn
 
     def _make_next_button(self):
-        btn = ui.Button(
+        return ui.Button(
             "Next", lambda: self.setCurrentIndex(self.currentIndex() + 1)
         )
-        return btn
 
     def remove_from_viewer(self):
         """Removes the widget from the napari window.
