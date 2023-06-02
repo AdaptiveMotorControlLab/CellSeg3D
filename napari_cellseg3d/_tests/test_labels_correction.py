@@ -37,16 +37,16 @@ def test_correct_labels():
     )
 
 
-def test_relabel(make_napari_viewer):
-    viewer = make_napari_viewer()
+def test_relabel():
     cl.relabel(
         str(image_path),
         str(labels_path),
         go_fast=True,
-        viewer=viewer,
         test=True,
     )
 
 
 def test_evaluate_model_performance():
-    el.evaluate_model_performance(labels, labels, print_details=True)
+    el.evaluate_model_performance(
+        labels, labels, print_details=True, visualize=False
+    )

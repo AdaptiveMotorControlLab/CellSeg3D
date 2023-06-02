@@ -11,6 +11,7 @@ def test_prepare(make_napari_viewer):
     viewer = make_napari_viewer()
     viewer.add_image(image)
     widget = Datamanager(viewer)
+    viewer.window.add_dock_widget(widget)
 
     widget.prepare(path_image, ".tif", "", False)
 

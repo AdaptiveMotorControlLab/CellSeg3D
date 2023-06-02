@@ -134,7 +134,7 @@ def evaluate_model_performance(
         log.info(mean_ratio_false_pixel_artefact)
 
         if visualize:
-            viewer = napari.Viewer()
+            viewer = napari.Viewer(ndisplay=3)
             viewer.add_labels(labels, name="ground truth")
             viewer.add_labels(model_labels, name="model's labels")
             found_model = np.where(
