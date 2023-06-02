@@ -57,3 +57,5 @@ def test_inference(make_napari_viewer, qtbot):
     res = next(worker.inference())
     assert isinstance(res, InferenceResult)
     assert res.result.shape == (6, 6, 6)
+
+    widget.on_yield(res)

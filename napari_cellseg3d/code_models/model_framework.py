@@ -289,7 +289,7 @@ class ModelFramework(BasePluginFolder):
         file = ui.open_file_dialog(
             self,
             [self._default_weights_folder],
-            filetype="Weights file (*.pth, *.pt)",
+            file_extension="Weights file (*.pth)",
         )
         self._update_weights_path(file)
 
@@ -310,32 +310,6 @@ class ModelFramework(BasePluginFolder):
             logger.info("Attempting to empty cache...")
             torch.cuda.empty_cache()
             logger.info("Attempt complete : Cache emptied")
-
-    # def update_default(self): # TODO add custom models
-    #     """Update default path for smoother file dialogs, here with :py:attr:`~model_path` included"""
-    #
-    #     if len(self.images_filepaths) != 0:
-    #         from_images = str(Path(self.images_filepaths[0]).parent)
-    #     else:
-    #         from_images = None
-    #
-    #     if len(self.labels_filepaths) != 0:
-    #         from_labels = str(Path(self.labels_filepaths[0]).parent)
-    #     else:
-    #         from_labels = None
-    #
-    #     possible_paths = [
-    #         path
-    #         for path in [
-    #             from_images,
-    #             from_labels,
-    #             # self.model_path,
-    #             self.results_path,
-    #         ]
-    #         if path is not None
-    #     ]
-    #     self._default_folders = possible_paths
-    # update if model_path is used again
 
     def _build(self):
         raise NotImplementedError("Should be defined in children classes")

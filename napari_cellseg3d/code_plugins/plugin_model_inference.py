@@ -1,6 +1,6 @@
 from functools import partial
 from typing import TYPE_CHECKING
-from pathlib import Path
+
 import numpy as np
 import pandas as pd
 
@@ -171,7 +171,9 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.window_size_choice = ui.DropdownMenu(
             sizes_window, text_label="Window size"
         )
-        self.window_size_choice.setCurrentIndex(self._default_window_size)  # set to 64 by default
+        self.window_size_choice.setCurrentIndex(
+            self._default_window_size
+        )  # set to 64 by default
 
         self.window_overlap_slider = ui.Slider(
             default=config.SlidingWindowConfig.window_overlap * 100,
@@ -356,7 +358,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         file = ui.open_file_dialog(
             self,
             [self._default_weights_folder],
-            filetype="Weights file (*.pth, *.pt, *.onnx)",
+            file_extension="Weights file (*.pth *.pt *.onnx)",
         )
         self._update_weights_path(file)
 
