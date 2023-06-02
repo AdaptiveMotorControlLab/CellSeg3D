@@ -34,12 +34,15 @@ def test_inference(make_napari_viewer, qtbot):
 
     assert widget.check_ready()
 
-    widget.model_choice.setCurrentIndex(-1)
+    widget.model_choice.setCurrentText("WNet")
+    widget._restrict_window_size_for_model()
     assert widget.window_infer_box.isChecked()
+    assert widget.window_size_choice.currentText() == "64"
 
-    MODEL_LIST["test"] = TestModel
-    widget.model_choice.addItem("test")
-    widget.model_choice.setCurrentIndex(-1)
+    test_model_name = "test"
+    MODEL_LIST[test_model_name] = TestModel
+    widget.model_choice.addItem(test_model_name)
+    widget.model_choice.setCurrentText(test_model_name)
 
     widget.worker_config = widget._set_worker_config()
     assert widget.worker_config is not None
@@ -59,6 +62,6 @@ def test_inference(make_napari_viewer, qtbot):
 
     res = next(worker.inference())
     assert isinstance(res, InferenceResult)
-    assert res.result.shape == (6, 6, 6)
+    assert res.result.shape == (8, 8, 8)
 
     widget.on_yield(res)
