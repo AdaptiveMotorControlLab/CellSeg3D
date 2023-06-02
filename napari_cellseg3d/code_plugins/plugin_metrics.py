@@ -23,7 +23,7 @@ DEFAULT_THRESHOLD = 0.5
 class MetricsUtils(BasePluginFolder):
     """Plugin to evaluate metrics between two sets of labels, ground truth and prediction"""
 
-    def __init__(self, viewer: "napari.viewer.Viewer", parent):
+    def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
         """Creates a MetricsUtils widget for computing and plotting dice metrics between labels.
         Args:
             viewer: viewer to display the widget in

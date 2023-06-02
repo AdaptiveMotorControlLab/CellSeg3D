@@ -520,7 +520,7 @@ def parse_default_path(possible_paths):
     # ]
     print(default_paths)
     if len(default_paths) == 0:
-        return str(Path.home())
+        return str(Path().home())
     default_path = max(default_paths, key=len)
     return str(default_path)
 

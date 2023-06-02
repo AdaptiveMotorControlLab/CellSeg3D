@@ -111,3 +111,4 @@ notebooks/instance_test.ipynb
 !napari_cellseg3d/_tests/res/test.tif
 !napari_cellseg3d/_tests/res/test.png
 !napari_cellseg3d/_tests/res/test_labels.tif
+cov.syspath.txt
