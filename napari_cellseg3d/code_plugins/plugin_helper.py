@@ -1,6 +1,8 @@
 import pathlib
+from typing import TYPE_CHECKING
 
-import napari
+if TYPE_CHECKING:
+    import napari
 
 # Qt
 from qtpy.QtCore import QSize
