@@ -667,7 +667,7 @@ class AnisotropyWidgets(QWidget):
             w.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         self.box_widgets_lbl = [
-            make_label("Resolution in " + axis + " (microns) :", parent=parent)
+            make_label("Pixel size in " + axis + " (microns) :", parent=parent)
             for axis in "xyz"
         ]
 

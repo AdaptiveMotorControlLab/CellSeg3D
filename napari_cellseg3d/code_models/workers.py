@@ -724,7 +724,12 @@ class InferenceWorker(GeneratorWorker):
         instance_labels, stats = self.get_instance_result(out, i=i)
         if self.config.use_crf:
             try:
-                crf_results = self.run_crf(inputs, out, image_id=i)
+                crf_results = self.run_crf(
+                    inputs,
+                    out,
+                    aniso_transform=self.aniso_transform,
+                    image_id=i,
+                )
 
             except ValueError as e:
                 self.log(f"Error occurred during CRF : {e}")
@@ -746,8 +751,10 @@ class InferenceWorker(GeneratorWorker):
             i=i,
         )
 
-    def run_crf(self, image, labels, image_id=0):
+    def run_crf(self, image, labels, aniso_transform, image_id=0):
         try:
+            if aniso_transform is not None:
+                image = aniso_transform(image)
             crf_results = crf_with_config(
                 image, labels, config=self.config.crf_config, log=self.log
             )
@@ -795,7 +802,11 @@ class InferenceWorker(GeneratorWorker):
             semantic_labels=out, from_layer=True
         )
 
-        crf_results = self.run_crf(image, out) if self.config.use_crf else None
+        crf_results = (
+            self.run_crf(image, out, aniso_transform=self.aniso_transform)
+            if self.config.use_crf
+            else None
+        )
 
         return self.create_inference_result(
             semantic_labels=out,
