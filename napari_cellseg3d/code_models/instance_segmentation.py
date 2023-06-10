@@ -9,9 +9,6 @@ from qtpy.QtWidgets import QWidget
 from skimage.measure import label, regionprops
 from skimage.morphology import remove_small_objects
 from skimage.segmentation import watershed
-
-# from skimage.measure import mesh_surface_area
-# from skimage.measure import marching_cubes
 from tifffile import imread
 
 from napari_cellseg3d import interface as ui
@@ -110,42 +107,6 @@ class InstanceMethod:
         return result.squeeze()
 
 
-class InstanceMethod:
-    def __init__(
-        self,
-        name: str,
-        function: callable,
-        num_sliders: int,
-        num_counters: int,
-    ):
-        self.name = name
-        self.function = function
-        self.counters: List[ui.DoubleIncrementCounter] = []
-        self.sliders: List[ui.Slider] = []
-        if num_sliders > 0:
-            for i in range(num_sliders):
-                widget = f"slider_{i}"
-                setattr(
-                    self,
-                    widget,
-                    ui.Slider(0, 100, 1, divide_factor=100, text_label=""),
-                )
-                self.sliders.append(getattr(self, widget))
-
-        if num_counters > 0:
-            for i in range(num_counters):
-                widget = f"counter_{i}"
-                setattr(
-                    self,
-                    widget,
-                    ui.DoubleIncrementCounter(label=""),
-                )
-                self.counters.append(getattr(self, widget))
-
-    def run_method(self, image):
-        raise NotImplementedError("Must be defined in child classes")
-
-
 @dataclass
 class ImageStats:
     volume: List[float]
@@ -186,7 +147,7 @@ def voronoi_otsu(
     volume: np.ndarray,
     spot_sigma: float,
     outline_sigma: float,
-    remove_small_size: float,
+    # remove_small_size: float,
 ):
     """
     Voronoi-Otsu labeling from pyclesperanto.
@@ -202,12 +163,13 @@ def voronoi_otsu(
     Instance segmentation labels from Voronoi-Otsu method
 
     """
-    semantic = np.squeeze(volume)
+    # remove_small_size (float): remove all objects smaller than the specified size in pixels
+    # semantic = np.squeeze(volume)
     logger.debug(
         f"Running voronoi otsu segmentation with spot_sigma={spot_sigma} and outline_sigma={outline_sigma}"
     )
     instance = cle.voronoi_otsu_labeling(
-        semantic, spot_sigma=spot_sigma, outline_sigma=outline_sigma
+        volume, spot_sigma=spot_sigma, outline_sigma=outline_sigma
     )
     # instance = remove_small_objects(instance, remove_small_size)
     return np.array(instance)
@@ -225,8 +187,6 @@ def binary_connected(
         volume (numpy.ndarray): foreground probability of shape :math:`(C, Z, Y, X)`.
         thres (float): threshold of foreground. Default: 0.8
         thres_small (int): size threshold of small objects to remove. Default: 128
-        scale_factors (tuple): scale factors for resizing in :math:`(Z, Y, X)` order. Default: (1.0, 1.0, 1.0)
-
     """
     logger.debug(
         f"Running connected components segmentation with thres={thres} and thres_small={thres_small}"
@@ -445,13 +405,16 @@ def volume_stats(volume_image):
     )
 
 
-class Watershed(InstanceMethod, metaclass=Singleton):
-    def __init__(self):
+class Watershed(InstanceMethod):
+    """Widget class for Watershed segmentation. Requires 4 parameters, see binary_watershed"""
+
+    def __init__(self, widget_parent=None):
         super().__init__(
-            name="Watershed",
+            name=WATERSHED,
             function=binary_watershed,
             num_sliders=2,
             num_counters=2,
+            widget_parent=widget_parent,
         )
 
         self.sliders[0].label.setText("Foreground probability threshold")
@@ -488,13 +451,16 @@ class Watershed(InstanceMethod, metaclass=Singleton):
         )
 
 
-class ConnectedComponents(InstanceMethod, metaclass=Singleton):
-    def __init__(self):
+class ConnectedComponents(InstanceMethod):
+    """Widget class for Connected Components instance segmentation. Requires 2 parameters, see binary_connected."""
+
+    def __init__(self, widget_parent=None):
         super().__init__(
-            name="Connected Components",
+            name=CONNECTED_COMP,
             function=binary_connected,
             num_sliders=1,
             num_counters=1,
+            widget_parent=widget_parent,
         )
 
         self.sliders[0].label.setText("Foreground probability threshold")
@@ -516,33 +482,37 @@ class ConnectedComponents(InstanceMethod, metaclass=Singleton):
         )
 
 
-class VoronoiOtsu(InstanceMethod, metaclass=Singleton):
-    def __init__(self):
+class VoronoiOtsu(InstanceMethod):
+    """Widget class for Voronoi-Otsu labeling from pyclesperanto. Requires 2 parameter, see voronoi_otsu"""
+
+    def __init__(self, widget_parent=None):
         super().__init__(
-            name="Voronoi-Otsu",
+            name=VORONOI_OTSU,
             function=voronoi_otsu,
             num_sliders=0,
-            num_counters=3,
+            num_counters=2,
+            widget_parent=widget_parent,
         )
-        self.counters[0].label.setText("Spot sigma")
+        self.counters[0].label.setText("Spot sigma")  # closeness
         self.counters[
             0
         ].tooltips = "Determines how close detected objects can be"
         self.counters[0].setMaximum(100)
         self.counters[0].setValue(2)
 
-        self.counters[1].label.setText("Outline sigma")
+        self.counters[1].label.setText("Outline sigma")  # smoothness
         self.counters[
             1
         ].tooltips = "Determines the smoothness of the segmentation"
         self.counters[1].setMaximum(100)
         self.counters[1].setValue(2)
 
-        self.counters[2].label.setText("Small object removal")
-        self.counters[2].tooltips = (
-            "Volume/size threshold for small object removal."
-            "\nAll objects with a volume/size below this value will be removed."
-        )
+        # self.counters[2].label.setText("Small object removal")
+        # self.counters[2].tooltips = (
+        #     "Volume/size threshold for small object removal."
+        #     "\nAll objects with a volume/size below this value will be removed."
+        # )
+        # self.counters[2].setValue(30)
 
     def run_method(self, image):
         ################
@@ -557,7 +527,7 @@ class VoronoiOtsu(InstanceMethod, metaclass=Singleton):
             image,
             self.counters[0].value(),
             self.counters[1].value(),
-            self.counters[2].value(),
+            # self.counters[2].value(),
         )
 
 
@@ -575,7 +545,6 @@ class InstanceWidgets(QWidget):
 
         """
         super().__init__(parent)
-
         self.method_choice = ui.DropdownMenu(
             list(INSTANCE_SEGMENTATION_METHOD_LIST.keys())
         )
@@ -588,7 +557,6 @@ class InstanceWidgets(QWidget):
         self._build()
 
     def _build(self):
-
         group = ui.GroupedWidget("Instance segmentation")
         group.layout.addWidget(self.method_choice)
 
@@ -620,6 +588,9 @@ class InstanceWidgets(QWidget):
             if name != self.method_choice.currentText():
                 for widget in self.instance_widgets[name]:
                     widget.set_visibility(False)
+            else:
+                for widget in self.instance_widgets[name]:
+                    widget.set_visibility(True)
 
     def run_method(self, volume):
         """
@@ -636,7 +607,7 @@ class InstanceWidgets(QWidget):
 
 
 INSTANCE_SEGMENTATION_METHOD_LIST = {
-    Watershed().name: Watershed,
-    ConnectedComponents().name: ConnectedComponents,
-    VoronoiOtsu().name: VoronoiOtsu,
+    VORONOI_OTSU: VoronoiOtsu,
+    WATERSHED: Watershed,
+    CONNECTED_COMP: ConnectedComponents,
 }

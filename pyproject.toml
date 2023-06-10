@@ -1,6 +1,6 @@
 [project]
 name = "napari_cellseg3d"
-version = "0.0.2rc6"
+version = "0.0.3rc1"
 authors = [
     {name = "Cyril Achard", email = "cyril.achard@epfl.ch"},
     {name = "Maxime Vidal", email = "maxime.vidal@epfl.ch"},
@@ -102,6 +102,7 @@ dev = [
     "black",
     "ruff",
     "pre-commit",
+    "tuna",
 ]
 docs = [
     "sphinx",
