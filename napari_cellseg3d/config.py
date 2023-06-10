@@ -117,10 +117,12 @@ class Zoom:
     enabled: bool = True
     zoom_values: List[float] = None
 
+
 @dataclass
 class InstanceSegConfig:
     enabled: bool = False
     method: InstanceMethod = None
+
 
 @dataclass
 class PostProcessConfig:
@@ -258,21 +260,3 @@ class TrainingWorkerConfig:
     sample_size: List[int] = None
     do_augmentation: bool = True
     deterministic_config: DeterministicConfig = DeterministicConfig()
-
-
-################
-# CRF config for WNet
-################
-
-
-@dataclass
-class WNetCRFConfig:
-    "Class to store parameters of WNet CRF post processing"
-
-    # CRF
-    sa = 10  # 50
-    sb = 10
-    sg = 1
-    w1 = 10  # 50
-    w2 = 10
-    n_iter = 5

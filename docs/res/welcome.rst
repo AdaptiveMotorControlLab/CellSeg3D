@@ -82,7 +82,7 @@ Then go into Plugins > napari-cellseg3d, and choose which tool to use:
 - **Utilities**: This module allows you to use several utilities, e.g. to crop your volumes and labels, compute prediction scores or convert labels
 - **Help/About...** : Quick access to version info, Github page and docs
 
-See the documentation for links to detailed guides regarding the usage of the modules.
+See above for links to detailed guides regarding the usage of the modules.
 
 Acknowledgments & References
 ---------------------------------------------
@@ -100,6 +100,8 @@ This plugin mainly uses the following libraries and software:
 * `PyTorch`_
 
 * `MONAI project`_ (various models used here are credited `on their website`_)
+
+* `pyclEsperanto`_ (for the Voronoi Otsu labeling) by Robert Haase
 
 * `pyclEsperanto`_ (for the Voronoi Otsu labeling) by Robert Haase
 

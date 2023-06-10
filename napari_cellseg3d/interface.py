@@ -6,6 +6,7 @@ from typing import List, Optional
 import napari
 
 # Qt
+# from qtpy.QtCore import QtWarningMsg
 from qtpy import QtCore
 
 # from qtpy.QtCore import QtWarningMsg
@@ -1088,9 +1089,9 @@ class DoubleIncrementCounter(QDoubleSpinBox):
 
     def _update_step(self):
         if self.value() < 0.9:
-            self.setSingleStep(0.1)
+            self.setSingleStep(0.01)
         else:
-            self.setSingleStep(1)
+            self.setSingleStep(0.1)
 
     @property
     def tooltips(self):

@@ -22,7 +22,7 @@ def evaluate_model_performance(
         Label image with neurons labelled as mulitple values.
     model_labels : ndarray
         Label image from the model labelled as mulitple values.
-    do_print : bool
+    print_details : bool
         If True, print the results.
     visualize : bool
         If True, visualize the results.
@@ -49,7 +49,7 @@ def evaluate_model_performance(
     """
     log.debug("Mapping labels...")
     map_labels_existing, map_fused_neurons, new_labels = map_labels(
-        labels, model_labels
+        labels, model_labels, threshold_correct
     )
 
     # calculate the number of neurons individually found
@@ -111,23 +111,20 @@ def evaluate_model_performance(
         log.info(f"Neurons not found: {neurons_not_found}")
         log.info(f"Artefacts found: {artefacts_found}")
         log.info(
-            "Mean true positive ratio of the model: ",
+            f"Mean true positive ratio of the model: {mean_true_positive_ratio_model}"
         )
-        log.info(mean_true_positive_ratio_model)
         log.info(
-            "Mean ratio of the neurons pixels correctly labelled: ",
+            f"Mean ratio of the neurons pixels correctly labelled: {mean_ratio_pixel_found}"
         )
-        log.info(mean_ratio_pixel_found)
         log.info(
-            "Mean ratio of the neurons pixels correctly labelled for fused neurons: ",
+            f"Mean ratio of the neurons pixels correctly labelled for fused neurons: {mean_ratio_pixel_found_fused}"
         )
-        log.info(mean_ratio_pixel_found_fused)
         log.info(
-            "Mean true positive ratio of the model for fused neurons: ",
+            f"Mean true positive ratio of the model for fused neurons: {mean_true_positive_ratio_model_fused}"
         )
-        log.info(mean_true_positive_ratio_model_fused)
-        log.info("Mean ratio of false pixel in artefacts: ")
-        log.info(mean_ratio_false_pixel_artefact)
+        log.info(
+            f"Mean ratio of the false pixels labelled as neurons: {mean_ratio_false_pixel_artefact}"
+        )
 
         if visualize:
             viewer = napari.Viewer(ndisplay=3)
