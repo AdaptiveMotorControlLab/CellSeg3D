@@ -2,17 +2,17 @@ import napari
 
 # Qt
 from qtpy.QtCore import qInstallMessageHandler
-from qtpy.QtWidgets import QSizePolicy
-from qtpy.QtWidgets import QVBoxLayout
-from qtpy.QtWidgets import QWidget
+from qtpy.QtWidgets import QSizePolicy, QVBoxLayout, QWidget
 
 # local
 import napari_cellseg3d.interface as ui
-from napari_cellseg3d.code_plugins.plugin_convert import AnisoUtils
-from napari_cellseg3d.code_plugins.plugin_convert import RemoveSmallUtils
-from napari_cellseg3d.code_plugins.plugin_convert import ThresholdUtils
-from napari_cellseg3d.code_plugins.plugin_convert import ToInstanceUtils
-from napari_cellseg3d.code_plugins.plugin_convert import ToSemanticUtils
+from napari_cellseg3d.code_plugins.plugin_convert import (
+    AnisoUtils,
+    RemoveSmallUtils,
+    ThresholdUtils,
+    ToInstanceUtils,
+    ToSemanticUtils,
+)
 from napari_cellseg3d.code_plugins.plugin_crop import Cropping
 
 UTILITIES_WIDGETS = {

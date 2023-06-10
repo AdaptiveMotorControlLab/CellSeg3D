@@ -51,9 +51,10 @@ from tqdm import tqdm
 # local
 from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d import utils
-from napari_cellseg3d.code_models.model_instance_seg import ImageStats
-from napari_cellseg3d.code_models.model_instance_seg import volume_stats
+from napari_cellseg3d.code_models.model_instance_seg import (
+    ImageStats,
+    volume_stats,
+)
 
 logger = utils.LOGGER
 

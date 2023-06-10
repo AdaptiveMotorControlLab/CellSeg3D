@@ -4,8 +4,7 @@ from typing import List
 import numpy as np
 import pyclesperanto_prototype as cle
 from qtpy.QtWidgets import QWidget
-from skimage.measure import label
-from skimage.measure import regionprops
+from skimage.measure import label, regionprops
 from skimage.morphology import remove_small_objects
 from skimage.segmentation import watershed
 
@@ -14,9 +13,8 @@ from skimage.segmentation import watershed
 from tifffile import imread
 
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d.utils import fill_list_in_between
 from napari_cellseg3d.utils import LOGGER as logger
-from napari_cellseg3d.utils import sphericity_axis
+from napari_cellseg3d.utils import fill_list_in_between, sphericity_axis
 
 # from napari_cellseg3d.utils import sphericity_volume_area
 
@@ -561,7 +559,7 @@ class InstanceWidgets(QWidget):
         self._set_visibility()
 
     def _set_visibility(self):
-        for name in self.instance_widgets.keys():
+        for name in self.instance_widgets:
             if name != self.method_choice.currentText():
                 for widget in self.instance_widgets[name]:
                     widget.set_visibility(False)
