@@ -1,40 +1,37 @@
 import threading
 import warnings
 from functools import partial
-from typing import List
-from typing import Optional
+from typing import List, Optional
 
 import napari
 
 # Qt
 # from qtpy.QtCore import QtWarningMsg
 from qtpy import QtCore
-from qtpy.QtCore import QObject
-from qtpy.QtCore import Qt
-from qtpy.QtCore import QUrl
-from qtpy.QtGui import QCursor
-from qtpy.QtGui import QDesktopServices
-from qtpy.QtGui import QTextCursor
-from qtpy.QtWidgets import QCheckBox
-from qtpy.QtWidgets import QComboBox
-from qtpy.QtWidgets import QDoubleSpinBox
-from qtpy.QtWidgets import QFileDialog
-from qtpy.QtWidgets import QGridLayout
-from qtpy.QtWidgets import QGroupBox
-from qtpy.QtWidgets import QHBoxLayout
-from qtpy.QtWidgets import QLabel
-from qtpy.QtWidgets import QLayout
-from qtpy.QtWidgets import QLineEdit
-from qtpy.QtWidgets import QMenu
-from qtpy.QtWidgets import QPushButton
-from qtpy.QtWidgets import QRadioButton
-from qtpy.QtWidgets import QScrollArea
-from qtpy.QtWidgets import QSizePolicy
-from qtpy.QtWidgets import QSlider
-from qtpy.QtWidgets import QSpinBox
-from qtpy.QtWidgets import QTextEdit
-from qtpy.QtWidgets import QVBoxLayout
-from qtpy.QtWidgets import QWidget
+from qtpy.QtCore import QObject, Qt, QUrl
+from qtpy.QtGui import QCursor, QDesktopServices, QTextCursor
+from qtpy.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QDoubleSpinBox,
+    QFileDialog,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLayout,
+    QLineEdit,
+    QMenu,
+    QPushButton,
+    QRadioButton,
+    QScrollArea,
+    QSizePolicy,
+    QSlider,
+    QSpinBox,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
 
 # Local
 from napari_cellseg3d import utils
@@ -188,7 +185,7 @@ class UtilsDropdown(metaclass=utils.Singleton):
         menu.setStyleSheet(f"background-color: {napari_grey}; color: white;")
 
         actions = []
-        for title in UTILITIES_WIDGETS.keys():
+        for title in UTILITIES_WIDGETS:
             a = menu.addAction(f"Utilities : {title}")
             actions.append(a)
 
@@ -773,7 +770,7 @@ class LayerSelecter(ContainerWidget):
     def layer_data(self):
         if self.layer_list.count() < 1:
             warnings.warn("Please select a valid layer !")
-            return
+            return None
 
         return self._viewer.layers[self.layer_name()].data
 
@@ -1011,7 +1008,7 @@ def make_n_spinboxes(
         raise ValueError("Cannot make less than 2 spin boxes")
 
     boxes = []
-    for i in range(n):
+    for _i in range(n):
         box = class_(min, max, default, step, parent, fixed)
         boxes.append(box)
     return boxes

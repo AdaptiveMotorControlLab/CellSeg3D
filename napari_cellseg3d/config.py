@@ -2,8 +2,7 @@ import datetime
 import warnings
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List
-from typing import Optional
+from typing import List, Optional
 
 import napari
 import numpy as np
@@ -87,9 +86,7 @@ class ModelInfo:
 
     @staticmethod
     def get_model_name_list():
-        logger.info(
-            "Model list :\n" + str(f"{name}\n" for name in MODEL_LIST.keys())
-        )
+        logger.info("Model list :\n" + str(f"{name}\n" for name in MODEL_LIST))
         return MODEL_LIST.keys()
 
 

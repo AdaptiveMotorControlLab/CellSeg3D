@@ -6,8 +6,7 @@ import napari
 
 # Qt
 from qtpy.QtCore import qInstallMessageHandler
-from qtpy.QtWidgets import QTabWidget
-from qtpy.QtWidgets import QWidget
+from qtpy.QtWidgets import QTabWidget, QWidget
 
 # local
 from napari_cellseg3d import interface as ui

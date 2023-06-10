@@ -2,44 +2,46 @@ import platform
 from dataclasses import dataclass
 from math import ceil
 from pathlib import Path
-from typing import List
-from typing import Optional
+from typing import List, Optional
 
 import numpy as np
 import torch
 
 # MONAI
-from monai.data import CacheDataset
-from monai.data import DataLoader
-from monai.data import Dataset
-from monai.data import decollate_batch
-from monai.data import pad_list_data_collate
-from monai.data import PatchDataset
+from monai.data import (
+    CacheDataset,
+    DataLoader,
+    Dataset,
+    PatchDataset,
+    decollate_batch,
+    pad_list_data_collate,
+)
 from monai.inferers import sliding_window_inference
 from monai.metrics import DiceMetric
-from monai.transforms import AddChannel
-from monai.transforms import AsDiscrete
-from monai.transforms import Compose
-from monai.transforms import EnsureChannelFirstd
-from monai.transforms import EnsureType
-from monai.transforms import EnsureTyped
-from monai.transforms import LoadImaged
-from monai.transforms import Orientationd
-from monai.transforms import Rand3DElasticd
-from monai.transforms import RandAffined
-from monai.transforms import RandFlipd
-from monai.transforms import RandRotate90d
-from monai.transforms import RandShiftIntensityd
-from monai.transforms import RandSpatialCropSamplesd
-from monai.transforms import SpatialPad
-from monai.transforms import SpatialPadd
-from monai.transforms import ToTensor
-from monai.transforms import Zoom
+from monai.transforms import (
+    AddChannel,
+    AsDiscrete,
+    Compose,
+    EnsureChannelFirstd,
+    EnsureType,
+    EnsureTyped,
+    LoadImaged,
+    Orientationd,
+    Rand3DElasticd,
+    RandAffined,
+    RandFlipd,
+    RandRotate90d,
+    RandShiftIntensityd,
+    RandSpatialCropSamplesd,
+    SpatialPad,
+    SpatialPadd,
+    ToTensor,
+    Zoom,
+)
 from monai.utils import set_determinism
 
 # threads
-from napari.qt.threading import GeneratorWorker
-from napari.qt.threading import WorkerBaseSignals
+from napari.qt.threading import GeneratorWorker, WorkerBaseSignals
 
 # Qt
 from qtpy.QtCore import Signal
@@ -47,11 +49,12 @@ from tifffile import imwrite
 from tqdm import tqdm
 
 # local
-from napari_cellseg3d import config
+from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d import utils
-from napari_cellseg3d.code_models.model_instance_seg import ImageStats
-from napari_cellseg3d.code_models.model_instance_seg import volume_stats
+from napari_cellseg3d.code_models.model_instance_seg import (
+    ImageStats,
+    volume_stats,
+)
 
 logger = utils.LOGGER
 
@@ -112,7 +115,7 @@ class WeightsDownloader:
 
         with open(json_path) as f:
             neturls = json.load(f)
-        if model_name in neturls.keys():
+        if model_name in neturls:
             url = neturls[model_name]
             response = urllib.request.urlopen(url)
 
@@ -282,10 +285,11 @@ class InferenceWorker(GeneratorWorker):
                 f"Thresholding is enabled at {config.post_process_config.thresholding.threshold_value}"
             )
 
-        if config.sliding_window_config.is_enabled():
-            status = "enabled"
-        else:
-            status = "disabled"
+        status = (
+            "enabled"
+            if config.sliding_window_config.is_enabled()
+            else "disabled"
+        )
 
         self.log(f"Window inference is {status}\n")
         if status == "enabled":
@@ -454,10 +458,9 @@ class InferenceWorker(GeneratorWorker):
                 self.config.model_info.get_model().get_output(model, inputs)
             )
 
-        if self.config.keep_on_cpu:
-            dataset_device = "cpu"
-        else:
-            dataset_device = self.config.device
+        dataset_device = (
+            "cpu" if self.config.keep_on_cpu else self.config.device
+        )
 
         window_size = self.config.sliding_window_config.window_size
         window_overlap = self.config.sliding_window_config.window_overlap
@@ -1055,10 +1058,7 @@ class TrainingWorker(GeneratorWorker):
             do_sampling = self.config.sampling
 
             if model_name == "SegResNet":
-                if do_sampling:
-                    size = self.config.sample_size
-                else:
-                    size = check
+                size = self.config.sample_size if do_sampling else check
                 logger.info(f"Size of image : {size}")
                 model = model_class.get_net(
                     input_image_size=utils.get_padding_dim(size),
@@ -1066,10 +1066,7 @@ class TrainingWorker(GeneratorWorker):
                     # dropout_prob=0.3,
                 )
             elif model_name == "SwinUNetR":
-                if do_sampling:
-                    size = self.sample_size
-                else:
-                    size = check
+                size = self.sample_size if do_sampling else check
                 logger.info(f"Size of image : {size}")
                 model = model_class.get_net(
                     img_size=utils.get_padding_dim(size),

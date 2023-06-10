@@ -4,15 +4,16 @@ from pathlib import Path
 import napari
 import numpy as np
 from qtpy.QtWidgets import QSizePolicy
-from tifffile import imread
-from tifffile import imwrite
+from tifffile import imread, imwrite
 
 import napari_cellseg3d.interface as ui
 from napari_cellseg3d import utils
-from napari_cellseg3d.code_models.model_instance_seg import clear_small_objects
-from napari_cellseg3d.code_models.model_instance_seg import InstanceWidgets
-from napari_cellseg3d.code_models.model_instance_seg import threshold
-from napari_cellseg3d.code_models.model_instance_seg import to_semantic
+from napari_cellseg3d.code_models.model_instance_seg import (
+    InstanceWidgets,
+    clear_small_objects,
+    threshold,
+    to_semantic,
+)
 from napari_cellseg3d.code_plugins.plugin_base import BasePluginFolder
 
 # TODO break down into multiple mini-widgets
@@ -166,18 +167,19 @@ class AnisoUtils(BasePluginFolder):
                     f"isotropic_{layer.name}",
                 )
 
-        elif self.folder_choice.isChecked():
-            if len(self.images_filepaths) != 0:
-                images = [
-                    utils.resize(np.array(imread(file)), zoom)
-                    for file in self.images_filepaths
-                ]
-                save_folder(
-                    self.results_path,
-                    f"isotropic_results_{utils.get_date_time()}",
-                    images,
-                    self.images_filepaths,
-                )
+        elif (
+            self.folder_choice.isChecked() and len(self.images_filepaths) != 0
+        ):
+            images = [
+                utils.resize(np.array(imread(file)), zoom)
+                for file in self.images_filepaths
+            ]
+            save_folder(
+                self.results_path,
+                f"isotropic_results_{utils.get_date_time()}",
+                images,
+                self.images_filepaths,
+            )
 
 
 class RemoveSmallUtils(BasePluginFolder):
@@ -261,18 +263,19 @@ class RemoveSmallUtils(BasePluginFolder):
                 show_result(
                     self._viewer, layer, removed, f"cleared_{layer.name}"
                 )
-        elif self.folder_choice.isChecked():
-            if len(self.images_filepaths) != 0:
-                images = [
-                    clear_small_objects(file, remove_size, is_file_path=True)
-                    for file in self.images_filepaths
-                ]
-                save_folder(
-                    self.results_path,
-                    f"small_removed_results_{utils.get_date_time()}",
-                    images,
-                    self.images_filepaths,
-                )
+        elif (
+            self.folder_choice.isChecked() and len(self.images_filepaths) != 0
+        ):
+            images = [
+                clear_small_objects(file, remove_size, is_file_path=True)
+                for file in self.images_filepaths
+            ]
+            save_folder(
+                self.results_path,
+                f"small_removed_results_{utils.get_date_time()}",
+                images,
+                self.images_filepaths,
+            )
         return
 
 
@@ -342,18 +345,19 @@ class ToSemanticUtils(BasePluginFolder):
                 show_result(
                     self._viewer, layer, semantic, f"semantic_{layer.name}"
                 )
-        elif self.folder_choice.isChecked():
-            if len(self.images_filepaths) != 0:
-                images = [
-                    to_semantic(file, is_file_path=True)
-                    for file in self.images_filepaths
-                ]
-                save_folder(
-                    self.results_path,
-                    f"semantic_results_{utils.get_date_time()}",
-                    images,
-                    self.images_filepaths,
-                )
+        elif (
+            self.folder_choice.isChecked() and len(self.images_filepaths) != 0
+        ):
+            images = [
+                to_semantic(file, is_file_path=True)
+                for file in self.images_filepaths
+            ]
+            save_folder(
+                self.results_path,
+                f"semantic_results_{utils.get_date_time()}",
+                images,
+                self.images_filepaths,
+            )
 
 
 class ToInstanceUtils(BasePluginFolder):
@@ -428,18 +432,19 @@ class ToInstanceUtils(BasePluginFolder):
                     instance, name=f"instance_{layer.name}"
                 )
 
-        elif self.folder_choice.isChecked():
-            if len(self.images_filepaths) != 0:
-                images = [
-                    self.instance_widgets.run_method(imread(file))
-                    for file in self.images_filepaths
-                ]
-                save_folder(
-                    self.results_path,
-                    f"instance_results_{utils.get_date_time()}",
-                    images,
-                    self.images_filepaths,
-                )
+        elif (
+            self.folder_choice.isChecked() and len(self.images_filepaths) != 0
+        ):
+            images = [
+                self.instance_widgets.run_method(imread(file))
+                for file in self.images_filepaths
+            ]
+            save_folder(
+                self.results_path,
+                f"instance_results_{utils.get_date_time()}",
+                images,
+                self.images_filepaths,
+            )
 
 
 class ThresholdUtils(BasePluginFolder):
@@ -522,18 +527,19 @@ class ThresholdUtils(BasePluginFolder):
                 show_result(
                     self._viewer, layer, removed, f"threshold{layer.name}"
                 )
-        elif self.folder_choice.isChecked():
-            if len(self.images_filepaths) != 0:
-                images = [
-                    self.function(imread(file), remove_size)
-                    for file in self.images_filepaths
-                ]
-                save_folder(
-                    self.results_path,
-                    f"threshold_results_{utils.get_date_time()}",
-                    images,
-                    self.images_filepaths,
-                )
+        elif (
+            self.folder_choice.isChecked() and len(self.images_filepaths) != 0
+        ):
+            images = [
+                self.function(imread(file), remove_size)
+                for file in self.images_filepaths
+            ]
+            save_folder(
+                self.results_path,
+                f"threshold_results_{utils.get_date_time()}",
+                images,
+                self.images_filepaths,
+            )
 
 
 # class ConvertUtils(BasePluginFolder):

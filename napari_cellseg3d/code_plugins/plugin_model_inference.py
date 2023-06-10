@@ -6,14 +6,17 @@ import numpy as np
 import pandas as pd
 
 # local
-from napari_cellseg3d import config
+from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d import utils
 from napari_cellseg3d.code_models.model_framework import ModelFramework
-from napari_cellseg3d.code_models.model_instance_seg import InstanceMethod
-from napari_cellseg3d.code_models.model_instance_seg import InstanceWidgets
-from napari_cellseg3d.code_models.model_workers import InferenceResult
-from napari_cellseg3d.code_models.model_workers import InferenceWorker
+from napari_cellseg3d.code_models.model_instance_seg import (
+    InstanceMethod,
+    InstanceWidgets,
+)
+from napari_cellseg3d.code_models.model_workers import (
+    InferenceResult,
+    InferenceWorker,
+)
 
 
 class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
@@ -276,9 +279,11 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         if self.layer_choice.isChecked():
             if self.image_layer_loader.layer_data() is not None:
                 return True
-        elif self.folder_choice.isChecked():
-            if self.image_filewidget.check_ready():
-                return True
+        elif (
+            self.folder_choice.isChecked()
+            and self.image_filewidget.check_ready()
+        ):
+            return True
         return False
 
     def _toggle_display_model_input_size(self):

@@ -136,9 +136,8 @@ def align_array_sizes(array_shape, target_shape):
     for i in range(len(target_shape)):
         if target_shape[i] != array_shape[i]:
             for j in range(len(array_shape)):
-                if array_shape[i] == target_shape[j]:
-                    if j != i:
-                        index_differences.append({"origin": i, "target": j})
+                if array_shape[i] == target_shape[j] and j != i:
+                    index_differences.append({"origin": i, "target": j})
 
     # print(index_differences)
     if len(index_differences) == 0:
@@ -353,9 +352,10 @@ def fill_list_in_between(lst, n, elem):
             new_list += temp_list
         else:
             new_list.append(lst[i])
-            for j in range(n):
+            for _j in range(n):
                 new_list.append(elem)
             return new_list
+    return None
 
 
 # def check_zarr(project_path, ext):

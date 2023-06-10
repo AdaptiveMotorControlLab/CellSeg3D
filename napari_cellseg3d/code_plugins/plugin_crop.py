@@ -233,10 +233,7 @@ class Cropping(BasePluginSingleImage):
     def _check_ready(self):
         if self.image_layer_loader.layer_data() is not None:
             if self.crop_second_image:
-                if self.label_layer_loader.layer_data() is not None:
-                    return True
-                else:
-                    return False
+                return self.label_layer_loader.layer_data() is not None
             return True
         return False
 
