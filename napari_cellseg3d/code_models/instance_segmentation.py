@@ -16,6 +16,10 @@ from napari_cellseg3d import interface as ui
 from napari_cellseg3d.utils import LOGGER as logger
 from napari_cellseg3d.utils import fill_list_in_between, sphericity_axis
 
+# from skimage.measure import marching_cubes
+# from skimage.measure import mesh_surface_area
+
+
 # from napari_cellseg3d.utils import sphericity_volume_area
 
 # list of methods :
@@ -184,8 +188,6 @@ def binary_connected(
         volume (numpy.ndarray): foreground probability of shape :math:`(C, Z, Y, X)`.
         thres (float): threshold of foreground. Default: 0.8
         thres_small (int): size threshold of small objects to remove. Default: 128
-        scale_factors (tuple): scale factors for resizing in :math:`(Z, Y, X)` order. Default: (1.0, 1.0, 1.0)
-
     """
     logger.debug(
         f"Running connected components segmentation with thres={thres} and thres_small={thres_small}"

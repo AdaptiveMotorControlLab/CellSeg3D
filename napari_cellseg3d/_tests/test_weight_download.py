@@ -4,8 +4,6 @@ from napari_cellseg3d.code_models.workers import (
 )
 
 
-
-
 # DISABLED, causes GitHub actions to freeze
 def test_weight_download():
     downloader = WeightsDownloader()
