@@ -3,7 +3,6 @@ from napari_cellseg3d.utils import LOGGER
 
 logger = LOGGER
 
-logger = LOGGER
 
 class TRAILMAP_MS_(UNet3D):
     use_default_training = True

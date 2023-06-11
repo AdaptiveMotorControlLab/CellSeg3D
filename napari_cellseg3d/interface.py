@@ -13,6 +13,7 @@ from qtpy import QtCore
 from qtpy.QtCore import QObject, Qt, QUrl
 from qtpy.QtGui import QCursor, QDesktopServices, QTextCursor
 from qtpy.QtWidgets import (
+    QAbstractSpinBox,
     QCheckBox,
     QComboBox,
     QDoubleSpinBox,
@@ -1085,13 +1086,14 @@ class DoubleIncrementCounter(QDoubleSpinBox):
 
         if text_label is not None:
             self.label = make_label(name=text_label)
-        self.valueChanged.connect(self._update_step)
+        # self.valueChanged.connect(self._update_step)
+        self.setStepType(QAbstractSpinBox.StepType.AdaptiveDecimalStepType)
 
-    def _update_step(self):
-        if self.value() < 0.9:
-            self.setSingleStep(0.01)
-        else:
-            self.setSingleStep(0.1)
+    # def _update_step(self):
+    #     if self.value() <= 1:
+    #         self.setSingleStep(0.1)
+    #     else:
+    #         self.setSingleStep(1)
 
     @property
     def tooltips(self):

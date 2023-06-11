@@ -4,7 +4,6 @@ from napari_cellseg3d.utils import LOGGER
 
 logger = LOGGER
 
-from napari_cellseg3d.utils import LOGGER
 
 class SwinUNETR_(SwinUNETR):
     use_default_training = True

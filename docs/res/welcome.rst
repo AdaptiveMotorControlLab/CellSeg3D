@@ -113,7 +113,7 @@ This plugin mainly uses the following libraries and software:
 .. _MONAI project: https://monai.io/
 .. _on their website: https://docs.monai.io/en/stable/networks.html#nets
 .. _pyclEsperanto: https://github.com/clEsperanto/pyclesperanto_prototype
-
+.. _WNet model: https://arxiv.org/abs/1711.08506
 
 .. rubric:: References
 
