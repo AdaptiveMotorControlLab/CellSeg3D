@@ -33,9 +33,9 @@ If you'd like to change the size of the volume, change the parameters as previou
 
 Creating new layers
 ---------------------------------
-To "zoom in" your volume, you can use the "Create new layers" checkbox to make a new layer not controlled by the plugin next
-time you hit Start. This way, you can first select your region of interest by using the tool as described above,
-the enable the option, select the cropped layer, and define a smaller crop size to have easier access to your region of interest.
+To "zoom in" your volume, you can use the "Create new layers" checkbox to make a new cropping layer controlled by the sliders
+next time you hit Start. This way, you can first select your region of interest by using the tool as described above,
+then enable the option, select the cropped region produced before as the input layer, and define a smaller crop size in order to crop within your region of interest.
 
 Interface & functionalities
 ---------------------------------------------------------------

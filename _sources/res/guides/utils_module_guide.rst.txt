@@ -4,13 +4,21 @@ Label conversion utility guide
 ==================================
 
 This utility will let you convert labels to various different formats.
+
 You will have to specify the results directory for saving; afterwards you can run each action on a folder or on the currently selected layer.
 
 You can :
 
-* Convert to instance labels :
-    This will convert 0/1 semantic labels to instance label, with a unique ID for each object using the watershed method.
+* Crop 3D volumes :
+    Please refer to :ref:`cropping_module_guide` for a guide on using the cropping utility.
 
+* Convert to instance labels :
+    This will convert 0/1 semantic labels to instance label, with a unique ID for each object.
+    The available methods for this are :
+
+    * Connected components : simple method that will assign a unique ID to each connected component. Does not work well for touching objects (objects will often be fused), works for anisotropic volumes.
+    * Watershed : method based on topographic maps. Works well for touching objects and anisotropic volumes; touching objects may be fused.
+    * Voronoi-Otsu : method based on Voronoi diagrams. Works well for touching objects but only for isotropic volumes.
 * Convert to semantic labels :
     This will convert instance labels with unique IDs per object into 0/1 semantic labels, for example for training.
 

@@ -106,12 +106,23 @@
              
   <section id="label-conversion-utility-guide">
 <span id="utils-module-guide"></span><h1>Label conversion utility guide<a class="headerlink" href="#label-conversion-utility-guide" title="Permalink to this headline"></a></h1>
-<p>This utility will let you convert labels to various different formats.
-You will have to specify the results directory for saving; afterwards you can run each action on a folder or on the currently selected layer.</p>
+<p>This utility will let you convert labels to various different formats.</p>
+<p>You will have to specify the results directory for saving; afterwards you can run each action on a folder or on the currently selected layer.</p>
 <p>You can :</p>
 <ul class="simple">
 <li><dl class="simple">
-<dt>Convert to instance labels :</dt><dd><p>This will convert 0/1 semantic labels to instance label, with a unique ID for each object using the watershed method.</p>
+<dt>Crop 3D volumes :</dt><dd><p>Please refer to <a class="reference internal" href="cropping_module_guide.html#cropping-module-guide"><span class="std std-ref">Cropping utility guide</span></a> for a guide on using the cropping utility.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Convert to instance labels :</dt><dd><p>This will convert 0/1 semantic labels to instance label, with a unique ID for each object.
+The available methods for this are :</p>
+<ul>
+<li><p>Connected components : simple method that will assign a unique ID to each connected component. Does not work well for touching objects (objects will often be fused), works for anisotropic volumes.</p></li>
+<li><p>Watershed : method based on topographic maps. Works well for touching objects and anisotropic volumes; touching objects may be fused.</p></li>
+<li><p>Voronoi-Otsu : method based on Voronoi diagrams. Works well for touching objects but only for isotropic volumes.</p></li>
+</ul>
 </dd>
 </dl>
 </li>
