@@ -11,9 +11,7 @@ from qtpy.QtWidgets import QSizePolicy
 # local
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
-from napari_cellseg3d.code_plugins.plugin_base import (
-    BasePluginSingleImage,
-)
+from napari_cellseg3d.code_plugins.plugin_base import BasePluginSingleImage
 
 DEFAULT_CROP_SIZE = 64
 logger = utils.LOGGER
@@ -177,8 +175,8 @@ class Cropping(BasePluginSingleImage):
             ],
         )
 
-        ui.ScrollArea.make_scrollable(layout, self, min_wh=[200, 400])
-        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        ui.ScrollArea.make_scrollable(layout, self, min_wh=[200, 200])
+        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.MinimumExpanding)
         self._set_io_visibility()
 
     # def _check_results_path(self, folder):
@@ -235,10 +233,7 @@ class Cropping(BasePluginSingleImage):
     def _check_ready(self):
         if self.image_layer_loader.layer_data() is not None:
             if self.crop_second_image:
-                if self.label_layer_loader.layer_data() is not None:
-                    return True
-                else:
-                    return False
+                return self.label_layer_loader.layer_data() is not None
             return True
         return False
 
@@ -308,7 +303,7 @@ class Cropping(BasePluginSingleImage):
         else:
             self.image_layer1.opacity = 0.7
             self.image_layer1.colormap = "inferno"
-            self.image_layer1.contrast_limits = [200, 1000]  # TODO generalize
+            # self.image_layer1.contrast_limits = [200, 1000]  # TODO generalize
 
             self.image_layer1.refresh()
 

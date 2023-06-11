@@ -14,23 +14,26 @@ from matplotlib.backends.backend_qt5agg import (
 from matplotlib.figure import Figure
 
 # MONAI
-from monai.losses import DiceCELoss
-from monai.losses import DiceFocalLoss
-from monai.losses import DiceLoss
-from monai.losses import FocalLoss
-from monai.losses import GeneralizedDiceLoss
-from monai.losses import TverskyLoss
+from monai.losses import (
+    DiceCELoss,
+    DiceFocalLoss,
+    DiceLoss,
+    FocalLoss,
+    GeneralizedDiceLoss,
+    TverskyLoss,
+)
 
 # Qt
 from qtpy.QtWidgets import QSizePolicy
 
 # local
-from napari_cellseg3d import config
+from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d import utils
 from napari_cellseg3d.code_models.model_framework import ModelFramework
-from napari_cellseg3d.code_models.model_workers import TrainingReport
-from napari_cellseg3d.code_models.model_workers import TrainingWorker
+from napari_cellseg3d.code_models.model_workers import (
+    TrainingReport,
+    TrainingWorker,
+)
 
 NUMBER_TABS = 3
 DEFAULT_PATCH_SIZE = 64

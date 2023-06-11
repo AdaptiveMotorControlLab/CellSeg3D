@@ -11,17 +11,13 @@ from matplotlib.backends.backend_qt5agg import (
 from matplotlib.figure import Figure
 
 # Qt
-from qtpy.QtWidgets import QLineEdit
-from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QLineEdit, QSizePolicy
 from tifffile import imwrite
 
 # local
-from napari_cellseg3d import config
+from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d import utils
-from napari_cellseg3d.code_plugins.plugin_base import (
-    BasePluginSingleImage,
-)
+from napari_cellseg3d.code_plugins.plugin_base import BasePluginSingleImage
 from napari_cellseg3d.code_plugins.plugin_review_dock import Datamanager
 
 warnings.formatwarning = utils.format_Warning
@@ -184,11 +180,10 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         if cfg.image is None:
             raise ValueError("Review requires at least one image")
 
-        if cfg.labels is not None:
-            if cfg.image.shape != cfg.labels.shape:
-                warnings.warn(
-                    "Image and label dimensions do not match ! Please load matching images"
-                )
+        if cfg.labels is not None and cfg.image.shape != cfg.labels.shape:
+            warnings.warn(
+                "Image and label dimensions do not match ! Please load matching images"
+            )
 
     def _prepare_data(self):
         if self.layer_choice.isChecked():

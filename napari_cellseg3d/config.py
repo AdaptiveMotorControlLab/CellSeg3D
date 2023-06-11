@@ -2,24 +2,16 @@ import datetime
 import warnings
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List
-from typing import Optional
+from typing import List, Optional
 
 import napari
 import numpy as np
 
-from napari_cellseg3d.code_models.model_instance_seg import (
-    binary_connected,
-)
-from napari_cellseg3d.code_models.model_instance_seg import (
-    binary_watershed,
-)
-from napari_cellseg3d.code_models.models import (
-    model_SegResNet as SegResNet,
-)
-from napari_cellseg3d.code_models.models import (
-    model_SwinUNetR as SwinUNetR,
-)
+from napari_cellseg3d.code_models.model_instance_seg import InstanceMethod
+
+# from napari_cellseg3d.models import model_TRAILMAP as TRAILMAP
+from napari_cellseg3d.code_models.models import model_SegResNet as SegResNet
+from napari_cellseg3d.code_models.models import model_SwinUNetR as SwinUNetR
 from napari_cellseg3d.code_models.models import (
     model_TRAILMAP_MS as TRAILMAP_MS,
 )
@@ -40,10 +32,6 @@ MODEL_LIST = {
     # "test" : DO NOT USE, reserved for testing
 }
 
-INSTANCE_SEGMENTATION_METHOD_LIST = {
-    "Watershed": binary_watershed,
-    "Connected components": binary_connected,
-}
 
 WEIGHTS_DIR = str(
     Path(__file__).parent.resolve() / Path("code_models/models/pretrained")
@@ -98,9 +86,7 @@ class ModelInfo:
 
     @staticmethod
     def get_model_name_list():
-        logger.info(
-            "Model list :\n" + str(f"{name}\n" for name in MODEL_LIST.keys())
-        )
+        logger.info("Model list :\n" + str(f"{name}\n" for name in MODEL_LIST))
         return MODEL_LIST.keys()
 
 
@@ -130,11 +116,7 @@ class Zoom:
 @dataclass
 class InstanceSegConfig:
     enabled: bool = False
-    method: str = None
-    threshold: Thresholding = Thresholding(enabled=False, threshold_value=0.85)
-    small_object_removal_threshold: Thresholding = Thresholding(
-        enabled=True, threshold_value=20
-    )
+    method: InstanceMethod = None
 
 
 @dataclass

@@ -3,13 +3,15 @@ import time
 import napari
 import numpy as np
 from napari.qt.threading import thread_worker
-from qtpy.QtWidgets import QGridLayout
-from qtpy.QtWidgets import QLabel
-from qtpy.QtWidgets import QProgressBar
-from qtpy.QtWidgets import QPushButton
-from qtpy.QtWidgets import QTextEdit
-from qtpy.QtWidgets import QVBoxLayout
-from qtpy.QtWidgets import QWidget
+from qtpy.QtWidgets import (
+    QGridLayout,
+    QLabel,
+    QProgressBar,
+    QPushButton,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
 
 
 @thread_worker

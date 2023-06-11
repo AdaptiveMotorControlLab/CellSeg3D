@@ -1,6 +1,7 @@
 black
 coverage
 isort
+itk
 pytest
 pytest-qt
 sphinx
@@ -12,11 +13,15 @@ numpy
 napari[all]>=0.4.14
 QtPy
 opencv-python>=4.5.5
+pre-commit
+pyclesperanto-prototype>=0.22.0
+pysqlite3
 dask-image>=0.6.0
 matplotlib>=3.4.1
 tifffile>=2022.2.9
 imageio-ffmpeg>=0.4.5
 torch>=1.11
-monai[nibabel,scikit-image,einops]>=0.9.0
+monai[nibabel,einops]>=1.0.1
 pillow
+scikit-image>=0.19.2
 vispy>=0.9.6

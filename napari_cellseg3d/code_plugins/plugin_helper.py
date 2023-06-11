@@ -4,10 +4,8 @@ import napari
 
 # Qt
 from qtpy.QtCore import QSize
-from qtpy.QtGui import QIcon
-from qtpy.QtGui import QPixmap
-from qtpy.QtWidgets import QVBoxLayout
-from qtpy.QtWidgets import QWidget
+from qtpy.QtGui import QIcon, QPixmap
+from qtpy.QtWidgets import QVBoxLayout, QWidget
 
 # local
 from napari_cellseg3d import interface as ui

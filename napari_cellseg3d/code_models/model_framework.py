@@ -5,13 +5,11 @@ import napari
 import torch
 
 # Qt
-from qtpy.QtWidgets import QProgressBar
-from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QProgressBar, QSizePolicy
 
 # local
-from napari_cellseg3d import config
+from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d import utils
 from napari_cellseg3d.code_plugins.plugin_base import BasePluginFolder
 
 warnings.formatwarning = utils.format_Warning
@@ -286,11 +284,10 @@ class ModelFramework(BasePluginFolder):
         )
         if file[0] == self._default_weights_folder:
             return
-        if file is not None:
-            if file[0] != "":
-                self.weights_config.path = file[0]
-                self.weights_filewidget.text_field.setText(file[0])
-                self._default_weights_folder = str(Path(file[0]).parent)
+        if file is not None and file[0] != "":
+            self.weights_config.path = file[0]
+            self.weights_filewidget.text_field.setText(file[0])
+            self._default_weights_folder = str(Path(file[0]).parent)
 
     @staticmethod
     def get_device(show=True):

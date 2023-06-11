@@ -1,8 +1,7 @@
 import napari
 import numpy as np
 from magicgui import magicgui
-from napari.types import ImageData
-from napari.types import LabelsData
+from napari.types import ImageData, LabelsData
 
 
 @magicgui(call_button="Run Threshold")

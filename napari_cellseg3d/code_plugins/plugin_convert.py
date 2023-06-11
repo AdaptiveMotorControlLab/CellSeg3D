@@ -4,18 +4,16 @@ from pathlib import Path
 import napari
 import numpy as np
 from qtpy.QtWidgets import QSizePolicy
-from qtpy.QtWidgets import QWidget
-from tifffile import imread
-from tifffile import imwrite
+from tifffile import imread, imwrite
 
 import napari_cellseg3d.interface as ui
-from napari_cellseg3d import config
 from napari_cellseg3d import utils
 from napari_cellseg3d.code_models.model_instance_seg import (
+    InstanceWidgets,
     clear_small_objects,
+    threshold,
+    to_semantic,
 )
-from napari_cellseg3d.code_models.model_instance_seg import threshold
-from napari_cellseg3d.code_models.model_instance_seg import to_semantic
 from napari_cellseg3d.code_plugins.plugin_base import BasePluginFolder
 
 # TODO break down into multiple mini-widgets
@@ -38,7 +36,7 @@ def save_folder(results_path, folder_name, images, image_paths):
         image_paths: list of filenames of images
     """
     results_folder = results_path / Path(folder_name)
-    results_folder.mkdir(exist_ok=False)
+    results_folder.mkdir(exist_ok=False, parents=True)
 
     for file, image in zip(image_paths, images):
         path = results_folder / Path(file).name
@@ -147,14 +145,14 @@ class AnisoUtils(BasePluginFolder):
         )
 
     def _start(self):
-        self.results_path.mkdir(exist_ok=True)
+        self.results_path.mkdir(exist_ok=True, parents=True)
         zoom = self.aniso_widgets.scaling_zyx()
 
         if self.layer_choice.isChecked():
             if self.image_layer_loader.layer_data() is not None:
                 layer = self.image_layer_loader.layer()
 
-                data = np.array(layer.data, dtype=np.int16)
+                data = np.array(layer.data)
                 isotropic_image = utils.resize(data, zoom)
 
                 save_layer(
@@ -169,18 +167,19 @@ class AnisoUtils(BasePluginFolder):
                     f"isotropic_{layer.name}",
                 )
 
-        elif self.folder_choice.isChecked():
-            if len(self.images_filepaths) != 0:
-                images = [
-                    utils.resize(np.array(imread(file), dtype=np.int16), zoom)
-                    for file in self.images_filepaths
-                ]
-                save_folder(
-                    self.results_path,
-                    f"isotropic_results_{utils.get_date_time()}",
-                    images,
-                    self.images_filepaths,
-                )
+        elif (
+            self.folder_choice.isChecked() and len(self.images_filepaths) != 0
+        ):
+            images = [
+                utils.resize(np.array(imread(file)), zoom)
+                for file in self.images_filepaths
+            ]
+            save_folder(
+                self.results_path,
+                f"isotropic_results_{utils.get_date_time()}",
+                images,
+                self.images_filepaths,
+            )
 
 
 class RemoveSmallUtils(BasePluginFolder):
@@ -246,14 +245,14 @@ class RemoveSmallUtils(BasePluginFolder):
         return container
 
     def _start(self):
-        self.results_path.mkdir(exist_ok=True)
+        self.results_path.mkdir(exist_ok=True, parents=True)
         remove_size = self.size_for_removal_counter.value()
 
         if self.layer_choice:
             if self.image_layer_loader.layer_data() is not None:
                 layer = self.image_layer_loader.layer()
 
-                data = np.array(layer.data, dtype=np.int16)
+                data = np.array(layer.data)
                 removed = self.function(data, remove_size)
 
                 save_layer(
@@ -264,18 +263,19 @@ class RemoveSmallUtils(BasePluginFolder):
                 show_result(
                     self._viewer, layer, removed, f"cleared_{layer.name}"
                 )
-        elif self.folder_choice.isChecked():
-            if len(self.images_filepaths) != 0:
-                images = [
-                    clear_small_objects(file, remove_size, is_file_path=True)
-                    for file in self.images_filepaths
-                ]
-                save_folder(
-                    self.results_path,
-                    f"small_removed_results_{utils.get_date_time()}",
-                    images,
-                    self.images_filepaths,
-                )
+        elif (
+            self.folder_choice.isChecked() and len(self.images_filepaths) != 0
+        ):
+            images = [
+                clear_small_objects(file, remove_size, is_file_path=True)
+                for file in self.images_filepaths
+            ]
+            save_folder(
+                self.results_path,
+                f"small_removed_results_{utils.get_date_time()}",
+                images,
+                self.images_filepaths,
+            )
         return
 
 
@@ -328,13 +328,13 @@ class ToSemanticUtils(BasePluginFolder):
         )
 
     def _start(self):
-        Path(self.results_path).mkdir(exist_ok=True)
+        Path(self.results_path).mkdir(exist_ok=True, parents=True)
 
         if self.layer_choice:
             if self.label_layer_loader.layer_data() is not None:
                 layer = self.label_layer_loader.layer()
 
-                data = np.array(layer.data, dtype=np.int16)
+                data = np.array(layer.data)
                 semantic = to_semantic(data)
 
                 save_layer(
@@ -345,171 +345,19 @@ class ToSemanticUtils(BasePluginFolder):
                 show_result(
                     self._viewer, layer, semantic, f"semantic_{layer.name}"
                 )
-        elif self.folder_choice.isChecked():
-            if len(self.images_filepaths) != 0:
-                images = [
-                    to_semantic(file, is_file_path=True)
-                    for file in self.images_filepaths
-                ]
-                save_folder(
-                    self.results_path,
-                    f"semantic_results_{utils.get_date_time()}",
-                    images,
-                    self.images_filepaths,
-                )
-
-
-class InstanceWidgets(QWidget):
-    """
-    Base widget with several sliders, for use in instance segmentation parameters
-    """
-
-    def __init__(self, parent=None):
-        """
-        Creates an InstanceWidgets widget
-
-        Args:
-            parent: parent widget
-        """
-        super().__init__(parent)
-
-        self.method_choice = ui.DropdownMenu(
-            config.INSTANCE_SEGMENTATION_METHOD_LIST.keys()
-        )
-        self._method = config.INSTANCE_SEGMENTATION_METHOD_LIST[
-            self.method_choice.currentText()
-        ]
-
-        self.method_choice.currentTextChanged.connect(self._show_connected)
-        self.method_choice.currentTextChanged.connect(self._show_watershed)
-
-        self.threshold_slider1 = ui.Slider(
-            lower=0,
-            upper=100,
-            default=50,
-            divide_factor=100.0,
-            step=5,
-            text_label="Probability threshold :",
-        )
-        """Base prob. threshold"""
-        self.threshold_slider2 = ui.Slider(
-            lower=0,
-            upper=100,
-            default=90,
-            divide_factor=100.0,
-            step=5,
-            text_label="Probability threshold (seeding) :",
-        )
-        """Second prob. thresh. (seeding)"""
-
-        self.counter1 = ui.IntIncrementCounter(
-            upper=100,
-            default=10,
-            step=5,
-            label="Small object removal (pxs) :",
-        )
-        """Small obj. rem."""
-
-        self.counter2 = ui.IntIncrementCounter(
-            upper=100,
-            default=3,
-            step=5,
-            label="Small seed removal (pxs) :",
-        )
-        """Small seed rem."""
-
-        self._build()
-
-    def run_method(self, volume):
-        """
-        Calls instance function with chosen parameters
-        Args:
-            volume: image data to run method on
-
-        Returns: processed image from self._method
-        """
-        return self._method(
-            volume,
-            self.threshold_slider1.slider_value,
-            self.counter1.value(),
-            self.threshold_slider2.slider_value,
-            self.counter2.value(),
-        )
-
-    def _build(self):
-        group = ui.GroupedWidget("Instance segmentation")
-
-        ui.add_widgets(
-            group.layout,
-            [
-                self.method_choice,
-                self.threshold_slider1.container,
-                self.threshold_slider2.container,
-                self.counter1.label,
-                self.counter1,
-                self.counter2.label,
-                self.counter2,
-            ],
-        )
-
-        self.setLayout(group.layout)
-        self._set_tooltips()
-
-    def _set_tooltips(self):
-        self.method_choice.setToolTip(
-            "Choose which method to use for instance segmentation"
-            "\nConnected components : all separated objects will be assigned an unique ID. "
-            "Robust but will not work correctly with adjacent/touching objects\n"
-            "Watershed : assigns objects ID based on the probability gradient surrounding an object. "
-            "Requires the model to surround objects in a gradient;"
-            " can possibly correctly separate unique but touching/adjacent objects."
-        )
-        self.threshold_slider1.tooltips = (
-            "All objects below this probability will be ignored (set to 0)"
-        )
-        self.counter1.setToolTip(
-            "Will remove all objects smaller (in volume) than the specified number of pixels"
-        )
-        self.threshold_slider2.tooltips = (
-            "All seeds below this probability will be ignored (set to 0)"
-        )
-        self.counter2.setToolTip(
-            "Will remove all seeds smaller (in volume) than the specified number of pixels"
-        )
-
-    def _show_watershed(self):
-        name = "Watershed"
-        if self.method_choice.currentText() == name:
-            self._show_slider1()
-            self._show_slider2()
-            self._show_counter1()
-            self._show_counter2()
-
-            self._method = config.INSTANCE_SEGMENTATION_METHOD_LIST[name]
-
-    def _show_connected(self):
-        name = "Connected components"
-        if self.method_choice.currentText() == name:
-            self._show_slider1()
-            self._show_slider2(False)
-            self._show_counter1()
-            self._show_counter2(False)
-
-            self._method = config.INSTANCE_SEGMENTATION_METHOD_LIST[name]
-
-    def _show_slider1(self, is_visible: bool = True):
-        self.threshold_slider1.container.setVisible(is_visible)
-
-    def _show_slider2(self, is_visible: bool = True):
-        self.threshold_slider2.container.setVisible(is_visible)
-
-    def _show_counter1(self, is_visible: bool = True):
-        self.counter1.setVisible(is_visible)
-        self.counter1.label.setVisible(is_visible)
-
-    def _show_counter2(self, is_visible: bool = True):
-        self.counter2.setVisible(is_visible)
-        self.counter2.label.setVisible(is_visible)
+        elif (
+            self.folder_choice.isChecked() and len(self.images_filepaths) != 0
+        ):
+            images = [
+                to_semantic(file, is_file_path=True)
+                for file in self.images_filepaths
+            ]
+            save_folder(
+                self.results_path,
+                f"semantic_results_{utils.get_date_time()}",
+                images,
+                self.images_filepaths,
+            )
 
 
 class ToInstanceUtils(BasePluginFolder):
@@ -534,7 +382,7 @@ class ToInstanceUtils(BasePluginFolder):
         self.data_panel = self._build_io_panel()
         self.label_layer_loader.set_layer_type(napari.layers.Layer)
 
-        self.instance_widgets = InstanceWidgets()
+        self.instance_widgets = InstanceWidgets(parent=self)
 
         self.start_btn = ui.Button("Start", self._start)
 
@@ -566,13 +414,13 @@ class ToInstanceUtils(BasePluginFolder):
         )
 
     def _start(self):
-        self.results_path.mkdir(exist_ok=True)
+        self.results_path.mkdir(exist_ok=True, parents=True)
 
         if self.layer_choice:
             if self.label_layer_loader.layer_data() is not None:
                 layer = self.label_layer_loader.layer()
 
-                data = np.array(layer.data, dtype=np.int16)
+                data = np.array(layer.data)
                 instance = self.instance_widgets.run_method(data)
 
                 save_layer(
@@ -584,18 +432,19 @@ class ToInstanceUtils(BasePluginFolder):
                     instance, name=f"instance_{layer.name}"
                 )
 
-        elif self.folder_choice.isChecked():
-            if len(self.images_filepaths) != 0:
-                images = [
-                    self.instance_widgets.run_method(imread(file))
-                    for file in self.images_filepaths
-                ]
-                save_folder(
-                    self.results_path,
-                    f"instance_results_{utils.get_date_time()}",
-                    images,
-                    self.images_filepaths,
-                )
+        elif (
+            self.folder_choice.isChecked() and len(self.images_filepaths) != 0
+        ):
+            images = [
+                self.instance_widgets.run_method(imread(file))
+                for file in self.images_filepaths
+            ]
+            save_folder(
+                self.results_path,
+                f"instance_results_{utils.get_date_time()}",
+                images,
+                self.images_filepaths,
+            )
 
 
 class ThresholdUtils(BasePluginFolder):
@@ -660,14 +509,14 @@ class ThresholdUtils(BasePluginFolder):
         return container
 
     def _start(self):
-        self.results_path.mkdir(exist_ok=True)
+        self.results_path.mkdir(exist_ok=True, parents=True)
         remove_size = self.binarize_counter.value()
 
         if self.layer_choice:
             if self.image_layer_loader.layer_data() is not None:
                 layer = self.image_layer_loader.layer()
 
-                data = np.array(layer.data, dtype=np.int16)
+                data = np.array(layer.data)
                 removed = self.function(data, remove_size)
 
                 save_layer(
@@ -678,18 +527,19 @@ class ThresholdUtils(BasePluginFolder):
                 show_result(
                     self._viewer, layer, removed, f"threshold{layer.name}"
                 )
-        elif self.folder_choice.isChecked():
-            if len(self.images_filepaths) != 0:
-                images = [
-                    self.function(imread(file), remove_size)
-                    for file in self.images_filepaths
-                ]
-                save_folder(
-                    self.results_path,
-                    f"threshold_results_{utils.get_date_time()}",
-                    images,
-                    self.images_filepaths,
-                )
+        elif (
+            self.folder_choice.isChecked() and len(self.images_filepaths) != 0
+        ):
+            images = [
+                self.function(imread(file), remove_size)
+                for file in self.images_filepaths
+            ]
+            save_folder(
+                self.results_path,
+                f"threshold_results_{utils.get_date_time()}",
+                images,
+                self.images_filepaths,
+            )
 
 
 # class ConvertUtils(BasePluginFolder):

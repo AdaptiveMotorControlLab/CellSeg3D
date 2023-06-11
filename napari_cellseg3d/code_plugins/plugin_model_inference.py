@@ -6,13 +6,17 @@ import numpy as np
 import pandas as pd
 
 # local
-from napari_cellseg3d import config
+from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d import utils
 from napari_cellseg3d.code_models.model_framework import ModelFramework
-from napari_cellseg3d.code_models.model_workers import InferenceResult
-from napari_cellseg3d.code_models.model_workers import InferenceWorker
-from napari_cellseg3d.code_plugins.plugin_convert import InstanceWidgets
+from napari_cellseg3d.code_models.model_instance_seg import (
+    InstanceMethod,
+    InstanceWidgets,
+)
+from napari_cellseg3d.code_models.model_workers import (
+    InferenceResult,
+    InferenceWorker,
+)
 
 
 class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
@@ -77,9 +81,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             config.InferenceWorkerConfig()
         )
         """InferenceWorkerConfig class from config.py"""
-        self.instance_config: config.InstanceSegConfig = (
-            config.InstanceSegConfig()
-        )
+        self.instance_config: InstanceMethod
         """InstanceSegConfig class from config.py"""
         self.post_process_config: config.PostProcessConfig = (
             config.PostProcessConfig()
@@ -185,11 +187,12 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.window_overlap_slider.container,
             ],
         )
+        self.window_size_choice.setCurrentIndex(3)  # default size to 64
 
         ##################
         ##################
         # instance segmentation widgets
-        self.instance_widgets = InstanceWidgets(self)
+        self.instance_widgets = InstanceWidgets(parent=self)
 
         self.use_instance_choice = ui.CheckBox(
             "Run instance segmentation", func=self._toggle_display_instance
@@ -276,9 +279,11 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         if self.layer_choice.isChecked():
             if self.image_layer_loader.layer_data() is not None:
                 return True
-        elif self.folder_choice.isChecked():
-            if self.image_filewidget.check_ready():
-                return True
+        elif (
+            self.folder_choice.isChecked()
+            and self.image_filewidget.check_ready()
+        ):
+            return True
         return False
 
     def _toggle_display_model_input_size(self):
@@ -551,17 +556,11 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 threshold_value=self.thresholding_slider.slider_value,
             )
 
-            instance_thresh_config = config.Thresholding(
-                threshold_value=self.instance_widgets.threshold_slider1.slider_value
-            )
-            instance_small_object_thresh_config = config.Thresholding(
-                threshold_value=self.instance_widgets.counter1.value()
-            )
             self.instance_config = config.InstanceSegConfig(
                 enabled=self.use_instance_choice.isChecked(),
-                method=self.instance_widgets.method_choice.currentText(),
-                threshold=instance_thresh_config,
-                small_object_removal_threshold=instance_small_object_thresh_config,
+                method=self.instance_widgets.methods[
+                    self.instance_widgets.method_choice.currentText()
+                ],
             )
 
             self.post_process_config = config.PostProcessConfig(
@@ -730,13 +729,15 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
             if result.instance_labels is not None:
                 labels = result.instance_labels
-                method = self.worker_config.post_process_config.instance.method
+                method_name = (
+                    self.worker_config.post_process_config.instance.method.name
+                )
 
                 number_cells = (
                     np.unique(labels.flatten()).size - 1
                 )  # remove background
 
-                name = f"({number_cells} objects)_{method}_instance_labels_{image_id}"
+                name = f"({number_cells} objects)_{method_name}_instance_labels_{image_id}"
 
                 viewer.add_labels(labels, name=name)
 
@@ -750,7 +751,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                         f"Number of instances : {stats.number_objects}"
                     )
 
-                    csv_name = f"/{method}_seg_results_{image_id}_{utils.get_date_time()}.csv"
+                    csv_name = f"/{method_name}_seg_results_{image_id}_{utils.get_date_time()}.csv"
                     stats_df.to_csv(
                         self.worker_config.results_path + csv_name,
                         index=False,

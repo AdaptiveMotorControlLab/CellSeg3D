@@ -1,13 +1,9 @@
 import torch.nn as nn
 
 from napari_cellseg3d.code_models.models.unet.buildingblocks import (
-    create_decoders,
-)
-from napari_cellseg3d.code_models.models.unet.buildingblocks import (
-    create_encoders,
-)
-from napari_cellseg3d.code_models.models.unet.buildingblocks import (
     DoubleConv,
+    create_decoders,
+    create_encoders,
 )
 
 
@@ -68,7 +64,7 @@ class Abstract3DUNet(nn.Module):
                 f_maps, num_levels=num_levels
             )
 
-        assert isinstance(f_maps, list) or isinstance(f_maps, tuple)
+        assert isinstance(f_maps, (list, tuple))
         assert len(f_maps) > 1, "Required at least 2 levels in the U-Net"
 
         # create encoder path

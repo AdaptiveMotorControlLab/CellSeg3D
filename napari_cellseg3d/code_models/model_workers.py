@@ -2,44 +2,46 @@ import platform
 from dataclasses import dataclass
 from math import ceil
 from pathlib import Path
-from typing import List
-from typing import Optional
+from typing import List, Optional
 
 import numpy as np
 import torch
 
 # MONAI
-from monai.data import CacheDataset
-from monai.data import DataLoader
-from monai.data import Dataset
-from monai.data import decollate_batch
-from monai.data import pad_list_data_collate
-from monai.data import PatchDataset
+from monai.data import (
+    CacheDataset,
+    DataLoader,
+    Dataset,
+    PatchDataset,
+    decollate_batch,
+    pad_list_data_collate,
+)
 from monai.inferers import sliding_window_inference
 from monai.metrics import DiceMetric
-from monai.transforms import AddChannel
-from monai.transforms import AsDiscrete
-from monai.transforms import Compose
-from monai.transforms import EnsureChannelFirstd
-from monai.transforms import EnsureType
-from monai.transforms import EnsureTyped
-from monai.transforms import LoadImaged
-from monai.transforms import Orientationd
-from monai.transforms import Rand3DElasticd
-from monai.transforms import RandAffined
-from monai.transforms import RandFlipd
-from monai.transforms import RandRotate90d
-from monai.transforms import RandShiftIntensityd
-from monai.transforms import RandSpatialCropSamplesd
-from monai.transforms import SpatialPad
-from monai.transforms import SpatialPadd
-from monai.transforms import ToTensor
-from monai.transforms import Zoom
+from monai.transforms import (
+    AddChannel,
+    AsDiscrete,
+    Compose,
+    EnsureChannelFirstd,
+    EnsureType,
+    EnsureTyped,
+    LoadImaged,
+    Orientationd,
+    Rand3DElasticd,
+    RandAffined,
+    RandFlipd,
+    RandRotate90d,
+    RandShiftIntensityd,
+    RandSpatialCropSamplesd,
+    SpatialPad,
+    SpatialPadd,
+    ToTensor,
+    Zoom,
+)
 from monai.utils import set_determinism
 
 # threads
-from napari.qt.threading import GeneratorWorker
-from napari.qt.threading import WorkerBaseSignals
+from napari.qt.threading import GeneratorWorker, WorkerBaseSignals
 
 # Qt
 from qtpy.QtCore import Signal
@@ -47,17 +49,12 @@ from tifffile import imwrite
 from tqdm import tqdm
 
 # local
-from napari_cellseg3d import config
+from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d import utils
 from napari_cellseg3d.code_models.model_instance_seg import (
-    binary_connected,
+    ImageStats,
+    volume_stats,
 )
-from napari_cellseg3d.code_models.model_instance_seg import (
-    binary_watershed,
-)
-from napari_cellseg3d.code_models.model_instance_seg import ImageStats
-from napari_cellseg3d.code_models.model_instance_seg import volume_stats
 
 logger = utils.LOGGER
 
@@ -118,7 +115,7 @@ class WeightsDownloader:
 
         with open(json_path) as f:
             neturls = json.load(f)
-        if model_name in neturls.keys():
+        if model_name in neturls:
             url = neturls[model_name]
             response = urllib.request.urlopen(url)
 
@@ -288,10 +285,11 @@ class InferenceWorker(GeneratorWorker):
                 f"Thresholding is enabled at {config.post_process_config.thresholding.threshold_value}"
             )
 
-        if config.sliding_window_config.is_enabled():
-            status = "enabled"
-        else:
-            status = "disabled"
+        status = (
+            "enabled"
+            if config.sliding_window_config.is_enabled()
+            else "disabled"
+        )
 
         self.log(f"Window inference is {status}\n")
         if status == "enabled":
@@ -315,9 +313,7 @@ class InferenceWorker(GeneratorWorker):
         instance_config = config.post_process_config.instance
         if instance_config.enabled:
             self.log(
-                f"Instance segmentation enabled, method : {instance_config.method}\n"
-                f"Probability threshold is {instance_config.threshold.threshold_value:.2f}\n"
-                f"Objects smaller than {instance_config.small_object_removal_threshold.threshold_value} pixels will be removed\n"
+                f"Instance segmentation enabled, method : {instance_config.method.name}\n"
             )
         self.log("-" * 20)
 
@@ -389,7 +385,7 @@ class InferenceWorker(GeneratorWorker):
         return inference_loader
 
     def load_layer(self):
-        self.log("Loading layer\n")
+        self.log("\nLoading layer\n")
         data = np.squeeze(self.config.layer)
 
         volume = np.array(data, dtype=np.int16)
@@ -457,16 +453,14 @@ class InferenceWorker(GeneratorWorker):
         #         self.config.model_info.get_model().get_output(model, inputs)
         #     )
 
-
         def model_output(inputs):
             return post_process_transforms(
                 self.config.model_info.get_model().get_output(model, inputs)
             )
 
-        if self.config.keep_on_cpu:
-            dataset_device = "cpu"
-        else:
-            dataset_device = self.config.device
+        dataset_device = (
+            "cpu" if self.config.keep_on_cpu else self.config.device
+        )
 
         window_size = self.config.sliding_window_config.window_size
         window_overlap = self.config.sliding_window_config.window_overlap
@@ -551,7 +545,9 @@ class InferenceWorker(GeneratorWorker):
                 i + 1,
             )
             if from_layer:
-                instance_labels = np.swapaxes(instance_labels, 0, 2)
+                instance_labels = np.swapaxes(
+                    instance_labels, 0, 2
+                )  # TODO(cyril) check if correct
             data_dict = self.stats_csv(instance_labels)
         else:
             instance_labels = None
@@ -604,30 +600,8 @@ class InferenceWorker(GeneratorWorker):
         if image_id is not None:
             self.log(f"\nRunning instance segmentation for image n°{image_id}")
 
-        threshold = (
-            self.config.post_process_config.instance.threshold.threshold_value
-        )
-        size_small = (
-            self.config.post_process_config.instance.small_object_removal_threshold.threshold_value
-        )
-        method_name = self.config.post_process_config.instance.method
-
-        if method_name == "Watershed":  # FIXME use dict in config instead
-
-            def method(image):
-                return binary_watershed(image, threshold, size_small)
-
-        elif method_name == "Connected components":
-
-            def method(image):
-                return binary_connected(image, threshold, size_small)
-
-        else:
-            raise NotImplementedError(
-                "Selected instance segmentation method is not defined"
-            )
-
-        instance_labels = method(to_instance)
+        method = self.config.post_process_config.instance.method
+        instance_labels = method.run_method(image=to_instance)
 
         instance_filepath = (
             self.config.results_path
@@ -1084,10 +1058,7 @@ class TrainingWorker(GeneratorWorker):
             do_sampling = self.config.sampling
 
             if model_name == "SegResNet":
-                if do_sampling:
-                    size = self.config.sample_size
-                else:
-                    size = check
+                size = self.config.sample_size if do_sampling else check
                 logger.info(f"Size of image : {size}")
                 model = model_class.get_net(
                     input_image_size=utils.get_padding_dim(size),
@@ -1095,10 +1066,7 @@ class TrainingWorker(GeneratorWorker):
                     # dropout_prob=0.3,
                 )
             elif model_name == "SwinUNetR":
-                if do_sampling:
-                    size = self.sample_size
-                else:
-                    size = check
+                size = self.sample_size if do_sampling else check
                 logger.info(f"Size of image : {size}")
                 model = model_class.get_net(
                     img_size=utils.get_padding_dim(size),

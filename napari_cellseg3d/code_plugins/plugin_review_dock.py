@@ -1,14 +1,12 @@
 import warnings
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import napari
 import pandas as pd
 
 # Qt
-from qtpy.QtWidgets import QVBoxLayout
-from qtpy.QtWidgets import QWidget
+from qtpy.QtWidgets import QVBoxLayout, QWidget
 
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
@@ -216,10 +214,7 @@ class Datamanager(QWidget):
             )
         else:
             # print(self.image_dims[0])
-            if self.filename is not None:
-                filename = self.filename
-            else:
-                filename = "image"
+            filename = self.filename if self.filename is not None else "image"
             labels = [str(filename) for i in range(self.image_dims[0])]
 
         df = pd.DataFrame(

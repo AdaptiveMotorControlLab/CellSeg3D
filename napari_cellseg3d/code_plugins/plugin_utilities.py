@@ -2,20 +2,17 @@ import napari
 
 # Qt
 from qtpy.QtCore import qInstallMessageHandler
-from qtpy.QtWidgets import QLayout
-from qtpy.QtWidgets import QSizePolicy
-from qtpy.QtWidgets import QVBoxLayout
-from qtpy.QtWidgets import QWidget
+from qtpy.QtWidgets import QSizePolicy, QVBoxLayout, QWidget
 
 # local
 import napari_cellseg3d.interface as ui
-from napari_cellseg3d.code_plugins.plugin_convert import AnisoUtils
 from napari_cellseg3d.code_plugins.plugin_convert import (
+    AnisoUtils,
     RemoveSmallUtils,
+    ThresholdUtils,
+    ToInstanceUtils,
+    ToSemanticUtils,
 )
-from napari_cellseg3d.code_plugins.plugin_convert import ThresholdUtils
-from napari_cellseg3d.code_plugins.plugin_convert import ToInstanceUtils
-from napari_cellseg3d.code_plugins.plugin_convert import ToSemanticUtils
 from napari_cellseg3d.code_plugins.plugin_crop import Cropping
 
 UTILITIES_WIDGETS = {
@@ -60,10 +57,10 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
         layout.addWidget(self.utils_choice.label, alignment=ui.BOTT_AL)
         layout.addWidget(self.utils_choice, alignment=ui.BOTT_AL)
 
-        layout.setSizeConstraint(QLayout.SetFixedSize)
+        # layout.setSizeConstraint(QLayout.SetFixedSize)
         self.setLayout(layout)
-        self.setMinimumHeight(1000)
-        self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
+        # self.setMinimumHeight(2000)
+        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.MinimumExpanding)
         self._update_visibility()
 
     def _create_utils_widgets(self, names):
@@ -79,14 +76,13 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
             raise RuntimeError(
                 "One or several utility widgets are missing/erroneous"
             )
-        # TODO how to auto-update list based on UTILITIES_WIDGETS ?
 
     def _update_visibility(self):
         widget_class = UTILITIES_WIDGETS[self.utils_choice.currentText()]
         # print("vis. updated")
         # print(self.utils_widgets)
         self._hide_all()
-        for i, w in enumerate(self.utils_widgets):
+        for _i, w in enumerate(self.utils_widgets):
             if isinstance(w, widget_class):
                 w.setVisible(True)
                 w.adjustSize()
