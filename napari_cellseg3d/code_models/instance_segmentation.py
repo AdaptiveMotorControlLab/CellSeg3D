@@ -52,6 +52,18 @@ class InstanceMethod:
         self.function = function
         self.counters: List[ui.DoubleIncrementCounter] = []
         self.sliders: List[ui.Slider] = []
+        self._setup_widgets(
+            num_counters, num_sliders, widget_parent=widget_parent
+        )
+
+    def _setup_widgets(self, num_counters, num_sliders, widget_parent=None):
+        """Initializes the needed widgets for the instance segmentation method, adding sliders and counters to the
+        instance segmentation widget.
+        Args:
+            num_counters: Number of DoubleIncrementCounter UI elements needed to set the parameters of the function
+            num_sliders: Number of Slider UI elements needed to set the parameters of the function
+            widget_parent: parent for the declared widgets
+        """
         if num_sliders > 0:
             for i in range(num_sliders):
                 widget = f"slider_{i}"
@@ -154,6 +166,8 @@ def voronoi_otsu(
     Voronoi-Otsu labeling from pyclesperanto.
     BASED ON CODE FROM : napari_pyclesperanto_assistant by Robert Haase
     https://github.com/clEsperanto/napari_pyclesperanto_assistant
+    Original code at :
+    https://github.com/clEsperanto/pyclesperanto_prototype/blob/master/pyclesperanto_prototype/_tier9/_voronoi_otsu_labeling.py
 
     Args:
         volume (np.ndarray): volume to segment
