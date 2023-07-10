@@ -762,14 +762,20 @@ class LayerSelecter(ContainerWidget):
         self.layer_list = DropdownMenu(
             parent=self, text_label=name, fixed=False
         )
+        self.layer_description = make_label("Shape:", parent=self)
+        self.layer_description.setVisible(False)
         # self.layer_list.setSizeAdjustPolicy(QComboBox.AdjustToContents) # use tooltip instead ?
 
         self._viewer.layers.events.inserted.connect(partial(self._add_layer))
         self._viewer.layers.events.removed.connect(partial(self._remove_layer))
 
         self.layer_list.currentIndexChanged.connect(self._update_tooltip)
+        self.layer_list.currentTextChanged.connect(self._update_description)
 
-        add_widgets(self.layout, [self.layer_list.label, self.layer_list])
+        add_widgets(
+            self.layout,
+            [self.layer_list.label, self.layer_list, self.layer_description],
+        )
         self._check_for_layers()
 
     def _check_for_layers(self):
@@ -779,6 +785,14 @@ class LayerSelecter(ContainerWidget):
 
     def _update_tooltip(self):
         self.layer_list.setToolTip(self.layer_list.currentText())
+
+    def _update_description(self):
+        if self.layer_list.currentText() != "":
+            self.layer_description.setVisible(True)
+            shape_desc = f"Shape : {self.layer_data().shape}"
+            self.layer_description.setText(shape_desc)
+        else:
+            self.layer_description.setVisible(False)
 
     def _add_layer(self, event):
         inserted_layer = event.value
@@ -803,7 +817,10 @@ class LayerSelecter(ContainerWidget):
         self._check_for_layers()
 
     def layer(self):
-        return self._viewer.layers[self.layer_name()]
+        try:
+            return self._viewer.layers[self.layer_name()]
+        except ValueError:
+            return None
 
     def layer_name(self):
         return self.layer_list.currentText()
