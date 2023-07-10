@@ -12,7 +12,7 @@ dependencies = [
     "napari[all]>=0.4.14",
     "QtPy",
     "opencv-python>=4.5.5",
-    "dask-image>=0.6.0",
+#    "dask-image>=0.6.0",
     "scikit-image>=0.19.2",
     "matplotlib>=3.4.1",
     "tifffile>=2022.2.9",

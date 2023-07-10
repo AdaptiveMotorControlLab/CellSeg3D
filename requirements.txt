@@ -16,7 +16,6 @@ QtPy
 opencv-python>=4.5.5
 pre-commit
 pyclesperanto-prototype>=0.22.0
-dask-image>=0.6.0
 matplotlib>=3.4.1
 ruff
 tifffile>=2022.2.9
