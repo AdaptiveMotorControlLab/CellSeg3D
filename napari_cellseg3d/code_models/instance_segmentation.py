@@ -313,23 +313,23 @@ def clear_small_objects(image, threshold, is_file_path=False):
     return result
 
 
-def to_instance(image, is_file_path=False):
-    """Converts a **ground-truth** label to instance (unique id per object) labels. Does not remove small objects.
-
-    Args:
-        image: image or path to image
-        is_file_path: if True, will consider ``image`` to be a string containing a path to a file, if not treats it as an image data array.
-
-    Returns: resulting converted labels
-
-    """
-    if is_file_path:
-        image = [imread(image)]
-        # image = image.compute()
-
-    return binary_watershed(
-        image, thres_small=0, thres_seeding=0.3, rem_seed_thres=0
-    )  # FIXME add params from utils plugin
+# def to_instance(image, is_file_path=False):
+#     """Converts a **ground-truth** label to instance (unique id per object) labels. Does not remove small objects.
+#
+#     Args:
+#         image: image or path to image
+#         is_file_path: if True, will consider ``image`` to be a string containing a path to a file, if not treats it as an image data array.
+#
+#     Returns: resulting converted labels
+#
+#     """
+#     if is_file_path:
+#         image = [imread(image)]
+#         image = image.compute()
+#
+# return binary_watershed(
+#     image, thres_small=0, thres_seeding=0.3, rem_seed_thres=0
+# )
 
 
 def to_semantic(image, is_file_path=False):

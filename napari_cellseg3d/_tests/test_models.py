@@ -42,8 +42,8 @@ def test_soft_ncuts_loss():
     loss = SoftNCutsLoss(
         data_shape=[dims, dims, dims],
         device="cpu",
-        o_i=4,
-        o_x=4,
+        intensity_sigma=4,
+        spatial_sigma=4,
         radius=2,
     )
 
