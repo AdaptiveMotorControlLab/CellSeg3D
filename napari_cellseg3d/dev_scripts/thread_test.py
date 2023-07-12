@@ -1,8 +1,8 @@
 import time
 
 import napari
-import numpy as np
 from napari.qt.threading import thread_worker
+from numpy.random import PCG64, Generator
 from qtpy.QtWidgets import (
     QGridLayout,
     QLabel,
@@ -12,6 +12,8 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+rand_gen = Generator(PCG64(12345))
 
 
 @thread_worker
@@ -129,7 +131,7 @@ def create_connected_widget(viewer):
 
 
 if __name__ == "__main__":
-    viewer = napari.view_image(np.random.rand(512, 512))
+    viewer = napari.view_image(rand_gen.random(512, 512))
     w = create_connected_widget(viewer)
     viewer.window.add_dock_widget(w)
 

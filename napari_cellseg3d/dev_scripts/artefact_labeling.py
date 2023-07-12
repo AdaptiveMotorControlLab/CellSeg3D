@@ -1,4 +1,5 @@
-import os
+import os  # TODO(cyril): remove os
+from pathlib import Path
 
 import napari
 import numpy as np
@@ -6,10 +7,11 @@ import scipy.ndimage as ndimage
 from skimage.filters import threshold_otsu
 from tifffile import imread, imwrite
 
-from napari_cellseg3d.code_models.model_instance_seg import binary_watershed
+from napari_cellseg3d.code_models.instance_segmentation import binary_watershed
 
 # import sys
 # sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
 
 """
 New code by Yves Paychere
@@ -76,7 +78,7 @@ def make_labels(
     Parameters
     ----------
     image : str
-        image array
+        Path to image.
     path_labels_out : str
         Path of the output labelled image.
     threshold_size : int, optional
@@ -95,7 +97,7 @@ def make_labels(
         Label image with nucleus labelled with 1 value per nucleus.
     """
 
-    image = imread(image)
+    # image = imread(image)
     image = (image - np.min(image)) / (np.max(image) - np.min(image))
 
     threshold_brightness = threshold_otsu(image) * threshold_factor
@@ -105,7 +107,6 @@ def make_labels(
         image_contrasted = (image_contrasted - np.min(image_contrasted)) / (
             np.max(image_contrasted) - np.min(image_contrasted)
         )
-
         image_contrasted = image_contrasted * augment_contrast_factor
         image_contrasted = np.where(image_contrasted > 1, 1, image_contrasted)
         labels = binary_watershed(image_contrasted, thres_small=threshold_size)
@@ -141,7 +142,6 @@ def select_image_by_labels(image, labels, path_image_out, label_values):
     """
     # image = imread(image)
     # labels = imread(labels)
-
     image = np.where(np.isin(labels, label_values), image, 0)
     imwrite(path_image_out, image.astype(np.float32))
 
@@ -290,18 +290,13 @@ def select_artefacts_by_size(artefacts, min_size, is_labeled=False):
     ndarray
         Label image with artefacts labelled and small artefacts removed.
     """
-    if not is_labeled:
-        # find all the connected components in the artefacts image
-        labels = ndimage.label(artefacts)[0]
-    else:
-        labels = artefacts
+    labels = ndimage.label(artefacts)[0] if not is_labeled else artefacts
 
     # remove the small components
     labels_i, counts = np.unique(labels, return_counts=True)
     labels_i = labels_i[counts > min_size]
     labels_i = labels_i[labels_i > 0]
-    artefacts = np.where(np.isin(labels, labels_i), labels, 0)
-    return artefacts
+    return np.where(np.isin(labels, labels_i), labels, 0)
 
 
 def create_artefact_labels(
@@ -389,7 +384,7 @@ def create_artefact_labels_from_folder(
     path_labels.sort()
     path_images.sort()
     # create the output folder
-    os.makedirs(path + "/artefact_neurons", exist_ok=True)
+    Path().mkdir(path + "/artefact_neurons", exist_ok=True)
     # create the artefact labels
     for i in range(len(path_images)):
         print(path_labels[i])

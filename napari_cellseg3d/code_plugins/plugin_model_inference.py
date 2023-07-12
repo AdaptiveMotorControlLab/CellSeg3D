@@ -1,22 +1,27 @@
-import warnings
 from functools import partial
+from typing import TYPE_CHECKING
 
-import napari
 import numpy as np
 import pandas as pd
+
+if TYPE_CHECKING:
+    import napari
 
 # local
 from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
-from napari_cellseg3d.code_models.model_framework import ModelFramework
-from napari_cellseg3d.code_models.model_instance_seg import (
+from napari_cellseg3d.code_models.instance_segmentation import (
     InstanceMethod,
     InstanceWidgets,
 )
-from napari_cellseg3d.code_models.model_workers import (
+from napari_cellseg3d.code_models.model_framework import ModelFramework
+from napari_cellseg3d.code_models.workers import (
     InferenceResult,
     InferenceWorker,
 )
+from napari_cellseg3d.code_plugins.plugin_crf import CRFParamsWidget
+
+logger = utils.LOGGER
 
 
 class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
@@ -109,10 +114,13 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ######################
         # TODO : better way to handle SegResNet size reqs ?
         self.model_input_size = ui.IntIncrementCounter(
-            lower=1, upper=1024, default=128, label="\nModel input size"
+            lower=1, upper=1024, default=128, text_label="\nModel input size"
         )
         self.model_choice.currentIndexChanged.connect(
             self._toggle_display_model_input_size
+        )
+        self.model_choice.currentIndexChanged.connect(
+            self._restrict_window_size_for_model
         )
         self.model_choice.setCurrentIndex(0)
 
@@ -138,7 +146,6 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         )
 
         self.thresholding_slider = ui.Slider(
-            lower=1,
             default=config.PostProcessConfig().thresholding.threshold_value
             * 100,
             divide_factor=100.0,
@@ -146,9 +153,10 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         )
 
         self.window_infer_box = ui.CheckBox("Use window inference")
-        self.window_infer_box.clicked.connect(self._toggle_display_window_size)
+        self.window_infer_box.toggled.connect(self._toggle_display_window_size)
 
         sizes_window = ["8", "16", "32", "64", "128", "256", "512"]
+        self._default_window_size = sizes_window.index("64")
         # (
         #     self.window_size_choice,
         #     self.window_size_choice.label,
@@ -161,8 +169,11 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         # )
 
         self.window_size_choice = ui.DropdownMenu(
-            sizes_window, label="Window size"
+            sizes_window, text_label="Window size"
         )
+        self.window_size_choice.setCurrentIndex(
+            self._default_window_size
+        )  # set to 64 by default
 
         self.window_overlap_slider = ui.Slider(
             default=config.SlidingWindowConfig.window_overlap * 100,
@@ -187,15 +198,22 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.window_overlap_slider.container,
             ],
         )
-        self.window_size_choice.setCurrentIndex(3)  # default size to 64
 
         ##################
         ##################
         # instance segmentation widgets
         self.instance_widgets = InstanceWidgets(parent=self)
+        self.crf_widgets = CRFParamsWidget(parent=self)
 
         self.use_instance_choice = ui.CheckBox(
-            "Run instance segmentation", func=self._toggle_display_instance
+            "Run instance segmentation",
+            func=self._toggle_display_instance,
+            parent=self,
+        )
+        self.use_crf = ui.CheckBox(
+            "Use CRF post-processing",
+            func=self._toggle_display_crf,
+            parent=self,
         )
 
         self.save_stats_to_csv_box = ui.CheckBox(
@@ -286,6 +304,19 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             return True
         return False
 
+    def _restrict_window_size_for_model(self):
+        """Sets the window size to a value that is compatible with the chosen model"""
+        if self.model_choice.currentText() == "WNet":
+            self.window_size_choice.setCurrentIndex(self._default_window_size)
+            self.window_size_choice.setDisabled(True)
+            self.window_infer_box.setChecked(True)
+            self.window_infer_box.setDisabled(True)
+        else:
+            self.window_size_choice.setDisabled(False)
+            self.window_infer_box.setDisabled(False)
+            self.window_infer_box.setChecked(False)
+            self.window_size_choice.setCurrentIndex(self._default_window_size)
+
     def _toggle_display_model_input_size(self):
         if (
             self.model_choice.currentText() == "SegResNet"
@@ -307,6 +338,10 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.thresholding_checkbox, self.thresholding_slider.container
         )
 
+    def _toggle_display_crf(self):
+        """Shows the choices for CRF post-processing depending on whether :py:attr:`self.use_crf` is checked"""
+        ui.toggle_visibility(self.use_crf, self.crf_widgets)
+
     def _toggle_display_instance(self):
         """Shows or hides the options for instance segmentation based on current user selection"""
         ui.toggle_visibility(self.use_instance_choice, self.instance_widgets)
@@ -314,6 +349,18 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
     def _toggle_display_window_size(self):
         """Show or hide window size choice depending on status of self.window_infer_box"""
         ui.toggle_visibility(self.window_infer_box, self.window_infer_params)
+
+    def _load_weights_path(self):
+        """Show file dialog to set :py:attr:`model_path`"""
+
+        # logger.debug(self._default_weights_folder)
+
+        file = ui.open_file_dialog(
+            self,
+            [self._default_weights_folder],
+            file_extension="Weights file (*.pth *.pt *.onnx)",
+        )
+        self._update_weights_path(file)
 
     def _build(self):
         """Puts all widgets in a layout and adds them to the napari Viewer"""
@@ -422,6 +469,8 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.anisotropy_wdgt,  # anisotropy
                 self.thresholding_checkbox,
                 self.thresholding_slider.container,  # thresholding
+                self.use_crf,
+                self.crf_widgets,
                 self.use_instance_choice,
                 self.instance_widgets,
                 self.save_stats_to_csv_box,
@@ -435,6 +484,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.anisotropy_wdgt.container.setVisible(False)
         self.thresholding_slider.container.setVisible(False)
         self.instance_widgets.setVisible(False)
+        self.crf_widgets.setVisible(False)
         self.save_stats_to_csv_box.setVisible(False)
 
         post_proc_group.setLayout(post_proc_layout)
@@ -531,64 +581,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.log.print_and_log("Starting...")
             self.log.print_and_log("*" * 20)
 
-            self.model_info = config.ModelInfo(
-                name=self.model_choice.currentText(),
-                model_input_size=self.model_input_size.value(),
-            )
-
-            self.weights_config.custom = self.custom_weights_choice.isChecked()
-
-            save_path = self.results_filewidget.text_field.text()
-            if not self._check_results_path(save_path):
-                msg = f"ERROR: please set valid results path. Current path is {save_path}"
-                self.log.print_and_log(msg)
-                warnings.warn(msg)
-            else:
-                if self.results_path is None:
-                    self.results_path = save_path
-
-            zoom_config = config.Zoom(
-                enabled=self.anisotropy_wdgt.enabled(),
-                zoom_values=self.anisotropy_wdgt.scaling_xyz(),
-            )
-            thresholding_config = config.Thresholding(
-                enabled=self.thresholding_checkbox.isChecked(),
-                threshold_value=self.thresholding_slider.slider_value,
-            )
-
-            self.instance_config = config.InstanceSegConfig(
-                enabled=self.use_instance_choice.isChecked(),
-                method=self.instance_widgets.methods[
-                    self.instance_widgets.method_choice.currentText()
-                ],
-            )
-
-            self.post_process_config = config.PostProcessConfig(
-                zoom=zoom_config,
-                thresholding=thresholding_config,
-                instance=self.instance_config,
-            )
-
-            if self.window_infer_box.isChecked():
-                size = int(self.window_size_choice.currentText())
-                window_config = config.SlidingWindowConfig(
-                    window_size=size,
-                    window_overlap=self.window_overlap_slider.slider_value,
-                )
-            else:
-                window_config = config.SlidingWindowConfig()
-
-            self.worker_config = config.InferenceWorkerConfig(
-                device=self.get_device(),
-                model_info=self.model_info,
-                weights_config=self.weights_config,
-                results_path=self.results_path,
-                filetype=self.filetype_choice.currentText(),
-                keep_on_cpu=self.keep_data_on_cpu_box.isChecked(),
-                compute_stats=self.save_stats_to_csv_box.isChecked(),
-                post_process_config=self.post_process_config,
-                sliding_window_config=window_config,
-            )
+            self._set_worker_config()
             #####################
             #####################
             #####################
@@ -607,10 +600,13 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.worker.set_download_log(self.log)
 
             self.worker.started.connect(self.on_start)
+
             self.worker.log_signal.connect(self.log.print_and_log)
             self.worker.warn_signal.connect(self.log.warn)
+            self.worker.error_signal.connect(self.log.error)
+
             self.worker.yielded.connect(partial(self.on_yield))  #
-            self.worker.errored.connect(partial(self.on_yield))
+            self.worker.errored.connect(partial(self.on_error))
             self.worker.finished.connect(self.on_finish)
 
             if self.get_device(show=False) == "cuda":
@@ -626,6 +622,76 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         else:  # once worker is started, update buttons
             self.worker.start()
             self.btn_start.setText("Running...  Click to stop")
+
+    def _create_worker_from_config(
+        self, worker_config: config.InferenceWorkerConfig
+    ):
+        if isinstance(worker_config, config.InfererConfig):
+            raise TypeError("Please provide a valid worker config object")
+        return InferenceWorker(worker_config=worker_config)
+
+    def _set_worker_config(self) -> config.InferenceWorkerConfig:
+        self.model_info = config.ModelInfo(
+            name=self.model_choice.currentText(),
+            model_input_size=self.model_input_size.value(),
+        )
+
+        self.weights_config.custom = self.custom_weights_choice.isChecked()
+
+        save_path = self.results_filewidget.text_field.text()
+        if not self._check_results_path(save_path):
+            msg = f"ERROR: please set valid results path. Current path is {save_path}"
+            self.log.print_and_log(msg)
+            logger.warning(msg)
+        else:
+            if self.results_path is None:
+                self.results_path = save_path
+
+        zoom_config = config.Zoom(
+            enabled=self.anisotropy_wdgt.enabled(),
+            zoom_values=self.anisotropy_wdgt.scaling_xyz(),
+        )
+        thresholding_config = config.Thresholding(
+            enabled=self.thresholding_checkbox.isChecked(),
+            threshold_value=self.thresholding_slider.slider_value,
+        )
+
+        self.instance_config = config.InstanceSegConfig(
+            enabled=self.use_instance_choice.isChecked(),
+            method=self.instance_widgets.methods[
+                self.instance_widgets.method_choice.currentText()
+            ],
+        )
+
+        self.post_process_config = config.PostProcessConfig(
+            zoom=zoom_config,
+            thresholding=thresholding_config,
+            instance=self.instance_config,
+        )
+
+        if self.window_infer_box.isChecked():
+            size = int(self.window_size_choice.currentText())
+            window_config = config.SlidingWindowConfig(
+                window_size=size,
+                window_overlap=self.window_overlap_slider.slider_value,
+            )
+        else:
+            window_config = config.SlidingWindowConfig()
+
+        self.worker_config = config.InferenceWorkerConfig(
+            device=self.get_device(),
+            model_info=self.model_info,
+            weights_config=self.weights_config,
+            results_path=self.results_path,
+            filetype=self.filetype_choice.currentText(),
+            keep_on_cpu=self.keep_data_on_cpu_box.isChecked(),
+            compute_stats=self.save_stats_to_csv_box.isChecked(),
+            post_process_config=self.post_process_config,
+            sliding_window_config=window_config,
+            use_crf=self.use_crf.isChecked(),
+            crf_config=self.crf_widgets.make_config(),
+        )
+        return self.worker_config
 
     def on_start(self):
         """Catches start signal from worker to call :py:func:`~display_status_report`"""
@@ -647,15 +713,18 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.log.print_and_log(f"Saving results to : {self.results_path}")
         self.log.print_and_log("Worker is running...")
 
-    def on_error(self):
-        """Catches errors and tries to clean up. TODO : upgrade"""
+    def on_error(self, error):
+        """Catches errors and tries to clean up."""
+        self.log.print_and_log("!" * 20)
         self.log.print_and_log("Worker errored...")
-        self.log.print_and_log("Trying to clean up...")
+        self.log.error(error)
+        # self.log.print_and_log("Trying to clean up...")
+        self.worker.quit()
         self.btn_start.setText("Start")
         self.btn_close.setVisible(True)
 
-        self.worker = None
         self.worker_config = None
+        self.worker = None
         self.empty_cuda_cache()
 
     def on_finish(self):
@@ -678,85 +747,112 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             data (dict): dict yielded by :py:func:`~inference()`, contains : "image_id" : index of the returned image, "original" : original volume used for inference, "result" : inference result
             widget (QWidget): widget for accessing attributes
         """
+
+        if isinstance(result, Exception):
+            self.on_error(result)
+            # raise result
         # viewer, progress, show_res, show_res_number, zoon, show_original
 
         # check that viewer checkbox is on and that max number of displays has not been reached.
         # widget.log.print_and_log(result)
+        try:
+            image_id = result.image_id
+            model_name = result.model_name
+            if self.worker_config.images_filepaths is not None:
+                total = len(self.worker_config.images_filepaths)
+            else:
+                total = 1
 
-        image_id = result.image_id
-        model_name = result.model_name
-        if self.worker_config.images_filepaths is not None:
-            total = len(self.worker_config.images_filepaths)
-        else:
-            total = 1
+            viewer = self._viewer
 
-        viewer = self._viewer
+            pbar_value = image_id // total
+            if pbar_value == 0:
+                pbar_value = 1
 
-        pbar_value = image_id // total
-        if pbar_value == 0:
-            pbar_value = 1
+            self.progress.setValue(100 * pbar_value)
 
-        self.progress.setValue(100 * pbar_value)
+            if (
+                self.config.show_results
+                and image_id <= self.config.show_results_count
+            ):
+                zoom = self.worker_config.post_process_config.zoom.zoom_values
 
-        if (
-            self.config.show_results
-            and image_id <= self.config.show_results_count
-        ):
-            zoom = self.worker_config.post_process_config.zoom.zoom_values
+                viewer.dims.ndisplay = 3
+                viewer.scale_bar.visible = True
 
-            viewer.dims.ndisplay = 3
-            viewer.scale_bar.visible = True
+                if self.config.show_original and result.original is not None:
+                    viewer.add_image(
+                        result.original,
+                        colormap="inferno",
+                        name=f"original_{image_id}",
+                        scale=zoom,
+                        opacity=0.7,
+                    )
 
-            if self.config.show_original and result.original is not None:
+                out_colormap = "twilight"
+                if self.worker_config.post_process_config.thresholding.enabled:
+                    out_colormap = "turbo"
+
                 viewer.add_image(
-                    result.original,
-                    colormap="inferno",
-                    name=f"original_{image_id}",
-                    scale=zoom,
-                    opacity=0.7,
+                    result.result,
+                    colormap=out_colormap,
+                    name=f"pred_{image_id}_{model_name}",
+                    opacity=0.8,
                 )
-
-            out_colormap = "twilight"
-            if self.worker_config.post_process_config.thresholding.enabled:
-                out_colormap = "turbo"
-
-            viewer.add_image(
-                result.result,
-                colormap=out_colormap,
-                name=f"pred_{image_id}_{model_name}",
-                opacity=0.8,
-            )
-
-            if result.instance_labels is not None:
-                labels = result.instance_labels
-                method_name = (
-                    self.worker_config.post_process_config.instance.method.name
-                )
-
-                number_cells = (
-                    np.unique(labels.flatten()).size - 1
-                )  # remove background
-
-                name = f"({number_cells} objects)_{method_name}_instance_labels_{image_id}"
-
-                viewer.add_labels(labels, name=name)
-
-                stats = result.stats
-
-                if self.worker_config.compute_stats and stats is not None:
-                    stats_dict = stats.get_dict()
-                    stats_df = pd.DataFrame(stats_dict)
-
-                    self.log.print_and_log(
-                        f"Number of instances : {stats.number_objects}"
+                if result.crf_results is not None:
+                    logger.debug(
+                        f"CRF results shape : {result.crf_results.shape}"
+                    )
+                    viewer.add_image(
+                        result.crf_results,
+                        name=f"CRF_results_image_{image_id}",
+                        colormap="viridis",
+                    )
+                if (
+                    result.instance_labels is not None
+                    and self.worker_config.post_process_config.instance.enabled
+                ):
+                    method_name = (
+                        self.worker_config.post_process_config.instance.method.name
                     )
 
-                    csv_name = f"/{method_name}_seg_results_{image_id}_{utils.get_date_time()}.csv"
-                    stats_df.to_csv(
-                        self.worker_config.results_path + csv_name,
-                        index=False,
-                    )
+                    number_cells = (
+                        np.unique(result.instance_labels.flatten()).size - 1
+                    )  # remove background
 
-                    # self.log.print_and_log(
-                    #     f"OBJECTS DETECTED : {number_cells}\n"
-                    # )
+                    name = f"({number_cells} objects)_{method_name}_instance_labels_{image_id}"
+
+                    viewer.add_labels(result.instance_labels, name=name)
+
+                    from napari_cellseg3d.utils import LOGGER as log
+
+                    if result.stats is not None and isinstance(
+                        result.stats, list
+                    ):
+                        log.debug(f"len stats : {len(result.stats)}")
+
+                        for i, stats in enumerate(result.stats):
+                            # stats = result.stats
+
+                            if (
+                                self.worker_config.compute_stats
+                                and stats is not None
+                            ):
+                                stats_dict = stats.get_dict()
+                                stats_df = pd.DataFrame(stats_dict)
+
+                                self.log.print_and_log(
+                                    f"Number of instances in channel {i} : {stats.number_objects[0]}"
+                                )
+
+                                csv_name = f"/{method_name}_seg_results_{image_id}_channel_{i}_{utils.get_date_time()}.csv"
+                                stats_df.to_csv(
+                                    self.worker_config.results_path + csv_name,
+                                    index=False,
+                                )
+
+                            # self.log.print_and_log(
+                            #     f"OBJECTS DETECTED : {number_cells}\n"
+                            # )
+        except Exception as e:
+            self.on_error(e)

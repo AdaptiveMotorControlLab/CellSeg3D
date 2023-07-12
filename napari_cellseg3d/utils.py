@@ -1,24 +1,99 @@
 import logging
-import warnings
 from datetime import datetime
 from pathlib import Path
+from typing import TYPE_CHECKING, Union
 
+import napari
 import numpy as np
+from monai.transforms import Zoom
 from skimage import io
 from skimage.filters import gaussian
-from tifffile import imread as tfl_imread
+from tifffile import imread, imwrite
+
+if TYPE_CHECKING:
+    import torch
 
 LOGGER = logging.getLogger(__name__)
 ###############
 # Global logging level setting
-# LOGGER.setLevel(logging.DEBUG)
-LOGGER.setLevel(logging.INFO)
+LOGGER.setLevel(logging.DEBUG)
+# LOGGER.setLevel(logging.INFO)
 ###############
 """
 utils.py
 ====================================
 Definitions of utility functions, classes, and variables
 """
+
+
+####################
+# viewer utils
+def save_folder(results_path, folder_name, images, image_paths):
+    """
+    Saves a list of images in a folder
+
+    Args:
+        results_path: Path to the folder containing results
+        folder_name: Name of the folder containing results
+        images: List of images to save
+        image_paths: list of filenames of images
+    """
+    results_folder = results_path / Path(folder_name)
+    results_folder.mkdir(exist_ok=False, parents=True)
+
+    for file, image in zip(image_paths, images):
+        path = results_folder / Path(file).name
+
+        imwrite(
+            path,
+            image,
+        )
+    LOGGER.info(f"Saved processed folder as : {results_folder}")
+
+
+def save_layer(results_path, image_name, image):
+    """
+    Saves an image layer at the specified path
+
+    Args:
+        results_path: path to folder containing result
+        image_name: image name for saving
+        image: data array containing image
+
+    Returns:
+
+    """
+    path = str(results_path / Path(image_name))  # TODO flexible filetype
+    LOGGER.info(f"Saved as : {path}")
+    imwrite(path, image)
+
+
+def show_result(viewer, layer, image, name):
+    """
+    Adds layers to a viewer to show result to user
+
+    Args:
+        viewer: viewer to add layer in
+        layer: original layer the operation was run on, to determine whether it should be an Image or Labels layer
+        image: the data array containing the image
+        name: name of the added layer
+
+    Returns:
+
+    """
+    if isinstance(layer, napari.layers.Image):
+        LOGGER.debug("Added resulting image layer")
+        viewer.add_image(image, name=name)
+    elif isinstance(layer, napari.layers.Labels):
+        LOGGER.debug("Added resulting label layer")
+        viewer.add_labels(image, name=name)
+    else:
+        LOGGER.warning(
+            f"Results not shown, unsupported layer type {type(layer)}"
+        )
+
+
+####################
 
 
 class Singleton(type):
@@ -36,6 +111,18 @@ class Singleton(type):
         return cls._instances[cls]
 
 
+# class TiffFileReader(ImageReader):
+#     def __init__(self):
+#         super().__init__()
+#
+#     def verify_suffix(self, filename):
+#         if filename == "tif":
+#             return True
+#     def read(self, data, **kwargs):
+#         return imread(data)
+#
+#     def get_data(self, data):
+#         return data, {}
 def normalize_x(image):
     """Normalizes the values of an image array to be between [-1;1] rather than [0;255]
 
@@ -45,8 +132,11 @@ def normalize_x(image):
     Returns:
         array: normalized value for the image
     """
-    image = image / 127.5 - 1
-    return image
+    return image / 127.5 - 1
+
+
+def mkdir_from_str(path: str, exist_ok=True, parents=True):
+    Path(path).resolve().mkdir(exist_ok=exist_ok, parents=parents)
 
 
 def normalize_y(image):
@@ -58,8 +148,7 @@ def normalize_y(image):
     Returns:
         array: normalized value for the image
     """
-    image = image / 255
-    return image
+    return image / 255
 
 
 def sphericity_volume_area(volume, surface_area):
@@ -113,15 +202,45 @@ def dice_coeff(y_true, y_pred):
     y_true_f = y_true.flatten()
     y_pred_f = y_pred.flatten()
     intersection = np.sum(y_true_f * y_pred_f)
-    score = (2.0 * intersection + smooth) / (
+    return (2.0 * intersection + smooth) / (
         np.sum(y_true_f) + np.sum(y_pred_f) + smooth
     )
-    return score
+
+
+def correct_rotation(image):
+    """Rotates the exes 0 and 2 in [DHW] section of image array"""
+    extra_dims = len(image.shape) - 3
+    return np.swapaxes(image, 0 + extra_dims, 2 + extra_dims)
+
+
+def normalize_max(image):
+    """Normalizes an image using the max and min value"""
+    shape = image.shape
+    image = image.flatten()
+    image = (image - image.min()) / (image.max() - image.min())
+    image = image.reshape(shape)
+    return image
+
+
+def remap_image(
+    image: Union["np.ndarray", "torch.Tensor"],
+    new_max=100,
+    new_min=0,
+    prev_max=None,
+    prev_min=None,
+):
+    """Normalizes a numpy array or Tensor using the max and min value"""
+    shape = image.shape
+    image = image.flatten()
+    im_max = prev_max if prev_max is not None else image.max()
+    im_min = prev_min if prev_min is not None else image.min()
+    image = (image - im_min) / (im_max - im_min)
+    image = image * (new_max - new_min) + new_min
+    image = image.reshape(shape)
+    return image
 
 
 def resize(image, zoom_factors):
-    from monai.transforms import Zoom
-
     isotropic_image = Zoom(
         zoom_factors,
         keep_size=False,
@@ -186,10 +305,11 @@ def time_difference(time_start, time_finish, as_string=True):
     minutes = f"{int(minutes[0])}".zfill(2)
     seconds = f"{int(seconds[0])}".zfill(2)
 
-    if as_string:
-        return f"{hours}:{minutes}:{seconds}"
-    else:
-        return [hours, minutes, seconds]
+    return (
+        f"{hours}:{minutes}:{seconds}"
+        if as_string
+        else [hours, minutes, seconds]
+    )
 
 
 def get_padding_dim(image_shape, anisotropy_factor=None):
@@ -223,15 +343,15 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
             size = int(size / anisotropy_factor[i])
         while pad < size:
             # if size - pad < 30:
-            #     warnings.warn(
+            #     LOGGER.warning(
             #         f"Your value is close to a lower power of two; you might want to choose slightly smaller"
             #         f" sizes and/or crop your images down to {pad}"
             #     )
 
             pad = 2**n
             n += 1
-            if pad >= 256:
-                warnings.warn(
+            if pad >= 1024:
+                LOGGER.warning(
                     "Warning : a very large dimension for automatic padding has been computed.\n"
                     "Ensure your images are of an appropriate size and/or that you have enough memory."
                     f"The padding value is currently {pad}."
@@ -331,14 +451,14 @@ def annotation_to_input(label_ermito):
 #         pass
 
 
-def fill_list_in_between(lst, n, elem):
+def fill_list_in_between(lst, n, fill_value):
     """Fills a list with n * elem between each member of list.
     Example with list = [1,2,3], n=2, elem='&' : returns [1, &, &,2,&,&,3,&,&]
 
     Args:
         lst: list to fill
         n: number of elements to add
-        elem: added n times after each element of list
+        fill_value: added n times after each element of list
 
     Returns :
         Filled list
@@ -347,13 +467,13 @@ def fill_list_in_between(lst, n, elem):
     for i in range(len(lst)):
         temp_list = [lst[i]]
         while len(temp_list) < n + 1:
-            temp_list.append(elem)
+            temp_list.append(fill_value)
         if i < len(lst) - 1:
             new_list += temp_list
         else:
             new_list.append(lst[i])
             for _j in range(n):
-                new_list.append(elem)
+                new_list.append(fill_value)
             return new_list
     return None
 
@@ -400,7 +520,7 @@ def parse_default_path(possible_paths):
     # ]
     print(default_paths)
     if len(default_paths) == 0:
-        return str(Path.home())
+        return str(Path().home())
     default_path = max(default_paths, key=len)
     return str(default_path)
 
@@ -455,19 +575,12 @@ def load_images(
         raise ValueError("If loading as a folder, filetype must be specified")
 
     if as_folder:
-        try:
-            images_original = tfl_imread(filename_pattern_original)
-        except ValueError:
-            LOGGER.error(
-                "Loading a stack this way is no longer supported. Use napari to load a stack."
-            )
+        raise NotImplementedError(
+            "Loading as folder not implemented yet. Use napari to load as folder"
+        )
+        # images_original = dask_imread(filename_pattern_original)
 
-    else:
-        images_original = tfl_imread(
-            filename_pattern_original
-        )  # tifffile imread
-
-    return images_original
+    return imread(filename_pattern_original)  # tifffile imread
 
 
 # def load_predicted_masks(mito_mask_dir, er_mask_dir, filetype):
@@ -527,26 +640,26 @@ def select_train_data(dataframe, ori_imgs, label_imgs, ori_filenames):
     return np.array(train_ori_imgs), np.array(train_label_imgs)
 
 
-def format_Warning(message, category, filename, lineno, line=""):
-    """Formats a warning message, use in code with ``warnings.formatwarning = utils.format_Warning``
-
-    Args:
-        message: warning message
-        category: which type of warning has been raised
-        filename: file
-        lineno: line number
-        line: unused
-
-    Returns: format
-
-    """
-    return (
-        str(filename)
-        + ":"
-        + str(lineno)
-        + ": "
-        + category.__name__
-        + ": "
-        + str(message)
-        + "\n"
-    )
+# def format_Warning(message, category, filename, lineno, line=""):
+#     """Formats a warning message, use in code with ``warnings.formatwarning = utils.format_Warning``
+#
+#     Args:
+#         message: warning message
+#         category: which type of warning has been raised
+#         filename: file
+#         lineno: line number
+#         line: unused
+#
+#     Returns: format
+#
+#     """
+#     return (
+#         str(filename)
+#         + ":"
+#         + str(lineno)
+#         + ": "
+#         + category.__name__
+#         + ": "
+#         + str(message)
+#         + "\n"
+#     )

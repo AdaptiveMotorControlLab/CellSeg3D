@@ -1,4 +1,7 @@
-import napari
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import napari
 
 # Qt
 from qtpy.QtCore import qInstallMessageHandler
@@ -13,6 +16,7 @@ from napari_cellseg3d.code_plugins.plugin_convert import (
     ToInstanceUtils,
     ToSemanticUtils,
 )
+from napari_cellseg3d.code_plugins.plugin_crf import CRFWidget
 from napari_cellseg3d.code_plugins.plugin_crop import Cropping
 
 UTILITIES_WIDGETS = {
@@ -22,6 +26,7 @@ UTILITIES_WIDGETS = {
     "Convert to instance labels": ToInstanceUtils,
     "Convert to semantic labels": ToSemanticUtils,
     "Threshold": ThresholdUtils,
+    "CRF": CRFWidget,
 }
 
 
@@ -30,7 +35,7 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
         super().__init__()
         self._viewer = viewer
 
-        attr_names = ["crop", "aniso", "small", "inst", "sem", "thresh"]
+        attr_names = ["crop", "aniso", "small", "inst", "sem", "thresh", "crf"]
         self._create_utils_widgets(attr_names)
 
         # self.crop = Cropping(self._viewer)
@@ -41,7 +46,7 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
         # self.small = RemoveSmallUtils(self._viewer)
 
         self.utils_choice = ui.DropdownMenu(
-            UTILITIES_WIDGETS.keys(), label="Utilities"
+            UTILITIES_WIDGETS.keys(), text_label="Utilities"
         )
 
         self._build()
@@ -54,8 +59,15 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
     def _build(self):
         layout = QVBoxLayout()
         ui.add_widgets(layout, self.utils_widgets)
-        layout.addWidget(self.utils_choice.label, alignment=ui.BOTT_AL)
-        layout.addWidget(self.utils_choice, alignment=ui.BOTT_AL)
+        ui.GroupedWidget.create_single_widget_group(
+            "Utilities",
+            widget=self.utils_choice,
+            layout=layout,
+            alignment=ui.BOTT_AL,
+        )
+
+        # layout.addWidget(self.utils_choice.label, alignment=ui.BOTT_AL)
+        # layout.addWidget(self.utils_choice, alignment=ui.BOTT_AL)
 
         # layout.setSizeConstraint(QLayout.SetFixedSize)
         self.setLayout(layout)

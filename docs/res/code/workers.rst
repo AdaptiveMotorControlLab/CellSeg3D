@@ -1,4 +1,4 @@
-model_workers.py
+workers.py
 ===========================================
 
 
@@ -10,7 +10,7 @@ Class : LogSignal
 
 Attributes
 ************************
-.. autoclass:: napari_cellseg3d.code_models.model_workers::LogSignal
+.. autoclass:: napari_cellseg3d.code_models.workers::LogSignal
    :members: log_signal
    :noindex:
 
@@ -24,7 +24,7 @@ Class : InferenceWorker
 
 Methods
 ************************
-.. autoclass:: napari_cellseg3d.code_models.model_workers::InferenceWorker
+.. autoclass:: napari_cellseg3d.code_models.workers::InferenceWorker
    :members: __init__, log, create_inference_dict, inference
    :noindex:
 
@@ -39,6 +39,6 @@ Class : TrainingWorker
 
 Methods
 ************************
-.. autoclass:: napari_cellseg3d.code_models.model_workers::TrainingWorker
+.. autoclass:: napari_cellseg3d.code_models.workers::TrainingWorker
    :members: __init__, log, train
    :noindex:

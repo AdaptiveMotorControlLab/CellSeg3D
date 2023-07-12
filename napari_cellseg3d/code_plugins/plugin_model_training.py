@@ -1,10 +1,9 @@
 import shutil
-import warnings
 from functools import partial
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
-import napari
 import numpy as np
 import pandas as pd
 import torch
@@ -12,6 +11,9 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
+
+if TYPE_CHECKING:
+    import napari
 
 # MONAI
 from monai.losses import (
@@ -30,7 +32,7 @@ from qtpy.QtWidgets import QSizePolicy
 from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.code_models.model_framework import ModelFramework
-from napari_cellseg3d.code_models.model_workers import (
+from napari_cellseg3d.code_models.workers import (
     TrainingReport,
     TrainingWorker,
 )
@@ -45,6 +47,8 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
     """A plugin to train pre-defined PyTorch models for one-channel segmentation directly in napari.
     Features parameter selection for training, dynamic loss plotting and automatic saving of the best weights during
     training through validation."""
+
+    default_config = config.TrainingWorkerConfig()
 
     def __init__(
         self,
@@ -165,17 +169,18 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.validation_values = []
 
         # self.model_choice.setCurrentIndex(0)
+        wnet_index = self.model_choice.findText("WNet")
+        self.model_choice.removeItem(wnet_index)
 
         ################################
         # interface
-        default = config.TrainingWorkerConfig()
 
         self.zip_choice = ui.CheckBox("Compress results")
 
         self.validation_percent_choice = ui.Slider(
             lower=10,
             upper=90,
-            default=default.validation_percent * 100,
+            default=self.default_config.validation_percent * 100,
             step=5,
             parent=self,
         )
@@ -183,12 +188,12 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.epoch_choice = ui.IntIncrementCounter(
             lower=2,
             upper=200,
-            default=default.max_epochs,
-            label="Number of epochs : ",
+            default=self.default_config.max_epochs,
+            text_label="Number of epochs : ",
         )
 
         self.loss_choice = ui.DropdownMenu(
-            sorted(self.loss_dict.keys()), label="Loss function"
+            sorted(self.loss_dict.keys()), text_label="Loss function"
         )
         self.lbl_loss_choice = self.loss_choice.label
         self.loss_choice.setCurrentIndex(0)
@@ -196,7 +201,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.sample_choice_slider = ui.Slider(
             lower=2,
             upper=50,
-            default=default.num_samples,
+            default=self.default_config.num_samples,
             text_label="Number of patches per image : ",
         )
 
@@ -205,13 +210,13 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.batch_choice = ui.Slider(
             lower=1,
             upper=10,
-            default=default.batch_size,
+            default=self.default_config.batch_size,
             text_label="Batch size : ",
         )
 
         self.val_interval_choice = ui.IntIncrementCounter(
-            default=default.validation_interval,
-            label="Validation interval : ",
+            default=self.default_config.validation_interval,
+            text_label="Validation interval : ",
         )
 
         self.epoch_choice.valueChanged.connect(self._update_validation_choice)
@@ -228,11 +233,23 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ]
 
         self.learning_rate_choice = ui.DropdownMenu(
-            learning_rate_vals, label="Learning rate"
+            learning_rate_vals, text_label="Learning rate"
         )
         self.lbl_learning_rate_choice = self.learning_rate_choice.label
 
         self.learning_rate_choice.setCurrentIndex(1)
+
+        self.scheduler_patience_choice = ui.IntIncrementCounter(
+            1,
+            99,
+            default=self.default_config.scheduler_patience,
+            text_label="Scheduler patience",
+        )
+        self.scheduler_factor_choice = ui.Slider(
+            divide_factor=100,
+            default=self.default_config.scheduler_factor * 100,
+            text_label="Scheduler factor :",
+        )
 
         self.augment_choice = ui.CheckBox("Augment data")
 
@@ -268,7 +285,8 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             "Deterministic training", func=self._toggle_deterministic_param
         )
         self.box_seed = ui.IntIncrementCounter(
-            upper=10000000, default=default.deterministic_config.seed
+            upper=10000000,
+            default=self.default_config.deterministic_config.seed,
         )
         self.lbl_seed = ui.make_label("Seed", self)
         self.container_seed = ui.combine_blocks(
@@ -308,6 +326,12 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             )
             self.learning_rate_choice.setToolTip(
                 "The learning rate to use in the optimizer. \nUse a lower value if you're using pre-trained weights"
+            )
+            self.scheduler_factor_choice.setToolTip(
+                "The factor by which to reduce the learning rate once the loss reaches a plateau"
+            )
+            self.scheduler_patience_choice.setToolTip(
+                "The amount of epochs to wait for before reducing the learning rate"
             )
             self.augment_choice.setToolTip(
                 "Check this to enable data augmentation, which will randomly deform, flip and shift the intensity in images"
@@ -395,12 +419,10 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             * False and displays a warning if not
 
         """
-        if self.images_filepaths != [] and self.labels_filepaths != []:
-            return True
-        else:
-            warnings.formatwarning = utils.format_Warning
-            warnings.warn("Image and label paths are not correctly set")
+        if self.images_filepaths == [] and self.labels_filepaths != []:
+            logger.warning("Image and label paths are not correctly set")
             return False
+        return True
 
     def _build(self):
         """Builds the layout of the widget and creates the following tabs and prompts:
@@ -632,26 +654,20 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             "Training parameters", r=1, b=5, t=11
         )
 
-        spacing = 20
-
         ui.add_widgets(
             train_param_group_l,
             [
                 self.batch_choice.container,  # batch size
-                ui.combine_blocks(
-                    self.learning_rate_choice,
-                    self.lbl_learning_rate_choice,
-                    min_spacing=spacing,
-                    horizontal=False,
-                    l=5,
-                    t=5,
-                    r=5,
-                    b=5,
-                ),  # learning rate
+                self.lbl_learning_rate_choice,
+                self.learning_rate_choice,
                 self.epoch_choice.label,  # epochs
                 self.epoch_choice,
                 self.val_interval_choice.label,
                 self.val_interval_choice,  # validation interval
+                self.scheduler_patience_choice.label,
+                self.scheduler_patience_choice,
+                self.scheduler_factor_choice.label,
+                self.scheduler_factor_choice.container,
             ],
             None,
         )
@@ -773,7 +789,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         if not self.check_ready():  # issues a warning if not ready
             err = "Aborting, please set all required paths"
             self.log.print_and_log(err)
-            warnings.warn(err)
+            logger.warning(err)
             return
 
         if self.worker is not None:
@@ -794,64 +810,12 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.data = None
                 raise err
 
-            model_config = config.ModelInfo(
-                name=self.model_choice.currentText()
-            )
-
-            self.weights_config.path = self.weights_config.path
-            self.weights_config.custom = self.custom_weights_choice.isChecked()
-            self.weights_config.use_pretrained = (
-                not self.use_transfer_choice.isChecked()
-            )
-
-            deterministic_config = config.DeterministicConfig(
-                enabled=self.use_deterministic_choice.isChecked(),
-                seed=self.box_seed.value(),
-            )
-
-            validation_percent = (
-                self.validation_percent_choice.slider_value / 100
-            )
-
-            results_path_folder = Path(
-                self.results_path
-                + f"/{model_config.name}_{utils.get_date_time()}"
-            )
-            Path(results_path_folder).mkdir(
-                parents=True, exist_ok=False
-            )  # avoid overwrite where possible
-
-            patch_size = [w.value() for w in self.patch_size_widgets]
-
-            logger.debug("Loading config...")
-            self.worker_config = config.TrainingWorkerConfig(
-                device=self.get_device(),
-                model_info=model_config,
-                weights_info=self.weights_config,
-                train_data_dict=self.data,
-                validation_percent=validation_percent,
-                max_epochs=self.epoch_choice.value(),
-                loss_function=self.get_loss(self.loss_choice.currentText()),
-                learning_rate=float(self.learning_rate_choice.currentText()),
-                validation_interval=self.val_interval_choice.value(),
-                batch_size=self.batch_choice.slider_value,
-                results_path_folder=str(results_path_folder),
-                sampling=self.patch_choice.isChecked(),
-                num_samples=self.sample_choice_slider.slider_value,
-                sample_size=patch_size,
-                do_augmentation=self.augment_choice.isChecked(),
-                deterministic_config=deterministic_config,
-            )  # TODO(cyril) continue to put params in config
-
             self.config = config.TrainerConfig(
                 save_as_zip=self.zip_choice.isChecked()
             )
+            self._set_worker_config()
 
-            self.log.print_and_log(
-                f"Saving results to : {results_path_folder}"
-            )
-
-            self.worker = TrainingWorker(config=self.worker_config)
+            self.worker = TrainingWorker(worker_config=self.worker_config)
             self.worker.set_download_log(self.log)
 
             [btn.setVisible(False) for btn in self.close_buttons]
@@ -878,6 +842,64 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         else:
             self.worker.start()
             self.btn_start.setText("Running...  Click to stop")
+
+    def _create_worker_from_config(
+        self, worker_config: config.TrainingWorkerConfig
+    ):
+        if isinstance(config, config.TrainerConfig):
+            raise TypeError(
+                "Expected a TrainingWorkerConfig, got a TrainerConfig"
+            )
+        return TrainingWorker(worker_config=worker_config)
+
+    def _set_worker_config(self) -> config.TrainingWorkerConfig:
+        model_config = config.ModelInfo(name=self.model_choice.currentText())
+
+        self.weights_config.path = self.weights_config.path
+        self.weights_config.custom = self.custom_weights_choice.isChecked()
+        self.weights_config.use_pretrained = (
+            not self.use_transfer_choice.isChecked()
+        )
+
+        deterministic_config = config.DeterministicConfig(
+            enabled=self.use_deterministic_choice.isChecked(),
+            seed=self.box_seed.value(),
+        )
+
+        validation_percent = self.validation_percent_choice.slider_value / 100
+
+        results_path_folder = Path(
+            self.results_path + f"/{model_config.name}_{utils.get_date_time()}"
+        )
+        Path(results_path_folder).mkdir(
+            parents=True, exist_ok=False
+        )  # avoid overwrite where possible
+
+        patch_size = [w.value() for w in self.patch_size_widgets]
+
+        logger.debug("Loading config...")
+        self.worker_config = config.TrainingWorkerConfig(
+            device=self.get_device(),
+            model_info=model_config,
+            weights_info=self.weights_config,
+            train_data_dict=self.data,
+            validation_percent=validation_percent,
+            max_epochs=self.epoch_choice.value(),
+            loss_function=self.get_loss(self.loss_choice.currentText()),
+            learning_rate=float(self.learning_rate_choice.currentText()),
+            scheduler_patience=self.scheduler_patience_choice.value(),
+            scheduler_factor=self.scheduler_factor_choice.slider_value,
+            validation_interval=self.val_interval_choice.value(),
+            batch_size=self.batch_choice.slider_value,
+            results_path_folder=str(results_path_folder),
+            sampling=self.patch_choice.isChecked(),
+            num_samples=self.sample_choice_slider.slider_value,
+            sample_size=patch_size,
+            do_augmentation=self.augment_choice.isChecked(),
+            deterministic_config=deterministic_config,
+        )  # TODO(cyril) continue to put params in config
+
+        return self.worker_config
 
     def on_start(self):
         """Catches started signal from worker"""
@@ -968,7 +990,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                         layer = self._viewer.add_image(
                             report.images[i],
                             name=layer_name + str(i),
-                            colormap="twilight",
+                            colormap="viridis",
                         )
                         self.result_layers.append(layer)
                 else:
@@ -979,13 +1001,13 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                             new_layer = self._viewer.add_image(
                                 report.images[i],
                                 name=layer_name + str(i),
-                                colormap="twilight",
+                                colormap="viridis",
                             )
                             self.result_layers.append(new_layer)
                         self.result_layers[i].data = report.images[i]
                         self.result_layers[i].refresh()
             except Exception as e:
-                logger.error(e)
+                logger.exception(e)
 
             self.progress.setValue(
                 100 * (report.epoch + 1) // self.worker_config.max_epochs
@@ -1027,7 +1049,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         size_column = range(1, self.worker_config.max_epochs + 1)
 
         if len(self.loss_values) == 0 or self.loss_values is None:
-            warnings.warn("No loss values to add to csv !")
+            logger.warning("No loss values to add to csv !")
             return
 
         self.df = pd.DataFrame(
@@ -1117,7 +1139,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         epoch = len(loss)
         if epoch < self.worker_config.validation_interval * 2:
             return
-        elif epoch == self.worker_config.validation_interval * 2:
+        if epoch == self.worker_config.validation_interval * 2:
             bckgrd_color = (0, 0, 0, 0)  # '#262930'
             with plt.style.context("dark_background"):
                 self.canvas = FigureCanvas(Figure(figsize=(10, 1.5)))
@@ -1153,7 +1175,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 )
                 self.plot_dock._close_btn = False
             except AttributeError as e:
-                logger.error(e)
+                logger.exception(e)
                 logger.error(
                     "Plot dock widget could not be added. Should occur in testing only"
                 )

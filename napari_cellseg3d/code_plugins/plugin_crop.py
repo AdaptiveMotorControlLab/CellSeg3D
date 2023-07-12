@@ -1,4 +1,4 @@
-import warnings
+from math import floor
 from pathlib import Path
 
 import napari
@@ -44,13 +44,16 @@ class Cropping(BasePluginSingleImage):
 
         self.image_layer_loader.set_layer_type(napari.layers.Layer)
         self.image_layer_loader.layer_list.label.setText("Image 1")
+        self.image_layer_loader.layer_list.currentIndexChanged.connect(
+            self.auto_set_dims
+        )
         # ui.LayerSelecter(self._viewer, "Image 1")
         # self.layer_selection2 = ui.LayerSelecter(self._viewer, "Image 2")
         self.label_layer_loader.set_layer_type(napari.layers.Layer)
         self.label_layer_loader.layer_list.label.setText("Image 2")
 
         self.crop_second_image_choice = ui.CheckBox(
-            "Crop another\nimage simultaneously",
+            "Crop another\nimage/label simultaneously",
         )
         self.crop_second_image_choice.toggled.connect(
             self._toggle_second_image_io_visibility
@@ -81,7 +84,7 @@ class Cropping(BasePluginSingleImage):
         self.results_filewidget.check_ready()
 
         self.crop_size_widgets = ui.IntIncrementCounter.make_n(
-            3, 1, 1000, DEFAULT_CROP_SIZE
+            3, 1, 10000, DEFAULT_CROP_SIZE
         )
         self.crop_size_labels = [
             ui.make_label("Size in " + axis + " of cropped volume :", self)
@@ -113,6 +116,8 @@ class Cropping(BasePluginSingleImage):
 
         self._build()
         self._toggle_second_image_io_visibility()
+        self._check_image_list()
+        self.auto_set_dims()
 
     def _toggle_second_image_io_visibility(self):
         crop_2nd = self.crop_second_image_choice.isChecked()
@@ -132,6 +137,18 @@ class Cropping(BasePluginSingleImage):
                         l2.setCurrentIndex(i)
             except IndexError:
                 return
+
+    def auto_set_dims(self):
+        logger.debug(self.image_layer_loader.layer_name())
+        data = self.image_layer_loader.layer_data()
+        if data is not None:
+            logger.debug(f"auto_set_dims : {data.shape}")
+            if len(data.shape) == 3:
+                for i, box in enumerate(self.crop_size_widgets):
+                    logger.debug(
+                        f"setting dim {i} to {floor(data.shape[i]/2)}"
+                    )
+                    box.setValue(floor(data.shape[i] / 2))
 
     def _build(self):
         """Build buttons in a layout and add them to the napari Viewer"""
@@ -158,8 +175,10 @@ class Cropping(BasePluginSingleImage):
         dim_group_l.addWidget(self.aniso_widgets)
         [
             dim_group_l.addWidget(widget, alignment=ui.ABS_AL)
-            for list in zip(self.crop_size_labels, self.crop_size_widgets)
-            for widget in list
+            for widget_list in zip(
+                self.crop_size_labels, self.crop_size_widgets
+            )
+            for widget in widget_list
         ]
         dim_group_w.setLayout(dim_group_l)
         layout.addWidget(dim_group_w)
@@ -175,7 +194,12 @@ class Cropping(BasePluginSingleImage):
             ],
         )
 
-        ui.ScrollArea.make_scrollable(layout, self, min_wh=[200, 200])
+        ui.ScrollArea.make_scrollable(
+            layout,
+            self,
+            max_wh=[ui.UTILS_MAX_WIDTH, ui.UTILS_MAX_HEIGHT],
+            min_wh=[200, 200],
+        )
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.MinimumExpanding)
         self._set_io_visibility()
 
@@ -245,7 +269,7 @@ class Cropping(BasePluginSingleImage):
         # maybe use singletons or make docked widgets attributes that are hidden upon opening
 
         if not self._check_ready():
-            warnings.warn("Please select at least one valid layer !")
+            logger.warning("Please select at least one valid layer !")
             return
 
         # self._viewer.window.remove_dock_widget(self.parent()) # no need to close utils ?
@@ -260,9 +284,9 @@ class Cropping(BasePluginSingleImage):
             except ValueError as e:
                 logger.warning(e)
                 logger.warning(
-                    "Could not remove cropping layer programmatically!"
+                    "Could not remove the previous cropping layer programmatically."
                 )
-                logger.warning("Maybe layer has been removed by user?")
+                # logger.warning("Maybe layer has been removed by user?")
 
         self.results_path = Path(self.results_filewidget.text_field.text())
 
@@ -329,7 +353,7 @@ class Cropping(BasePluginSingleImage):
         self,
         layer,
         colormap="inferno",
-        contrast_lim=[200, 1000],  # TODO generalize ?
+        contrast_lim=(200, 1000),  # TODO generalize ?
         opacity=0.7,
         visible=True,
     ):
@@ -340,7 +364,7 @@ class Cropping(BasePluginSingleImage):
                 layer.data,
                 name=f"Scaled_{layer.name}",
                 colormap=colormap,
-                contrast_limits=contrast_lim,
+                # contrast_limits=contrast_lim,
                 opacity=opacity,
                 scale=self.aniso_factors,
                 visible=visible,
@@ -413,9 +437,8 @@ class Cropping(BasePluginSingleImage):
             box.value() for box in self.crop_size_widgets
         ]
         #############
-        dims = [self._x, self._y, self._z]
-        [logger.debug(f"{dim}") for dim in dims]
-        logger.debug("SET DIMS ATTEMPT")
+        # [logger.debug(f"{dim}") for dim in dims]
+        # logger.debug("SET DIMS ATTEMPT")
         # if not self.create_new_layer.isChecked():
         #     self._x = x
         #     self._y = y
@@ -431,6 +454,8 @@ class Cropping(BasePluginSingleImage):
 
         # define crop sizes and boundaries for the image
         crop_sizes = [self._crop_size_x, self._crop_size_y, self._crop_size_z]
+        # [logger.debug(f"{crop}") for crop in crop_sizes]
+        # logger.debug("SET CROP ATTEMPT")
 
         for i in range(len(crop_sizes)):
             if crop_sizes[i] > im1_stack.shape[i]:
@@ -475,8 +500,8 @@ class Cropping(BasePluginSingleImage):
             """ "Update cropped volume position"""
             # self._check_for_empty_layer(highres_crop_layer, highres_crop_layer.data)
 
-            logger.debug(f"axis : {axis}")
-            logger.debug(f"value : {value}")
+            # logger.debug(f"axis : {axis}")
+            # logger.debug(f"value : {value}")
 
             idx = int(value)
             scale = np.asarray(highres_crop_layer.scale)
@@ -489,6 +514,20 @@ class Cropping(BasePluginSingleImage):
             cropx = self._crop_size_x
             cropy = self._crop_size_y
             cropz = self._crop_size_z
+
+            if i + cropx > im1_stack.shape[0]:
+                cropx = im1_stack.shape[0] - i
+            if j + cropy > im1_stack.shape[1]:
+                cropy = im1_stack.shape[1] - j
+            if k + cropz > im1_stack.shape[2]:
+                cropz = im1_stack.shape[2] - k
+
+            logger.debug(f"cropx : {cropx}")
+            logger.debug(f"cropy : {cropy}")
+            logger.debug(f"cropz : {cropz}")
+            logger.debug(f"i : {i}")
+            logger.debug(f"j : {j}")
+            logger.debug(f"k : {k}")
 
             highres_crop_layer.data = im1_stack[
                 i : i + cropx, j : j + cropy, k : k + cropz
@@ -533,7 +572,7 @@ class Cropping(BasePluginSingleImage):
         # container_widget.extend(sliders)
         ui.add_widgets(
             container_widget.layout,
-            [ui.combine_blocks(s, s.text_label) for s in sliders],
+            [ui.combine_blocks(s, s.label) for s in sliders],
         )
         # vw.window.add_dock_widget([spinbox, container_widget], area="right")
         wdgts = vw.window.add_dock_widget(

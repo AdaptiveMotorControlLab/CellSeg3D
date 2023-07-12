@@ -1,4 +1,3 @@
-import warnings
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -20,7 +19,6 @@ from napari_cellseg3d import interface as ui
 from napari_cellseg3d.code_plugins.plugin_base import BasePluginSingleImage
 from napari_cellseg3d.code_plugins.plugin_review_dock import Datamanager
 
-warnings.formatwarning = utils.format_Warning
 logger = utils.LOGGER
 
 
@@ -181,7 +179,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             raise ValueError("Review requires at least one image")
 
         if cfg.labels is not None and cfg.image.shape != cfg.labels.shape:
-            warnings.warn(
+            logger.warning(
                 "Image and label dimensions do not match ! Please load matching images"
             )
 
@@ -237,7 +235,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             self._reset()
             previous_viewer.close()
         except ValueError as e:
-            warnings.warn(
+            logger.warning(
                 f"An exception occurred : {e}. Please ensure you have entered all required parameters."
             )
 
@@ -401,7 +399,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
                     )
                     canvas.draw_idle()
                 except Exception as e:
-                    logger.error(e)
+                    logger.exception(e)
 
         # Qt widget defined in docker.py
         dmg = Datamanager(parent=viewer)

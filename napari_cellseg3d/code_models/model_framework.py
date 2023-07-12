@@ -1,8 +1,10 @@
-import warnings
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import napari
 import torch
+
+if TYPE_CHECKING:
+    import napari
 
 # Qt
 from qtpy.QtWidgets import QProgressBar, QSizePolicy
@@ -12,7 +14,6 @@ from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.code_plugins.plugin_base import BasePluginFolder
 
-warnings.formatwarning = utils.format_Warning
 logger = utils.LOGGER
 
 
@@ -78,7 +79,7 @@ class ModelFramework(BasePluginFolder):
         # )
 
         self.model_choice = ui.DropdownMenu(
-            sorted(self.available_models.keys()), label="Model name"
+            sorted(self.available_models.keys()), text_label="Model name"
         )
 
         self.weights_filewidget = ui.FilePathWidget(
@@ -128,18 +129,18 @@ class ModelFramework(BasePluginFolder):
             path = self.results_path
 
             if len(log) != 0:
-                with open(
+                with Path.open(
                     path + f"/Log_report_{utils.get_date_time()}.txt",
                     "x",
                 ) as f:
                     f.write(log)
                     f.close()
             else:
-                warnings.warn(
+                logger.warning(
                     "No job has been completed yet, please start one or re-open the log window."
                 )
         else:
-            warnings.warn(f"No logger defined : Log is {self.log}")
+            logger.warning(f"No logger defined : Log is {self.log}")
 
     def save_log_to_path(self, path):
         """Saves the worker log to a specific path. Cannot be used with connect.
@@ -154,14 +155,14 @@ class ModelFramework(BasePluginFolder):
         )
 
         if len(log) != 0:
-            with open(
-                path,
+            with Path.open(
+                Path(path),
                 "x",
             ) as f:
                 f.write(log)
                 f.close()
         else:
-            warnings.warn(
+            logger.warning(
                 "No job has been completed yet, please start one or re-open the log window."
             )
 
@@ -170,7 +171,7 @@ class ModelFramework(BasePluginFolder):
         (usually when starting a worker)"""
 
         # if self.container_report is None or self.log is None:
-        #     warnings.warn(
+        #     logger.warning(
         #         "Status report widget has been closed. Trying to re-instantiate..."
         #     )
         #     self.container_report = QWidget()
@@ -272,6 +273,14 @@ class ModelFramework(BasePluginFolder):
     #         self.lbl_model_path.setText(self.model_path)
     #         # self.update_default()
 
+    def _update_weights_path(self, file):
+        if file[0] == self._default_weights_folder:
+            return
+        if file is not None and file[0] != "":
+            self.weights_config.path = file[0]
+            self.weights_filewidget.text_field.setText(file[0])
+            self._default_weights_folder = str(Path(file[0]).parent)
+
     def _load_weights_path(self):
         """Show file dialog to set :py:attr:`model_path`"""
 
@@ -280,14 +289,9 @@ class ModelFramework(BasePluginFolder):
         file = ui.open_file_dialog(
             self,
             [self._default_weights_folder],
-            filetype="Weights file (*.pth)",
+            file_extension="Weights file (*.pth)",
         )
-        if file[0] == self._default_weights_folder:
-            return
-        if file is not None and file[0] != "":
-            self.weights_config.path = file[0]
-            self.weights_filewidget.text_field.setText(file[0])
-            self._default_weights_folder = str(Path(file[0]).parent)
+        self._update_weights_path(file)
 
     @staticmethod
     def get_device(show=True):
@@ -306,32 +310,6 @@ class ModelFramework(BasePluginFolder):
             logger.info("Attempting to empty cache...")
             torch.cuda.empty_cache()
             logger.info("Attempt complete : Cache emptied")
-
-    # def update_default(self): # TODO add custom models
-    #     """Update default path for smoother file dialogs, here with :py:attr:`~model_path` included"""
-    #
-    #     if len(self.images_filepaths) != 0:
-    #         from_images = str(Path(self.images_filepaths[0]).parent)
-    #     else:
-    #         from_images = None
-    #
-    #     if len(self.labels_filepaths) != 0:
-    #         from_labels = str(Path(self.labels_filepaths[0]).parent)
-    #     else:
-    #         from_labels = None
-    #
-    #     possible_paths = [
-    #         path
-    #         for path in [
-    #             from_images,
-    #             from_labels,
-    #             # self.model_path,
-    #             self.results_path,
-    #         ]
-    #         if path is not None
-    #     ]
-    #     self._default_folders = possible_paths
-    # update if model_path is used again
 
     def _build(self):
         raise NotImplementedError("Should be defined in children classes")

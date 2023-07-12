@@ -3,8 +3,14 @@ from pathlib import Path
 from tifffile import imread
 
 from napari_cellseg3d._tests.fixtures import LogFixture
+from napari_cellseg3d.code_models.instance_segmentation import (
+    INSTANCE_SEGMENTATION_METHOD_LIST,
+)
 from napari_cellseg3d.code_models.models.model_test import TestModel
-from napari_cellseg3d.code_plugins.plugin_model_inference import Inferer
+from napari_cellseg3d.code_plugins.plugin_model_inference import (
+    InferenceResult,
+    Inferer,
+)
 from napari_cellseg3d.config import MODEL_LIST
 
 
@@ -28,14 +34,36 @@ def test_inference(make_napari_viewer, qtbot):
 
     assert widget.check_ready()
 
-    MODEL_LIST["test"] = TestModel
-    widget.model_choice.addItem("test")
-    widget.setCurrentIndex(-1)
+    widget.model_choice.setCurrentText("WNet")
+    widget._restrict_window_size_for_model()
+    assert widget.window_infer_box.isChecked()
+    assert widget.window_size_choice.currentText() == "64"
 
-    # widget.start()  # takes too long on Github Actions
-    # assert widget.worker is not None
+    test_model_name = "test"
+    MODEL_LIST[test_model_name] = TestModel
+    widget.model_choice.addItem(test_model_name)
+    widget.model_choice.setCurrentText(test_model_name)
 
-    # with qtbot.waitSignal(signal=widget.worker.finished, timeout=60000, raising=False) as blocker:
-    #     blocker.connect(widget.worker.errored)
+    widget.worker_config = widget._set_worker_config()
+    assert widget.worker_config is not None
+    assert widget.model_info is not None
+    widget.window_infer_box.setChecked(False)
+    worker = widget._create_worker_from_config(widget.worker_config)
 
-    # assert len(viewer.layers) == 2
+    assert worker.config is not None
+    assert worker.config.model_info is not None
+    worker.config.layer = viewer.layers[0].data
+    worker.config.post_process_config.instance.enabled = True
+    worker.config.post_process_config.instance.method = (
+        INSTANCE_SEGMENTATION_METHOD_LIST["Watershed"]()
+    )
+
+    assert worker.config.layer is not None
+    worker.log_parameters()
+
+    res = next(worker.inference())
+    assert isinstance(res, InferenceResult)
+    assert res.result.shape == (8, 8, 8)
+    assert res.instance_labels.shape == (8, 8, 8)
+
+    widget.on_yield(res)

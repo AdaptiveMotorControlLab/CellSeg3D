@@ -1,4 +1,3 @@
-import warnings
 from functools import partial
 from pathlib import Path
 
@@ -47,15 +46,15 @@ class BasePluginSingleImage(QTabWidget):
 
         self.image_path = None
         """str: path to image folder"""
-        self.show_image_io = loads_images
+        self._show_image_io = loads_images
 
         self.label_path = None
         """str: path to label folder"""
-        self.show_label_io = loads_labels
+        self._show_label_io = loads_labels
 
         self.results_path = None
         """str: path to results folder"""
-        self.show_results_io = has_results
+        self._show_results_io = has_results
 
         self._default_path = [self.image_path, self.label_path]
 
@@ -99,7 +98,7 @@ class BasePluginSingleImage(QTabWidget):
         )
 
         self.filetype_choice = ui.DropdownMenu(
-            [".tif", ".tiff"], label="File format"
+            [".tif", ".tiff"], text_label="File format"
         )
         ########
         qInstallMessageHandler(ui.handle_adjust_errors_wrapper(self))
@@ -118,7 +117,6 @@ class BasePluginSingleImage(QTabWidget):
     def _build_io_panel(self):
         self.io_panel = ui.GroupedWidget("Data")
         self.save_label = ui.make_label("Save location :", parent=self)
-
         # self.io_panel.setToolTip("IO Panel")
 
         ui.add_widgets(
@@ -140,25 +138,25 @@ class BasePluginSingleImage(QTabWidget):
         return self.io_panel
 
     def _remove_unused(self):
-        if not self.show_label_io:
+        if not self._show_label_io:
             self.labels_filewidget = None
             self.label_layer_loader = None
 
-        if not self.show_image_io:
+        if not self._show_image_io:
             self.image_layer_loader = None
             self.image_filewidget = None
 
-        if not self.show_results_io:
+        if not self._show_results_io:
             self.results_filewidget = None
 
     def _set_io_visibility(self):
         ##################
         # Show when layer is selected
-        if self.show_image_io:
+        if self._show_image_io:
             self._show_io_element(self.image_layer_loader, self.layer_choice)
         else:
             self._hide_io_element(self.image_layer_loader)
-        if self.show_label_io:
+        if self._show_label_io:
             self._show_io_element(self.label_layer_loader, self.layer_choice)
         else:
             self._hide_io_element(self.label_layer_loader)
@@ -168,15 +166,15 @@ class BasePluginSingleImage(QTabWidget):
         f = self.folder_choice
 
         self._show_io_element(self.filetype_choice, f)
-        if self.show_image_io:
+        if self._show_image_io:
             self._show_io_element(self.image_filewidget, f)
         else:
             self._hide_io_element(self.image_filewidget)
-        if self.show_label_io:
+        if self._show_label_io:
             self._show_io_element(self.labels_filewidget, f)
         else:
             self._hide_io_element(self.labels_filewidget)
-        if not self.show_results_io:
+        if not self._show_results_io:
             self._hide_io_element(self.results_filewidget)
 
         self.folder_choice.toggle()
@@ -229,17 +227,16 @@ class BasePluginSingleImage(QTabWidget):
     def _show_file_dialog(self):
         """Open file dialog and process path depending on single file/folder loading behaviour"""
         if self.load_as_stack_choice.isChecked():
-            folder = ui.open_folder_dialog(
+            choice = ui.open_folder_dialog(
                 self,
                 self._default_path,
                 filetype=f"Image file (*{self.filetype_choice.currentText()})",
             )
-            return folder
         else:
             f_name = ui.open_file_dialog(self, self._default_path)
-            f_name = str(f_name[0])
-            self.filetype = str(Path(f_name).suffix)
-            return f_name
+            choice = str(f_name[0])
+            self.filetype = str(Path(choice).suffix)
+        return choice
 
     def _show_dialog_images(self):
         """Show file dialog and set image path"""
@@ -293,16 +290,14 @@ class BasePluginSingleImage(QTabWidget):
         return btn
 
     def _make_prev_button(self):
-        btn = ui.Button(
+        return ui.Button(
             "Previous", lambda: self.setCurrentIndex(self.currentIndex() - 1)
         )
-        return btn
 
     def _make_next_button(self):
-        btn = ui.Button(
+        return ui.Button(
             "Next", lambda: self.setCurrentIndex(self.currentIndex() + 1)
         )
-        return btn
 
     def remove_from_viewer(self):
         """Removes the widget from the napari window.
@@ -404,7 +399,7 @@ class BasePluginFolder(BasePluginSingleImage):
 
         file_paths = sorted(Path(directory).glob("*" + filetype))
         if len(file_paths) == 0:
-            warnings.warn(
+            logger.warning(
                 f"The folder does not contain any compatible {filetype} files.\n"
                 f"Please check the validity of the folder and images."
             )

@@ -1,5 +1,6 @@
+from typing import TYPE_CHECKING
+
 import matplotlib.pyplot as plt
-import napari
 import numpy as np
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
@@ -8,9 +9,12 @@ from matplotlib.figure import Figure
 from monai.transforms import SpatialPad, ToTensor
 from tifffile import imread
 
+if TYPE_CHECKING:
+    import napari
+
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d import utils
-from napari_cellseg3d.code_models.model_instance_seg import to_semantic
+from napari_cellseg3d.code_models.instance_segmentation import to_semantic
 from napari_cellseg3d.code_plugins.plugin_base import BasePluginFolder
 
 DEFAULT_THRESHOLD = 0.5
@@ -19,7 +23,7 @@ DEFAULT_THRESHOLD = 0.5
 class MetricsUtils(BasePluginFolder):
     """Plugin to evaluate metrics between two sets of labels, ground truth and prediction"""
 
-    def __init__(self, viewer: "napari.viewer.Viewer", parent):
+    def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
         """Creates a MetricsUtils widget for computing and plotting dice metrics between labels.
         Args:
             viewer: viewer to display the widget in
@@ -187,11 +191,11 @@ class MetricsUtils(BasePluginFolder):
         self.canvas = (
             None  # kind of terrible way to stack plots... but it works.
         )
-        id = 0
+        image_id = 0
         for ground_path, pred_path in zip(
             self.images_filepaths, self.labels_filepaths
         ):
-            id += 1
+            image_id += 1
             ground = imread(ground_path)
             pred = imread(pred_path)
 

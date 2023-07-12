@@ -7,8 +7,9 @@ This module allows you to use pre-trained segmentation algorithms (written in Py
 to automatically label cells.
 
 .. important::
-    Currently, only inference on **3D volumes is supported**. Your image and label folders should both contain a set of
-    **3D image files**, currently either **.tif** or **.tiff**.
+    Currently, only inference on **3D volumes is supported**. If using folders, your images and labels folders
+    should both contain a set of **3D image files**, either **.tif** or **.tiff**.
+    Otherwise you may run inference on layers in napari.
 
 Currently, the following pre-trained models are available :
 
@@ -20,6 +21,7 @@ SegResNet        `3D MRI brain tumor segmentation using autoencoder regularizati
 TRAILMAP_MS       A PyTorch implementation of the `TRAILMAP project on GitHub`_ pretrained with mesoSPIM data
 TRAILMAP          An implementation of the `TRAILMAP project on GitHub`_ using a `3DUNet for PyTorch`_
 SwinUNetR         `Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images`_
+WNet             `WNet, A Deep Model for Fully Unsupervised Image Segmentation`_
 ==============   ================================================================================================
 
 .. _Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation: https://arxiv.org/pdf/1606.04797.pdf
@@ -27,6 +29,10 @@ SwinUNetR         `Swin Transformers for Semantic Segmentation of Brain Tumors i
 .. _TRAILMAP project on GitHub: https://github.com/AlbertPun/TRAILMAP
 .. _3DUnet for Pytorch: https://github.com/wolny/pytorch-3dunet
 .. _Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images: https://arxiv.org/abs/2201.01266
+.. _WNet, A Deep Model for Fully Unsupervised Image Segmentation: https://arxiv.org/abs/1711.08506
+
+.. note::
+    For WNet-specific instruction please refer to  the appropriate section below.
 
 Interface and functionalities
 --------------------------------
@@ -67,8 +73,7 @@ Interface and functionalities
 
 * **Instance segmentation** :
 
-  | You can convert the semantic segmentation into instance labels by using either the `watershed`_ or `connected components`_ method.
-  | You can set the probability threshold from which a pixel is considered as a valid instance, as well as the minimum size in pixels for objects. All smaller objects will be removed.
+  | You can convert the semantic segmentation into instance labels by using either the Voronoi-Otsu, `Watershed`_ or `Connected Components`_ method, as detailed in :ref:`utils_module_guide`.
   | Instance labels will be saved (and shown if applicable) separately from other results.
 
 
@@ -78,7 +83,7 @@ Interface and functionalities
 
 * **Computing objects statistics** :
 
-    You can choose to compute various stats from the labels and save them to a csv for later use.
+    You can choose to compute various stats from the labels and save them to a .csv for later use.
 
     This includes, for each object :
 
@@ -98,13 +103,6 @@ Interface and functionalities
 
     In the ``notebooks`` folder you can find an example of plotting cell statistics using the result csv.
 
-* **Viewing results** :
-
-  | You can also select whether you'd like to **see the results** in napari afterwards.
-  | By default the first image processed will be displayed, but you can choose to display up to **ten at once**.
-  | You can also request to see the originals.
-
-
 When you are done choosing your parameters, you can press the **Start** button to begin the inference process.
 Once it has finished, results will be saved then displayed in napari; each output will be paired with its original.
 On the left side, a progress bar and a log will keep you informed on the process.
@@ -115,7 +113,7 @@ On the left side, a progress bar and a log will keep you informed on the process
     |    ``{original_name}_{model}_{date & time}_pred{id}.file_ext``
     | For example, using a VNet on the third image of a folder, called "somatomotor.tif" will yield the following name :
     |   *somatomotor_VNet_2022_04_06_15_49_42_pred3.tif*
-    | Instance labels will have the "Instance_seg" prefix appened to the name.
+    | Instance labels will have the "Instance_seg" prefix appended to the name.
 
 
 .. hint::
@@ -128,8 +126,19 @@ On the left side, a progress bar and a log will keep you informed on the process
 .. note::
     You can save the log after the worker is finished to easily remember which parameters you ran inference with.
 
+WNet
+--------------------------------
+
+The WNet model, from the paper `WNet, A Deep Model for Fully Unsupervised Image Segmentation`_, is a fully unsupervised model that can be used to segment images without any labels.
+It clusters pixels based on brightness, and can be used to segment cells in a variety of modalities.
+Its use and available options are similar to the above models, with a few differences :
+.. note::
+    | Our provided, pre-trained model should use an input size of 64x64x64. As such, window inference is always enabled
+    | and set to 64. If you want to use a different size, you will have to train your own model using the provided notebook.
+All it requires are images; for nucleus segmentation, it is recommended to use 2 classes (default).
+
 Source code
 --------------------------------
 * :doc:`../code/plugin_model_inference`
 * :doc:`../code/model_framework`
-* :doc:`../code/model_workers`
+* :doc:`../code/workers`

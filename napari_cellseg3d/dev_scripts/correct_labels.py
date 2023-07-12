@@ -12,10 +12,12 @@ from tifffile import imread, imwrite
 from tqdm import tqdm
 
 import napari_cellseg3d.dev_scripts.artefact_labeling as make_artefact_labels
-from napari_cellseg3d.code_models.model_instance_seg import binary_watershed
+from napari_cellseg3d.code_models.instance_segmentation import binary_watershed
 
 # import sys
 # sys.path.append(str(Path(__file__) / "../../"))
+
+
 """
 New code by Yves Paychère
 Fixes labels and allows to auto-detect artifacts and neurons based on a simple intenstiy threshold
@@ -361,9 +363,9 @@ def relabel_non_unique_i_folder(folder_path, end_of_new_name="relabeled"):
             )
 
 
-# if __name__ == "__main__":
-#     im_path = Path("C:/Users/Cyril/Desktop/test/instance_test")
-#     image_path = str(im_path / "image.tif")
-#     gt_labels_path = str(im_path / "labels.tif")
-#
-#     relabel(image_path, gt_labels_path, check_for_unicity=True, go_fast=False)
+if __name__ == "__main__":
+    im_path = Path("C:/Users/Cyril/Desktop/Proj_bachelor/data/somatomotor")
+
+    image_path = str(im_path / "volumes/c1images.tif")
+    gt_labels_path = str(im_path / "labels/c1labels.tif")
+    relabel(image_path, gt_labels_path, check_for_unicity=False, go_fast=False)

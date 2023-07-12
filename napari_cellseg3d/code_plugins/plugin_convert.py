@@ -1,14 +1,13 @@
-import warnings
 from pathlib import Path
 
 import napari
 import numpy as np
 from qtpy.QtWidgets import QSizePolicy
-from tifffile import imread, imwrite
+from tifffile import imread
 
 import napari_cellseg3d.interface as ui
 from napari_cellseg3d import utils
-from napari_cellseg3d.code_models.model_instance_seg import (
+from napari_cellseg3d.code_models.instance_segmentation import (
     InstanceWidgets,
     clear_small_objects,
     threshold,
@@ -16,78 +15,10 @@ from napari_cellseg3d.code_models.model_instance_seg import (
 )
 from napari_cellseg3d.code_plugins.plugin_base import BasePluginFolder
 
-# TODO break down into multiple mini-widgets
-# TODO create parent class for utils modules to avoid duplicates
-
-MAX_W = 200
-MAX_H = 1000
+MAX_W = ui.UTILS_MAX_WIDTH
+MAX_H = ui.UTILS_MAX_HEIGHT
 
 logger = utils.LOGGER
-
-
-def save_folder(results_path, folder_name, images, image_paths):
-    """
-    Saves a list of images in a folder
-
-    Args:
-        results_path: Path to the folder containing results
-        folder_name: Name of the folder containing results
-        images: List of images to save
-        image_paths: list of filenames of images
-    """
-    results_folder = results_path / Path(folder_name)
-    results_folder.mkdir(exist_ok=False, parents=True)
-
-    for file, image in zip(image_paths, images):
-        path = results_folder / Path(file).name
-
-        imwrite(
-            path,
-            image,
-        )
-    logger.info(f"Saved processed folder as : {results_folder}")
-
-
-def save_layer(results_path, image_name, image):
-    """
-    Saves an image layer at the specified path
-
-    Args:
-        results_path: path to folder containing result
-        image_name: image name for saving
-        image: data array containing image
-
-    Returns:
-
-    """
-    path = str(results_path / Path(image_name))  # TODO flexible filetype
-    logger.info(f"Saved as : {path}")
-    imwrite(path, image)
-
-
-def show_result(viewer, layer, image, name):
-    """
-    Adds layers to a viewer to show result to user
-
-    Args:
-        viewer: viewer to add layer in
-        layer: type of the original layer the operation was run on, to determine whether it should be an Image or Labels layer
-        image: the data array containing the image
-        name: name of the added layer
-
-    Returns:
-
-    """
-    if isinstance(layer, napari.layers.Image):
-        logger.debug("Added resulting image layer")
-        viewer.add_image(image, name=name)
-    elif isinstance(layer, napari.layers.Labels):
-        logger.debug("Added resulting label layer")
-        viewer.add_labels(image, name=name)
-    else:
-        warnings.warn(
-            f"Results not shown, unsupported layer type {type(layer)}"
-        )
 
 
 class AnisoUtils(BasePluginFolder):
@@ -115,7 +46,7 @@ class AnisoUtils(BasePluginFolder):
         self.aniso_widgets = ui.AnisotropyWidgets(self, always_visible=True)
         self.start_btn = ui.Button("Start", self._start)
 
-        self.results_path = Path.home() / Path("cellseg3d/anisotropy")
+        self.results_path = str(Path.home() / Path("cellseg3d/anisotropy"))
         self.results_filewidget.text_field.setText(str(self.results_path))
         self.results_filewidget.check_ready()
 
@@ -145,7 +76,7 @@ class AnisoUtils(BasePluginFolder):
         )
 
     def _start(self):
-        self.results_path.mkdir(exist_ok=True, parents=True)
+        utils.mkdir_from_str(self.results_path)
         zoom = self.aniso_widgets.scaling_zyx()
 
         if self.layer_choice.isChecked():
@@ -155,12 +86,12 @@ class AnisoUtils(BasePluginFolder):
                 data = np.array(layer.data)
                 isotropic_image = utils.resize(data, zoom)
 
-                save_layer(
+                utils.save_layer(
                     self.results_path,
                     f"isotropic_{layer.name}_{utils.get_date_time()}.tif",
                     isotropic_image,
                 )
-                show_result(
+                utils.show_result(
                     self._viewer,
                     layer,
                     isotropic_image,
@@ -174,7 +105,7 @@ class AnisoUtils(BasePluginFolder):
                 utils.resize(np.array(imread(file)), zoom)
                 for file in self.images_filepaths
             ]
-            save_folder(
+            utils.save_folder(
                 self.results_path,
                 f"isotropic_results_{utils.get_date_time()}",
                 images,
@@ -211,7 +142,7 @@ class RemoveSmallUtils(BasePluginFolder):
             lower=1,
             upper=100000,
             default=10,
-            label="Remove all smaller than (pxs):",
+            text_label="Remove all smaller than (pxs):",
         )
 
         self.results_path = Path.home() / Path("cellseg3d/small_removed")
@@ -245,7 +176,7 @@ class RemoveSmallUtils(BasePluginFolder):
         return container
 
     def _start(self):
-        self.results_path.mkdir(exist_ok=True, parents=True)
+        utils.mkdir_from_str(self.results_path)
         remove_size = self.size_for_removal_counter.value()
 
         if self.layer_choice:
@@ -255,12 +186,12 @@ class RemoveSmallUtils(BasePluginFolder):
                 data = np.array(layer.data)
                 removed = self.function(data, remove_size)
 
-                save_layer(
+                utils.save_layer(
                     self.results_path,
                     f"cleared_{layer.name}_{utils.get_date_time()}.tif",
                     removed,
                 )
-                show_result(
+                utils.show_result(
                     self._viewer, layer, removed, f"cleared_{layer.name}"
                 )
         elif (
@@ -270,7 +201,7 @@ class RemoveSmallUtils(BasePluginFolder):
                 clear_small_objects(file, remove_size, is_file_path=True)
                 for file in self.images_filepaths
             ]
-            save_folder(
+            utils.save_folder(
                 self.results_path,
                 f"small_removed_results_{utils.get_date_time()}",
                 images,
@@ -337,12 +268,12 @@ class ToSemanticUtils(BasePluginFolder):
                 data = np.array(layer.data)
                 semantic = to_semantic(data)
 
-                save_layer(
+                utils.save_layer(
                     self.results_path,
                     f"semantic_{layer.name}_{utils.get_date_time()}.tif",
                     semantic,
                 )
-                show_result(
+                utils.show_result(
                     self._viewer, layer, semantic, f"semantic_{layer.name}"
                 )
         elif (
@@ -352,7 +283,7 @@ class ToSemanticUtils(BasePluginFolder):
                 to_semantic(file, is_file_path=True)
                 for file in self.images_filepaths
             ]
-            save_folder(
+            utils.save_folder(
                 self.results_path,
                 f"semantic_results_{utils.get_date_time()}",
                 images,
@@ -414,7 +345,7 @@ class ToInstanceUtils(BasePluginFolder):
         )
 
     def _start(self):
-        self.results_path.mkdir(exist_ok=True, parents=True)
+        utils.mkdir_from_str(self.results_path)
 
         if self.layer_choice:
             if self.label_layer_loader.layer_data() is not None:
@@ -423,7 +354,7 @@ class ToInstanceUtils(BasePluginFolder):
                 data = np.array(layer.data)
                 instance = self.instance_widgets.run_method(data)
 
-                save_layer(
+                utils.save_layer(
                     self.results_path,
                     f"instance_{layer.name}_{utils.get_date_time()}.tif",
                     instance,
@@ -436,10 +367,10 @@ class ToInstanceUtils(BasePluginFolder):
             self.folder_choice.isChecked() and len(self.images_filepaths) != 0
         ):
             images = [
-                self.instance_widgets.run_method(imread(file))
+                self.instance_widgets.run_method_on_channels(imread(file))
                 for file in self.images_filepaths
             ]
-            save_folder(
+            utils.save_folder(
                 self.results_path,
                 f"instance_results_{utils.get_date_time()}",
                 images,
@@ -474,7 +405,7 @@ class ThresholdUtils(BasePluginFolder):
             upper=100000.0,
             step=0.5,
             default=10.0,
-            label="Remove all smaller than (value):",
+            text_label="Remove all smaller than (value):",
         )
 
         self.results_path = Path.home() / Path("cellseg3d/threshold")
@@ -509,7 +440,7 @@ class ThresholdUtils(BasePluginFolder):
         return container
 
     def _start(self):
-        self.results_path.mkdir(exist_ok=True, parents=True)
+        utils.mkdir_from_str(self.results_path)
         remove_size = self.binarize_counter.value()
 
         if self.layer_choice:
@@ -519,12 +450,12 @@ class ThresholdUtils(BasePluginFolder):
                 data = np.array(layer.data)
                 removed = self.function(data, remove_size)
 
-                save_layer(
+                utils.save_layer(
                     self.results_path,
                     f"threshold_{layer.name}_{utils.get_date_time()}.tif",
                     removed,
                 )
-                show_result(
+                utils.show_result(
                     self._viewer, layer, removed, f"threshold{layer.name}"
                 )
         elif (
@@ -534,7 +465,7 @@ class ThresholdUtils(BasePluginFolder):
                 self.function(imread(file), remove_size)
                 for file in self.images_filepaths
             ]
-            save_folder(
+            utils.save_folder(
                 self.results_path,
                 f"threshold_results_{utils.get_date_time()}",
                 images,

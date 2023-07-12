@@ -1,6 +1,6 @@
-import warnings
-
 from qtpy.QtWidgets import QTextEdit
+
+from napari_cellseg3d.utils import LOGGER as logger
 
 
 class LogFixture(QTextEdit):
@@ -13,4 +13,7 @@ class LogFixture(QTextEdit):
         print(text)
 
     def warn(self, warning):
-        warnings.warn(warning)
+        logger.warning(warning)
+
+    def error(self, e):
+        raise (e)

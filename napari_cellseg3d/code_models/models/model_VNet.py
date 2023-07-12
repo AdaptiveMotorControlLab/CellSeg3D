@@ -1,29 +1,16 @@
-from monai.inferers import sliding_window_inference
 from monai.networks.nets import VNet
 
 
-def get_net():
-    return VNet()
+class VNet_(VNet):
+    use_default_training = True
+    weights_file = "VNet_40e.pth"
 
-
-def get_weights_file():
-    return "VNet_40e.pth"
-
-
-def get_output(model, input):
-    out = model(input)
-    return out
-
-
-def get_validation(model, val_inputs):
-    roi_size = (64, 64, 64)
-    sw_batch_size = 1
-    val_outputs = sliding_window_inference(
-        val_inputs,
-        roi_size,
-        sw_batch_size,
-        model,
-        mode="gaussian",
-        overlap=0.7,
-    )
-    return val_outputs
+    def __init__(self, in_channels=1, out_channels=1, **kwargs):
+        try:
+            super().__init__(
+                in_channels=in_channels, out_channels=out_channels, **kwargs
+            )
+        except TypeError:
+            super().__init__(
+                in_channels=in_channels, out_channels=out_channels
+            )

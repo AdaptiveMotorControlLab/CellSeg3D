@@ -2,28 +2,8 @@ import torch
 from torch import nn
 
 
-def get_weights_file():
-    # model additionally trained on Mathis/Wyss mesoSPIM data
-    return "TRAILMAP_PyTorch.pth"
-    # FIXME currently incorrect, find good weights from TRAILMAP_test and upload them
-
-
-def get_net():
-    return TRAILMAP(1, 1)
-
-
-def get_output(model, input):
-    out = model(input)
-
-    return out
-
-
-def get_validation(model, val_inputs):
-    return model(val_inputs)
-
-
 class TRAILMAP(nn.Module):
-    def __init__(self, in_ch, out_ch):
+    def __init__(self, in_ch, out_ch, *args, **kwargs):
         super().__init__()
         self.conv0 = self.encoderBlock(in_ch, 32, 3)  # input
         self.conv1 = self.encoderBlock(32, 64, 3)  # l1
@@ -59,13 +39,12 @@ class TRAILMAP(nn.Module):
 
         up8 = self.up8(torch.cat([up7, conv0], 1))  # l1
         # print(up8.shape)
-        out = self.out(up8)
+        return self.out(up8)
         # print("out:")
         # print(out.shape)
-        return out
 
     def encoderBlock(self, in_ch, out_ch, kernel_size, padding="same"):
-        encode = nn.Sequential(
+        return nn.Sequential(
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
             nn.BatchNorm3d(out_ch),
             nn.ReLU(),
@@ -76,10 +55,9 @@ class TRAILMAP(nn.Module):
             nn.ReLU(),
             nn.MaxPool3d(2),
         )
-        return encode
 
     def bridgeBlock(self, in_ch, out_ch, kernel_size, padding="same"):
-        encode = nn.Sequential(
+        return nn.Sequential(
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
             nn.BatchNorm3d(out_ch),
             nn.ReLU(),
@@ -89,10 +67,9 @@ class TRAILMAP(nn.Module):
             nn.BatchNorm3d(out_ch),
             nn.ReLU(),
         )
-        return encode
 
     def decoderBlock(self, in_ch, out_ch, kernel_size, padding="same"):
-        decode = nn.Sequential(
+        return nn.Sequential(
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
             nn.BatchNorm3d(out_ch),
             nn.ReLU(),
@@ -105,10 +82,25 @@ class TRAILMAP(nn.Module):
                 out_ch, out_ch, kernel_size=kernel_size, stride=(2, 2, 2)
             ),
         )
-        return decode
 
     def outBlock(self, in_ch, out_ch, kernel_size, padding="same"):
-        out = nn.Sequential(
+        return nn.Sequential(
             nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, padding=padding),
         )
-        return out
+
+
+class TRAILMAP_(TRAILMAP):
+    use_default_training = True
+    weights_file = "TRAILMAP_PyTorch.pth"  # model additionally trained on Mathis/Wyss mesoSPIM data
+    # FIXME currently incorrect, find good weights from TRAILMAP_test and upload them
+
+    def __init__(self, in_channels=1, out_channels=1, **kwargs):
+        super().__init__(in_channels, out_channels, **kwargs)
+
+    # def get_output(model, input):
+    #     out = model(input)
+    #
+    #     return out
+
+    # def get_validation(model, val_inputs):
+    #     return model(val_inputs)

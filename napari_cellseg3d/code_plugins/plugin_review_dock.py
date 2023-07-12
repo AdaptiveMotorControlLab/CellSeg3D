@@ -1,9 +1,11 @@
-import warnings
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import napari
 import pandas as pd
+
+if TYPE_CHECKING:
+    import napari
 
 # Qt
 from qtpy.QtWidgets import QVBoxLayout, QWidget
@@ -16,7 +18,7 @@ GUI_MAXIMUM_HEIGHT = 350
 GUI_MINIMUM_HEIGHT = 300
 TIMER_FORMAT = "%H:%M:%S"
 
-
+logger = utils.LOGGER
 """
 plugin_dock.py
 ====================================
@@ -261,7 +263,7 @@ class Datamanager(QWidget):
     def button_func(self):  # updates csv every time you press button...
         if self.viewer.dims.ndisplay != 2:
             # TODO test if undefined behaviour or if okay
-            warnings.warn("Please switch back to 2D mode !")
+            logger.warning("Please switch back to 2D mode !")
             return
 
         self.update_time_csv()

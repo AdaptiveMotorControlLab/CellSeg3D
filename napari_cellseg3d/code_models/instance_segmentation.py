@@ -1,4 +1,6 @@
+import abc
 from dataclasses import dataclass
+from functools import partial
 from typing import List
 
 import numpy as np
@@ -7,14 +9,16 @@ from qtpy.QtWidgets import QWidget
 from skimage.measure import label, regionprops
 from skimage.morphology import remove_small_objects
 from skimage.segmentation import watershed
-
-# from skimage.measure import mesh_surface_area
-# from skimage.measure import marching_cubes
 from tifffile import imread
 
+# local
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.utils import LOGGER as logger
 from napari_cellseg3d.utils import fill_list_in_between, sphericity_axis
+
+# from skimage.measure import marching_cubes
+# from skimage.measure import mesh_surface_area
+
 
 # from napari_cellseg3d.utils import sphericity_volume_area
 
@@ -48,6 +52,18 @@ class InstanceMethod:
         self.function = function
         self.counters: List[ui.DoubleIncrementCounter] = []
         self.sliders: List[ui.Slider] = []
+        self._setup_widgets(
+            num_counters, num_sliders, widget_parent=widget_parent
+        )
+
+    def _setup_widgets(self, num_counters, num_sliders, widget_parent=None):
+        """Initializes the needed widgets for the instance segmentation method, adding sliders and counters to the
+        instance segmentation widget.
+        Args:
+            num_counters: Number of DoubleIncrementCounter UI elements needed to set the parameters of the function
+            num_sliders: Number of Slider UI elements needed to set the parameters of the function
+            widget_parent: parent for the declared widgets
+        """
         if num_sliders > 0:
             for i in range(num_sliders):
                 widget = f"slider_{i}"
@@ -60,7 +76,7 @@ class InstanceMethod:
                         1,
                         divide_factor=100,
                         text_label="",
-                        parent=None,
+                        parent=widget_parent,
                     ),
                 )
                 self.sliders.append(getattr(self, widget))
@@ -71,12 +87,37 @@ class InstanceMethod:
                 setattr(
                     self,
                     widget,
-                    ui.DoubleIncrementCounter(label="", parent=None),
+                    ui.DoubleIncrementCounter(
+                        text_label="", parent=widget_parent
+                    ),
                 )
                 self.counters.append(getattr(self, widget))
 
+    @abc.abstractmethod
     def run_method(self, image):
-        raise NotImplementedError("Must be defined in child classes")
+        raise NotImplementedError()
+
+    def _make_list_from_channels(
+        self, image
+    ):  # TODO(cyril) : adapt to batch dimension
+        if len(image.shape) > 4:
+            raise ValueError(
+                f"Image has {len(image.shape)} dimensions, but should have at most 4 dimensions (CHWD)"
+            )
+        if len(image.shape) < 2:
+            raise ValueError(
+                f"Image has {len(image.shape)} dimensions, but should have at least 2 dimensions (HW)"
+            )
+        if len(image.shape) == 4:
+            image = np.squeeze(image)
+            if len(image.shape) == 4:
+                return [im for im in image]
+        return [image]
+
+    def run_method_on_channels(self, image):
+        image_list = self._make_list_from_channels(image)
+        result = np.array([self.run_method(im) for im in image_list])
+        return result.squeeze()
 
 
 @dataclass
@@ -125,6 +166,8 @@ def voronoi_otsu(
     Voronoi-Otsu labeling from pyclesperanto.
     BASED ON CODE FROM : napari_pyclesperanto_assistant by Robert Haase
     https://github.com/clEsperanto/napari_pyclesperanto_assistant
+    Original code at :
+    https://github.com/clEsperanto/pyclesperanto_prototype/blob/master/pyclesperanto_prototype/_tier9/_voronoi_otsu_labeling.py
 
     Args:
         volume (np.ndarray): volume to segment
@@ -159,8 +202,6 @@ def binary_connected(
         volume (numpy.ndarray): foreground probability of shape :math:`(C, Z, Y, X)`.
         thres (float): threshold of foreground. Default: 0.8
         thres_small (int): size threshold of small objects to remove. Default: 128
-        scale_factors (tuple): scale factors for resizing in :math:`(Z, Y, X)` order. Default: (1.0, 1.0, 1.0)
-
     """
     logger.debug(
         f"Running connected components segmentation with thres={thres} and thres_small={thres_small}"
@@ -272,25 +313,23 @@ def clear_small_objects(image, threshold, is_file_path=False):
     return result
 
 
-def to_instance(image, is_file_path=False):
-    """Converts a **ground-truth** label to instance (unique id per object) labels. Does not remove small objects.
-
-    Args:
-        image: image or path to image
-        is_file_path: if True, will consider ``image`` to be a string containing a path to a file, if not treats it as an image data array.
-
-    Returns: resulting converted labels
-
-    """
-    if is_file_path:
-        image = [imread(image)]
-        # image = image.compute()
-
-    result = binary_watershed(
-        image, thres_small=0, thres_seeding=0.3, rem_seed_thres=0
-    )  # FIXME add params from utils plugin
-
-    return result
+# def to_instance(image, is_file_path=False):
+#     """Converts a **ground-truth** label to instance (unique id per object) labels. Does not remove small objects.
+#
+#     Args:
+#         image: image or path to image
+#         is_file_path: if True, will consider ``image`` to be a string containing a path to a file, if not treats it as an image data array.
+#
+#     Returns: resulting converted labels
+#
+#     """
+#     if is_file_path:
+#         image = [imread(image)]
+#         image = image.compute()
+#
+# return binary_watershed(
+#     image, thres_small=0, thres_seeding=0.3, rem_seed_thres=0
+# )
 
 
 def to_semantic(image, is_file_path=False):
@@ -308,8 +347,7 @@ def to_semantic(image, is_file_path=False):
         # image = image.compute()
 
     image[image >= 1] = 1
-    result = image.astype(np.uint16)
-    return result
+    return image.astype(np.uint16)
 
 
 def volume_stats(volume_image):
@@ -358,8 +396,10 @@ def volume_stats(volume_image):
 
     volume = [region.area for region in properties]
 
-    def fill(lst, n=len(properties) - 1):
-        return fill_list_in_between(lst, n, "")
+    # def fill(lst, n=len(properties) - 1):
+    #     return fill_list_in_between(lst, n, "")
+
+    fill = partial(fill_list_in_between, n=len(properties) - 1, fill_value="")
 
     if len(volume_image.flatten()) != 0:
         ratio = fill([np.sum(volume) / len(volume_image.flatten())])
@@ -369,7 +409,7 @@ def volume_stats(volume_image):
     return ImageStats(
         volume,
         [region.centroid[0] for region in properties],
-        [region.centroid[0] for region in properties],
+        [region.centroid[1] for region in properties],
         [region.centroid[2] for region in properties],
         sphericity_ax,
         fill([volume_image.shape]),
@@ -392,13 +432,13 @@ class Watershed(InstanceMethod):
             widget_parent=widget_parent,
         )
 
-        self.sliders[0].text_label.setText("Foreground probability threshold")
+        self.sliders[0].label.setText("Foreground probability threshold")
         self.sliders[
             0
         ].tooltips = "Probability threshold for foreground object"
         self.sliders[0].setValue(50)
 
-        self.sliders[1].text_label.setText("Seed probability threshold")
+        self.sliders[1].label.setText("Seed probability threshold")
         self.sliders[1].tooltips = "Probability threshold for seeding"
         self.sliders[1].setValue(90)
 
@@ -438,7 +478,7 @@ class ConnectedComponents(InstanceMethod):
             widget_parent=widget_parent,
         )
 
-        self.sliders[0].text_label.setText("Foreground probability threshold")
+        self.sliders[0].label.setText("Foreground probability threshold")
         self.sliders[
             0
         ].tooltips = "Probability threshold for foreground object"
@@ -578,7 +618,7 @@ class InstanceWidgets(QWidget):
 
         """
         method = self.methods[self.method_choice.currentText()]
-        return method.run_method(volume)
+        return method.run_method_on_channels(volume)
 
 
 INSTANCE_SEGMENTATION_METHOD_LIST = {

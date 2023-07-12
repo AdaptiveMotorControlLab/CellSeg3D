@@ -104,9 +104,11 @@ notebooks/csv_cell_plot.html
 notebooks/full_plot.html
 *.csv
 *.png
+notebooks/instance_test.ipynb
 *.prof
 
 #include test data
 !napari_cellseg3d/_tests/res/test.tif
 !napari_cellseg3d/_tests/res/test.png
 !napari_cellseg3d/_tests/res/test_labels.tif
+cov.syspath.txt

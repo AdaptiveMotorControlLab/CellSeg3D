@@ -1,5 +1,5 @@
+import contextlib
 import threading
-import warnings
 from functools import partial
 from typing import List, Optional
 
@@ -8,9 +8,12 @@ import napari
 # Qt
 # from qtpy.QtCore import QtWarningMsg
 from qtpy import QtCore
+
+# from qtpy.QtCore import QtWarningMsg
 from qtpy.QtCore import QObject, Qt, QUrl
 from qtpy.QtGui import QCursor, QDesktopServices, QTextCursor
 from qtpy.QtWidgets import (
+    QAbstractSpinBox,
     QCheckBox,
     QComboBox,
     QDoubleSpinBox,
@@ -57,6 +60,8 @@ ABS_AL = Qt.AlignmentFlag.AlignAbsolute
 """Alias for Qt.AlignmentFlag.AlignAbsolute, to use in addWidget"""
 BOTT_AL = Qt.AlignmentFlag.AlignBottom
 """Alias for Qt.AlignmentFlag.AlignBottom, to use in addWidget"""
+TOP_AL = Qt.AlignmentFlag.AlignTop
+"""Alias for Qt.AlignmentFlag.AlignTop, to use in addWidget"""
 ###############
 # colors
 dark_red = "#72071d"  # crimson red
@@ -65,6 +70,9 @@ napari_grey = "#262930"  # napari background color (grey)
 napari_param_grey = "#414851"  # napari parameters menu color (lighter gray)
 napari_param_darkgrey = "#202228"  # napari default LineEdit color
 ###############
+# dimensions for utils ScrollArea
+UTILS_MAX_WIDTH = 300
+UTILS_MAX_HEIGHT = 500
 
 logger = utils.LOGGER
 
@@ -99,12 +107,12 @@ class QWidgetSingleton(type(QObject)):
 ##################
 
 
-def handle_adjust_errors(widget, type, context, msg: str):
+def handle_adjust_errors(widget, warning_type, context, msg: str):
     """Qt message handler that attempts to react to errors when setting the window size
     and resizes the main window"""
     pass
     # head = msg.split(": ")[0]
-    # if type == QtWarningMsg and head == "QWindowsWindow::setGeometry":
+    # if warning_type == QtWarningMsg and head == "QWindowsWindow::setGeometry":
     #     logger.warning(
     #         f"Qt resize error : {msg}\nhas been handled by attempting to resize the window"
     #     )
@@ -285,10 +293,26 @@ class Log(QTextEdit):
             self.lock.release()
 
     def warn(self, warning):
-        """Show warnings.warn from another thread"""
+        """Show logger.warning from another thread"""
         self.lock.acquire()
         try:
-            warnings.warn(warning)
+            logger.warning(warning)
+        finally:
+            self.lock.release()
+
+    def error(self, error, msg=None):
+        """Show exception and message from another thread"""
+        self.lock.acquire()
+        try:
+            logger.error(error, exc_info=True)
+            if msg is not None:
+                self.print_and_log(f"{msg} : {error}", printing=False)
+            else:
+                self.print_and_log(
+                    f"Excepetion caught in another thread : {error}",
+                    printing=False,
+                )
+            raise error
         finally:
             self.lock.release()
 
@@ -311,8 +335,7 @@ def toggle_visibility(checkbox, widget):
 def add_label(widget, label, label_before=True, horizontal=True):
     if label_before:
         return combine_blocks(widget, label, horizontal=horizontal)
-    else:
-        return combine_blocks(label, widget, horizontal=horizontal)
+    return combine_blocks(label, widget, horizontal=horizontal)
 
 
 class ContainerWidget(QWidget):
@@ -389,21 +412,21 @@ class DropdownMenu(QComboBox):
         self,
         entries: Optional[list] = None,
         parent: Optional[QWidget] = None,
-        label: Optional[str] = None,
+        text_label: Optional[str] = None,
         fixed: Optional[bool] = True,
     ):
         """Args:
         entries (array(str)): Entries to add to the dropdown menu. Defaults to None, no entries if None
         parent (QWidget): parent QWidget to add dropdown menu to. Defaults to None, no parent is set if None
-        label (str) : if not None, creates a QLabel with the contents of 'label', and returns the label as well
+        text_label (str) : if not None, creates a QLabel with the contents of 'label', and returns the label as well
         fixed (bool): if True, will set the size policy of the dropdown menu to Fixed in h and w. Defaults to True.
         """
         super().__init__(parent)
         self.label = None
         if entries is not None:
             self.addItems(entries)
-        if label is not None:
-            self.label = QLabel(label)
+        if text_label is not None:
+            self.label = QLabel(text_label)
         if fixed:
             self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
@@ -448,15 +471,21 @@ class Slider(QSlider):
     ):
         super().__init__(orientation, parent)
 
+        if upper <= lower:
+            raise ValueError(
+                "The minimum value cannot be below the maximum one"
+            )
+
         self.setMaximum(upper)
         self.setMinimum(lower)
         self.setSingleStep(step)
 
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-        self.text_label = None
+        self.label = None
         self.container = ContainerWidget(
-            # parent=self.parent
+            # parent=self.parent,
+            b=0,
         )
 
         self._divide_factor = divide_factor
@@ -479,7 +508,7 @@ class Slider(QSlider):
         )
 
         if text_label is not None:
-            self.text_label = make_label(text_label, parent=self)
+            self.label = make_label(text_label, parent=self)
 
         if default < lower:
             self._warn_outside_bounds(default)
@@ -498,14 +527,14 @@ class Slider(QSlider):
     def set_visibility(self, visible: bool):
         self.container.setVisible(visible)
         self.setVisible(visible)
-        self.text_label.setVisible(visible)
+        self.label.setVisible(visible)
 
     def _build_container(self):
-        if self.text_label is not None:
+        if self.label is not None:
             add_widgets(
                 self.container.layout,
                 [
-                    self.text_label,
+                    self.label,
                     combine_blocks(self._value_label, self, b=0),
                 ],
             )
@@ -516,29 +545,35 @@ class Slider(QSlider):
             )
 
     def _warn_outside_bounds(self, default):
-        warnings.warn(
+        logger.warning(
             f"Default value {default} was outside of the ({self.minimum()}:{self.maximum()}) range"
         )
 
     def _update_slider(self):
         """Update slider when value is changed"""
-        if self._value_label.text() == "":
-            return
+        try:
+            if self._value_label.text() == "":
+                return
 
-        value = float(self._value_label.text()) * self._divide_factor
+            value = float(self._value_label.text()) * self._divide_factor
 
-        if value < self.minimum():
-            self.slider_value = self.minimum()
-            return
-        if value > self.maximum():
-            self.slider_value = self.maximum()
-            return
+            if value < self.minimum():
+                self.slider_value = self.minimum()
+                return
+            if value > self.maximum():
+                self.slider_value = self.maximum()
+                return
 
-        self.slider_value = value
+            self.slider_value = value
+        except Exception as e:
+            logger.error(e)
 
     def _update_value_label(self):
         """Update label, to connect to when slider is dragged"""
-        self._value_label.setText(str(self.value_text))
+        try:
+            self._value_label.setText(str(self.value_text))
+        except Exception as e:
+            logger.error(e)
 
     @property
     def tooltips(self):
@@ -549,8 +584,8 @@ class Slider(QSlider):
         self.setToolTip(tooltip)
         self._value_label.setToolTip(tooltip)
 
-        if self.text_label is not None:
-            self.text_label.setToolTip(tooltip)
+        if self.label is not None:
+            self.label.setToolTip(tooltip)
 
     @property
     def slider_value(self):
@@ -561,7 +596,7 @@ class Slider(QSlider):
         try:
             return self.value() / self._divide_factor
         except ZeroDivisionError as e:
-            raise ZeroDivisionError(
+            raise ZeroDivisionError from (
                 f"Divide factor cannot be 0 for Slider : {e}"
             )
 
@@ -574,16 +609,21 @@ class Slider(QSlider):
     def slider_value(self, value: int):
         """Set a value (int) divided by self._divide_factor"""
         if value < self.minimum() or value > self.maximum():
-            raise ValueError(
-                f"The value for the slider ({value}) cannot be out of ({self.minimum()};{self.maximum()}) "
+            logger.error(
+                ValueError(
+                    f"The value for the slider ({value}) cannot be out of ({self.minimum()};{self.maximum()}) "
+                )
             )
 
-        self.setValue(int(value))
+        try:
+            self.setValue(int(value))
 
-        divided = value / self._divide_factor
-        if self._divide_factor == 1.0:
-            divided = int(divided)
-        self._value_label.setText(str(divided))
+            divided = value / self._divide_factor
+            if self._divide_factor == 1.0:
+                divided = int(divided)
+            self._value_label.setText(str(divided))
+        except Exception as e:
+            logger.error(e)
 
 
 class AnisotropyWidgets(QWidget):
@@ -628,7 +668,7 @@ class AnisotropyWidgets(QWidget):
             w.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         self.box_widgets_lbl = [
-            make_label("Resolution in " + axis + " (microns) :", parent=parent)
+            make_label("Pixel size in " + axis + " (microns) :", parent=parent)
             for axis in "xyz"
         ]
 
@@ -696,9 +736,8 @@ class AnisotropyWidgets(QWidget):
 
         """
 
-        base = min(aniso_res)
-        zoom_factors = [base / res for res in aniso_res]
-        return zoom_factors
+        base = max(aniso_res)
+        return [res / base for res in aniso_res]
 
     def enabled(self):
         """Returns : whether anisotropy correction has been enabled or not"""
@@ -720,15 +759,23 @@ class LayerSelecter(ContainerWidget):
         self.image = None
         self.layer_type = layer_type
 
-        self.layer_list = DropdownMenu(parent=self, label=name, fixed=False)
+        self.layer_list = DropdownMenu(
+            parent=self, text_label=name, fixed=False
+        )
+        self.layer_description = make_label("Shape:", parent=self)
+        self.layer_description.setVisible(False)
         # self.layer_list.setSizeAdjustPolicy(QComboBox.AdjustToContents) # use tooltip instead ?
 
         self._viewer.layers.events.inserted.connect(partial(self._add_layer))
         self._viewer.layers.events.removed.connect(partial(self._remove_layer))
 
         self.layer_list.currentIndexChanged.connect(self._update_tooltip)
+        self.layer_list.currentTextChanged.connect(self._update_description)
 
-        add_widgets(self.layout, [self.layer_list.label, self.layer_list])
+        add_widgets(
+            self.layout,
+            [self.layer_list.label, self.layer_list, self.layer_description],
+        )
         self._check_for_layers()
 
     def _check_for_layers(self):
@@ -738,6 +785,14 @@ class LayerSelecter(ContainerWidget):
 
     def _update_tooltip(self):
         self.layer_list.setToolTip(self.layer_list.currentText())
+
+    def _update_description(self):
+        if self.layer_list.currentText() != "":
+            self.layer_description.setVisible(True)
+            shape_desc = f"Shape : {self.layer_data().shape}"
+            self.layer_description.setText(shape_desc)
+        else:
+            self.layer_description.setVisible(False)
 
     def _add_layer(self, event):
         inserted_layer = event.value
@@ -756,23 +811,26 @@ class LayerSelecter(ContainerWidget):
             index = self.layer_list.findText(removed_layer.name)
             self.layer_list.removeItem(index)
 
-    def set_layer_type(self, type):  # no @property due to Qt constraint
-        self.layer_type = type
+    def set_layer_type(self, layer_type):  # no @property due to Qt constraint
+        self.layer_type = layer_type
         [self.layer_list.removeItem(i) for i in range(self.layer_list.count())]
         self._check_for_layers()
 
     def layer(self):
-        return self._viewer.layers[self.layer_name()]
+        try:
+            return self._viewer.layers[self.layer_name()]
+        except ValueError:
+            return None
 
     def layer_name(self):
         return self.layer_list.currentText()
 
     def layer_data(self):
         if self.layer_list.count() < 1:
-            warnings.warn("Please select a valid layer !")
+            logger.warning("Please select a valid layer !")
             return None
 
-        return self._viewer.layers[self.layer_name()].data
+        return self.layer().data
 
 
 class FilePathWidget(QWidget):  # TODO include load as folder
@@ -813,6 +871,9 @@ class FilePathWidget(QWidget):  # TODO include load as folder
 
         self.build()
         self.check_ready()
+
+        if self._required:
+            self._text_field.textChanged.connect(self.check_ready)
 
     def build(self):
         """Builds the layout of the widget"""
@@ -855,9 +916,8 @@ class FilePathWidget(QWidget):  # TODO include load as folder
             self.update_field_color("indianred")
             self.text_field.setToolTip("Mandatory field !")
             return False
-        else:
-            self.update_field_color(f"{napari_param_darkgrey}")
-            return True
+        self.update_field_color(f"{napari_param_darkgrey}")
+        return True
 
     @property
     def required(self):
@@ -869,10 +929,9 @@ class FilePathWidget(QWidget):  # TODO include load as folder
         if is_required:
             self.text_field.textChanged.connect(self.check_ready)
         else:
-            try:
+            with contextlib.suppress(TypeError):
                 self.text_field.textChanged.disconnect(self.check_ready)
-            except TypeError:
-                return
+
         self.check_ready()
         self._required = is_required
 
@@ -959,22 +1018,22 @@ class ScrollArea(QScrollArea):
 
 def set_spinbox(
     box,
-    min=0,
-    max=10,
+    min_value=0,
+    max_value=10,
     default=0,
     step=1,
     fixed: Optional[bool] = True,
 ):
     """Args:
     box : QSpinBox or QDoubleSpinBox
-    min : minimum value, defaults to 0
-    max : maximum value, defaults to 10
+    min_value : minimum value, defaults to 0
+    max_value : maximum value, defaults to 10
     default :  default value, defaults to 0
     step : step value, defaults to 1
     fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed"""
 
-    box.setMinimum(min)
-    box.setMaximum(max)
+    box.setMinimum(min_value)
+    box.setMaximum(max_value)
     box.setSingleStep(step)
     box.setValue(default)
 
@@ -985,8 +1044,8 @@ def set_spinbox(
 def make_n_spinboxes(
     class_,
     n: int = 2,
-    min=0,
-    max=10,
+    min_value=0,
+    max_value=10,
     default=0,
     step=1,
     parent: Optional[QWidget] = None,
@@ -997,8 +1056,8 @@ def make_n_spinboxes(
     Args:
         class_ : QSpinBox or QDoubleSpinbox
         n (int): number of increment counters to create
-        min (Optional[int]): minimum value, defaults to 0
-        max (Optional[int]): maximum value, defaults to 10
+        min_value (Optional[int]): minimum value, defaults to 0
+        max_value (Optional[int]): maximum value, defaults to 10
         default (Optional[int]): default value, defaults to 0
         step (Optional[int]): step value, defaults to 1
         parent: parent widget, defaults to None
@@ -1009,7 +1068,7 @@ def make_n_spinboxes(
 
     boxes = []
     for _i in range(n):
-        box = class_(min, max, default, step, parent, fixed)
+        box = class_(min_value, max_value, default, step, parent, fixed)
         boxes.append(box)
     return boxes
 
@@ -1025,7 +1084,7 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         step: Optional[float] = 1.0,
         parent: Optional[QWidget] = None,
         fixed: Optional[bool] = True,
-        label: Optional[str] = None,
+        text_label: Optional[str] = None,
     ):
         """Args:
         lower (Optional[float]): minimum value, defaults to 0
@@ -1034,7 +1093,7 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         step (Optional[float]): step value, defaults to 1
         parent: parent widget, defaults to None
         fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed
-        label (Optional[str]): if provided, creates a label with the chosen title to use with the counter
+        text_label (Optional[str]): if provided, creates a label with the chosen title to use with the counter
         """
 
         super().__init__(parent)
@@ -1042,15 +1101,16 @@ class DoubleIncrementCounter(QDoubleSpinBox):
 
         self.layout = None
 
-        if label is not None:
-            self.label = make_label(name=label)
-        self.valueChanged.connect(self._update_step)
+        if text_label is not None:
+            self.label = make_label(name=text_label)
+        # self.valueChanged.connect(self._update_step)
+        self.setStepType(QAbstractSpinBox.StepType.AdaptiveDecimalStepType)
 
-    def _update_step(self):  # FIXME check divide_factor
-        if self.value() < 0.9:
-            self.setSingleStep(0.01)
-        else:
-            self.setSingleStep(0.1)
+    # def _update_step(self):
+    #     if self.value() <= 1:
+    #         self.setSingleStep(0.1)
+    #     else:
+    #         self.setSingleStep(1)
 
     @property
     def tooltips(self):
@@ -1103,7 +1163,7 @@ class IntIncrementCounter(QSpinBox):
         step=1,
         parent: Optional[QWidget] = None,
         fixed: Optional[bool] = True,
-        label: Optional[str] = None,
+        text_label: Optional[str] = None,
     ):
         """Args:
         lower (Optional[int]): minimum value, defaults to 0
@@ -1119,8 +1179,8 @@ class IntIncrementCounter(QSpinBox):
         self.label = None
         self.container = None
 
-        if label is not None:
-            self.label = make_label(name=label)
+        if text_label is not None:
+            self.label = make_label(name=text_label)
 
     @property
     def tooltips(self):
@@ -1166,8 +1226,8 @@ def add_blank(widget, layout=None):
 
 def open_file_dialog(
     widget,
-    possible_paths: list = [],
-    filetype: str = "Image file (*.tif *.tiff)",
+    possible_paths: list = (),
+    file_extension: str = "Image file (*.tif *.tiff)",
 ):
     """Opens a window to choose a file directory using QFileDialog.
 
@@ -1176,29 +1236,27 @@ def open_file_dialog(
         possible_paths (str): Paths that may have been chosen before, can be a string
         or an array of strings containing the paths
         load_as_folder (bool): Whether to open a folder or a single file. If True, will allow opening folder as a single file (2D stack interpreted as 3D)
-        filetype (str): The description and file extension to load (format : ``"Description (*.example1 *.example2)"``). Default ``"Image file (*.tif *.tiff)"``
+        file_extension (str): The description and file extension to load (format : ``"Description (*.example1 *.example2)"``). Default ``"Image file (*.tif *.tiff)"``
 
     """
 
     default_path = utils.parse_default_path(possible_paths)
 
-    f_name = QFileDialog.getOpenFileName(
-        widget, "Choose file", default_path, filetype
+    return QFileDialog.getOpenFileName(
+        widget, "Choose file", default_path, file_extension
     )
-    return f_name
 
 
 def open_folder_dialog(
     widget,
-    possible_paths: list = [],
+    possible_paths: list = (),
 ):
     default_path = utils.parse_default_path(possible_paths)
 
     logger.info(f"Default : {default_path}")
-    filenames = QFileDialog.getExistingDirectory(
-        widget, "Open directory", default_path
+    return QFileDialog.getExistingDirectory(
+        widget, "Open directory", default_path  # + "/.."
     )
-    return filenames
 
 
 def make_label(name, parent=None):  # TODO update to child class
@@ -1215,12 +1273,11 @@ def make_label(name, parent=None):  # TODO update to child class
         label = QLabel(name, parent)
         if SHOW_LABELS_DEBUG_TOOLTIP:
             label.setToolTip(f"{label}")
-        return label
     else:
         label = QLabel(name)
         if SHOW_LABELS_DEBUG_TOOLTIP:
             label.setToolTip(f"{label}")
-        return label
+    return label
 
 
 def make_group(title, l=7, t=20, r=7, b=11, parent=None):
@@ -1258,12 +1315,20 @@ class GroupedWidget(QGroupBox):
 
     @classmethod
     def create_single_widget_group(
-        cls, title, widget, layout, l=7, t=20, r=7, b=11
+        cls,
+        title,
+        widget,
+        layout,
+        l=7,
+        t=20,
+        r=7,
+        b=11,
+        alignment=LEFT_AL,
     ):
         group = cls(title, l, t, r, b)
         group.layout.addWidget(widget)
         group.setLayout(group.layout)
-        layout.addWidget(group)
+        layout.addWidget(group, alignment=alignment)
 
 
 def add_widgets(layout, widgets, alignment=LEFT_AL):
