@@ -1,5 +1,5 @@
 name: napari-cellseg3d
-display_name: Cell Segmentation Annotator
+display_name: CellSeg3D
 schema_version: 0.0.4
 
 contributions:

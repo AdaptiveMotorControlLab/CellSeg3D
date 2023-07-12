@@ -144,5 +144,3 @@ Source code
 * :doc:`../code/plugin_model_inference`
 * :doc:`../code/model_framework`
 * :doc:`../code/workers`
-
-
