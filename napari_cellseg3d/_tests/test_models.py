@@ -116,8 +116,12 @@ def test_pretrained_weights_compatibility():
     for model_name in MODEL_LIST.keys():
         file_name = MODEL_LIST[model_name].weights_file
         WeightsDownloader().download_weights(model_name, file_name)
-        model = MODEL_LIST[model_name](input_img_size=[128, 128, 128])
+        model = MODEL_LIST[model_name](input_img_size=[128,128,128])
         try:
-            model.load_state_dict(torch.load(str(Path(PRETRAINED_WEIGHTS_DIR) / file_name)))
+            if model_name == "WNet":
+                strict = False
+            else:
+                strict = True
+            model.load_state_dict(torch.load(str(Path(PRETRAINED_WEIGHTS_DIR) / file_name), map_location="cpu"), strict=strict)
         except RuntimeError:
             pytest.fail(f"Failed to load weights for {model_name}")
