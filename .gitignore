@@ -11,6 +11,7 @@ __pycache__/
 *.tiff
 napari_cellseg3d/_tests/res/*.csv
 *.pth
+*.tar.gz
 *.db
 
 # Distribution / packaging
