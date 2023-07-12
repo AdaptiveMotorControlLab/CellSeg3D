@@ -24,6 +24,7 @@ Welcome to napari-cellseg3d's documentation!
     :maxdepth: 2
     :caption: Advanced guides and walk-through:
 
+    res/guides/training_wnet
     res/guides/detailed_walkthrough
     res/guides/custom_model_template
 

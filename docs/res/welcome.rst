@@ -28,6 +28,7 @@ From this page you can access the guides on the several modules available for yo
     * Compute scores : :ref:`metrics_module_guide`
 
 * Advanced :
+    * Training WNet (in jupyter, support might be added for plugin later) : :ref:`training_wnet`
     * Defining custom models directly in the plugin (WIP) : :ref:`custom_model_guide`
 
 
@@ -51,8 +52,7 @@ Requirements
 .. important::
     This package requires you have napari installed with PyQt5 or PySide2 first.
     If you do not have a Qt backend you can use :
-
-        ``pip install napari-cellseg3d[all]``
+    ``pip install napari-cellseg3d[all]``
     to install PyQt5 by default.
 
 It also depends on PyTorch and some optional dependencies of MONAI. These come in the pip package as requirements, but if

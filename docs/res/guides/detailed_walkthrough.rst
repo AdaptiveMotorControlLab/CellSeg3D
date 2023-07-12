@@ -1,7 +1,7 @@
 .. _detailed_walkthrough:
 
 Detailed walkthrough - Supervised learning
-===================================
+===================================================
 
 The following guide will show you how to use the plugin's workflow, starting from human-labeled annotation volume, to running inference on novel volumes.
 

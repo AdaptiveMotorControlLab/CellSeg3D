@@ -132,13 +132,17 @@ WNet
 The WNet model, from the paper `WNet, A Deep Model for Fully Unsupervised Image Segmentation`_, is a fully unsupervised model that can be used to segment images without any labels.
 It clusters pixels based on brightness, and can be used to segment cells in a variety of modalities.
 Its use and available options are similar to the above models, with a few differences :
+
 .. note::
     | Our provided, pre-trained model should use an input size of 64x64x64. As such, window inference is always enabled
     | and set to 64. If you want to use a different size, you will have to train your own model using the provided notebook.
-All it requires are images; for nucleus segmentation, it is recommended to use 2 classes (default).
+
+All it requires are 3D .tif images (you can also load a 2D stack as 3D via napari).
 
 Source code
 --------------------------------
 * :doc:`../code/plugin_model_inference`
 * :doc:`../code/model_framework`
 * :doc:`../code/workers`
+
+
