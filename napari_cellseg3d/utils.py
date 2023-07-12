@@ -1,4 +1,5 @@
 import logging
+import math
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Union
@@ -28,7 +29,7 @@ Definitions of utility functions, classes, and variables
 
 ####################
 # viewer utils
-def save_folder(results_path, folder_name, images, image_paths):
+def save_folder(results_path, folder_name, images, image_paths, exist_ok=False):
     """
     Saves a list of images in a folder
 
@@ -39,7 +40,7 @@ def save_folder(results_path, folder_name, images, image_paths):
         image_paths: list of filenames of images
     """
     results_folder = results_path / Path(folder_name)
-    results_folder.mkdir(exist_ok=False, parents=True)
+    results_folder.mkdir(exist_ok=exist_ok, parents=True)
 
     for file, image in zip(image_paths, images):
         path = results_folder / Path(file).name
@@ -92,10 +93,6 @@ def show_result(viewer, layer, image, name):
             f"Results not shown, unsupported layer type {type(layer)}"
         )
 
-
-####################
-
-
 class Singleton(type):
     """
     Singleton class that can only be instantiated once at a time,
@@ -111,18 +108,6 @@ class Singleton(type):
         return cls._instances[cls]
 
 
-# class TiffFileReader(ImageReader):
-#     def __init__(self):
-#         super().__init__()
-#
-#     def verify_suffix(self, filename):
-#         if filename == "tif":
-#             return True
-#     def read(self, data, **kwargs):
-#         return imread(data)
-#
-#     def get_data(self, data):
-#         return data, {}
 def normalize_x(image):
     """Normalizes the values of an image array to be between [-1;1] rather than [0;255]
 
@@ -158,7 +143,7 @@ def sphericity_volume_area(volume, surface_area):
        sphericity =\\frac {\\pi^\\frac{1}{3} (6 V_{p})^\\frac{2}{3}} {A_p}
 
     """
-    return np.pi ** (1 / 3) * (6 * volume) ** (2 / 3) / surface_area
+    return (np.pi ** (1 / 3)) * ((6 * volume) ** (2 / 3)) / surface_area
 
 
 def sphericity_axis(semi_major, semi_minor):
@@ -185,10 +170,14 @@ def sphericity_axis(semi_major, semi_minor):
         print(f"Error encountered in calculation : {e}")
         result = "Error in calculation"
 
+    if math.isnan(result):
+        print("NaN in sphericity calculation was replaced by 0")
+        result = 0
+
     return result
 
 
-def dice_coeff(y_true, y_pred):
+def dice_coeff(y_true, y_pred, smooth=1.0):
     """Compute Dice-Sorensen coefficient between two numpy arrays
 
     Args:
@@ -198,7 +187,6 @@ def dice_coeff(y_true, y_pred):
     Returns: dice coefficient
 
     """
-    smooth = 1.0
     y_true_f = y_true.flatten()
     y_pred_f = y_pred.flatten()
     intersection = np.sum(y_true_f * y_pred_f)
@@ -375,82 +363,6 @@ def denormalize_y(image):
     return image * 255
 
 
-def annotation_to_input(label_ermito):
-    mito = (label_ermito == 1) * 255
-    er = (label_ermito == 2) * 255
-    mito = normalize_y(mito)
-    er = normalize_y(er)
-    mito_anno = np.zeros_like(mito)
-    er_anno = np.zeros_like(er)
-    mito = gaussian(mito, sigma=2) * 255
-    er = gaussian(er, sigma=2) * 255
-    mito_anno[:, :] = mito
-    er_anno[:, :] = er
-    anno = np.concatenate(
-        [mito_anno[:, :, np.newaxis], er_anno[:, :, np.newaxis]], 2
-    )
-    anno = normalize_x(anno[np.newaxis, :, :, :])
-    return anno
-
-
-# def check_csv(project_path, ext):
-#     if not Path(Path(project_path) / Path(project_path).name).is_file():
-#         cols = [
-#             "project",
-#             "type",
-#             "ext",
-#             "z",
-#             "y",
-#             "x",
-#             "z_size",
-#             "y_size",
-#             "x_size",
-#             "created_date",
-#             "update_date",
-#             "path",
-#             "notes",
-#         ]
-#         df = DataFrame(index=[], columns=cols)
-#         filename_pattern_original = Path(project_path) / Path(
-#             f"dataset/Original_size/Original/*{ext}"
-#         )
-#         images_original = dask_imread(filename_pattern_original)
-#         z, y, x = images_original.shape
-#         record = Series(
-#             [
-#                 Path(project_path).name,
-#                 "dataset",
-#                 ".tif",
-#                 0,
-#                 0,
-#                 0,
-#                 z,
-#                 y,
-#                 x,
-#                 datetime.datetime.now(),
-#                 "",
-#                 Path(project_path) / Path("dataset/Original_size/Original"),
-#                 "",
-#             ],
-#             index=df.columns,
-#         )
-#         df = df.append(record, ignore_index=True)
-#         df.to_csv(Path(project_path) / Path(project_path).name)
-#     else:
-#         pass
-
-
-# def check_annotations_dir(project_path):
-#     if not Path(
-#         Path(project_path) / Path("annotations/Original_size/master")
-#     ).is_dir():
-#         os.makedirs(
-#             os.path.join(project_path, "annotations/Original_size/master")
-#         )
-#     else:
-#         pass
-
-
 def fill_list_in_between(lst, n, fill_value):
     """Fills a list with n * elem between each member of list.
     Example with list = [1,2,3], n=2, elem='&' : returns [1, &, &,2,&,&,3,&,&]
@@ -475,30 +387,6 @@ def fill_list_in_between(lst, n, fill_value):
             for _j in range(n):
                 new_list.append(fill_value)
             return new_list
-    return None
-
-
-# def check_zarr(project_path, ext):
-#     if not len(
-#         list(
-#             (Path(project_path) / "dataset" / "Original_size").glob("./*.zarr")
-#         )
-#     ):
-#         filename_pattern_original = os.path.join(
-#             project_path, f"dataset/Original_size/Original/*{ext}"
-#         )
-#         images_original = dask_imread(filename_pattern_original)
-#         images_original.to_zarr(
-#             os.path.join(project_path, f"dataset/Original_size/Original.zarr")
-#         )
-#     else:
-#         pass
-
-
-# def check(project_path, ext):
-#     check_csv(project_path, ext)
-#     check_zarr(project_path, ext)
-#     check_annotations_dir(project_path)
 
 
 def parse_default_path(possible_paths):
@@ -580,86 +468,6 @@ def load_images(
         )
         # images_original = dask_imread(filename_pattern_original)
 
-    return imread(filename_pattern_original)  # tifffile imread
+    return imread(str(filename_pattern_original))  # tifffile imread
 
 
-# def load_predicted_masks(mito_mask_dir, er_mask_dir, filetype):
-#
-#     images_mito_label = load_images(mito_mask_dir, filetype)
-#     # TODO : check that there is no problem with compute when loading as single file
-#     images_mito_label = images_mito_label.compute()
-#     images_er_label = load_images(er_mask_dir, filetype)
-#     # TODO : check that there is no problem with compute when loading as single file
-#     images_er_label = images_er_label.compute()
-#     base_label = (images_mito_label > 127) * 1 + (images_er_label > 127) * 2
-#     return base_label
-
-
-# def load_saved_masks(mod_mask_dir, filetype, as_folder: bool):
-#     images_label = load_images(mod_mask_dir, filetype, as_folder)
-#     if as_folder:
-#         images_label = images_label.compute()
-#     base_label = images_label
-#     return base_label
-
-
-def save_stack(images, out_path, filetype=".png", check_warnings=False):
-    """Saves the files in labels at location out_path as a stack of len(labels) .png files
-
-    Args:
-        images: array of label images
-        out_path: path to the directory for saving
-    """
-    num = images.shape[0]
-    p = Path(out_path)
-    p.mkdir(exist_ok=True)
-    for i in range(num):
-        label = images[i]
-        io.imsave(
-            Path(out_path) / Path(str(i).zfill(4) + filetype),
-            label,
-            check_contrast=check_warnings,
-        )
-
-
-def select_train_data(dataframe, ori_imgs, label_imgs, ori_filenames):
-    train_img_names = list()
-    for node in dataframe.itertuples():
-        if node.train == "Checked":
-            train_img_names.append(node.filename)
-
-    train_ori_imgs = list()
-    train_label_imgs = list()
-    for ori_img, label_img, train_filename in zip(
-        ori_imgs, label_imgs, ori_filenames
-    ):
-        if train_filename in train_img_names:
-            train_ori_imgs.append(ori_img)
-            train_label_imgs.append(label_img)
-
-    return np.array(train_ori_imgs), np.array(train_label_imgs)
-
-
-# def format_Warning(message, category, filename, lineno, line=""):
-#     """Formats a warning message, use in code with ``warnings.formatwarning = utils.format_Warning``
-#
-#     Args:
-#         message: warning message
-#         category: which type of warning has been raised
-#         filename: file
-#         lineno: line number
-#         line: unused
-#
-#     Returns: format
-#
-#     """
-#     return (
-#         str(filename)
-#         + ":"
-#         + str(lineno)
-#         + ": "
-#         + category.__name__
-#         + ": "
-#         + str(message)
-#         + "\n"
-#     )

@@ -1,12 +1,67 @@
+import random
 from functools import partial
 from pathlib import Path
-
 import numpy as np
+import pytest
 import torch
 
 from napari_cellseg3d import utils
 from napari_cellseg3d.dev_scripts import thread_test
 
+def test_singleton_class():
+    class TestSingleton(metaclass=utils.Singleton):
+        def __init__(self, value):
+            self.value = value
+
+    a = TestSingleton(1)
+    b = TestSingleton(2)
+
+    assert a.value == b.value
+def test_save_folder():
+    test_path = Path(__file__).resolve().parent / "res"
+    folder_name = "test_folder"
+    images = [np.random.rand(5, 5, 5) for _ in range(10)]
+    images_paths = [f"{i}.tif" for i in range(10)]
+
+    utils.save_folder(test_path, folder_name, images, images_paths, exist_ok=True)
+    assert (test_path / folder_name).is_dir()
+    for i in range(10):
+        assert (test_path / folder_name / images_paths[i]).is_file()
+
+def test_normalize_y():
+    test_array = np.array([0, 255, 127.5])
+    results = utils.normalize_y(test_array)
+    expected = test_array / 255
+    assert np.all(results == expected)
+    assert np.all(test_array == utils.denormalize_y(results))
+
+def test_sphericities():
+    for i in range(100):
+        mock_volume = random.randint(1, 10)
+        mock_surface = random.randint(100, 1000)  # assuming surface is always larger than volume
+        sphericity_vol = utils.sphericity_volume_area(mock_volume, mock_surface)
+        assert 0 <= sphericity_vol <= 1
+
+        semi_major = random.randint(10, 100)
+        semi_minor = random.randint(10, 100)
+        try:
+            sphericity_axes = utils.sphericity_axis(semi_major, semi_minor)
+        except ZeroDivisionError:
+            sphericity_axes = 0
+        except ValueError:
+            sphericity_axes = 0
+        assert 0 <= sphericity_axes <= 1
+
+def test_normalize_max():
+    test_array = np.array([0, 255, 127.5])
+    expected = np.array([0, 1, 0.5])
+    assert np.all(utils.normalize_max(test_array) == expected)
+
+def test_dice_coeff():
+    test_array = np.random.randint(0,2,(64, 64, 64))
+    test_array_2 = np.random.randint(0,2,(64, 64, 64))
+    assert utils.dice_coeff(test_array, test_array) == 1
+    assert utils.dice_coeff(test_array, test_array_2) <= 1
 
 def test_fill_list_in_between():
     test_list = [1, 2, 3, 4, 5, 6]
@@ -102,11 +157,28 @@ def test_get_padding_dim():
 
     assert pad == [128, 128, 128]
 
+    tensor_wrong = torch.randn(65, 70, 80, 90)
+    with pytest.raises(ValueError):
+        utils.get_padding_dim(tensor_wrong.size())
+
 
 def test_normalize_x():
     test_array = utils.normalize_x(np.array([0, 255, 127.5]))
     expected = np.array([-1, 1, 0])
     assert np.all(test_array == expected)
+
+def test_load_images():
+
+    path = Path(__file__).resolve().parent / "res"
+    with pytest.raises(ValueError):
+        images = utils.load_images(str(path), as_folder=True)
+    with pytest.raises(NotImplementedError):
+        images = utils.load_images(str(path), as_folder=True, filetype=".tif")
+    # assert len(images) == 1
+
+    path = path / "test.tif"
+    images = utils.load_images(str(path))
+    assert images.shape == (6,6,6)
 
 
 def test_parse_default_path():
@@ -117,7 +189,7 @@ def test_parse_default_path():
     path = [test_path, None, None]
     assert utils.parse_default_path(path) == test_path
 
-    long_path = "D:/very/long/path/what/a/bore/ifonlytherewassomethingtohelpmenottypeitiallthetime"
+    long_path = "D:/very/long/path/what/a/bore/ifonlytherewas/something/tohelpmenotsearchit/allthetime"
     path = [test_path, None, None, long_path, ""]
     assert utils.parse_default_path(path) == long_path
 

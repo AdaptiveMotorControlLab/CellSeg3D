@@ -4,4 +4,4 @@ exclude_lines =
 
 [run]
 omit =
-    napari_cellseg3d/setup.py, napari_cellseg3d/code_models/models/wnet/train_wnet.py
+    napari_cellseg3d/setup.py, napari_cellseg3d/code_models/models/wnet/train_wnet.py, napari_cellseg3d/code_models/models/wnet/model.py,napari_cellseg3d/code_models/models/TEMPLATE_model.py, napari_cellseg3d/code_models/models/unet/*, napari_cellseg3d/dev_scripts/thread_test.py

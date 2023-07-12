@@ -1,4 +1,7 @@
 import numpy as np
+from pathlib import Path
+
+import pytest
 import torch
 from numpy.random import PCG64, Generator
 
@@ -51,6 +54,14 @@ def test_soft_ncuts_loss():
     assert isinstance(res, torch.Tensor)
     assert 0 <= res <= 1  # ASSUMES NUMBER OF CLASS IS 2, NOT CORRECT IF K>2
 
+    loss = SoftNCutsLoss(
+        data_shape=[dims, dims, dims],
+        device="cpu",
+        intensity_sigma=4,
+        spatial_sigma=4,
+        radius=None,
+    )
+    assert loss.radius == 5
 
 def test_crf_batch():
     dims = 8
@@ -95,3 +106,18 @@ def test_crf_worker(qtbot):
 
     result = next(crf._run_crf_job())
     on_yield(result)
+
+
+def test_pretrained_weights_compatibility():
+    from napari_cellseg3d.code_models.workers import WeightsDownloader
+    from napari_cellseg3d.config import MODEL_LIST
+    from napari_cellseg3d.config import PRETRAINED_WEIGHTS_DIR
+
+    for model_name in MODEL_LIST.keys():
+        file_name = MODEL_LIST[model_name].weights_file
+        WeightsDownloader().download_weights(model_name, file_name)
+        model = MODEL_LIST[model_name](input_img_size=[128, 128, 128])
+        try:
+            model.load_state_dict(torch.load(str(Path(PRETRAINED_WEIGHTS_DIR) / file_name)))
+        except RuntimeError:
+            pytest.fail(f"Failed to load weights for {model_name}")

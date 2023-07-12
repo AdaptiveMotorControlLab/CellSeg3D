@@ -27,10 +27,6 @@ get_time_filepath
 **************************************
 .. autofunction:: napari_cellseg3d.utils::get_time_filepath
 
-save_stack
-**************************************
-.. autofunction:: napari_cellseg3d.utils::save_stack
-
 get_padding_dim
 **************************************
 .. autofunction:: napari_cellseg3d.utils::get_padding_dim

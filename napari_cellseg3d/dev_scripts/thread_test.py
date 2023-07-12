@@ -1,5 +1,4 @@
 import time
-
 import napari
 from napari.qt.threading import thread_worker
 from numpy.random import PCG64, Generator
@@ -15,6 +14,10 @@ from qtpy.QtWidgets import (
 
 rand_gen = Generator(PCG64(12345))
 
+####################################
+# Tutorial code from napari forums #
+####################################
+# not covered by tests
 
 @thread_worker
 def two_way_communication_with_args(start, end):
