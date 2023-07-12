@@ -4,7 +4,7 @@ Advanced : Declaring a custom model
 =============================================
 
 .. warning::
-    **WIP** : Adding new models is still a work in progress and will likely not work simply by adding the model in the plugin.
+    **WIP** : Adding new models is still a work in progress and will likely not work out of the box, leading to errors.
 
     Please `file an issue`_ if you would like to add a custom model and we will help you get it working.
 

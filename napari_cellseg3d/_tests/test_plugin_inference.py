@@ -47,6 +47,7 @@ def test_inference(make_napari_viewer, qtbot):
     widget.worker_config = widget._set_worker_config()
     assert widget.worker_config is not None
     assert widget.model_info is not None
+    widget.window_infer_box.setChecked(False)
     worker = widget._create_worker_from_config(widget.worker_config)
 
     assert worker.config is not None
@@ -63,5 +64,6 @@ def test_inference(make_napari_viewer, qtbot):
     res = next(worker.inference())
     assert isinstance(res, InferenceResult)
     assert res.result.shape == (8, 8, 8)
+    assert res.instance_labels.shape == (8, 8, 8)
 
     widget.on_yield(res)

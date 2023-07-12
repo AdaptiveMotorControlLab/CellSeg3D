@@ -49,7 +49,7 @@ def test_soft_ncuts_loss():
 
     res = loss.forward(labels, labels)
     assert isinstance(res, torch.Tensor)
-    assert 0 <= res <= 1
+    assert 0 <= res <= 1  # ASSUMES NUMBER OF CLASS IS 2, NOT CORRECT IF K>2
 
 
 def test_crf_batch():

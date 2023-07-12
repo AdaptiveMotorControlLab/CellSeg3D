@@ -21,7 +21,13 @@ __credits__ = [
 class WNet_encoder(nn.Module):
     """WNet with encoder only."""
 
-    def __init__(self, device, in_channels=1, out_channels=1, num_classes=2):
+    def __init__(
+        self,
+        device,
+        in_channels=1,
+        out_channels=2
+        # num_classes=2
+    ):
         super().__init__()
         self.device = device
         self.encoder = UNet(
@@ -44,7 +50,7 @@ class WNet(nn.Module):
     def __init__(
         self,
         in_channels=1,
-        out_channels=1,
+        out_channels=2,
         num_classes=2,
         dropout=0.65,
     ):
