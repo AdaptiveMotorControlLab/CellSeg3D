@@ -1,6 +1,6 @@
 .. _detailed_walkthrough:
 
-Detailed walkthrough
+Detailed walkthrough - Supervised learning
 ===================================
 
 The following guide will show you how to use the plugin's workflow, starting from human-labeled annotation volume, to running inference on novel volumes.
@@ -109,7 +109,7 @@ of two no matter the size you choose. For optimal performance, make sure to use 
 a power of two still, such as 64 or 120.
 
 .. important::
-    Using a too large value for the size will cause memory issues. If this happens, restart napari (better handling for these situations might be added in the future).
+    Using a too large value for the size will cause memory issues. If this happens, restart the worker with smaller volumes.
 
 You also have the option to use data augmentation, which can improve performance and generalization.
 In most cases this should left enabled.

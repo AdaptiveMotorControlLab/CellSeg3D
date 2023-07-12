@@ -74,6 +74,8 @@ The training module is comprised of several tabs.
 * The **batch size** (larger means quicker training and possibly better performance but increased memory usage)
 * The **number of epochs** (a possibility is to start with 60 epochs, and decrease or increase depending on performance.)
 * The **epoch interval** for validation (for example, if set to two, the module will use the validation dataset to evaluate the model with the dice metric every two epochs.)
+* The **schedular patience**, which is the amount of epoch at a plateau that is waited for until the learning rate is reduced
+* The **scheduler factor**, which is the factor by which to reduce the learning rate once a plateau is reached
 * Whether to use deterministic training, and the seed to use.
 
 .. note::
@@ -126,4 +128,4 @@ Source code
 --------------------------------
 * :doc:`../code/plugin_model_training`
 * :doc:`../code/model_framework`
-* :doc:`../code/model_workers`
+* :doc:`../code/workers`

@@ -60,7 +60,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Detailed walkthrough</a></li>
+<li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Detailed walkthrough - Supervised learning</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
@@ -73,8 +73,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_convert.html">plugin_convert.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_metrics.html">plugin_metrics.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/model_framework.html">model_framework.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../code/model_workers.html">model_workers.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../code/model_instance_seg.html">model_instance_seg.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/workers.html">workers.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/instance_segmentation.html">instance_segmentation.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_model_inference.html">plugin_model_inference.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_model_training.html">plugin_model_training.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/utils.html">utils.py</a></li>
@@ -200,6 +200,8 @@ Ideally it should always be enabled, but you can disable it if it causes issues.
 <li><p>The <strong>batch size</strong> (larger means quicker training and possibly better performance but increased memory usage)</p></li>
 <li><p>The <strong>number of epochs</strong> (a possibility is to start with 60 epochs, and decrease or increase depending on performance.)</p></li>
 <li><p>The <strong>epoch interval</strong> for validation (for example, if set to two, the module will use the validation dataset to evaluate the model with the dice metric every two epochs.)</p></li>
+<li><p>The <strong>schedular patience</strong>, which is the amount of epoch at a plateau that is waited for until the learning rate is reduced</p></li>
+<li><p>The <strong>scheduler factor</strong>, which is the factor by which to reduce the learning rate once a plateau is reached</p></li>
 <li><p>Whether to use deterministic training, and the seed to use.</p></li>
 </ul>
 <div class="admonition note">
@@ -265,7 +267,7 @@ The final version is stored separately in the results folder.</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="../code/plugin_model_training.html"><span class="doc">plugin_model_training.py</span></a></p></li>
 <li><p><a class="reference internal" href="../code/model_framework.html"><span class="doc">model_framework.py</span></a></p></li>
-<li><p><a class="reference internal" href="../code/model_workers.html"><span class="doc">model_workers.py</span></a></p></li>
+<li><p><a class="reference internal" href="../code/workers.html"><span class="doc">workers.py</span></a></p></li>
 </ul>
 </section>
 </section>

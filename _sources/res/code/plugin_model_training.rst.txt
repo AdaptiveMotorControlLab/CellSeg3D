@@ -18,6 +18,5 @@ Methods
 
 Attributes
 *********************
-
 .. autoclass:: napari_cellseg3d.code_plugins.plugin_model_training::Trainer
    :members:  _viewer, worker, loss_dict, canvas, train_loss_plot, dice_metric_plot

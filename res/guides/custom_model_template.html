@@ -19,7 +19,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="interface.py" href="../code/interface.html" />
-    <link rel="prev" title="Detailed walkthrough" href="detailed_walkthrough.html" /> 
+    <link rel="prev" title="Detailed walkthrough - Supervised learning" href="detailed_walkthrough.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -57,7 +57,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Detailed walkthrough</a></li>
+<li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Detailed walkthrough - Supervised learning</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Advanced : Declaring a custom model</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
@@ -70,8 +70,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_convert.html">plugin_convert.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_metrics.html">plugin_metrics.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/model_framework.html">model_framework.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../code/model_workers.html">model_workers.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../code/model_instance_seg.html">model_instance_seg.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/workers.html">workers.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/instance_segmentation.html">instance_segmentation.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_model_inference.html">plugin_model_inference.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_model_training.html">plugin_model_training.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/utils.html">utils.py</a></li>
@@ -103,37 +103,34 @@
              
   <section id="advanced-declaring-a-custom-model">
 <span id="custom-model-guide"></span><h1>Advanced : Declaring a custom model<a class="headerlink" href="#advanced-declaring-a-custom-model" title="Permalink to this headline"></a></h1>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>WIP</strong> : Adding new models is still a work in progress and will likely not work out of the box, leading to errors.</p>
+<p>Please <a class="reference external" href="https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues">file an issue</a> if you would like to add a custom model and we will help you get it working.</p>
+</div>
 <p>To add a custom model, you will need a <strong>.py</strong> file with the following structure to be placed in the <em>napari_cellseg3d/models</em> folder:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ModelTemplate_</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span> <span class="c1"># replace ABC with your PyTorch model class name</span>
+    <span class="n">use_default_training</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># not needed for now, will serve for WNet training if added to the plugin</span>
+    <span class="n">weights_file</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;model_template.pth&quot;</span>  <span class="c1"># specify the file name of the weights file only</span>
+    <span class="p">)</span> <span class="c1"># download URL goes in pretrained_models.json</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">input_image_size</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reimplement this as needed; only include input_image_size if necessary. For now only in/out channels = 1 is supported.&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reimplement this as needed. Ensure that output is a torch tensor with dims (batch, channels, z, y, x).&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>WIP</strong> : Currently you must modify <a class="reference internal" href="../code/model_framework.html#model-framework-py"><span class="std std-ref">model_framework.py</span></a> as well : import your model class and add it to the <code class="docutils literal notranslate"><span class="pre">model_dict</span></code> attribute</p>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_net</span><span class="p">():</span>
-    <span class="k">return</span> <span class="n">ModelClass</span> <span class="c1"># should return the class of the model,</span>
-    <span class="c1"># for example SegResNet or UNET</span>
-
-
-<span class="k">def</span> <span class="nf">get_weights_file</span><span class="p">():</span>
-    <span class="k">return</span> <span class="s2">&quot;weights_file.pth&quot;</span> <span class="c1"># name of the weights file for the model,</span>
-    <span class="c1"># which should be in *napari_cellseg3d/models/pretrained*</span>
-
-
-<span class="k">def</span> <span class="nf">get_output</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span> <span class="c1"># should return the model&#39;s output as [C, N, D,H,W]</span>
-    <span class="c1"># (C: channel, N, batch size, D,H,W : depth, height, width)</span>
-    <span class="k">return</span> <span class="n">out</span>
-
-
-<span class="k">def</span> <span class="nf">get_validation</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">val_inputs</span><span class="p">):</span>
-    <span class="n">val_outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">val_inputs</span><span class="p">)</span> <span class="c1"># should return the proper type for validation</span>
-    <span class="c1"># with sliding_window_inference from MONAI</span>
-    <span class="k">return</span> <span class="n">val_outputs</span>
-
-
-<span class="k">def</span> <span class="nf">ModelClass</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span><span class="n">x2</span><span class="o">...</span><span class="p">):</span>
-    <span class="c1"># your Pytorch model here...</span>
-    <span class="k">return</span> <span class="n">results</span> <span class="c1"># should return as [C, N, D,H,W]</span>
-</pre></div>
 </div>
 </section>
 
@@ -141,7 +138,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="detailed_walkthrough.html" class="btn btn-neutral float-left" title="Detailed walkthrough" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="detailed_walkthrough.html" class="btn btn-neutral float-left" title="Detailed walkthrough - Supervised learning" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="../code/interface.html" class="btn btn-neutral float-right" title="interface.py" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

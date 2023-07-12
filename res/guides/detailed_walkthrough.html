@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Detailed walkthrough &mdash; napari-cellseg3d  documentation</title>
+  <title>Detailed walkthrough - Supervised learning &mdash; napari-cellseg3d  documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -58,7 +58,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Detailed walkthrough</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Detailed walkthrough - Supervised learning</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#preparing-images-and-labels">Preparing images and labels</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#cropping">Cropping</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#label-conversion-convert-utility">Label conversion : convert utility</a></li>
@@ -89,8 +89,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_convert.html">plugin_convert.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_metrics.html">plugin_metrics.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/model_framework.html">model_framework.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../code/model_workers.html">model_workers.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../code/model_instance_seg.html">model_instance_seg.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/workers.html">workers.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/instance_segmentation.html">instance_segmentation.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_model_inference.html">plugin_model_inference.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/plugin_model_training.html">plugin_model_training.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/utils.html">utils.py</a></li>
@@ -110,7 +110,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Detailed walkthrough</li>
+      <li class="breadcrumb-item active">Detailed walkthrough - Supervised learning</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../_sources/res/guides/detailed_walkthrough.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -120,8 +120,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="detailed-walkthrough">
-<span id="id1"></span><h1>Detailed walkthrough<a class="headerlink" href="#detailed-walkthrough" title="Permalink to this headline"></a></h1>
+  <section id="detailed-walkthrough-supervised-learning">
+<span id="detailed-walkthrough"></span><h1>Detailed walkthrough - Supervised learning<a class="headerlink" href="#detailed-walkthrough-supervised-learning" title="Permalink to this headline"></a></h1>
 <p>The following guide will show you how to use the plugin’s workflow, starting from human-labeled annotation volume, to running inference on novel volumes.</p>
 <section id="preparing-images-and-labels">
 <h2>Preparing images and labels<a class="headerlink" href="#preparing-images-and-labels" title="Permalink to this headline"></a></h2>
@@ -132,10 +132,10 @@ weights and also perform transfer learning by fine-tuning the model(s) on your d
 <p>To get started with the entire workflow (i.e., fine-tuning on your data), you’ll need at least one pair of image and corresponding labels;
 let’s assume you have part of a cleared brain from mesoSPIM imaging as a large .tif file.</p>
 <p>If you want to test the models “as is”, please see “Inference” sections in our docs.</p>
-<figure class="align-center" id="id2">
+<figure class="align-center" id="id1">
 <a class="reference internal image-reference" href="../../_images/init_image_labels.png"><img alt="../../_images/init_image_labels.png" src="../../_images/init_image_labels.png" style="width: 1188.0px; height: 738.0px;" /></a>
 <figcaption>
-<p><span class="caption-text">Example of an anisotropic volume (i.e., often times the z resolution is not the same as x and y) and its associated labels.</span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Example of an anisotropic volume (i.e., often times the z resolution is not the same as x and y) and its associated labels.</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
 </figcaption>
 </figure>
 <div class="admonition note">
@@ -162,10 +162,10 @@ wish to run inference on all of them.</p>
 <p>You can now use the sliders to choose the regions you want to extract,
 then either quicksave the results or select the layer you’d like to save and use <strong>CTRL+S</strong> to save it
 (useful if you want to name the results or change the file extension).</p>
-<figure class="align-center" id="id3">
+<figure class="align-center" id="id2">
 <img alt="../../_images/cropping_process_example.png" src="../../_images/cropping_process_example.png" />
 <figcaption>
-<p><span class="caption-text">Cropping module layout</span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Cropping module layout</span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
 </figcaption>
 </figure>
 </section>
@@ -175,10 +175,10 @@ then either quicksave the results or select the layer you’d like to save and u
 To this end, you can use the folder conversion functions in the <em>Convert</em> tab of Utilities :
 choose your output directory for the results, select the folder containing your cropped volumes in the <em>Convert folder</em>
 section, and click on <strong>“Convert to semantic labels”</strong>.</p>
-<figure class="align-center" id="id4">
+<figure class="align-center" id="id3">
 <a class="reference internal image-reference" href="../../_images/converted_labels.png"><img alt="../../_images/converted_labels.png" src="../../_images/converted_labels.png" style="width: 680.0px; height: 384.0px;" /></a>
 <figcaption>
-<p><span class="caption-text">Example of instance labels from above converted to semantic labels</span><a class="headerlink" href="#id4" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Example of instance labels from above converted to semantic labels</span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
 </figcaption>
 </figure>
 <p>If you wish to remove small objects, or convert a single image, you can open a single image with <strong>CTRL+O</strong>
@@ -213,7 +213,7 @@ of two no matter the size you choose. For optimal performance, make sure to use 
 a power of two still, such as 64 or 120.</p>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
-<p>Using a too large value for the size will cause memory issues. If this happens, restart napari (better handling for these situations might be added in the future).</p>
+<p>Using a too large value for the size will cause memory issues. If this happens, restart the worker with smaller volumes.</p>
 </div>
 <p>You also have the option to use data augmentation, which can improve performance and generalization.
 In most cases this should left enabled.</p>
@@ -245,10 +245,10 @@ whereas the loss should decrease. If the validation starts lowering after reachi
 it could indicate over-fitting, which will negatively impact generalization for the given weights.
 You might want use weights generated from the epoch with the maximum validation score if that is the case.</p>
 </div>
-<figure class="align-center" id="id5">
+<figure class="align-center" id="id4">
 <img alt="../../_images/plots_train.png" src="../../_images/plots_train.png" />
 <figcaption>
-<p><span class="caption-text">Plots displayed by the training module after 40 epochs</span><a class="headerlink" href="#id5" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Plots displayed by the training module after 40 epochs</span><a class="headerlink" href="#id4" title="Permalink to this image"></a></p>
 </figcaption>
 </figure>
 <ul class="simple">
@@ -315,10 +315,10 @@ Please note that using too small of a window might degrade performance, set the 
 <p>If you’d like some of these results to be plotted for you, check out the <a class="reference external" href="https://github.com/AdaptiveMotorControlLab/CellSeg3d/tree/main/notebooks">provided notebooks</a></p>
 </div>
 <p>You can then launch inference and the results will be saved to your specified folder.</p>
-<figure class="align-right" id="id6">
+<figure class="align-right" id="id5">
 <a class="reference internal image-reference" href="../../_images/plot_example_metrics.png"><img alt="../../_images/plot_example_metrics.png" src="../../_images/plot_example_metrics.png" style="width: 183.6px; height: 438.59999999999997px;" /></a>
 <figcaption>
-<p><span class="caption-text">Dice metric score plot</span><a class="headerlink" href="#id6" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Dice metric score plot</span><a class="headerlink" href="#id5" title="Permalink to this image"></a></p>
 </figcaption>
 </figure>
 </section>
@@ -349,10 +349,10 @@ record which slices have been checked or not and the time taken).</p>
 <p>If you wish to see the surroundings of an object to ensure it should be labeled,
 you can use <strong>Shift+Click</strong> on the location you wish to see; this will plot
 the  surroundings of the selected location for easier viewing.</p>
-<figure class="align-center" id="id7">
+<figure class="align-center" id="id6">
 <img alt="../../_images/review_process_example.png" src="../../_images/review_process_example.png" />
 <figcaption>
-<p><span class="caption-text">Layout of the review module</span><a class="headerlink" href="#id7" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Layout of the review module</span><a class="headerlink" href="#id6" title="Permalink to this image"></a></p>
 </figcaption>
 </figure>
 <p>Once you are done with the review of a slice, press the “Not checked” button to switch the status to
@@ -366,11 +366,11 @@ labels (full_plot.ipynb) or notebooks for plotting the results from your inferen
 <p>Simply enter your folder or csv file path and the notebooks will plot your results.
 Make sure you have all required libraries installed and jupyter extensions set up as explained
 for the plots to work.</p>
-<figure class="align-center" id="id8">
+<figure class="align-center" id="id7">
 <img alt="../../_images/stat_plots.png" src="../../_images/stat_plots.png" />
 <figcaption>
 <p><span class="caption-text">Example of the plot present in the notebooks.
-Coordinates are based on centroids, the size represents the volume, the color the sphericity.</span><a class="headerlink" href="#id8" title="Permalink to this image"></a></p>
+Coordinates are based on centroids, the size represents the volume, the color the sphericity.</span><a class="headerlink" href="#id7" title="Permalink to this image"></a></p>
 </figcaption>
 </figure>
 <p>With this complete, you can repeat the workflow as needed.</p>

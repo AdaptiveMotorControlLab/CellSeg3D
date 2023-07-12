@@ -57,7 +57,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../guides/detailed_walkthrough.html">Detailed walkthrough</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/detailed_walkthrough.html">Detailed walkthrough - Supervised learning</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
@@ -70,8 +70,8 @@
 <li class="toctree-l1"><a class="reference internal" href="plugin_convert.html">plugin_convert.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin_metrics.html">plugin_metrics.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="model_framework.html">model_framework.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="model_workers.html">model_workers.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="model_instance_seg.html">model_instance_seg.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workers.html">workers.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="instance_segmentation.html">instance_segmentation.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin_model_inference.html">plugin_model_inference.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin_model_training.html">plugin_model_training.py</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">utils.py</a><ul>
@@ -93,7 +93,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#normalize-y">normalize_y</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#denormalize-y">denormalize_y</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#load-images">load_images</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#format-warning">format_Warning</a></li>
 </ul>
 </li>
 </ul>
@@ -357,27 +356,6 @@ Shows a warning if the padding dimensions are very large.</p>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
-</dd></dl>
-
-</section>
-<section id="format-warning">
-<h3>format_Warning<a class="headerlink" href="#format-warning" title="Permalink to this headline"></a></h3>
-<dl class="py function">
-<dt class="sig sig-object py" id="napari_cellseg3d.utils.format_Warning">
-<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.utils.</span></span><span class="sig-name descname"><span class="pre">format_Warning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lineno</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.utils.format_Warning" title="Permalink to this definition"></a></dt>
-<dd><p>Formats a warning message, use in code with <code class="docutils literal notranslate"><span class="pre">warnings.formatwarning</span> <span class="pre">=</span> <span class="pre">utils.format_Warning</span></code></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>message</strong> – warning message</p></li>
-<li><p><strong>category</strong> – which type of warning has been raised</p></li>
-<li><p><strong>filename</strong> – file</p></li>
-<li><p><strong>lineno</strong> – line number</p></li>
-<li><p><strong>line</strong> – unused</p></li>
-</ul>
-</dd>
-</dl>
-<p>Returns: format</p>
 </dd></dl>
 
 </section>
