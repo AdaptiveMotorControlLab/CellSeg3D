@@ -161,7 +161,9 @@ class ModelFramework(BasePluginFolder):
         else:
             log_name = "Log_report.txt"
 
-        path = str(Path(path) / log_name)
+        path = str(
+            Path(path) / log_name
+        )
 
         if len(log) != 0:
             with Path.open(

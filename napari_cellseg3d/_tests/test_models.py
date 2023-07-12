@@ -1,6 +1,5 @@
-from pathlib import Path
-
 import numpy as np
+from pathlib import Path
 import pytest
 import torch
 from numpy.random import PCG64, Generator
