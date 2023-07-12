@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Training module guide &mdash; napari-cellseg3d  documentation</title>
+  <title>Training module guide - Unsupervised models &mdash; napari-cellseg3d  documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -47,7 +47,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Review module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inference_module_guide.html">Inference module guide</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Training module guide</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Training module guide - Unsupervised models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#training-module-guide-supervised-models">Training module guide - Supervised models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#source-code">Source code</a></li>
 </ul>
 </li>
@@ -60,6 +61,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="training_wnet.html">WNet model training</a></li>
 <li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Detailed walkthrough - Supervised learning</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
@@ -94,7 +96,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Training module guide</li>
+      <li class="breadcrumb-item active">Training module guide - Unsupervised models</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../_sources/res/guides/training_module_guide.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -104,8 +106,16 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="training-module-guide">
-<span id="id1"></span><h1>Training module guide<a class="headerlink" href="#training-module-guide" title="Permalink to this headline"></a></h1>
+  <section id="training-module-guide-unsupervised-models">
+<span id="training-module-guide"></span><h1>Training module guide - Unsupervised models<a class="headerlink" href="#training-module-guide-unsupervised-models" title="Permalink to this headline"></a></h1>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The WNet training is for now only available in the provided jupyter notebook, in the <code class="docutils literal notranslate"><span class="pre">notebooks</span></code> folder.
+Please see the <a class="reference internal" href="training_wnet.html#training-wnet"><span class="std std-ref">WNet model training</span></a> section for more information.</p>
+</div>
+</section>
+<section id="training-module-guide-supervised-models">
+<h1>Training module guide - Supervised models<a class="headerlink" href="#training-module-guide-supervised-models" title="Permalink to this headline"></a></h1>
 <p>This module allows you to train pre-defined Pytorch models for cell segmentation.
 Pre-defined models are stored in napari-cellseg-3d/models.</p>
 <div class="admonition important">
@@ -256,10 +266,10 @@ the training loss values and validation metrics will be automatically plotted
 and shown on napari every time a validation step completes.
 This plot automatically saved each time validation is performed for now.
 The final version is stored separately in the results folder.</p>
-<figure class="align-center" id="id2">
+<figure class="align-center" id="id1">
 <img alt="../../_images/plots_train.png" src="../../_images/plots_train.png" />
 <figcaption>
-<p><span class="caption-text">Example of plots displayed by the training module after 40 epochs</span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Example of plots displayed by the training module after 40 epochs</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
 </figcaption>
 </figure>
 <section id="source-code">

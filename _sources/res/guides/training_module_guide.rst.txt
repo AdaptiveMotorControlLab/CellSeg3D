@@ -1,7 +1,14 @@
 .. _training_module_guide:
 
-Training module guide
-=================================
+Training module guide - Unsupervised models
+==============================================
+
+.. important::
+    The WNet training is for now only available in the provided jupyter notebook, in the ``notebooks`` folder.
+    Please see the :ref:`training_wnet` section for more information.
+
+Training module guide - Supervised models
+==============================================
 
 This module allows you to train pre-defined Pytorch models for cell segmentation.
 Pre-defined models are stored in napari-cellseg-3d/models.

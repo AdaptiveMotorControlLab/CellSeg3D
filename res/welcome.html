@@ -53,7 +53,8 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="guides/review_module_guide.html">Review module guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="guides/inference_module_guide.html">Inference module guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="guides/training_module_guide.html">Training module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/training_module_guide.html">Training module guide - Unsupervised models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/training_module_guide.html#training-module-guide-supervised-models">Training module guide - Supervised models</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Utilities :</span></p>
 <ul>
@@ -63,6 +64,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="guides/training_wnet.html">WNet model training</a></li>
 <li class="toctree-l1"><a class="reference internal" href="guides/detailed_walkthrough.html">Detailed walkthrough - Supervised learning</a></li>
 <li class="toctree-l1"><a class="reference internal" href="guides/custom_model_template.html">Advanced : Declaring a custom model</a></li>
 </ul>
@@ -120,7 +122,7 @@ It should be adaptable to other tasks related to detection of 3D objects, as lon
 <ul class="simple">
 <li><dl class="simple">
 <dt>Main modules :</dt><dd><ul>
-<li><p>Training : <a class="reference internal" href="guides/training_module_guide.html#training-module-guide"><span class="std std-ref">Training module guide</span></a></p></li>
+<li><p>Training : <a class="reference internal" href="guides/training_module_guide.html#training-module-guide"><span class="std std-ref">Training module guide - Unsupervised models</span></a></p></li>
 <li><p>Inference: <a class="reference internal" href="guides/inference_module_guide.html#inference-module-guide"><span class="std std-ref">Inference module guide</span></a></p></li>
 <li><p>Review : <a class="reference internal" href="guides/review_module_guide.html#loader-module-guide"><span class="std std-ref">Review module guide</span></a></p></li>
 </ul>
@@ -139,6 +141,7 @@ It should be adaptable to other tasks related to detection of 3D objects, as lon
 <ul class="simple">
 <li><dl class="simple">
 <dt>Advanced :</dt><dd><ul>
+<li><p>Training WNet (in jupyter, support might be added for plugin later) : <a class="reference internal" href="guides/training_wnet.html#training-wnet"><span class="std std-ref">WNet model training</span></a></p></li>
 <li><p>Defining custom models directly in the plugin (WIP) : <a class="reference internal" href="guides/custom_model_template.html#custom-model-guide"><span class="std std-ref">Advanced : Declaring a custom model</span></a></p></li>
 </ul>
 </dd>
@@ -165,11 +168,9 @@ It should be adaptable to other tasks related to detection of 3D objects, as lon
 <div class="admonition important">
 <p class="admonition-title">Important</p>
 <p>This package requires you have napari installed with PyQt5 or PySide2 first.
-If you do not have a Qt backend you can use :</p>
-<blockquote>
-<div><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">napari-cellseg3d[all]</span></code></p>
-</div></blockquote>
-<p>to install PyQt5 by default.</p>
+If you do not have a Qt backend you can use :
+<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">napari-cellseg3d[all]</span></code>
+to install PyQt5 by default.</p>
 </div>
 <p>It also depends on PyTorch and some optional dependencies of MONAI. These come in the pip package as requirements, but if
 you need further assistance see below.</p>

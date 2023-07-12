@@ -44,10 +44,6 @@ clear_small_objects
 **************************************
 .. autofunction:: napari_cellseg3d.code_models.instance_segmentation::clear_small_objects
 
-to_instance
-**************************************
-.. autofunction:: napari_cellseg3d.code_models.instance_segmentation::to_instance
-
 to_semantic
 **************************************
 .. autofunction:: napari_cellseg3d.code_models.instance_segmentation::to_semantic
