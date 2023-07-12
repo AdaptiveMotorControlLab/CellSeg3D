@@ -720,8 +720,13 @@ def get_dataset(config):
         volume_directory=config.train_volume_directory
     )
     train_files = [d.get("image") for d in train_files]
+    # logger.debug(f"train_files: {train_files}")
     volumes = tiff.imread(train_files).astype(np.float32)
     volume_shape = volumes.shape
+    # logger.debug(f"volume_shape: {volume_shape}")
+
+    if len(volume_shape) == 3:
+        volumes = np.expand_dims(volumes, axis=0)
 
     if config.normalize_input:
         volumes = np.array(
