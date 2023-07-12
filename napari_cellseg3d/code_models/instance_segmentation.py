@@ -71,10 +71,10 @@ class InstanceMethod:
                     self,
                     widget,
                     ui.Slider(
-                        0,
-                        100,
-                        1,
-                        divide_factor=100,
+                        lower=0,
+                        upper=1000,
+                        step=10,
+                        divide_factor=1000,
                         text_label="",
                         parent=widget_parent,
                     ),
@@ -436,11 +436,11 @@ class Watershed(InstanceMethod):
         self.sliders[
             0
         ].tooltips = "Probability threshold for foreground object"
-        self.sliders[0].setValue(50)
+        self.sliders[0].setValue(500)
 
         self.sliders[1].label.setText("Seed probability threshold")
         self.sliders[1].tooltips = "Probability threshold for seeding"
-        self.sliders[1].setValue(90)
+        self.sliders[1].setValue(900)
 
         self.counters[0].label.setText("Small object removal")
         self.counters[0].tooltips = (
@@ -482,7 +482,7 @@ class ConnectedComponents(InstanceMethod):
         self.sliders[
             0
         ].tooltips = "Probability threshold for foreground object"
-        self.sliders[0].setValue(80)
+        self.sliders[0].setValue(800)
 
         self.counters[0].label.setText("Small objects removal")
         self.counters[0].tooltips = (

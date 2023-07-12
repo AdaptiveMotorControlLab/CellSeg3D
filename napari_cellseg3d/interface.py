@@ -493,8 +493,10 @@ class Slider(QSlider):
 
         if self._divide_factor == 1:
             self._value_label.setFixedWidth(20)
-        else:
+        elif self._divide_factor == 10:
             self._value_label.setFixedWidth(30)
+        else:
+            self._value_label.setFixedWidth(40)
         self._value_label.setAlignment(Qt.AlignCenter)
         self._value_label.setSizePolicy(
             QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed
