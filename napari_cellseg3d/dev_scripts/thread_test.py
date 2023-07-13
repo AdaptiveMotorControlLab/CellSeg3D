@@ -1,4 +1,5 @@
 import time
+
 import napari
 from napari.qt.threading import thread_worker
 from numpy.random import PCG64, Generator
@@ -18,6 +19,7 @@ rand_gen = Generator(PCG64(12345))
 # Tutorial code from napari forums #
 ####################################
 # not covered by tests
+
 
 @thread_worker
 def two_way_communication_with_args(start, end):
@@ -134,7 +136,7 @@ def create_connected_widget(viewer):
 
 
 if __name__ == "__main__":
-    viewer = napari.view_image(rand_gen.random(512, 512))
+    viewer = napari.view_image(rand_gen.random((512, 512)))
     w = create_connected_widget(viewer)
     viewer.window.add_dock_widget(w)
 

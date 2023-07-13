@@ -1,18 +1,18 @@
 from pathlib import Path
-from tifffile import imread
-import numpy as np
+
 from napari.qt.threading import GeneratorWorker
+from numpy.random import PCG64, Generator
+from tifffile import imread
 
 from napari_cellseg3d._tests.fixtures import LogFixture
-from napari_cellseg3d.code_models.instance_segmentation import (
-    INSTANCE_SEGMENTATION_METHOD_LIST,
-)
 from napari_cellseg3d.code_models.models.model_test import TestModel
 from napari_cellseg3d.code_plugins.plugin_model_inference import (
     InferenceResult,
     Inferer,
 )
-from napari_cellseg3d.config import MODEL_LIST, InferenceWorkerConfig
+from napari_cellseg3d.config import MODEL_LIST
+
+rand_gen = Generator(PCG64(12345))
 
 
 class WorkerFixture(GeneratorWorker):
@@ -23,6 +23,7 @@ class WorkerFixture(GeneratorWorker):
         while True:
             yield InferenceResult(result=None, instance_labels=None)
             break
+
 
 def test_inference(make_napari_viewer_proxy, qtbot):
     im_path = str(Path(__file__).resolve().parent / "res/test.tif")
@@ -77,11 +78,11 @@ def test_inference(make_napari_viewer_proxy, qtbot):
     # assert res.instance_labels.shape == (8, 8, 8)
     # widget.on_yield(res)
 
-    mock_image = np.random.rand(10, 10, 10)
+    mock_image = rand_gen.random(size=(10, 10, 10))
     mock_results = InferenceResult(
         image_id=0,
         original=mock_image,
-        instance_labels=np.random.randint(0, 10, (10, 10, 10)),
+        instance_labels=rand_gen.integers(0, 10, (10, 10, 10)),
         crf_results=mock_image,
         stats=None,
         result=mock_image,
@@ -95,7 +96,9 @@ def test_inference(make_napari_viewer_proxy, qtbot):
     widget._setup_worker()
     # widget.config.show_results = True
     with qtbot.waitSignal(widget.worker.yielded, timeout=10000) as blocker:
-        blocker.connect(widget.worker.errored)  # Can add other signals to blocker
+        blocker.connect(
+            widget.worker.errored
+        )  # Can add other signals to blocker
         widget.worker.start()
 
     assert widget.on_finish()

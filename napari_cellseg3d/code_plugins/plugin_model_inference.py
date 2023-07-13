@@ -579,24 +579,22 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             opacity=0.8,
         )
         if result.crf_results is not None:
-            logger.debug(
-                f"CRF results shape : {result.crf_results.shape}"
-            )
+            logger.debug(f"CRF results shape : {result.crf_results.shape}")
             viewer.add_image(
                 result.crf_results,
                 name=f"CRF_results_image_{image_id}",
                 colormap="viridis",
             )
         if (
-                result.instance_labels is not None
-                and self.worker_config.post_process_config.instance.enabled
+            result.instance_labels is not None
+            and self.worker_config.post_process_config.instance.enabled
         ):
             method_name = (
                 self.worker_config.post_process_config.instance.method.name
             )
 
             number_cells = (
-                    np.unique(result.instance_labels.flatten()).size - 1
+                np.unique(result.instance_labels.flatten()).size - 1
             )  # remove background
 
             name = f"({number_cells} objects)_{method_name}_instance_labels_{image_id}"
@@ -605,18 +603,13 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
             from napari_cellseg3d.utils import LOGGER as log
 
-            if result.stats is not None and isinstance(
-                    result.stats, list
-            ):
+            if result.stats is not None and isinstance(result.stats, list):
                 log.debug(f"len stats : {len(result.stats)}")
 
                 for i, stats in enumerate(result.stats):
                     # stats = result.stats
 
-                    if (
-                            self.worker_config.compute_stats
-                            and stats is not None
-                    ):
+                    if self.worker_config.compute_stats and stats is not None:
                         stats_dict = stats.get_dict()
                         stats_df = pd.DataFrame(stats_dict)
 
@@ -633,6 +626,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                     # self.log.print_and_log(
                     #     f"OBJECTS DETECTED : {number_cells}\n"
                     # )
+
     def _setup_worker(self):
         if self.folder_choice.isChecked():
             self.worker_config.images_filepaths = self.images_filepaths
@@ -703,7 +697,6 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 raise RuntimeError("Worker config was not set correctly")
             self._setup_worker()
             self.btn_close.setVisible(False)
-
 
         if self.worker.is_running:  # if worker is running, tries to stop
             self.log.print_and_log(
@@ -814,7 +807,6 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.worker.quit()
         self.on_finish()
 
-
     def on_finish(self):
         """Catches finished signal from worker, resets workspace for next run."""
         self.log.print_and_log(f"\nWorker finished at {utils.get_time()}")
@@ -845,7 +837,6 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         # check that viewer checkbox is on and that max number of displays has not been reached.
         # widget.log.print_and_log(result)
         try:
-
             image_id = result.image_id
             if self.worker_config.images_filepaths is not None:
                 total = len(self.worker_config.images_filepaths)
@@ -854,9 +845,9 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self._update_progress_bar(image_id, total)
 
             if (
-                    self.config.show_results
-                    and image_id <= self.config.show_results_count
+                self.config.show_results
+                and image_id <= self.config.show_results_count
             ):
-               self._display_results(result)
+                self._display_results(result)
         except Exception as e:
             self.on_error(e)

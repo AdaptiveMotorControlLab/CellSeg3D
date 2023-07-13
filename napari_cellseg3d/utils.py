@@ -7,8 +7,6 @@ from typing import TYPE_CHECKING, Union
 import napari
 import numpy as np
 from monai.transforms import Zoom
-from skimage import io
-from skimage.filters import gaussian
 from tifffile import imread, imwrite
 
 if TYPE_CHECKING:
@@ -29,7 +27,9 @@ Definitions of utility functions, classes, and variables
 
 ####################
 # viewer utils
-def save_folder(results_path, folder_name, images, image_paths, exist_ok=False):
+def save_folder(
+    results_path, folder_name, images, image_paths, exist_ok=False
+):
     """
     Saves a list of images in a folder
 
@@ -92,6 +92,7 @@ def show_result(viewer, layer, image, name):
         LOGGER.warning(
             f"Results not shown, unsupported layer type {type(layer)}"
         )
+
 
 class Singleton(type):
     """
@@ -387,6 +388,7 @@ def fill_list_in_between(lst, n, fill_value):
             for _j in range(n):
                 new_list.append(fill_value)
             return new_list
+    return None
 
 
 def parse_default_path(possible_paths):
@@ -469,5 +471,3 @@ def load_images(
         # images_original = dask_imread(filename_pattern_original)
 
     return imread(str(filename_pattern_original))  # tifffile imread
-
-

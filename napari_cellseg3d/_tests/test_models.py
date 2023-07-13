@@ -1,6 +1,6 @@
-import numpy as np
 from pathlib import Path
 
+import numpy as np
 import pytest
 import torch
 from numpy.random import PCG64, Generator
@@ -111,14 +111,19 @@ def test_crf_worker(qtbot):
 
 def test_pretrained_weights_compatibility():
     from napari_cellseg3d.code_models.workers import WeightsDownloader
-    from napari_cellseg3d.config import MODEL_LIST
-    from napari_cellseg3d.config import PRETRAINED_WEIGHTS_DIR
+    from napari_cellseg3d.config import MODEL_LIST, PRETRAINED_WEIGHTS_DIR
 
-    for model_name in MODEL_LIST.keys():
+    for model_name in MODEL_LIST:
         file_name = MODEL_LIST[model_name].weights_file
         WeightsDownloader().download_weights(model_name, file_name)
-        model = MODEL_LIST[model_name](input_img_size=[128,128,128])
+        model = MODEL_LIST[model_name](input_img_size=[128, 128, 128])
         try:
-            model.load_state_dict(torch.load(str(Path(PRETRAINED_WEIGHTS_DIR) / file_name), map_location="cpu"), strict=True)
+            model.load_state_dict(
+                torch.load(
+                    str(Path(PRETRAINED_WEIGHTS_DIR) / file_name),
+                    map_location="cpu",
+                ),
+                strict=True,
+            )
         except RuntimeError:
             pytest.fail(f"Failed to load weights for {model_name}")
