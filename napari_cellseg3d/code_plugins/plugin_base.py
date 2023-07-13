@@ -61,6 +61,7 @@ class BasePluginSingleImage(QTabWidget):
         ################
         self.layer_choice = ui.RadioButton("Layer", parent=self)
         self.folder_choice = ui.RadioButton("Folder", parent=self)
+        self.filetype = None
         self.radio_buttons = ui.combine_blocks(
             self.folder_choice, self.layer_choice
         )
@@ -68,7 +69,10 @@ class BasePluginSingleImage(QTabWidget):
         ################
         # Image widgets
         self.image_filewidget = ui.FilePathWidget(
-            "Image path", self._show_dialog_images, self
+            "Image path",
+            self._show_dialog_images,
+            self,
+            required=True,
         )
 
         self.image_layer_loader: ui.LayerSelecter = ui.LayerSelecter(
@@ -81,7 +85,10 @@ class BasePluginSingleImage(QTabWidget):
         ################
         # Label widgets
         self.labels_filewidget = ui.FilePathWidget(
-            "Label path", self._show_dialog_labels, parent=self
+            "Label path",
+            self._show_dialog_labels,
+            parent=self,
+            required=True,
         )
 
         self.label_layer_loader: ui.LayerSelecter = ui.LayerSelecter(
@@ -95,10 +102,6 @@ class BasePluginSingleImage(QTabWidget):
         # Results widget
         self.results_filewidget = ui.FilePathWidget(
             "Saving path", self._load_results_path, parent=self
-        )
-
-        self.filetype_choice = ui.DropdownMenu(
-            [".tif", ".tiff"], text_label="File format"
         )
         ########
         qInstallMessageHandler(ui.handle_adjust_errors_wrapper(self))
@@ -125,7 +128,7 @@ class BasePluginSingleImage(QTabWidget):
                 self.radio_buttons,
                 self.image_layer_loader,
                 self.label_layer_loader,
-                self.filetype_choice,
+                # self.filetype_choice,
                 self.image_filewidget,
                 self.labels_filewidget,
                 self.save_label,
@@ -165,7 +168,7 @@ class BasePluginSingleImage(QTabWidget):
         # Show when folder is selected
         f = self.folder_choice
 
-        self._show_io_element(self.filetype_choice, f)
+        # self._show_io_element(self.filetype_choice, f)
         if self._show_image_io:
             self._show_io_element(self.image_filewidget, f)
         else:
@@ -217,44 +220,49 @@ class BasePluginSingleImage(QTabWidget):
         """Method to be defined by children classes"""
         raise NotImplementedError("To be defined in child classes")
 
-    def _show_filetype_choice(self):
-        """Method to show/hide the filetype choice when "loading as folder" is (de)selected"""
-        show = self.load_as_stack_choice.isChecked()
-        if show is not None:
-            self.filetype_choice.setVisible(show)
-            # self.lbl_ft.setVisible(show)
+    # def _show_filetype_choice(self): # TODO(cyril): remove?
+    #     """Method to show/hide the filetype choice when "loading as folder" is (de)selected"""
+    #     show = self.load_as_stack_choice.isChecked()
+    #     if show is not None:
+    #         self.filetype_choice.setVisible(show)
+    #         # self.lbl_ft.setVisible(show)
 
     def _show_file_dialog(self):
-        """Open file dialog and process path depending on single file/folder loading behaviour"""
-        if self.load_as_stack_choice.isChecked():
-            choice = ui.open_folder_dialog(
-                self,
-                self._default_path,
-                filetype=f"Image file (*{self.filetype_choice.currentText()})",
-            )
-        else:
-            f_name = ui.open_file_dialog(self, self._default_path)
-            choice = str(f_name[0])
-            self.filetype = str(Path(choice).suffix)
+        """Open file dialog and process path for a single file"""
+        # if self.load_as_stack_choice.isChecked():
+        # return ui.open_folder_dialog(
+        #     self,
+        #     self._default_path,
+        #     filetype=f"Image file (*{self.filetype_choice.currentText()})",
+        # )
+        # else:
+        logger.debug("Opening file dialog")
+        f_name = ui.open_file_dialog(self, self._default_path)
+        logger.debug(f"File dialog returned {f_name}")
+        choice = str(f_name[0])
+        self.filetype = str(Path(choice).suffix)
+        logger.debug(f"Filetype set to {self.filetype}")
         return choice
 
     def _show_dialog_images(self):
         """Show file dialog and set image path"""
         f_name = self._show_file_dialog()
-        if type(f_name) is str and f_name != "":
+        if type(f_name) is str and Path(f_name).is_file():
             self.image_path = f_name
+            logger.debug(f"Image path set to {self.image_path}")
             self.image_filewidget.text_field.setText(self.image_path)
             self._update_default()
 
     def _show_dialog_labels(self):
         """Show file dialog and set label path"""
         f_name = self._show_file_dialog()
-        if isinstance(f_name, str) and f_name != "":
+        if isinstance(f_name, str) and Path(f_name).is_file():
             self.label_path = f_name
+            logger.debug(f"Label path set to {self.label_path}")
             self.labels_filewidget.text_field.setText(self.label_path)
             self._update_default()
 
-    def _check_results_path(self, folder):
+    def _check_results_path(self, folder: str):
         if folder != "" and isinstance(folder, str):
             if not Path(folder).is_dir():
                 Path(folder).mkdir(parents=True, exist_ok=True)
@@ -262,6 +270,8 @@ class BasePluginSingleImage(QTabWidget):
                     return False
                 logger.info(f"Created missing results folder : {folder}")
             return True
+        if not isinstance(folder, str):
+            raise TypeError(f"Expected string, got {type(folder)}")
         return False
 
     def _load_results_path(self):
@@ -302,7 +312,6 @@ class BasePluginSingleImage(QTabWidget):
     def remove_from_viewer(self):
         """Removes the widget from the napari window.
         Can be re-implemented in children classes if needed"""
-
         self.remove_docked_widgets()
         self._viewer.window.remove_dock_widget(self)
 
@@ -394,14 +403,14 @@ class BasePluginFolder(BasePluginSingleImage):
         Returns:
            array(str): all loaded file paths
         """
-        filetype = self.filetype_choice.currentText()
+        # filetype = self.filetype_choice.currentText()
         directory = ui.open_folder_dialog(self, self._default_folders)
 
-        file_paths = sorted(Path(directory).glob("*" + filetype))
+        file_paths = sorted(Path(directory).glob("*" + ".tif"))
         if len(file_paths) == 0:
             logger.warning(
-                f"The folder does not contain any compatible {filetype} files.\n"
-                f"Please check the validity of the folder and images."
+                "The folder does not contain any compatible .tif files.\n"
+                "Please check the validity of the folder and images."
             )
 
         return file_paths

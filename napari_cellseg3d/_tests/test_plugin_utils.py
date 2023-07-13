@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.random import PCG64, Generator
 
+from napari_cellseg3d.code_plugins.plugin_crop import Cropping
 from napari_cellseg3d.code_plugins.plugin_utilities import (
     UTILITIES_WIDGETS,
     Utilities,
@@ -32,3 +33,29 @@ def test_utils_plugin(make_napari_viewer_proxy):
         assert len(image_layer.data.shape) == 3
         assert len(label_layer.data.shape) == 3
         widget.utils_widgets[i]._start()
+
+
+def test_crop_widget(make_napari_viewer_proxy):
+    view = make_napari_viewer_proxy()
+    widget = Cropping(view)
+
+    image = rand_gen.random((10, 10, 10)).astype(np.uint8)
+    image_layer_1 = view.add_image(image, name="image")
+    image_layer_2 = view.add_labels(image, name="image2")
+
+    view.window.add_dock_widget(widget)
+    view.dims.ndisplay = 3
+    assert len(image_layer_1.data.shape) == 3
+    assert len(image_layer_2.data.shape) == 3
+    widget.crop_second_image_choice.setChecked(True)
+    widget.aniso_widgets.checkbox.setChecked(True)
+
+    widget._start()
+    widget.create_new_layer.setChecked(True)
+    widget.quicksave()
+
+    widget.sliders[0].setValue(2)
+    widget.sliders[1].setValue(2)
+    widget.sliders[2].setValue(2)
+
+    widget._start()

@@ -23,8 +23,6 @@ def test_training(make_napari_viewer_proxy, qtbot):
 
     assert not widget.check_ready()
 
-    assert widget.filetype_choice.currentText() == ".tif"
-
     widget.images_filepaths = [im_path]
     widget.labels_filepaths = [im_path]
     widget.epoch_choice.setValue(1)

@@ -191,17 +191,16 @@ def test_normalize_x():
 
 def test_load_images():
     path = Path(__file__).resolve().parent / "res"
-    with pytest.raises(
-        ValueError, match="If loading as a folder, filetype must be specified"
-    ):
-        images = utils.load_images(str(path), as_folder=True)
-    with pytest.raises(
-        NotImplementedError,
-        match="Loading as folder not implemented yet. Use napari to load as folder",
-    ):
-        images = utils.load_images(str(path), as_folder=True, filetype=".tif")
-    # assert len(images) == 1
-
+    # with pytest.raises(
+    #     ValueError, match="If loading as a folder, filetype must be specified"
+    # ):
+    #     images = utils.load_images(str(path), as_folder=True)
+    # with pytest.raises(
+    #     NotImplementedError,
+    #     match="Loading as folder not implemented yet. Use napari to load as folder",
+    # ):
+    #     images = utils.load_images(str(path), as_folder=True, filetype=".tif")
+    # # assert len(images) == 1
     path = path / "test.tif"
     images = utils.load_images(str(path))
     assert images.shape == (6, 6, 6)

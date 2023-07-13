@@ -360,7 +360,7 @@ class InferenceWorker(GeneratorWorker):
         if config.keep_on_cpu:
             self.log("Dataset loaded to CPU")
         else:
-            self.log(f"Dataset loaded on {config.device}")
+            self.log(f"Dataset loaded on {config.device} device")
 
         if config.post_process_config.zoom.enabled:
             self.log(

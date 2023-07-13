@@ -475,9 +475,9 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ui.add_widgets(
             data_layout,
             [
-                ui.combine_blocks(
-                    self.filetype_choice, self.filetype_choice.label
-                ),  # file extension
+                # ui.combine_blocks(
+                #     self.filetype_choice, self.filetype_choice.label
+                # ),  # file extension
                 self.image_filewidget,
                 self.labels_filewidget,
                 self.results_filewidget,

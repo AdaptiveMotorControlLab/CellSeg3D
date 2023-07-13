@@ -430,9 +430,7 @@ def get_time_filepath():
     return f"{datetime.now():%H_%M_%S}"
 
 
-def load_images(
-    dir_or_path, filetype="", as_folder: bool = False
-):  # TODO(cyril):refactor w/o as_folder
+def load_images(dir_or_path, filetype="", as_folder: bool = False):
     """Loads the images in ``directory``, with different behaviour depending on ``filetype`` and ``as_folder``
 
     * If ``as_folder`` is **False**, will load the path as a single 3D **.tif** image.
@@ -455,19 +453,18 @@ def load_images(
         np.array: array with loaded images
     """
 
-    if not as_folder:
-        filename_pattern_original = Path(dir_or_path)
-        # print(filename_pattern_original)
-    elif as_folder and filetype != "":
-        filename_pattern_original = Path(dir_or_path + "/*" + filetype)
-        # print(filename_pattern_original)
-    else:
-        raise ValueError("If loading as a folder, filetype must be specified")
-
-    if as_folder:
-        raise NotImplementedError(
-            "Loading as folder not implemented yet. Use napari to load as folder"
-        )
-        # images_original = dask_imread(filename_pattern_original)
-
+    # if not as_folder:
+    filename_pattern_original = Path(dir_or_path)
     return imread(str(filename_pattern_original))  # tifffile imread
+    # print(filename_pattern_original)
+    # elif as_folder and filetype != "":
+    # filename_pattern_original = Path(dir_or_path + "/*" + filetype)
+    # print(filename_pattern_original)
+    # else:
+    #     raise ValueError("If loading as a folder, filetype must be specified")
+
+    # if as_folder:
+    #     raise NotImplementedError(
+    #         "Loading as folder not implemented yet. Use napari to load as folder"
+    # images_original = dask_imread(filename_pattern_original)
+    #     )

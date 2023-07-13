@@ -552,7 +552,10 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
     def _display_results(self, result: InferenceResult):
         viewer = self._viewer
-        zoom = self.worker_config.post_process_config.zoom.zoom_values
+        if self.worker_config.post_process_config.zoom.enabled:
+            zoom = self.worker_config.post_process_config.zoom.zoom_values
+        else:
+            zoom = [1, 1, 1]
         image_id = result.image_id
         model_name = self.model_choice.currentText()
 
@@ -781,7 +784,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             model_info=self.model_info,
             weights_config=self.weights_config,
             results_path=self.results_path,
-            filetype=self.filetype_choice.currentText(),
+            filetype=".tif",
             keep_on_cpu=self.keep_data_on_cpu_box.isChecked(),
             compute_stats=self.save_stats_to_csv_box.isChecked(),
             post_process_config=self.post_process_config,
