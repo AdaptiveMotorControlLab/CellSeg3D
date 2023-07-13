@@ -3,8 +3,8 @@ from pathlib import Path
 from napari_cellseg3d.code_plugins import plugin_review as rev
 
 
-def test_launch_review(make_napari_viewer):
-    view = make_napari_viewer()
+def test_launch_review(make_napari_viewer_proxy):
+    view = make_napari_viewer_proxy()
     widget = rev.Reviewer(view)
 
     # widget.filetype_choice.setCurrentIndex(0)

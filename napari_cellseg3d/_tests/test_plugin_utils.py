@@ -9,8 +9,8 @@ from napari_cellseg3d.code_plugins.plugin_utilities import (
 rand_gen = Generator(PCG64(12345))
 
 
-def test_utils_plugin(make_napari_viewer):
-    view = make_napari_viewer()
+def test_utils_plugin(make_napari_viewer_proxy):
+    view = make_napari_viewer_proxy()
     widget = Utilities(view)
 
     image = rand_gen.random((10, 10, 10)).astype(np.uint8)

@@ -32,7 +32,7 @@ class WNet_(WNet_encoder):
     #     # enc = self.forward_encoder(x)
     #     # return self.forward_decoder(enc)
 
-    def load_state_dict(self, state_dict, strict=False):
+    def load_state_dict(self, state_dict, strict=True):
         """Load the model state dict for inference, without the decoder weights."""
         encoder_checkpoint = state_dict.copy()
         for k in state_dict:

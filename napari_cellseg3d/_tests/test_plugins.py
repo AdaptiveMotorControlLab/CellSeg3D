@@ -4,12 +4,12 @@ from napari_cellseg3d import plugins
 from napari_cellseg3d.code_plugins import plugin_metrics as m
 
 
-def test_all_plugins_import(make_napari_viewer):
+def test_all_plugins_import(make_napari_viewer_proxy):
     plugins.napari_experimental_provide_dock_widget()
 
 
-def test_plugin_metrics(make_napari_viewer):
-    viewer = make_napari_viewer()
+def test_plugin_metrics(make_napari_viewer_proxy):
+    viewer = make_napari_viewer_proxy()
     w = m.MetricsUtils(viewer=viewer, parent=None)
     viewer.window.add_dock_widget(w)
 

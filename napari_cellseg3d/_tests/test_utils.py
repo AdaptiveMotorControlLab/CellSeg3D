@@ -194,7 +194,7 @@ def test_parse_default_path():
     assert utils.parse_default_path(path) == long_path
 
 
-def test_thread_test(make_napari_viewer):
-    viewer = make_napari_viewer()
+def test_thread_test(make_napari_viewer_proxy):
+    viewer = make_napari_viewer_proxy()
     w = thread_test.create_connected_widget(viewer)
     viewer.window.add_dock_widget(w)

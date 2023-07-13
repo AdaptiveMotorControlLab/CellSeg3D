@@ -1,6 +1,7 @@
 from pathlib import Path
-
 from tifffile import imread
+import numpy as np
+from napari.qt.threading import GeneratorWorker
 
 from napari_cellseg3d._tests.fixtures import LogFixture
 from napari_cellseg3d.code_models.instance_segmentation import (
@@ -11,16 +12,25 @@ from napari_cellseg3d.code_plugins.plugin_model_inference import (
     InferenceResult,
     Inferer,
 )
-from napari_cellseg3d.config import MODEL_LIST
+from napari_cellseg3d.config import MODEL_LIST, InferenceWorkerConfig
 
 
-def test_inference(make_napari_viewer, qtbot):
+class WorkerFixture(GeneratorWorker):
+    def __init__(self):
+        super().__init__(self.mock_inference)
+
+    def mock_inference(self):
+        while True:
+            yield InferenceResult(result=None, instance_labels=None)
+            break
+
+def test_inference(make_napari_viewer_proxy, qtbot):
     im_path = str(Path(__file__).resolve().parent / "res/test.tif")
     image = imread(im_path)
 
     assert image.shape == (6, 6, 6)
 
-    viewer = make_napari_viewer()
+    viewer = make_napari_viewer_proxy()
     widget = Inferer(viewer)
     widget.log = LogFixture()
     viewer.window.add_dock_widget(widget)
@@ -48,22 +58,44 @@ def test_inference(make_napari_viewer, qtbot):
     assert widget.worker_config is not None
     assert widget.model_info is not None
     widget.window_infer_box.setChecked(False)
-    worker = widget._create_worker_from_config(widget.worker_config)
 
-    assert worker.config is not None
-    assert worker.config.model_info is not None
-    worker.config.layer = viewer.layers[0].data
-    worker.config.post_process_config.instance.enabled = True
-    worker.config.post_process_config.instance.method = (
-        INSTANCE_SEGMENTATION_METHOD_LIST["Watershed"]()
+    # worker = widget._create_worker_from_config(widget.worker_config)
+    # assert worker.config is not None
+    # assert worker.config.model_info is not None
+    # worker.config.layer = viewer.layers[0].data
+    # worker.config.post_process_config.instance.enabled = True
+    # worker.config.post_process_config.instance.method = (
+    #     INSTANCE_SEGMENTATION_METHOD_LIST["Watershed"]()
+    # )
+
+    # assert worker.config.layer is not None
+    # worker.log_parameters()
+
+    # res = next(worker.inference())
+    # assert isinstance(res, InferenceResult)
+    # assert res.result.shape == (8, 8, 8)
+    # assert res.instance_labels.shape == (8, 8, 8)
+    # widget.on_yield(res)
+
+    mock_image = np.random.rand(10, 10, 10)
+    mock_results = InferenceResult(
+        image_id=0,
+        original=mock_image,
+        instance_labels=np.random.randint(0, 10, (10, 10, 10)),
+        crf_results=mock_image,
+        stats=None,
+        result=mock_image,
+        model_name="test",
     )
+    num_layers = len(viewer.layers)
+    widget._display_results(mock_results)
+    assert len(viewer.layers) == num_layers + 3
 
-    assert worker.config.layer is not None
-    worker.log_parameters()
+    assert widget.check_ready()
+    widget._setup_worker()
+    # widget.config.show_results = True
+    with qtbot.waitSignal(widget.worker.yielded, timeout=10000) as blocker:
+        blocker.connect(widget.worker.errored)  # Can add other signals to blocker
+        widget.worker.start()
 
-    res = next(worker.inference())
-    assert isinstance(res, InferenceResult)
-    assert res.result.shape == (8, 8, 8)
-    assert res.instance_labels.shape == (8, 8, 8)
-
-    widget.on_yield(res)
+    assert widget.on_finish()

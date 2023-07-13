@@ -10,10 +10,10 @@ from napari_cellseg3d.code_plugins.plugin_model_training import (
 from napari_cellseg3d.config import MODEL_LIST
 
 
-def test_training(make_napari_viewer, qtbot):
+def test_training(make_napari_viewer_proxy, qtbot):
     im_path = str(Path(__file__).resolve().parent / "res/test.tif")
 
-    viewer = make_napari_viewer()
+    viewer = make_napari_viewer_proxy()
     widget = Trainer(viewer)
     widget.log = LogFixture()
     viewer.window.add_dock_widget(widget)
@@ -62,8 +62,8 @@ def test_training(make_napari_viewer, qtbot):
     #     assert widget.worker is not None
 
 
-def test_update_loss_plot(make_napari_viewer):
-    view = make_napari_viewer()
+def test_update_loss_plot(make_napari_viewer_proxy):
+    view = make_napari_viewer_proxy()
     widget = Trainer(view)
 
     widget.worker_config = config.TrainingWorkerConfig()

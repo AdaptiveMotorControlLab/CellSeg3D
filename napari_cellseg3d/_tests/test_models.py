@@ -59,9 +59,10 @@ def test_soft_ncuts_loss():
         device="cpu",
         intensity_sigma=4,
         spatial_sigma=4,
-        radius=None,
+        radius=None,  # test radius=None init
     )
     assert loss.radius == 5
+
 
 def test_crf_batch():
     dims = 8
