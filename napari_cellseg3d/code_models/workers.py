@@ -547,7 +547,7 @@ class InferenceWorker(GeneratorWorker):
         original=None,
         stats=None,
         i=0,
-    ):
+    ) -> InferenceResult:
         if not from_layer and original is None:
             raise ValueError(
                 "If the image is not from a layer, an original should always be available"
@@ -696,9 +696,10 @@ class InferenceWorker(GeneratorWorker):
         self.save_image(out, i=i)
         instance_labels, stats = self.get_instance_result(out, i=i)
         if self.config.use_crf:
+            crf_in = inputs.detach().cpu().numpy()
             try:
                 crf_results = self.run_crf(
-                    inputs,
+                    crf_in,
                     out,
                     aniso_transform=self.aniso_transform,
                     image_id=i,

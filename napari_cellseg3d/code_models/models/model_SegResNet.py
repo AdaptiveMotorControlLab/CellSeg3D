@@ -19,10 +19,10 @@ class SegResNet_(SegResNetVAE):
         # logger.debug(f"SegResNetVAE.forward: {res[0].shape}")
         return res[0]
 
-    def get_model_test(self, size):
-        return SegResNetVAE(
-            size, in_channels=1, out_channels=1, dropout_prob=0.3
-        )
+    # def get_model_test(self, size):
+    #     return SegResNetVAE(
+    #         size, in_channels=1, out_channels=1, dropout_prob=0.3
+    #     )
 
     # def get_output(model, input):
     #     out = model(input)[0]

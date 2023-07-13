@@ -11,6 +11,7 @@ from napari_cellseg3d.code_models.crf import (
     crf_batch,
     crf_with_config,
 )
+from napari_cellseg3d.code_models.models.model_TRAILMAP_MS import TRAILMAP_MS_
 from napari_cellseg3d.code_models.models.wnet.soft_Ncuts import SoftNCutsLoss
 from napari_cellseg3d.config import MODEL_LIST, CRFConfig
 
@@ -127,3 +128,13 @@ def test_pretrained_weights_compatibility():
             )
         except RuntimeError:
             pytest.fail(f"Failed to load weights for {model_name}")
+
+
+def test_trailmap_init():
+    test = TRAILMAP_MS_(
+        input_img_size=[128, 128, 128],
+        in_channels=1,
+        out_channels=1,
+        dropout_prob=0.3,
+    )
+    assert isinstance(test, TRAILMAP_MS_)
