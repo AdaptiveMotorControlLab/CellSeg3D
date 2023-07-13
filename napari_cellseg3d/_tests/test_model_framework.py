@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from napari_cellseg3d.config import MODEL_LIST
 from napari_cellseg3d.code_models import model_framework
 from napari_cellseg3d.config import MODEL_LIST
 
