@@ -5,7 +5,10 @@ from numpy.random import PCG64, Generator
 from tifffile import imread
 
 from napari_cellseg3d._tests.fixtures import LogFixture
-from napari_cellseg3d.code_models.instance_segmentation import volume_stats
+from napari_cellseg3d.code_models.instance_segmentation import (
+    INSTANCE_SEGMENTATION_METHOD_LIST,
+    volume_stats,
+)
 from napari_cellseg3d.code_models.models.model_test import TestModel
 from napari_cellseg3d.code_plugins.plugin_model_inference import (
     InferenceResult,
@@ -61,23 +64,23 @@ def test_inference(make_napari_viewer_proxy, qtbot):
     assert widget.model_info is not None
     widget.window_infer_box.setChecked(False)
 
-    # worker = widget._create_worker_from_config(widget.worker_config)
-    # assert worker.config is not None
-    # assert worker.config.model_info is not None
-    # worker.config.layer = viewer.layers[0].data
-    # worker.config.post_process_config.instance.enabled = True
-    # worker.config.post_process_config.instance.method = (
-    #     INSTANCE_SEGMENTATION_METHOD_LIST["Watershed"]()
-    # )
+    worker = widget._create_worker_from_config(widget.worker_config)
+    assert worker.config is not None
+    assert worker.config.model_info is not None
+    worker.config.layer = viewer.layers[0].data
+    worker.config.post_process_config.instance.enabled = True
+    worker.config.post_process_config.instance.method = (
+        INSTANCE_SEGMENTATION_METHOD_LIST["Watershed"]()
+    )
 
-    # assert worker.config.layer is not None
-    # worker.log_parameters()
+    assert worker.config.layer is not None
+    worker.log_parameters()
 
-    # res = next(worker.inference())
-    # assert isinstance(res, InferenceResult)
-    # assert res.result.shape == (8, 8, 8)
-    # assert res.instance_labels.shape == (8, 8, 8)
-    # widget.on_yield(res)
+    res = next(worker.inference())
+    assert isinstance(res, InferenceResult)
+    assert res.result.shape == (8, 8, 8)
+    assert res.instance_labels.shape == (8, 8, 8)
+    widget.on_yield(res)
 
     mock_image = rand_gen.random(size=(10, 10, 10))
     mock_labels = rand_gen.integers(0, 10, (10, 10, 10))
@@ -95,13 +98,13 @@ def test_inference(make_napari_viewer_proxy, qtbot):
     widget._display_results(mock_results)
     assert len(viewer.layers) == num_layers + 4
 
-    assert widget.check_ready()
-    widget._setup_worker()
-    # widget.config.show_results = True
-    with qtbot.waitSignal(widget.worker.yielded, timeout=10000) as blocker:
-        blocker.connect(
-            widget.worker.errored
-        )  # Can add other signals to blocker
-        widget.worker.start()
+    # assert widget.check_ready()
+    # widget._setup_worker()
+    # # widget.config.show_results = True
+    # with qtbot.waitSignal(widget.worker.yielded, timeout=10000) as blocker:
+    #     blocker.connect(
+    #         widget.worker.errored
+    #     )  # Can add other signals to blocker
+    #     widget.worker.start()
 
     assert widget.on_finish()
