@@ -601,10 +601,10 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
             viewer.add_labels(result.instance_labels, name=name)
 
-            from napari_cellseg3d.utils import LOGGER as log
-
-            if result.stats is not None and isinstance(result.stats, list):
-                log.debug(f"len stats : {len(result.stats)}")
+            if result.stats is not None and isinstance(
+                result.stats, list
+            ):  # list for several channels
+                # logger.debug(f"len stats : {len(result.stats)}")
 
                 for i, stats in enumerate(result.stats):
                     # stats = result.stats

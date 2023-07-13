@@ -5,6 +5,7 @@ from numpy.random import PCG64, Generator
 from tifffile import imread
 
 from napari_cellseg3d._tests.fixtures import LogFixture
+from napari_cellseg3d.code_models.instance_segmentation import volume_stats
 from napari_cellseg3d.code_models.models.model_test import TestModel
 from napari_cellseg3d.code_plugins.plugin_model_inference import (
     InferenceResult,
@@ -79,18 +80,20 @@ def test_inference(make_napari_viewer_proxy, qtbot):
     # widget.on_yield(res)
 
     mock_image = rand_gen.random(size=(10, 10, 10))
+    mock_labels = rand_gen.integers(0, 10, (10, 10, 10))
     mock_results = InferenceResult(
         image_id=0,
         original=mock_image,
-        instance_labels=rand_gen.integers(0, 10, (10, 10, 10)),
+        instance_labels=mock_labels,
         crf_results=mock_image,
-        stats=None,
+        stats=[volume_stats(mock_labels)],
         result=mock_image,
         model_name="test",
     )
     num_layers = len(viewer.layers)
+    widget.worker_config.post_process_config.instance.enabled = True
     widget._display_results(mock_results)
-    assert len(viewer.layers) == num_layers + 3
+    assert len(viewer.layers) == num_layers + 4
 
     assert widget.check_ready()
     widget._setup_worker()
