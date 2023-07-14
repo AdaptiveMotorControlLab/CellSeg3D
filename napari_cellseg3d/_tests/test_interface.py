@@ -15,6 +15,6 @@ def test_log(qtbot):
 
 
 def test_zoom_factor():
-    resolution = [10.0, 10.0, 5.0]
+    resolution = [5.0, 10.0, 5.0]
     zoom = AnisotropyWidgets.anisotropy_zoom_factor(resolution)
-    assert zoom == [1, 1, 0.5]
+    assert zoom == [1, 0.5, 1]
