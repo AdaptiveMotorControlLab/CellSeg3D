@@ -15,6 +15,7 @@ def evaluate_model_performance(
     print_details=False,
     visualize=False,
     return_graphical_summary=False,
+    plot_according_to_gt_label=False,
 ):
     """Evaluate the model performance.
     Parameters
@@ -29,6 +30,8 @@ def evaluate_model_performance(
         If True, visualize the results.
     return_graphical_summary : bool
         If True, return the distribution of the true positive, false positive and fused neurons depending on the test function.
+    plot_according_to_gt_label : bool
+        If True, plot the results using the best association for each ground truth label.
     Returns
     -------
     neuron_found : float
@@ -59,6 +62,7 @@ def evaluate_model_performance(
         return_total_number_gt_labels=True,
         return_dict_map=True,
         return_graphical_summary=return_graphical_summary,
+        plot_according_to_gt_labels=plot_according_to_gt_label,
     )
     if return_graphical_summary:
         (
@@ -326,6 +330,7 @@ def map_labels(
     return_dict_map=False,
     accuracy_function=ioGroundTruth,
     return_graphical_summary=False,
+    plot_according_to_gt_labels=False,
 ):
     """Map the model's labels to the neurons labels.
     Parameters
@@ -344,6 +349,8 @@ def map_labels(
         The function used to calculate the accuracy of the model's labels.
     return_graphical_summary : bool
         If True, return the graphical summary of the mapping.
+    plot_according_to_gt_labels : bool
+        If True, plot the accuracy to the best association of each ground truth's labels.
     Returns
     -------
     map_labels_existing: numpy array
@@ -464,25 +471,38 @@ def map_labels(
     if return_graphical_summary:
         # make a histogram of the ratio_to_test
         fig, ax = plt.subplots()
-        unique_model_labels = np.unique(model_labels)
-        best_association = np.zeros(unique_model_labels[-1] + 1)
-        for model_label in unique_model_labels:
-            best_association[model_label] = np.max(
-                ratio_to_test[model_labels == model_label]
-            )
+        if plot_according_to_gt_labels:
+            unique_labels = np.unique(gt_labels)
+            labels = gt_labels
+        else:
+            unique_labels = np.unique(model_labels)
+            labels = model_labels
+        best_association = np.zeros(unique_labels[-1] + 1)
+        for label in unique_labels:
+            best_association[label] = np.max(ratio_to_test[labels == label])
+        if plot_according_to_gt_labels:
+            label = "best association for each gt label"
+        else:
+            label = "best association for each model's label"
         ax.hist(
             best_association[best_association > 0],
             bins=50,
-            label="best association for each model's label",
-            stacked=True,
+            label=label,
+            range=(0, 1),
         )
         to_plot = []
         labels = []
         if len(new_labels):
-            to_plot.append(
-                best_association[np.unique(new_labels[:, 0]).astype(int)]
-            )
-            labels.append("false positive")
+            if plot_according_to_gt_labels:
+                # could use following line but here using the best association for each gt label is not very informative because the model's label are associated to the 0 of the gt
+                # to_plot.append([best_association[0]]*len(new_labels))
+                # labels.append("false positive")
+                pass
+            else:
+                to_plot.append(
+                    best_association[np.unique(new_labels[:, 0]).astype(int)]
+                )
+                labels.append("false positive")
         if len(map_labels_existing):
             to_plot.append(map_labels_existing[:, dict_map["ratio_tested"]])
             labels.append("true positive")
@@ -498,6 +518,7 @@ def map_labels(
             to_plot,
             bins=50,
             label=labels,
+            range=(0, 1),
             stacked=True,
         )
         ax.set_title(
