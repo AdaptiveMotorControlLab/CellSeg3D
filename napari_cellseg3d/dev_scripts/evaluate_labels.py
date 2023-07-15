@@ -474,36 +474,32 @@ def map_labels(
             best_association[best_association > 0],
             bins=50,
             label="best association for each model's label",
-            alpha=0.5,
+            stacked=True,
         )
+        to_plot = []
+        labels = []
         if len(new_labels):
-            ax.hist(
-                best_association[np.unique(new_labels[:, 0]).astype(int)],
-                bins=50,
-                label="false positive",
-                alpha=0.5,
+            to_plot.append(
+                best_association[np.unique(new_labels[:, 0]).astype(int)]
             )
+            labels.append("false positive")
         if len(map_labels_existing):
-            ax.hist(
-                map_labels_existing[:, dict_map["ratio_tested"]],
-                bins=50,
-                label="true positive",
-                alpha=0.5,
-            )
+            to_plot.append(map_labels_existing[:, dict_map["ratio_tested"]])
+            labels.append("true positive")
         if len(map_fused_neurons):
-            ax.hist(
-                map_fused_neurons[:, dict_map["ratio_tested"]],
-                bins=50,
-                label="1 model's label for multiple true labels",
-                alpha=0.5,
-            )
+            to_plot.append(map_fused_neurons[:, dict_map["ratio_tested"]])
+            labels.append("1 model label for multiple gt labels")
         if len(map_multiple_labelled_neurones):
-            ax.hist(
-                map_multiple_labelled_neurones[:, dict_map["ratio_tested"]],
-                bins=50,
-                label="multiple model's label for 1 true label",
-                alpha=0.5,
+            to_plot.append(
+                map_multiple_labelled_neurones[:, dict_map["ratio_tested"]]
             )
+            labels.append("multiple model labels for 1 gt label")
+        ax.hist(
+            to_plot,
+            bins=50,
+            label=labels,
+            stacked=True,
+        )
         ax.set_title(
             "distribution of the accuracy of the association between the model's labels and the gt labels"
         )
