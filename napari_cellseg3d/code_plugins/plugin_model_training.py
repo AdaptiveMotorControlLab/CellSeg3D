@@ -996,7 +996,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 else:
                     for i in rge:
                         if layer_name + str(i) not in [
-                            layer.name for layer in self.result_layers
+                            layer.name for layer in self._viewer.layers
                         ]:
                             new_layer = self._viewer.add_image(
                                 report.images[i],
