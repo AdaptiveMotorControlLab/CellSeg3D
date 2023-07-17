@@ -1,4 +1,5 @@
 from monai.networks.nets import SwinUNETR
+from torch import softmax
 
 from napari_cellseg3d.utils import LOGGER
 
@@ -35,6 +36,10 @@ class SwinUNETR_(SwinUNETR):
                 feature_size=48,
                 use_checkpoint=use_checkpoint,
             )
+
+    def forward(self, x_in):
+        y = super().forward(x_in)
+        return softmax(y, dim=1)
 
     # def get_output(self, input):
     #     out = self(input)
