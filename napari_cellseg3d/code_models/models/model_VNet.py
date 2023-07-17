@@ -8,9 +8,12 @@ class VNet_(VNet):
     def __init__(self, in_channels=1, out_channels=1, **kwargs):
         try:
             super().__init__(
-                in_channels=in_channels, out_channels=out_channels, **kwargs
+                in_channels=in_channels,
+                out_channels=out_channels,
+                bias=True,
+                **kwargs,
             )
         except TypeError:
             super().__init__(
-                in_channels=in_channels, out_channels=out_channels
+                in_channels=in_channels, out_channels=out_channels, bias=True
             )
