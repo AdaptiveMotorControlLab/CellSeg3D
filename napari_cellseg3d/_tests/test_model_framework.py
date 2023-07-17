@@ -15,9 +15,9 @@ def test_update_default(make_napari_viewer_proxy):
     widget.images_filepaths = []
     widget.results_path = None
 
-    widget._update_default()
+    widget._update_default_paths()
 
-    assert widget._default_folders == []
+    assert widget._default_path == [None, None, None]
 
     widget.images_filepaths = [
         pth("C:/test/test/images.tif"),
@@ -30,9 +30,9 @@ def test_update_default(make_napari_viewer_proxy):
     widget.results_path = pth("D:/dataset/res")
     # widget.model_path = None
 
-    widget._update_default()
+    widget._update_default_paths()
 
-    assert widget._default_folders == [
+    assert widget._default_path == [
         pth("C:/test/test"),
         pth("C:/dataset/labels"),
         pth("D:/dataset/res"),

@@ -364,8 +364,10 @@ def relabel_non_unique_i_folder(folder_path, end_of_new_name="relabeled"):
 
 
 if __name__ == "__main__":
-    im_path = Path("C:/Users/Cyril/Desktop/Proj_bachelor/data/somatomotor")
+    im_path = Path.home() / "Desktop/Code/CELLSEG_BENCHMARK/TPH2_DATA/visual"
 
-    image_path = str(im_path / "volumes/c1images.tif")
-    gt_labels_path = str(im_path / "labels/c1labels.tif")
-    relabel(image_path, gt_labels_path, check_for_unicity=False, go_fast=False)
+    # i = 4
+    # im_id = i+1
+    image_path = str(im_path / "visual.tif")
+    gt_labels_path = str(im_path / "visual_gt.tif")
+    relabel(image_path, gt_labels_path, check_for_unicity=True, go_fast=False)

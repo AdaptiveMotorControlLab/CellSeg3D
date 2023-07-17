@@ -90,7 +90,7 @@ def test_training(make_napari_viewer_proxy, qtbot):
     res = next(worker.train())
 
     assert isinstance(res, TrainingReport)
-    assert res.epoch == 0
+    assert res.epoch == 1
 
     widget.worker = worker
     res.show_plot = True

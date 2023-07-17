@@ -242,6 +242,7 @@ class BasePluginSingleImage(QTabWidget):
         choice = str(f_name[0])
         self.filetype = str(Path(choice).suffix)
         logger.debug(f"Filetype set to {self.filetype}")
+        self._update_default_paths()
         return choice
 
     def _show_dialog_images(self):
@@ -251,7 +252,7 @@ class BasePluginSingleImage(QTabWidget):
             self.image_path = f_name
             logger.debug(f"Image path set to {self.image_path}")
             self.image_filewidget.text_field.setText(self.image_path)
-            self._update_default()
+            self._update_default_paths()
 
     def _show_dialog_labels(self):
         """Show file dialog and set label path"""
@@ -260,13 +261,18 @@ class BasePluginSingleImage(QTabWidget):
             self.label_path = f_name
             logger.debug(f"Label path set to {self.label_path}")
             self.labels_filewidget.text_field.setText(self.label_path)
-            self._update_default()
+            self._update_default_paths()
 
     def _check_results_path(self, folder: str):
+        """Check if results folder exists, create it if not"""
+        logger.debug(f"Checking results folder : {folder}")
         if folder != "" and isinstance(folder, str):
             if not Path(folder).is_dir():
                 Path(folder).mkdir(parents=True, exist_ok=True)
                 if not Path(folder).is_dir():
+                    logger.info(
+                        f"Could not create missing results folder : {folder}"
+                    )
                     return False
                 logger.info(f"Created missing results folder : {folder}")
             return True
@@ -276,15 +282,16 @@ class BasePluginSingleImage(QTabWidget):
 
     def _load_results_path(self):
         """Show file dialog to set :py:attr:`~results_path`"""
+        self._update_default_paths()
         folder = ui.open_folder_dialog(self, self._default_path)
 
         if self._check_results_path(folder):
-            self.results_path = folder
-            # logger.debug(f"Results path : {self.results_path}")
+            self.results_path = str(Path(folder).resolve())
+            logger.debug(f"Results path : {self.results_path}")
             self.results_filewidget.text_field.setText(self.results_path)
-            self._update_default()
+            self._update_default_paths()
 
-    def _update_default(self):
+    def _update_default_paths(self):
         """Updates default path for smoother navigation when opening file dialogs"""
         self._default_path = [
             self.image_path,
@@ -363,7 +370,7 @@ class BasePluginFolder(BasePluginSingleImage):
         self.results_path = None
         """str: path to output folder,to save results in"""
 
-        self._default_folders = [None]
+        self._default_path = [None]
         """Update defaults from PluginBaseFolder with model_path"""
 
         self.docked_widgets = []
@@ -404,7 +411,7 @@ class BasePluginFolder(BasePluginSingleImage):
            array(str): all loaded file paths
         """
         # filetype = self.filetype_choice.currentText()
-        directory = ui.open_folder_dialog(self, self._default_folders)
+        directory = ui.open_folder_dialog(self, self._default_path)
 
         file_paths = sorted(Path(directory).glob("*" + ".tif"))
         if len(file_paths) == 0:
@@ -424,7 +431,7 @@ class BasePluginFolder(BasePluginSingleImage):
             path = str(Path(filenames[0]).parent)
             self.image_filewidget.text_field.setText(path)
             self.image_filewidget.check_ready()
-            self._update_default()
+            self._update_default_paths(path)
 
     def load_label_dataset(self):
         """Show file dialog to set :py:attr:`~labels_filepaths`"""
@@ -435,26 +442,26 @@ class BasePluginFolder(BasePluginSingleImage):
             path = str(Path(filenames[0]).parent)
             self.labels_filewidget.text_field.setText(path)
             self.labels_filewidget.check_ready()
-            self._update_default()
+            self._update_default_paths(path)
 
-    def _update_default(self):
+    def _update_default_paths(self, path=None):
         """Update default path for smoother file dialogs"""
-        if len(self.images_filepaths) != 0:
-            from_images = str(Path(self.images_filepaths[0]).parent)
-        else:
-            from_images = None
-
-        if len(self.labels_filepaths) != 0:
-            from_labels = str(Path(self.labels_filepaths[0]).parent)
-        else:
-            from_labels = None
-
-        self._default_folders = [
-            path
-            for path in [
-                from_images,
-                from_labels,
+        logger.debug(f"Updating default paths with {path}")
+        if path is None:
+            self._default_path = [
+                self.extract_dataset_paths(self.images_filepaths),
+                self.extract_dataset_paths(self.labels_filepaths),
                 self.results_path,
             ]
-            if (path != [] and path is not None)
-        ]
+            return
+        if Path(path).is_dir():
+            self._default_path.append(path)
+
+    @staticmethod
+    def extract_dataset_paths(paths):
+        """Gets the parent folder name of the first image and label paths"""
+        if len(paths) == 0:
+            return None
+        if paths[0] is None:
+            return None
+        return str(Path(paths[0]).parent)

@@ -27,6 +27,7 @@ from monai.transforms import (
     EnsureType,
     EnsureTyped,
     LoadImaged,
+    # NormalizeIntensityd,
     Orientationd,
     Rand3DElasticd,
     RandAffined,
@@ -390,6 +391,7 @@ class InferenceWorker(GeneratorWorker):
                     EnsureChannelFirstd(keys=["image"]),
                     # Orientationd(keys=["image"], axcodes="PLI"),
                     # anisotropic_transform,
+                    # NormalizeIntensityd(keys=["image"]), # TODO normalize
                     EnsureTyped(keys=["image"]),
                 ]
             )
@@ -399,6 +401,7 @@ class InferenceWorker(GeneratorWorker):
                     LoadImaged(keys=["image"]),
                     # AddChanneld(keys=["image"]), #already done
                     EnsureChannelFirstd(keys=["image"]),
+                    # NormalizeIntensityd(keys=["image"]),  # TODO normalize
                     # Orientationd(keys=["image"], axcodes="PLI"),
                     # anisotropic_transform,
                     SpatialPadd(keys=["image"], spatial_size=pad),
@@ -1201,8 +1204,9 @@ class TrainingWorker(GeneratorWorker):
 
             size = self.config.sample_size if do_sampling else check
 
+            PADDING = utils.get_padding_dim(size)
             model = model_class(  # FIXME check if correct
-                input_img_size=utils.get_padding_dim(size), use_checkpoint=True
+                input_img_size=PADDING, use_checkpoint=True
             )
             model = model.to(self.config.device)
 
@@ -1284,6 +1288,7 @@ class TrainingWorker(GeneratorWorker):
                     [
                         LoadImaged(keys=["image", "label"]),
                         EnsureChannelFirstd(keys=["image", "label"]),
+                        # NormalizeIntensityd(keys=["image"]),  # TODO normalize
                         RandSpatialCropSamplesd(
                             keys=["image", "label"],
                             roi_size=(
@@ -1356,9 +1361,10 @@ class TrainingWorker(GeneratorWorker):
                         ),
                         EnsureChannelFirstd(keys=["image", "label"]),
                         Orientationd(keys=["image", "label"], axcodes="PLI"),
+                        # NormalizeIntensityd(keys=["image"]),  # TODO normalize
                         SpatialPadd(
                             keys=["image", "label"],
-                            spatial_size=(utils.get_padding_dim(check)),
+                            spatial_size=PADDING,
                         ),
                         EnsureTyped(keys=["image", "label"]),
                     ]
@@ -1410,6 +1416,13 @@ class TrainingWorker(GeneratorWorker):
 
             best_metric = -1
             best_metric_epoch = -1
+
+            def normalize_batch(batch):  # TODO(refactor as a transform)
+                batch_dim = batch.shape[0]
+                channels_dim = batch.shape[1]
+                for i in range(batch_dim):
+                    for j in range(channels_dim):
+                        batch[i][j] = utils.quantile_normalization(batch[i][j])
 
             # time = utils.get_date_time()
             logger.debug("Weights")
@@ -1479,6 +1492,19 @@ class TrainingWorker(GeneratorWorker):
                         batch_data["image"].to(device),
                         batch_data["label"].to(device),
                     )
+
+                    normalize_batch(inputs)
+                    # images = [im.cpu().numpy() for im in inputs]
+                    # [images.append(l.cpu().numpy()) for l in labels]
+                    #
+                    # yield TrainingReport(
+                    #     show_plot=True,
+                    #     epoch=1,
+                    #     images=images,
+                    # )
+                    #
+                    # break
+
                     optimizer.zero_grad()
                     outputs = model(inputs)
                     # self.log(f"Output dimensions : {outputs.shape}")
@@ -1499,6 +1525,8 @@ class TrainingWorker(GeneratorWorker):
                     yield TrainingReport(
                         show_plot=False, weights=model.state_dict()
                     )
+
+                # return
 
                 epoch_loss /= step
                 epoch_loss_values.append(epoch_loss)
@@ -1527,6 +1555,8 @@ class TrainingWorker(GeneratorWorker):
                                 val_data["image"].to(device),
                                 val_data["label"].to(device),
                             )
+
+                            normalize_batch(val_inputs)
                             try:
                                 with torch.no_grad():
                                     val_outputs = sliding_window_inference(

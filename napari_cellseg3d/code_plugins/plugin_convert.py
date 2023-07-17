@@ -179,7 +179,7 @@ class RemoveSmallUtils(BasePluginFolder):
         utils.mkdir_from_str(self.results_path)
         remove_size = self.size_for_removal_counter.value()
 
-        if self.layer_choice:
+        if self.layer_choice.isChecked():
             if self.image_layer_loader.layer_data() is not None:
                 layer = self.image_layer_loader.layer()
 
@@ -233,8 +233,10 @@ class ToSemanticUtils(BasePluginFolder):
 
         self.start_btn = ui.Button("Start", self._start)
 
-        self.results_path = Path.home() / Path("cellseg3d/threshold")
-        self.results_filewidget.text_field.setText(str(self.results_path))
+        self.results_path = str(
+            Path.home() / Path("cellseg3d/instance_labels")
+        )
+        self.results_filewidget.text_field.setText(self.results_path)
         self.results_filewidget.check_ready()
 
         self._build()
@@ -260,8 +262,13 @@ class ToSemanticUtils(BasePluginFolder):
 
     def _start(self):
         Path(self.results_path).mkdir(exist_ok=True, parents=True)
+        logger.debug(f"Running on layer : {self.layer_choice.isChecked()}")
+        logger.debug(f"Running on folder : {self.folder_choice.isChecked()}")
+        logger.debug(f"Images : {self.labels_filepaths}")
 
-        if self.layer_choice:
+        self.results_filewidget.check_ready()
+
+        if self.layer_choice.isChecked():
             if self.label_layer_loader.layer_data() is not None:
                 layer = self.label_layer_loader.layer()
 
@@ -277,18 +284,20 @@ class ToSemanticUtils(BasePluginFolder):
                     self._viewer, layer, semantic, f"semantic_{layer.name}"
                 )
         elif (
-            self.folder_choice.isChecked() and len(self.images_filepaths) != 0
+            self.folder_choice.isChecked() and len(self.labels_filepaths) != 0
         ):
             images = [
                 to_semantic(file, is_file_path=True)
-                for file in self.images_filepaths
+                for file in self.labels_filepaths
             ]
             utils.save_folder(
                 self.results_path,
                 f"semantic_results_{utils.get_date_time()}",
                 images,
-                self.images_filepaths,
+                self.labels_filepaths,
             )
+        else:
+            logger.warning("Please specify a layer or a folder")
 
 
 class ToInstanceUtils(BasePluginFolder):
@@ -347,7 +356,7 @@ class ToInstanceUtils(BasePluginFolder):
     def _start(self):
         utils.mkdir_from_str(self.results_path)
 
-        if self.layer_choice:
+        if self.layer_choice.isChecked():
             if self.label_layer_loader.layer_data() is not None:
                 layer = self.label_layer_loader.layer()
 
@@ -408,8 +417,8 @@ class ThresholdUtils(BasePluginFolder):
             text_label="Remove all smaller than (value):",
         )
 
-        self.results_path = Path.home() / Path("cellseg3d/threshold")
-        self.results_filewidget.text_field.setText(str(self.results_path))
+        self.results_path = str(Path.home() / Path("cellseg3d/threshold"))
+        self.results_filewidget.text_field.setText(self.results_path)
         self.results_filewidget.check_ready()
 
         self.container = self._build()
@@ -443,7 +452,7 @@ class ThresholdUtils(BasePluginFolder):
         utils.mkdir_from_str(self.results_path)
         remove_size = self.binarize_counter.value()
 
-        if self.layer_choice:
+        if self.layer_choice.isChecked():
             if self.image_layer_loader.layer_data() is not None:
                 layer = self.image_layer_loader.layer()
 

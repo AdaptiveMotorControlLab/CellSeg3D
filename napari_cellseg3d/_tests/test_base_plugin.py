@@ -15,5 +15,5 @@ def test_base_single_image(make_napari_viewer_proxy):
     assert plugin._check_results_path(str(test_folder))
     plugin.image_path = test_image
     assert plugin._default_path[0] != test_image
-    plugin._update_default()
+    plugin._update_default_paths()
     assert plugin._default_path[0] == test_image
