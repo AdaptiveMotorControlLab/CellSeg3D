@@ -251,10 +251,10 @@ def binary_watershed(
         rem_seed_thres (int): threshold for small seeds removal. Default : 3
 
     """
-    logger.debug(
-        f"Running watershed segmentation with thres_objects={thres_objects}, thres_seeding={thres_seeding},"
-        f" thres_small={thres_small} and rem_seed_thres={rem_seed_thres}"
-    )
+    # logger.debug(
+    #     f"Running watershed segmentation with thres_objects={thres_objects}, thres_seeding={thres_seeding},"
+    #     f" thres_small={thres_small} and rem_seed_thres={rem_seed_thres}"
+    # )
     semantic = np.squeeze(volume)
     seed_map = semantic > thres_seeding
     foreground = semantic > thres_objects

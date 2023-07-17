@@ -2,15 +2,13 @@ import logging
 import math
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import Union
 
 import napari
 import numpy as np
+import torch
 from monai.transforms import Zoom
 from tifffile import imread, imwrite
-
-if TYPE_CHECKING:
-    import torch
 
 LOGGER = logging.getLogger(__name__)
 ###############
@@ -394,7 +392,7 @@ def fill_list_in_between(lst, n, fill_value):
     return None
 
 
-def parse_default_path(possible_paths):
+def parse_default_path(possible_paths, check_existence=True):
     """Returns a default path based on a vector of paths, some of which might be empty.
 
     Args:
@@ -404,14 +402,18 @@ def parse_default_path(possible_paths):
 
     """
     default_paths = []
+    LOGGER.debug(f"Utils : possible paths are {possible_paths}")
     if any(path is not None for path in possible_paths):
-        default_paths = [
-            p for p in possible_paths if p is not None and len(p) > 2
-        ]
+        for p in possible_paths:
+            if p is not None and (Path(p).exists() or not check_existence):
+                default_paths.append(str(Path(p).resolve().as_posix()))
+        # default_paths = [
+        #     str(Path(p).resolve()) for p in possible_paths if (Path(p).exists())
+        # ]
     # default_paths = [
     #     path for path in default_paths if path is not None and path != []
     # ]
-    print(default_paths)
+    LOGGER.debug(f"Utils : default paths are {default_paths}")
     if len(default_paths) == 0:
         return str(Path().home())
     default_path = max(default_paths, key=len)
@@ -471,3 +473,32 @@ def load_images(dir_or_path, filetype="", as_folder: bool = False):
     #         "Loading as folder not implemented yet. Use napari to load as folder"
     # images_original = dask_imread(filename_pattern_original)
     #     )
+
+
+def quantile_normalization(
+    image: Union[np.ndarray, torch.Tensor],
+    quantile_high=0.99,
+    quantile_low=0.01,
+):
+    """Normalizes an image using the quantiles"""
+    if quantile_high < quantile_low:
+        raise ValueError(
+            f"quantile_high must be greater than quantile_low, got {quantile_high} and {quantile_low}"
+        )
+
+    if isinstance(image, torch.Tensor):
+        qtl = torch.quantile
+        where = torch.where
+    elif isinstance(image, np.ndarray):
+        qtl = np.quantile
+        where = np.where
+    else:
+        raise TypeError("image needs to be torch tensor or numpy array")
+
+    shape = image.shape
+    image = image.flatten()
+    high_quantile_value = qtl(image, quantile_high)
+    low_quantile_value = qtl(image, quantile_low)
+    image = where(image > high_quantile_value, high_quantile_value, image)
+    image = where(image < low_quantile_value, low_quantile_value, image)
+    return image.reshape(shape)

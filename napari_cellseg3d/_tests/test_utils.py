@@ -209,16 +209,31 @@ def test_parse_default_path():
     user_path = Path().home()
     assert utils.parse_default_path([None]) == str(user_path)
 
-    test_path = "C:/test/test"
+    test_path = "C:/test/test/test/test"
     path = [test_path, None, None]
-    assert utils.parse_default_path(path) == test_path
+    assert utils.parse_default_path(path, check_existence=False) == test_path
+
+    test_path = "C:/test/does/not/exist"
+    path = [test_path, None, None]
+    assert utils.parse_default_path(path, check_existence=True) == str(
+        Path.home()
+    )
 
     long_path = "D:/very/long/path/what/a/bore/ifonlytherewas/something/tohelpmenotsearchit/allthetime"
     path = [test_path, None, None, long_path, ""]
-    assert utils.parse_default_path(path) == long_path
+    assert utils.parse_default_path(path, check_existence=False) == long_path
 
 
 def test_thread_test(make_napari_viewer_proxy):
     viewer = make_napari_viewer_proxy()
     w = thread_test.create_connected_widget(viewer)
     viewer.window.add_dock_widget(w)
+
+
+def test_quantile_norm():
+    array = rand_gen.random(size=(100, 100, 100))
+    low_quantile = np.quantile(array, 0.01)
+    high_quantile = np.quantile(array, 0.99)
+    array_norm = utils.quantile_normalization(array)
+    assert array_norm.min() >= low_quantile
+    assert array_norm.max() <= high_quantile
