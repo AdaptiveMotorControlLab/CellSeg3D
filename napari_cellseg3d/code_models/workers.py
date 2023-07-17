@@ -1653,7 +1653,24 @@ class TrainingWorker(GeneratorWorker):
                 f"Train completed, best_metric: {best_metric:.4f} "
                 f"at epoch: {best_metric_epoch}"
             )
+            # Save last checkpoint
+            weights_filename = f"{model_name}_last_epoch_{epoch + 1}.pth"
+            self.log("Saving last model")
+            torch.save(
+                model.state_dict(),
+                Path(self.config.results_path_folder) / Path(weights_filename),
+            )
+            self.log("Saving complete, exiting")
             model.to("cpu")
+            # clear (V)RAM
+            val_ds = None
+            train_ds = None
+            val_loader = None
+            train_loader = None
+            torch.cuda.empty_cache()
+            import gc
+
+            gc.collect()
 
         except Exception as e:
             self.raise_error(e, "Error in training")

@@ -980,7 +980,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         if report.show_plot:
             try:
-                layer_name = "Training_checkpoint_"
+                layer_name = "Validation output n°"
                 rge = range(len(report.images))
 
                 self.log.print_and_log(len(report.images))
