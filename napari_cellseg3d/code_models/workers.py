@@ -27,6 +27,7 @@ from monai.transforms import (
     EnsureType,
     EnsureTyped,
     LoadImaged,
+    MapTransform,
     # NormalizeIntensityd,
     Orientationd,
     Rand3DElasticd,
@@ -236,6 +237,28 @@ class ONNXModelWrapper(torch.nn.Module):
         pass
 
 
+class QuantileNormalizationd(MapTransform):
+    def __init__(self, keys, allow_missing_keys: bool = False):
+        super().__init__(keys, allow_missing_keys)
+
+    def __call__(self, data):
+        d = dict(data)
+        for key in self.keys:
+            d[key] = self.normalizer(d[key])
+        return d
+
+    def normalizer(self, image: torch.Tensor):
+        """Normalize each image in a batch individually by quantile normalization."""
+        if image.ndim == 4:
+            for i in range(image.shape[0]):
+                image[i] = utils.quantile_normalization(image[i])
+        else:
+            raise NotImplementedError(
+                "QuantileNormalizationd only supports 2D and 3D tensors with NCHWD format"
+            )
+        return image
+
+
 @dataclass
 class InferenceResult:
     """Class to record results of a segmentation job"""
@@ -391,7 +414,7 @@ class InferenceWorker(GeneratorWorker):
                     EnsureChannelFirstd(keys=["image"]),
                     # Orientationd(keys=["image"], axcodes="PLI"),
                     # anisotropic_transform,
-                    # NormalizeIntensityd(keys=["image"]), # TODO normalize
+                    QuantileNormalizationd(keys=["image"]),
                     EnsureTyped(keys=["image"]),
                 ]
             )
@@ -567,9 +590,7 @@ class InferenceWorker(GeneratorWorker):
             if crf_results is not None:
                 crf_results = utils.correct_rotation(crf_results)
             if instance_labels is not None:
-                instance_labels = utils.correct_rotation(
-                    instance_labels
-                )  # TODO(cyril) check if correct
+                instance_labels = utils.correct_rotation(instance_labels)
 
         return InferenceResult(
             image_id=i + 1,
@@ -765,6 +786,7 @@ class InferenceWorker(GeneratorWorker):
         self.log("Inference started on layer...")
 
         image = image.type(torch.FloatTensor)
+        image = utils.quantile_normalization(image)
 
         out = self.model_output(
             image,
@@ -1288,7 +1310,7 @@ class TrainingWorker(GeneratorWorker):
                     [
                         LoadImaged(keys=["image", "label"]),
                         EnsureChannelFirstd(keys=["image", "label"]),
-                        # NormalizeIntensityd(keys=["image"]),  # TODO normalize
+                        QuantileNormalizationd(keys=["image"]),
                         RandSpatialCropSamplesd(
                             keys=["image", "label"],
                             roi_size=(
@@ -1361,7 +1383,7 @@ class TrainingWorker(GeneratorWorker):
                         ),
                         EnsureChannelFirstd(keys=["image", "label"]),
                         Orientationd(keys=["image", "label"], axcodes="PLI"),
-                        # NormalizeIntensityd(keys=["image"]),  # TODO normalize
+                        QuantileNormalizationd(keys=["image"]),
                         SpatialPadd(
                             keys=["image", "label"],
                             spatial_size=PADDING,
@@ -1416,13 +1438,6 @@ class TrainingWorker(GeneratorWorker):
 
             best_metric = -1
             best_metric_epoch = -1
-
-            def normalize_batch(batch):  # TODO(refactor as a transform)
-                batch_dim = batch.shape[0]
-                channels_dim = batch.shape[1]
-                for i in range(batch_dim):
-                    for j in range(channels_dim):
-                        batch[i][j] = utils.quantile_normalization(batch[i][j])
 
             # time = utils.get_date_time()
             logger.debug("Weights")
@@ -1493,18 +1508,6 @@ class TrainingWorker(GeneratorWorker):
                         batch_data["label"].to(device),
                     )
 
-                    normalize_batch(inputs)
-                    # images = [im.cpu().numpy() for im in inputs]
-                    # [images.append(l.cpu().numpy()) for l in labels]
-                    #
-                    # yield TrainingReport(
-                    #     show_plot=True,
-                    #     epoch=1,
-                    #     images=images,
-                    # )
-                    #
-                    # break
-
                     optimizer.zero_grad()
                     outputs = model(inputs)
                     # self.log(f"Output dimensions : {outputs.shape}")
@@ -1556,7 +1559,6 @@ class TrainingWorker(GeneratorWorker):
                                 val_data["label"].to(device),
                             )
 
-                            normalize_batch(val_inputs)
                             try:
                                 with torch.no_grad():
                                     val_outputs = sliding_window_inference(
