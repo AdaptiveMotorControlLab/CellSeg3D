@@ -969,6 +969,42 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         # self.empty_cuda_cache()
         # self.clean_cache()
 
+    def _display_results(self, images, names, complete_missing=False):
+        if not complete_missing:
+            layer_output = self._viewer.add_image(
+                data=images[0], name=names[0], colormap="viridis"
+            )
+            layer_image = self._viewer.add_image(
+                data=images[1], name=names[1], colormap="inferno"
+            )
+            layer_labels = self._viewer.add_labels(
+                data=images[2], name=names[2]
+            )
+            self.result_layers += [layer_output, layer_image, layer_labels]
+        else:
+            # add only the missing layers
+            for i in range(3):
+                if names[i] not in [
+                    layer.name for layer in self._viewer.layers
+                ]:
+                    if i == 0:
+                        layer_output = self._viewer.add_image(
+                            data=images[i], name=names[i], colormap="viridis"
+                        )
+                        self.result_layers[0] = layer_output
+                    elif i == 1:
+                        layer_image = self._viewer.add_image(
+                            data=images[i], name=names[i], colormap="inferno"
+                        )
+                        self.result_layers[1] = layer_image
+                    else:
+                        layer_labels = self._viewer.add_labels(
+                            data=images[i], name=names[i]
+                        )
+                        self.result_layers[2] = layer_labels
+                self.result_layers[i].data = images[i]
+                self.result_layers[i].refresh()
+
     def on_yield(self, report: TrainingReport):
         # logger.info(
         #     f"\nCatching results : for epoch {data['epoch']},
@@ -984,31 +1020,15 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                     "Validation image",
                     "Validation labels",
                 ]
-                rge = range(len(report.images))
-
+                range(len(report.images))
                 self.log.print_and_log(len(report.images))
 
                 if report.epoch + 1 == self.worker_config.validation_interval:
-                    for i in rge:
-                        layer = self._viewer.add_image(
-                            report.images[i],
-                            name=layer_names[i] + str(i),
-                            colormap="viridis",
-                        )
-                        self.result_layers.append(layer)
+                    self._display_results(report.images, layer_names)
                 else:
-                    for i in rge:
-                        if layer_names[i] + str(i) not in [
-                            layer.name for layer in self._viewer.layers
-                        ]:
-                            new_layer = self._viewer.add_image(
-                                report.images[i],
-                                name=layer_names[i] + str(i),
-                                colormap="viridis",
-                            )
-                            self.result_layers.append(new_layer)
-                        self.result_layers[i].data = report.images[i]
-                        self.result_layers[i].refresh()
+                    self._display_results(
+                        report.images, layer_names, complete_missing=True
+                    )
             except Exception as e:
                 logger.exception(e)
 

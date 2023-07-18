@@ -481,6 +481,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 # self.instance_param_container,  # instance segmentation
             ],
         )
+        self._toggle_crf_choice()
         self.model_choice.currentIndexChanged.connect(self._toggle_crf_choice)
         ModelFramework._show_io_element(
             self.save_stats_to_csv_box, self.use_instance_choice

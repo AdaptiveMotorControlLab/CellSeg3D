@@ -1,5 +1,6 @@
 # local
 from napari_cellseg3d.code_models.models.wnet.model import WNet_encoder
+from napari_cellseg3d.utils import remap_image
 
 
 class WNet_(WNet_encoder):
@@ -22,13 +23,10 @@ class WNet_(WNet_encoder):
     # def train(self: T, mode: bool = True) -> T:
     #     raise NotImplementedError("Training not implemented for WNet")
 
-    # def forward(self, x):
-    #     """Forward ENCODER pass of the W-Net model.
-    #     Done this way to allow inference on the encoder only when called by sliding_window_inference.
-    #     """
-    #     return self.forward_encoder(x)
-    #     # enc = self.forward_encoder(x)
-    #     # return self.forward_decoder(enc)
+    def forward(self, x):
+        """Forward pass of the W-Net model."""
+        norm_x = remap_image(x)
+        return super().forward(norm_x)
 
     def load_state_dict(self, state_dict, strict=True):
         """Load the model state dict for inference, without the decoder weights."""

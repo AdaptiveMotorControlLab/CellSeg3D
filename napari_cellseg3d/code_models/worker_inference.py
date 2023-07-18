@@ -32,6 +32,7 @@ from napari_cellseg3d.code_models.workers_utils import (
     InferenceResult,
     LogSignal,
     ONNXModelWrapper,
+    QuantileNormalization,
     QuantileNormalizationd,
     WeightsDownloader,
 )
@@ -135,7 +136,7 @@ class InferenceWorker(GeneratorWorker):
         config = self.config
 
         self.log("-" * 20)
-        self.log("\nParameters summary :")
+        self.log("Parameters summary :")
 
         self.log(f"Model is : {config.model_info.name}")
         if config.post_process_config.thresholding.enabled:
@@ -149,7 +150,7 @@ class InferenceWorker(GeneratorWorker):
             else "disabled"
         )
 
-        self.log(f"Window inference is {status}\n")
+        self.log(f"Window inference is {status}")
         if status == "enabled":
             self.log(
                 f"Window size is {self.config.sliding_window_config.window_size}"
@@ -171,7 +172,7 @@ class InferenceWorker(GeneratorWorker):
         instance_config = config.post_process_config.instance
         if instance_config.enabled:
             self.log(
-                f"Instance segmentation enabled, method : {instance_config.method.name}\n"
+                f"Instance segmentation enabled, method : {instance_config.method.name}"
             )
         self.log("-" * 20)
 
@@ -209,7 +210,7 @@ class InferenceWorker(GeneratorWorker):
                 ]
             )
 
-        self.log("\nLoading dataset...")
+        self.log("Loading dataset...")
         inference_ds = Dataset(data=images_dict, transform=load_transforms)
         inference_loader = DataLoader(
             inference_ds, batch_size=1, num_workers=2
@@ -218,10 +219,10 @@ class InferenceWorker(GeneratorWorker):
         return inference_loader
 
     def load_layer(self):
-        self.log("\nLoading layer\n")
+        self.log("Loading layer")
         image = np.squeeze(self.config.layer.data)
         volume = image.astype(np.float32)
-        self.log(f"Image type : {str(image.dtype)}")
+        # self.log(f"Image type : {str(image.dtype)}")
 
         volume_dims = len(volume.shape)
         if volume_dims != 3:
@@ -231,12 +232,13 @@ class InferenceWorker(GeneratorWorker):
             )
         volume = np.swapaxes(
             volume, 0, 2
-        )  # for anisotropy to be monai-like, i.e. zyx
+        )  # for dims to be monai-like, i.e. xyz, from napari zyx
 
         dims_check = volume.shape
 
         logger.debug(volume.shape)
         logger.debug(volume.dtype)
+
         if self.config.sliding_window_config.is_enabled():
             load_transforms = Compose(
                 [
@@ -244,6 +246,7 @@ class InferenceWorker(GeneratorWorker):
                     # anisotropic_transform,
                     AddChannel(),
                     # SpatialPad(spatial_size=pad),
+                    QuantileNormalization(),
                     AddChannel(),
                     EnsureType(),
                 ],
@@ -258,6 +261,7 @@ class InferenceWorker(GeneratorWorker):
                     ToTensor(),
                     # anisotropic_transform,
                     AddChannel(),
+                    QuantileNormalization(),
                     SpatialPad(spatial_size=pad),
                     AddChannel(),
                     EnsureType(),
@@ -267,6 +271,8 @@ class InferenceWorker(GeneratorWorker):
             )
 
         input_image = load_transforms(volume)
+        logger.debug(f"INPUT IMAGE SHAPE : {input_image.shape}")
+        logger.debug(f"INPUT IMAGE TYPE : {input_image.dtype}")
         self.log("Done")
         return input_image
 
@@ -275,16 +281,9 @@ class InferenceWorker(GeneratorWorker):
         inputs,
         model,
         post_process_transforms,
-        post_process=True,
         aniso_transform=None,
     ):
         inputs = inputs.to("cpu")
-
-        # def model_output(inputs):
-        #     return post_process_transforms(
-        #         self.config.model_info.get_model().get_output(model, inputs)
-        #     )
-
         dataset_device = (
             "cpu" if self.config.keep_on_cpu else self.config.device
         )
@@ -302,7 +301,6 @@ class InferenceWorker(GeneratorWorker):
             logger.debug(f"inputs type : {inputs.dtype}")
             try:
                 # outputs = model(inputs)
-                inputs = utils.remap_image(inputs)
 
                 def model_output_wrapper(inputs):
                     result = model(inputs)
@@ -327,13 +325,13 @@ class InferenceWorker(GeneratorWorker):
                 logger.debug("failed to run sliding window inference")
                 self.raise_error(e, "Error during sliding window inference")
             logger.debug(f"Inference output shape: {outputs.shape}")
+
             self.log("Post-processing...")
             out = outputs.detach().cpu().numpy()
             if aniso_transform is not None:
                 out = aniso_transform(out)
-            if post_process:
-                out = np.array(out).astype(np.float32)
-                out = np.squeeze(out)
+            out = np.array(out).astype(np.float32)
+            out = np.squeeze(out)
             return out
         except Exception as e:
             logger.exception(e)
@@ -432,9 +430,9 @@ class InferenceWorker(GeneratorWorker):
         filename = Path(file_path).stem
 
         if from_layer:
-            self.log(f"\nLayer prediction saved as : {filename}")
+            self.log(f"Layer prediction saved as : {filename}")
         else:
-            self.log(f"\nFile n°{i+1} saved as : {filename}")
+            self.log(f"File n°{i+1} saved as : {filename}")
 
     def aniso_transform(self, image):
         if self.config.post_process_config.zoom.enabled:
@@ -451,7 +449,7 @@ class InferenceWorker(GeneratorWorker):
         self, semantic_labels, image_id=0, original_filename="layer"
     ):
         if image_id is not None:
-            self.log(f"\nRunning instance segmentation for image n°{image_id}")
+            self.log(f"Running instance segmentation for image n°{image_id}")
 
         method = self.config.post_process_config.instance.method
         instance_labels = method.run_method_on_channels(semantic_labels)
@@ -513,7 +511,6 @@ class InferenceWorker(GeneratorWorker):
             crf_results = None
 
         original = np.array(inf_data["image"]).astype(np.float32)
-
         self.log(f"Inference completed on image n°{i+1}")
 
         return self.create_inference_result(
@@ -562,17 +559,12 @@ class InferenceWorker(GeneratorWorker):
         self.log("-" * 10)
         self.log("Inference started on layer...")
 
-        image = utils.quantile_normalization(image)
-        self.log(f"Image type after normalization : {str(image.dtype)}")
-        self.log(f"Image shape after normalization : {str(image.shape)}")
-
         out = self.model_output(
             image,
             model,
             post_process_transforms,
             aniso_transform=self.aniso_transform,
         )
-
         self.save_image(out, from_layer=True)
 
         instance_labels, stats = self.get_instance_result(
@@ -584,7 +576,6 @@ class InferenceWorker(GeneratorWorker):
             if self.config.use_crf
             else None
         )
-
         return self.create_inference_result(
             semantic_labels=out,
             instance_labels=instance_labels,
@@ -665,7 +656,7 @@ class InferenceWorker(GeneratorWorker):
                 if model is None:
                     raise ValueError("Model is None")
                 # try:
-                self.log("\nLoading weights...")
+                self.log("Loading weights...")
                 if weights_config.custom:
                     weights = weights_config.path
                 else:

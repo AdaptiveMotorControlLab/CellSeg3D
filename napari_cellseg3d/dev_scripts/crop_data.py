@@ -39,14 +39,17 @@ if __name__ == "__main__":
     image_path = (
         Path().home()
         # / "Desktop/Code/CELLSEG_BENCHMARK/TPH2_DATA/somatomotor_iso"
-        / "Desktop/Code/CELLSEG_BENCHMARK/TPH2_DATA/somatomotor_iso/labels/semantic"
+        # / "Desktop/Code/CELLSEG_BENCHMARK/TPH2_DATA/somatomotor_iso/labels/semantic"
+        / "Desktop/Code/CELLSEG_BENCHMARK/TPH2_mesospim/BENCHMARK/visual_small"
     )
-    assert image_path.exists()
+    if not image_path.exists() or not image_path.is_dir():
+        raise ValueError(f"Image path {image_path} does not exist")
     image_list = image_path.glob("*.tif")
     for j in image_list:
         print(j)
         image = imread(str(j))
-        crops = crop_3d_image(image, (64, 64, 64))
+        # crops = crop_3d_image(image, (64, 64, 64))
+        crops = [image]
         # viewer = napari.Viewer()
         if not (image_path / "cropped").exists():
             (image_path / "cropped").mkdir(exist_ok=False)
@@ -55,7 +58,7 @@ if __name__ == "__main__":
             # viewer.add_image(im)
             imwrite(
                 str(image_path / f"cropped/{j.stem}_{i}_crop.tif"),
-                im.astype(np.uint16),
-                dtype="uint16",
+                im.astype(np.float32),
+                dtype="float32",
             )
         # napari.run()

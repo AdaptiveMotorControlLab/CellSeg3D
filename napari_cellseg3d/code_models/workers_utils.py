@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import torch
-from monai.transforms import MapTransform
+from monai.transforms import MapTransform, Transform
 from qtpy.QtCore import Signal
 from superqt.utils._qthreading import WorkerBaseSignals
 from tqdm import tqdm
@@ -196,6 +196,11 @@ class QuantileNormalizationd(MapTransform):
                 "QuantileNormalizationd only supports 2D and 3D tensors with NCHWD format"
             )
         return image
+
+
+class QuantileNormalization(Transform):
+    def __call__(self, img):
+        return utils.quantile_normalization(img)
 
 
 @dataclass
