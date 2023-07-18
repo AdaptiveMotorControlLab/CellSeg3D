@@ -4,12 +4,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 import torch
-from numpy.random import PCG64, Generator
 
 from napari_cellseg3d import utils
 from napari_cellseg3d.dev_scripts import thread_test
 
-rand_gen = Generator(PCG64(12345))
+rand_gen = utils.rand_gen
 
 
 def test_singleton_class():

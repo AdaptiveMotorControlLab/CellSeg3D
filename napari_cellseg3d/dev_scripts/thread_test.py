@@ -2,7 +2,6 @@ import time
 
 import napari
 from napari.qt.threading import thread_worker
-from numpy.random import PCG64, Generator
 from qtpy.QtWidgets import (
     QGridLayout,
     QLabel,
@@ -13,7 +12,7 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
-rand_gen = Generator(PCG64(12345))
+from napari_cellseg3d.utils import rand_gen
 
 ####################################
 # Tutorial code from napari forums #
