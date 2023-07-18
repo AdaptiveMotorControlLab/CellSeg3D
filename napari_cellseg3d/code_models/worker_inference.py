@@ -35,7 +35,8 @@ from napari_cellseg3d.code_models.workers_utils import (
     QuantileNormalizationd,
     WeightsDownloader,
 )
-from napari_cellseg3d.utils import LOGGER as logger
+
+logger = utils.LOGGER
 
 """
 Writing something to log messages from outside the main thread needs specific care,
@@ -308,6 +309,7 @@ class InferenceWorker(GeneratorWorker):
                     result = model(inputs)
                     return post_process_transforms(result)
 
+                model.eval()
                 with torch.no_grad():
                     outputs = sliding_window_inference(
                         inputs,
@@ -561,7 +563,7 @@ class InferenceWorker(GeneratorWorker):
         self.log("-" * 10)
         self.log("Inference started on layer...")
 
-        image = image.type(torch.FloatTensor)
+        # image = image.type(torch.FloatTensor)
         image = utils.quantile_normalization(image)
 
         out = self.model_output(
@@ -674,13 +676,17 @@ class InferenceWorker(GeneratorWorker):
                     weights = str(
                         PRETRAINED_WEIGHTS_DIR / Path(model_class.weights_file)
                     )
-
-                model.load_state_dict(  # note that this is redefined in WNet_
-                    torch.load(
-                        weights,
-                        map_location=self.config.device,
+                try:
+                    missing = model.load_state_dict(  # note that this is redefined in WNet_
+                        torch.load(
+                            weights,
+                            map_location=self.config.device,
+                        ),
+                        strict=True,
                     )
-                )
+                    self.log(f"Weights status : {missing}")
+                except RuntimeError as e:
+                    self.raise_error(e, "Error when loading weights")
                 self.log("Done")
             # except Exception as e:
             #     self.raise_error(e, "Issue loading weights")
@@ -752,20 +758,15 @@ class InferenceWorker(GeneratorWorker):
             if model is None:
                 raise ValueError("Model is None")
 
-            model.eval()
-            with torch.no_grad():
-                ################################
-                ################################
-                ################################
-                if is_folder:
-                    for i, inf_data in enumerate(inference_loader):
-                        yield self.inference_on_folder(
-                            inf_data, i, model, post_process_transforms
-                        )
-                elif is_layer:
-                    yield self.inference_on_layer(
-                        input_image, model, post_process_transforms
+            if is_folder:
+                for i, inf_data in enumerate(inference_loader):
+                    yield self.inference_on_folder(
+                        inf_data, i, model, post_process_transforms
                     )
+            elif is_layer:
+                yield self.inference_on_layer(
+                    input_image, model, post_process_transforms
+                )
             model.to("cpu")
             # self.quit()
         except Exception as e:
