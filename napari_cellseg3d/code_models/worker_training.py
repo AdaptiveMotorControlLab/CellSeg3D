@@ -653,7 +653,11 @@ class TrainingWorker(GeneratorWorker):
 
                             dice_metric(y_pred=val_outputs, y=val_labels)
                             checkpoint_output.append(
-                                [res.detach().cpu() for res in val_outputs]
+                                [
+                                    val_outputs[0].detach().cpu(),
+                                    val_inputs[0].detach().cpu(),
+                                    val_labels[0].detach().cpu(),
+                                ]
                             )
 
                         checkpoint_output = [

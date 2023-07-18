@@ -979,7 +979,11 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         if report.show_plot:
             try:
-                layer_name = "Validation output n°"
+                layer_names = [
+                    "Validation output",
+                    "Validation image",
+                    "Validation labels",
+                ]
                 rge = range(len(report.images))
 
                 self.log.print_and_log(len(report.images))
@@ -988,18 +992,18 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                     for i in rge:
                         layer = self._viewer.add_image(
                             report.images[i],
-                            name=layer_name + str(i),
+                            name=layer_names[i] + str(i),
                             colormap="viridis",
                         )
                         self.result_layers.append(layer)
                 else:
                     for i in rge:
-                        if layer_name + str(i) not in [
+                        if layer_names[i] + str(i) not in [
                             layer.name for layer in self._viewer.layers
                         ]:
                             new_layer = self._viewer.add_image(
                                 report.images[i],
-                                name=layer_name + str(i),
+                                name=layer_names[i] + str(i),
                                 colormap="viridis",
                             )
                             self.result_layers.append(new_layer)
