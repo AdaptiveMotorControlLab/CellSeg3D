@@ -5,7 +5,6 @@ This file contains the code to train the WNet model.
 import glob
 import time
 from pathlib import Path
-from typing import Union
 from warnings import warn
 
 import numpy as np
@@ -44,7 +43,7 @@ from monai.utils.misc import set_determinism
 from napari_cellseg3d.code_models.models.wnet.model import WNet
 from napari_cellseg3d.code_models.models.wnet.soft_Ncuts import SoftNCutsLoss
 from napari_cellseg3d.utils import LOGGER as logger
-from napari_cellseg3d.utils import dice_coeff, get_padding_dim
+from napari_cellseg3d.utils import dice_coeff, get_padding_dim, remap_image
 
 try:
     import wandb
@@ -113,18 +112,6 @@ def create_dataset_dict_no_labs(volume_directory):
     logger.info("*" * 10)
 
     return [{"image": image_name} for image_name in images_filepaths]
-
-
-def remap_image(
-    image: Union[np.ndarray, torch.Tensor], new_max=100, new_min=0
-):
-    """Normalizes a numpy array or Tensor using the max and min value"""
-    shape = image.shape
-    image = image.flatten()
-    image = (image - image.min()) / (image.max() - image.min())
-    image = image * (new_max - new_min) + new_min
-    # image = set_quantile_to_value(image)
-    return image.reshape(shape)
 
 
 ################################

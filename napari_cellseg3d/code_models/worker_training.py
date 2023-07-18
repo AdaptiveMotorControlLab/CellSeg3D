@@ -16,7 +16,6 @@ from monai.data import (
 from monai.inferers import sliding_window_inference
 from monai.metrics import DiceMetric
 from monai.transforms import (
-    AsDiscrete,
     Compose,
     EnsureChannelFirstd,
     EnsureType,
@@ -636,7 +635,8 @@ class TrainingWorker(GeneratorWorker):
 
                             # TODO : more parameters/flexibility
                             post_pred = Compose(
-                                AsDiscrete(threshold=0.6), EnsureType()
+                                # AsDiscrete(threshold=0.6), # needed ?
+                                EnsureType()
                             )  #
                             post_label = EnsureType()
 
@@ -652,13 +652,14 @@ class TrainingWorker(GeneratorWorker):
                             # logger.debug(len(val_labels))
 
                             dice_metric(y_pred=val_outputs, y=val_labels)
-                            checkpoint_output.append(
-                                [
-                                    val_outputs[0].detach().cpu(),
-                                    val_inputs[0].detach().cpu(),
-                                    val_labels[0].detach().cpu(),
-                                ]
-                            )
+
+                        checkpoint_output.append(
+                            [
+                                val_outputs[0].detach().cpu(),
+                                val_inputs[0].detach().cpu(),
+                                val_labels[0].detach().cpu(),
+                            ]
+                        )
 
                         checkpoint_output = [
                             item.numpy()
@@ -668,7 +669,6 @@ class TrainingWorker(GeneratorWorker):
 
                         metric = dice_metric.aggregate().detach().item()
                         dice_metric.reset()
-
                         val_metric_values.append(metric)
 
                         train_report = TrainingReport(
@@ -684,7 +684,8 @@ class TrainingWorker(GeneratorWorker):
 
                         weights_filename = (
                             f"{model_name}_best_metric"
-                            + f"_epoch_{epoch + 1}.pth"
+                            # + f"_epoch_{epoch + 1}" # avoid saving per epoch
+                            + ".pth"
                         )
 
                         if metric > best_metric:
@@ -710,7 +711,7 @@ class TrainingWorker(GeneratorWorker):
                 f"at epoch: {best_metric_epoch}"
             )
             # Save last checkpoint
-            weights_filename = f"{model_name}_last_epoch_{epoch + 1}.pth"
+            weights_filename = f"{model_name}_latest.pth"
             self.log("Saving last model")
             torch.save(
                 model.state_dict(),
@@ -719,14 +720,11 @@ class TrainingWorker(GeneratorWorker):
             self.log("Saving complete, exiting")
             model.to("cpu")
             # clear (V)RAM
-            val_ds = None
-            train_ds = None
-            val_loader = None
-            train_loader = None
-            torch.cuda.empty_cache()
-            import gc
-
-            gc.collect()
+            # val_ds = None
+            # train_ds = None
+            # val_loader = None
+            # train_loader = None
+            # torch.cuda.empty_cache()
 
         except Exception as e:
             self.raise_error(e, "Error in training")
