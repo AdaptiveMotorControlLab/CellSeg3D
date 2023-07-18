@@ -1,13 +1,11 @@
 import numpy as np
-from numpy.random import PCG64, Generator
 
 from napari_cellseg3d.code_plugins.plugin_crop import Cropping
 from napari_cellseg3d.code_plugins.plugin_utilities import (
     UTILITIES_WIDGETS,
     Utilities,
 )
-
-rand_gen = Generator(PCG64(12345))
+from napari_cellseg3d.utils import rand_gen
 
 
 def test_utils_plugin(make_napari_viewer_proxy):

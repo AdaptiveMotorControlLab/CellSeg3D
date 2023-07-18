@@ -3,7 +3,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 import torch
-from numpy.random import PCG64, Generator
 
 from napari_cellseg3d.code_models.crf import (
     CRFWorker,
@@ -14,8 +13,7 @@ from napari_cellseg3d.code_models.crf import (
 from napari_cellseg3d.code_models.models.model_TRAILMAP_MS import TRAILMAP_MS_
 from napari_cellseg3d.code_models.models.wnet.soft_Ncuts import SoftNCutsLoss
 from napari_cellseg3d.config import MODEL_LIST, CRFConfig
-
-rand_gen = Generator(PCG64(12345))
+from napari_cellseg3d.utils import rand_gen
 
 
 def test_correct_shape_for_crf():
