@@ -201,7 +201,7 @@ class InferenceWorker(GeneratorWorker):
                     LoadImaged(keys=["image"]),
                     # AddChanneld(keys=["image"]), #already done
                     EnsureChannelFirstd(keys=["image"]),
-                    # NormalizeIntensityd(keys=["image"]),  # TODO normalize
+                    QuantileNormalizationd(keys=["image"]),
                     # Orientationd(keys=["image"], axcodes="PLI"),
                     # anisotropic_transform,
                     SpatialPadd(keys=["image"], spatial_size=pad),
@@ -219,9 +219,9 @@ class InferenceWorker(GeneratorWorker):
 
     def load_layer(self):
         self.log("\nLoading layer\n")
-        data = np.squeeze(self.config.layer.data)
-
-        volume = np.array(data, dtype=np.int16)
+        image = np.squeeze(self.config.layer.data)
+        volume = image.astype(np.float32)
+        self.log(f"Image type : {str(image.dtype)}")
 
         volume_dims = len(volume.shape)
         if volume_dims != 3:
@@ -229,15 +229,14 @@ class InferenceWorker(GeneratorWorker):
                 f"Data array is not 3-dimensional but {volume_dims}-dimensional,"
                 f" please check for extra channel/batch dimensions"
             )
-
         volume = np.swapaxes(
             volume, 0, 2
-        )  # for anisotropy to be monai-like, i.e. zyx # FIXME rotation not always correct
+        )  # for anisotropy to be monai-like, i.e. zyx
 
         dims_check = volume.shape
 
-        # logger.debug(volume.shape)
-        # logger.debug(volume.dtype)
+        logger.debug(volume.shape)
+        logger.debug(volume.dtype)
         if self.config.sliding_window_config.is_enabled():
             load_transforms = Compose(
                 [
@@ -563,8 +562,9 @@ class InferenceWorker(GeneratorWorker):
         self.log("-" * 10)
         self.log("Inference started on layer...")
 
-        # image = image.type(torch.FloatTensor)
         image = utils.quantile_normalization(image)
+        self.log(f"Image type after normalization : {str(image.dtype)}")
+        self.log(f"Image shape after normalization : {str(image.shape)}")
 
         out = self.model_output(
             image,

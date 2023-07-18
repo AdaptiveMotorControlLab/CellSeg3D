@@ -1,7 +1,5 @@
 from napari_cellseg3d.code_models.models.unet.model import UNet3D
-from napari_cellseg3d.utils import LOGGER
-
-logger = LOGGER
+from napari_cellseg3d.utils import LOGGER as logger
 
 
 class TRAILMAP_MS_(UNet3D):
