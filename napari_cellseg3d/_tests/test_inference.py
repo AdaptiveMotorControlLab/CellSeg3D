@@ -5,20 +5,16 @@ import numpy as np
 import pytest
 import torch
 from monai.data import DataLoader
-from numpy.random import PCG64, Generator
 
-from napari_cellseg3d.code_models.workers import (
+from napari_cellseg3d.code_models.worker_inference import InferenceWorker
+from napari_cellseg3d.code_models.workers_utils import (
+    PRETRAINED_WEIGHTS_DIR,
     InferenceResult,
-    InferenceWorker,
     ONNXModelWrapper,
     WeightsDownloader,
 )
-from napari_cellseg3d.config import (
-    PRETRAINED_WEIGHTS_DIR,
-    InferenceWorkerConfig,
-)
-
-rand_gen = Generator(PCG64(12345))
+from napari_cellseg3d.config import InferenceWorkerConfig
+from napari_cellseg3d.utils import rand_gen
 
 
 def test_onnx_inference(make_napari_viewer_proxy):

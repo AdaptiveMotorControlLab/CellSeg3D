@@ -15,10 +15,8 @@ from napari_cellseg3d.code_models.instance_segmentation import (
     InstanceWidgets,
 )
 from napari_cellseg3d.code_models.model_framework import ModelFramework
-from napari_cellseg3d.code_models.workers import (
-    InferenceResult,
-    InferenceWorker,
-)
+from napari_cellseg3d.code_models.worker_inference import InferenceWorker
+from napari_cellseg3d.code_models.workers_utils import InferenceResult
 from napari_cellseg3d.code_plugins.plugin_crf import CRFParamsWidget
 
 logger = utils.LOGGER
@@ -242,6 +240,12 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         self._remove_unused()
 
+    def _toggle_display_crf(self):
+        if self.model_choice.currentText() == "WNet":
+            self.use_crf.setVisible(True)
+        else:
+            self.use_crf.setVisible(False)
+
     def _set_tooltips(self):
         ##################
         ##################
@@ -306,6 +310,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
     def _restrict_window_size_for_model(self):
         """Sets the window size to a value that is compatible with the chosen model"""
+        window_enabled = self.window_infer_box.isChecked()
         if self.model_choice.currentText() == "WNet":
             self.window_size_choice.setCurrentIndex(self._default_window_size)
             self.window_size_choice.setDisabled(True)
@@ -314,8 +319,11 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         else:
             self.window_size_choice.setDisabled(False)
             self.window_infer_box.setDisabled(False)
-            self.window_infer_box.setChecked(False)
-            self.window_size_choice.setCurrentIndex(self._default_window_size)
+            self.window_infer_box.setChecked(window_enabled)
+            if not window_enabled:
+                self.window_size_choice.setCurrentIndex(
+                    self._default_window_size
+                )
 
     def _toggle_display_model_input_size(self):
         if (
@@ -477,6 +485,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 # self.instance_param_container,  # instance segmentation
             ],
         )
+        self.model_choice.currentIndexChanged.connect(self._toggle_display_crf)
         ModelFramework._show_io_element(
             self.save_stats_to_csv_box, self.use_instance_choice
         )

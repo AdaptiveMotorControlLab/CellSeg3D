@@ -110,7 +110,7 @@ def test_crf_worker(qtbot):
 
 
 def test_pretrained_weights_compatibility():
-    from napari_cellseg3d.code_models.workers import WeightsDownloader
+    from napari_cellseg3d.code_models.workers_utils import WeightsDownloader
     from napari_cellseg3d.config import MODEL_LIST, PRETRAINED_WEIGHTS_DIR
 
     for model_name in MODEL_LIST:

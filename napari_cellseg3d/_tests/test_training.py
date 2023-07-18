@@ -3,9 +3,9 @@ from pathlib import Path
 from napari_cellseg3d import config
 from napari_cellseg3d._tests.fixtures import LogFixture
 from napari_cellseg3d.code_models.models.model_test import TestModel
+from napari_cellseg3d.code_models.workers_utils import TrainingReport
 from napari_cellseg3d.code_plugins.plugin_model_training import (
     Trainer,
-    TrainingReport,
 )
 from napari_cellseg3d.config import MODEL_LIST
 
@@ -90,7 +90,7 @@ def test_training(make_napari_viewer_proxy, qtbot):
     res = next(worker.train())
 
     assert isinstance(res, TrainingReport)
-    assert res.epoch == 1
+    assert res.epoch == 0
 
     widget.worker = worker
     res.show_plot = True

@@ -32,14 +32,13 @@ from qtpy.QtWidgets import QSizePolicy
 from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.code_models.model_framework import ModelFramework
-from napari_cellseg3d.code_models.workers import (
-    TrainingReport,
+from napari_cellseg3d.code_models.worker_training import (
     TrainingWorker,
 )
+from napari_cellseg3d.code_models.workers_utils import TrainingReport
 
-NUMBER_TABS = 3
-DEFAULT_PATCH_SIZE = 64
-
+NUMBER_TABS = 3  # how many tabs in the widget
+DEFAULT_PATCH_SIZE = 64  # default patch size for training
 logger = utils.LOGGER
 
 

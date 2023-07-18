@@ -8,7 +8,7 @@ class TRAILMAP_MS_(UNet3D):
     use_default_training = True
     weights_file = "TRAILMAP_MS_best_metric_epoch_26.pth"
 
-    # original model from Liqun Luo lab, transferred to pytorch and trained on mesoSPIM-acquired data (mostly cFOS as of July 2022)
+    # original model from Liqun Luo lab, transferred to pytorch and trained on mesoSPIM-acquired data (mostly TPH2 as of July 2022)
 
     def __init__(self, in_channels=1, out_channels=1, **kwargs):
         try:
