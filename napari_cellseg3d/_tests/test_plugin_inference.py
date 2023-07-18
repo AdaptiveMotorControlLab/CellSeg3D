@@ -9,8 +9,8 @@ from napari_cellseg3d.code_models.instance_segmentation import (
     volume_stats,
 )
 from napari_cellseg3d.code_models.models.model_test import TestModel
+from napari_cellseg3d.code_models.workers_utils import InferenceResult
 from napari_cellseg3d.code_plugins.plugin_model_inference import (
-    InferenceResult,
     Inferer,
 )
 from napari_cellseg3d.config import MODEL_LIST

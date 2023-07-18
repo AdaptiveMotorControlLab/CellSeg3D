@@ -23,13 +23,11 @@ class WNet_encoder(nn.Module):
 
     def __init__(
         self,
-        device,
         in_channels=1,
         out_channels=2
         # num_classes=2
     ):
         super().__init__()
-        self.device = device
         self.encoder = UNet(
             in_channels=in_channels,
             out_channels=out_channels,

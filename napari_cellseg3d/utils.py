@@ -8,6 +8,7 @@ import napari
 import numpy as np
 import torch
 from monai.transforms import Zoom
+from numpy.random import PCG64, Generator
 from tifffile import imread, imwrite
 
 LOGGER = logging.getLogger(__name__)
@@ -21,6 +22,8 @@ utils.py
 ====================================
 Definitions of utility functions, classes, and variables
 """
+
+rand_gen = Generator(PCG64(12345))
 
 
 ####################
@@ -314,11 +317,11 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
     padding = []
 
     dims = len(image_shape)
-    print(f"Dimension of data for padding : {dims}D")
-    print(f"Image shape is {image_shape}")
+    LOGGER.debug(f"Data is {dims}D")
+    LOGGER.debug(f"Image shape is {image_shape}")
     if dims != 2 and dims != 3:
         error = "Please check the dimensions of the input, only 2 or 3-dimensional data is supported currently"
-        print(error)
+        LOGGER.error(error)
         raise ValueError(error)
 
     for i in range(dims):
@@ -346,7 +349,7 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
 
         padding.append(pad)
 
-    print(f"Padding sizes are {padding}")
+    LOGGER.debug(f"Padding sizes are {padding}")
     return padding
 
 

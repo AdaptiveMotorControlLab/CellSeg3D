@@ -11,11 +11,9 @@ class WNet_(WNet_encoder):
         in_channels=1,
         out_channels=2,
         # num_classes=2,
-        device="cpu",
         **kwargs,
     ):
         super().__init__(
-            device=device,
             in_channels=in_channels,
             out_channels=out_channels,
             # num_classes=num_classes,
