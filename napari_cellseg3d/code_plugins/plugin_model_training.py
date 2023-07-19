@@ -974,6 +974,11 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         # self.empty_cuda_cache()
         # self.clean_cache()
 
+    def on_stop(self):
+        self.worker = None
+        self.btn_start.setText("Start")
+        [btn.setVisible(True) for btn in self.close_buttons]
+
     def _display_results(self, images, names, complete_missing=False):
         if not complete_missing:
             layer_output = self._viewer.add_image(
@@ -1057,6 +1062,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 ),
             )
             self.log.print_and_log("Saving complete")
+            self.on_stop()
             self.stop_requested = False
 
     # def clean_cache(self):
