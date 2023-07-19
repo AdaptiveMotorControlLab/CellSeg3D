@@ -90,6 +90,16 @@ class ModelFramework(BasePluginFolder):
             "Load custom weights", self._toggle_weights_path, self
         )
 
+        available_devices = ["CPU"] + [
+            f"GPU {i}" for i in range(torch.cuda.device_count())
+        ]
+        self.device_choice = ui.DropdownMenu(
+            available_devices,
+            parent=self,
+            text_label="Device",
+        )
+        self.device_choice.tooltips = "Choose the device to use for training.\nIf you have a GPU, it is recommended to use it"
+
         ###################################################
         # status report docked widget
 
@@ -298,9 +308,23 @@ class ModelFramework(BasePluginFolder):
         )
         self._update_weights_path(file)
 
+    def check_device_choice(self):
+        choice = self.device_choice.currentText()
+        if choice == "CPU":
+            device = "cpu"
+        elif "GPU" in choice:
+            i = int(choice.split(" ")[1])
+            device = f"cuda:{i}"
+        else:
+            device = self.get_device()
+        logger.debug(f"DEVICE choice : {device}")
+        return device
+
     @staticmethod
     def get_device(show=True):
-        """Automatically discovers any cuda device and uses it for tensor operations.
+        """
+        Tries to use the device specified by user and uses it for tensor operations.
+        If not available, automatically discovers any cuda device.
         If none is available (CUDA not installed), uses cpu instead."""
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         if show:
