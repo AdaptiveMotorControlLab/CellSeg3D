@@ -484,7 +484,9 @@ class TrainingWorker(GeneratorWorker):
                 patience=self.config.scheduler_patience,
                 verbose=VERBOSE_SCHEDULER,
             )
-            dice_metric = DiceMetric(include_background=True, reduction="mean")
+            dice_metric = DiceMetric(
+                include_background=True, reduction="mean", ignore_empty=False
+            )
 
             best_metric = -1
             best_metric_epoch = -1
@@ -650,6 +652,13 @@ class TrainingWorker(GeneratorWorker):
 
                             # logger.debug(len(val_outputs))
                             # logger.debug(len(val_labels))
+                            dice_test = [
+                                utils.dice_coeff(i, j)
+                                for i, j in zip(val_outputs, val_labels)
+                            ]
+                            logger.debug(
+                                f"TEST VALIDATION Dice score : {dice_test}"
+                            )
 
                             dice_metric(y_pred=val_outputs, y=val_labels)
 
