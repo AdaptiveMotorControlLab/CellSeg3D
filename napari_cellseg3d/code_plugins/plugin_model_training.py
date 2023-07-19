@@ -1169,19 +1169,19 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             )
             self.canvas.draw_idle()
 
-            plot_path = self.worker_config.results_path_folder / Path(
-                "../Loss_plots"
-            )
-            Path(plot_path).mkdir(parents=True, exist_ok=True)
-
-            if self.canvas is not None:
-                self.canvas.figure.savefig(
-                    str(
-                        plot_path
-                        / f"checkpoint_metric_plots_{utils.get_date_time()}.png"
-                    ),
-                    format="png",
-                )
+            # plot_path = self.worker_config.results_path_folder / Path(
+            #     "../Loss_plots"
+            # )
+            # Path(plot_path).mkdir(parents=True, exist_ok=True)
+            #
+            # if self.canvas is not None:
+            #     self.canvas.figure.savefig(
+            #         str(
+            #             plot_path
+            #             / f"checkpoint_metric_plots_{utils.get_date_time()}.png"
+            #         ),
+            #         format="png",
+            #     )
 
     def update_loss_plot(self, loss, metric):
         """
