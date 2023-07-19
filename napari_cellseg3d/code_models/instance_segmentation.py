@@ -99,7 +99,7 @@ class InstanceMethod:
 
     def _make_list_from_channels(
         self, image
-    ):  # TODO(cyril) : adapt to batch dimension
+    ):  # TODO(cyril) : adapt to batch dimension (needed ?)
         if len(image.shape) > 4:
             raise ValueError(
                 f"Image has {len(image.shape)} dimensions, but should have at most 4 dimensions (CHWD)"

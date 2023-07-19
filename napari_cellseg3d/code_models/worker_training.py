@@ -282,9 +282,7 @@ class TrainingWorker(GeneratorWorker):
             size = self.config.sample_size if do_sampling else check
 
             PADDING = utils.get_padding_dim(size)
-            model = model_class(  # FIXME check if correct
-                input_img_size=PADDING, use_checkpoint=True
-            )
+            model = model_class(input_img_size=PADDING, use_checkpoint=True)
             model = model.to(self.config.device)
 
             epoch_loss_values = []
@@ -570,7 +568,7 @@ class TrainingWorker(GeneratorWorker):
                     if outputs.shape[1] > 1:
                         outputs = outputs[
                             :, 1:, :, :
-                        ]  # FIXME fix channel number
+                        ]  # TODO(cyril): adapt if additional channels
                         if len(outputs.shape) < 4:
                             outputs = outputs.unsqueeze(0)
                     loss = self.config.loss_function(outputs, labels)
@@ -632,17 +630,15 @@ class TrainingWorker(GeneratorWorker):
                                     )
                             except Exception as e:
                                 self.raise_error(e, "Error during validation")
+
                             logger.debug(
                                 f"val_outputs shape : {val_outputs.shape}"
                             )
                             # val_outputs = model(val_inputs)
 
                             pred = decollate_batch(val_outputs)
-
                             labs = decollate_batch(val_labels)
-
                             # TODO : more parameters/flexibility
-
                             post_pred = Compose(
                                 [
                                     RemapTensor(new_max=1, new_min=0),
@@ -668,15 +664,15 @@ class TrainingWorker(GeneratorWorker):
 
                             # logger.debug(len(val_outputs))
                             # logger.debug(len(val_labels))
-                            dice_test = np.array(  # TODO(cyril): remove
-                                [
-                                    utils.dice_coeff(i, j)
-                                    for i, j in zip(val_outputs, val_labels)
-                                ]
-                            )
-                            logger.debug(
-                                f"TEST VALIDATION Dice score : {dice_test.mean()}"
-                            )
+                            # dice_test = np.array(
+                            #     [
+                            #         utils.dice_coeff(i, j)
+                            #         for i, j in zip(val_outputs, val_labels)
+                            #     ]
+                            # )
+                            # logger.debug(
+                            #     f"TEST VALIDATION Dice score : {dice_test.mean()}"
+                            # )
 
                             dice_metric(y_pred=val_outputs, y=val_labels)
 
