@@ -484,9 +484,7 @@ class TrainingWorker(GeneratorWorker):
                 patience=self.config.scheduler_patience,
                 verbose=VERBOSE_SCHEDULER,
             )
-            dice_metric = DiceMetric(
-                include_background=False, reduction="mean"
-            )
+            dice_metric = DiceMetric(include_background=True, reduction="mean")
 
             best_metric = -1
             best_metric_epoch = -1
@@ -664,8 +662,8 @@ class TrainingWorker(GeneratorWorker):
                         )
                         checkpoint_output = [
                             item.numpy()
-                            for batch in checkpoint_output
-                            for item in batch
+                            for channel in checkpoint_output
+                            for item in channel
                         ]
                         checkpoint_output[2] = checkpoint_output[2].astype(
                             np.uint16
