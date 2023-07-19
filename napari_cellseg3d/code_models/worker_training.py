@@ -685,7 +685,7 @@ class TrainingWorker(GeneratorWorker):
                             for channel in checkpoint_output
                             for item in channel
                         ]
-                        checkpoint_output[3] = checkpoint_output[2].astype(
+                        checkpoint_output[3] = checkpoint_output[3].astype(
                             np.uint16
                         )
 
