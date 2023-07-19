@@ -244,11 +244,11 @@ class InferenceWorker(GeneratorWorker):
         if self.config.sliding_window_config.is_enabled():
             load_transforms = Compose(
                 [
+                    QuantileNormalization(),
                     ToTensor(),
                     # anisotropic_transform,
                     AddChannel(),
                     # SpatialPad(spatial_size=pad),
-                    QuantileNormalization(),
                     AddChannel(),
                     EnsureType(),
                 ],
@@ -260,10 +260,10 @@ class InferenceWorker(GeneratorWorker):
             pad = utils.get_padding_dim(dims_check)
             load_transforms = Compose(
                 [
+                    QuantileNormalization(),
                     ToTensor(),
                     # anisotropic_transform,
                     AddChannel(),
-                    QuantileNormalization(),
                     SpatialPad(spatial_size=pad),
                     AddChannel(),
                     EnsureType(),
