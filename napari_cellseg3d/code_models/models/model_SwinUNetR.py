@@ -12,7 +12,7 @@ class SwinUNETR_(SwinUNETR):
     def __init__(
         self,
         in_channels=1,
-        out_channels=1,
+        out_channels=2,
         input_img_size=128,
         use_checkpoint=True,
         **kwargs,
