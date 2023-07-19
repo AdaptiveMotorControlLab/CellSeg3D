@@ -546,10 +546,10 @@ class TrainingWorker(GeneratorWorker):
                 if device.type == "cuda":
                     self.log("Memory Usage:")
                     alloc_mem = round(
-                        torch.cuda.memory_allocated(device_id) / 1024**3, 1
+                        torch.cuda.memory_allocated(device) / 1024**3, 1
                     )
                     reserved_mem = round(
-                        torch.cuda.memory_reserved(device_id) / 1024**3, 1
+                        torch.cuda.memory_reserved(device) / 1024**3, 1
                     )
                     self.log(f"Allocated: {alloc_mem}GB")
                     self.log(f"Cached: {reserved_mem}GB")
