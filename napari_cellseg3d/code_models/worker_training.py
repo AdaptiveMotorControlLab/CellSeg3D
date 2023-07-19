@@ -641,14 +641,17 @@ class TrainingWorker(GeneratorWorker):
                             post_pred = Compose(
                                 [
                                     RemapTensor(new_max=1, new_min=0),
-                                    AsDiscrete(threshold=0.5),  # needed ?
+                                    AsDiscrete(threshold=0.25),  # needed ?
                                     EnsureType(),
                                 ]
                             )  #
                             post_label = EnsureType()
 
-                            # output_raw = [RemapTensor(0, 1)(t) for t in pred]
-                            output_raw = pred
+                            output_raw = [
+                                RemapTensor(new_max=1, new_min=0)(t)
+                                for t in pred
+                            ]
+                            # output_raw = pred
 
                             val_outputs = [
                                 post_pred(res_tensor) for res_tensor in pred
