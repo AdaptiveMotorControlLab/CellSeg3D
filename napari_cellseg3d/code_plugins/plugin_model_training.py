@@ -186,7 +186,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         self.epoch_choice = ui.IntIncrementCounter(
             lower=2,
-            upper=200,
+            upper=999,
             default=self.default_config.max_epochs,
             text_label="Number of epochs : ",
         )
