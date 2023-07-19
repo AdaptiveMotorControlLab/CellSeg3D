@@ -241,10 +241,16 @@ class InferenceWorker(GeneratorWorker):
         logger.debug(volume.shape)
         logger.debug(volume.dtype)
 
+        normalization = (
+            QuantileNormalization()
+            if self.config.model_info.name != "WNet"
+            else lambda x: x
+        )
         if self.config.sliding_window_config.is_enabled():
             load_transforms = Compose(
                 [
-                    QuantileNormalization(),
+                    # QuantileNormalization(),
+                    normalization,
                     ToTensor(),
                     # anisotropic_transform,
                     AddChannel(),
@@ -260,7 +266,8 @@ class InferenceWorker(GeneratorWorker):
             pad = utils.get_padding_dim(dims_check)
             load_transforms = Compose(
                 [
-                    QuantileNormalization(),
+                    # QuantileNormalization(),
+                    normalization,
                     ToTensor(),
                     # anisotropic_transform,
                     AddChannel(),
