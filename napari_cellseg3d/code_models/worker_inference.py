@@ -34,6 +34,7 @@ from napari_cellseg3d.code_models.workers_utils import (
     ONNXModelWrapper,
     QuantileNormalization,
     QuantileNormalizationd,
+    RemapTensor,
     WeightsDownloader,
 )
 
@@ -715,11 +716,20 @@ class InferenceWorker(GeneratorWorker):
             # )
 
             if not post_process_config.thresholding.enabled:
-                post_process_transforms = EnsureType()
+                post_process_transforms = Compose(
+                    [
+                        RemapTensor(new_max=1.0, new_min=0.0),
+                        EnsureType(),
+                    ]
+                )
             else:
                 t = post_process_config.thresholding.threshold_value
                 post_process_transforms = Compose(
-                    AsDiscrete(threshold=t), EnsureType()
+                    [
+                        RemapTensor(new_max=1.0, new_min=0.0),
+                        AsDiscrete(threshold=t),
+                        EnsureType(),
+                    ]
                 )
 
             is_folder = self.config.images_filepaths is not None

@@ -44,6 +44,7 @@ from napari_cellseg3d.code_models.workers_utils import (
     PRETRAINED_WEIGHTS_DIR,
     LogSignal,
     QuantileNormalizationd,
+    RemapTensor,
     TrainingReport,
     WeightsDownloader,
 )
@@ -638,12 +639,15 @@ class TrainingWorker(GeneratorWorker):
 
                             # TODO : more parameters/flexibility
                             post_pred = Compose(
-                                AsDiscrete(threshold=0.5),  # needed ?
-                                EnsureType(),
+                                [
+                                    RemapTensor(new_max=1, new_min=0),
+                                    AsDiscrete(threshold=0.5),  # needed ?
+                                    EnsureType(),
+                                ]
                             )  #
                             post_label = EnsureType()
 
-                            output_raw = [t for t in pred]
+                            output_raw = [RemapTensor(0, 1)(t) for t in pred]
                             val_outputs = [
                                 post_pred(res_tensor) for res_tensor in pred
                             ]
