@@ -94,13 +94,14 @@ The available loss functions are :
 Function                  Reference
 ========================  ================================================================================================
 Dice loss                 `Dice Loss from MONAI`_ with ``sigmoid=true``
-Focal loss                `Focal Loss from MONAI`_
-Dice-Focal loss           `Dice-focal Loss from MONAI`_ with ``sigmoid=true`` and ``lambda_dice = 0.5``
 Generalized Dice loss     `Generalized dice Loss from MONAI`_ with ``sigmoid=true``
 Dice-CE loss              `Dice-CE Loss from MONAI`_ with ``sigmoid=true``
 Tversky loss              `Tversky Loss from MONAI`_ with ``sigmoid=true``
 ========================  ================================================================================================
 
+
+.. Binary cross-entropy      `Binary cross entropy (BCE) loss from PyTorch`_
+   BCE with logits           `BCE loss with logits from PyTorch`_
 
 .. _Dice Loss from MONAI: https://docs.monai.io/en/stable/losses.html#diceloss
 .. _Focal Loss from MONAI: https://docs.monai.io/en/stable/losses.html#focalloss
@@ -108,6 +109,8 @@ Tversky loss              `Tversky Loss from MONAI`_ with ``sigmoid=true``
 .. _Generalized dice Loss from MONAI: https://docs.monai.io/en/stable/losses.html#generalizeddiceloss
 .. _Dice-CE Loss from MONAI: https://docs.monai.io/en/stable/losses.html#diceceloss
 .. _Tversky Loss from MONAI: https://docs.monai.io/en/stable/losses.html#tverskyloss
+.. _Binary cross entropy (BCE) loss from PyTorch:
+.. _BCE loss with logits from PyTorch:
 
 Once you are ready, press the Start button to begin training. The module will automatically load your dataset,
 perform data augmentation if you chose to, select a CUDA device if one is present, and train the model.

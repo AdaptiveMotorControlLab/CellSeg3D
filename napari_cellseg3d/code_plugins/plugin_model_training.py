@@ -18,9 +18,7 @@ if TYPE_CHECKING:
 # MONAI
 from monai.losses import (
     DiceCELoss,
-    DiceFocalLoss,
     DiceLoss,
-    FocalLoss,
     GeneralizedDiceLoss,
     TverskyLoss,
 )
@@ -142,13 +140,14 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.start_time = None
 
         self.loss_dict = {
-            "Dice loss": DiceLoss(sigmoid=True),
-            "Focal loss": FocalLoss(),
-            # "BCELoss":nn.BCELoss(),
-            "Dice-Focal loss": DiceFocalLoss(sigmoid=True, lambda_dice=0.5),
-            "Generalized Dice loss": GeneralizedDiceLoss(sigmoid=True),
-            "DiceCELoss": DiceCELoss(sigmoid=True, lambda_ce=0.5),
-            "Tversky loss": TverskyLoss(sigmoid=True),
+            "Dice": DiceLoss(sigmoid=True),
+            # "BCELoss": torch.nn.BCELoss(), # dev
+            # "BCELogits": torch.nn.BCEWithLogitsLoss(),
+            "Generalized Dice": GeneralizedDiceLoss(sigmoid=True),
+            "DiceCE": DiceCELoss(sigmoid=True, lambda_ce=0.5),
+            "Tversky": TverskyLoss(sigmoid=True),
+            # "Focal loss": FocalLoss(),
+            # "Dice-Focal loss": DiceFocalLoss(sigmoid=True, lambda_dice=0.5),
         }
         """Dict of loss functions"""
 
@@ -168,6 +167,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.validation_values = []
 
         # self.model_choice.setCurrentIndex(0)
+        ################### # TODO(cyril) : disable if we implement WNet training
         wnet_index = self.model_choice.findText("WNet")
         self.model_choice.removeItem(wnet_index)
 
@@ -192,7 +192,11 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         )
 
         self.loss_choice = ui.DropdownMenu(
-            sorted(self.loss_dict.keys()), text_label="Loss function"
+            # sorted(
+            list(
+                self.loss_dict.keys(),
+            ),
+            text_label="Loss function",
         )
         self.lbl_loss_choice = self.loss_choice.label
         self.loss_choice.setCurrentIndex(0)
@@ -310,7 +314,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.validation_percent_choice.tooltips = "Choose the proportion of images to retain for training.\nThe remaining images will be used for validation"
             self.epoch_choice.tooltips = "The number of epochs to train for.\nThe more you train, the better the model will fit the training data"
             self.loss_choice.setToolTip(
-                "The loss function to use for training.\nSee the list in the inference guide for more info"
+                "The loss function to use for training.\nSee the list in the training guide for more info"
             )
             self.sample_choice_slider.tooltips = (
                 "The number of samples to extract per image"
@@ -400,6 +404,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.custom_weights_choice.setVisible(True)
         else:
             self.custom_weights_choice.setVisible(False)
+            self.weights_filewidget.setVisible(False)
 
     def _toggle_deterministic_param(self):
         if self.use_deterministic_choice.isChecked():

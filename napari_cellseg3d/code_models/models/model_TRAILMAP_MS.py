@@ -8,7 +8,7 @@ class TRAILMAP_MS_(UNet3D):
 
     # original model from Liqun Luo lab, transferred to pytorch and trained on mesoSPIM-acquired data (mostly TPH2 as of July 2022)
 
-    def __init__(self, in_channels=1, out_channels=1, **kwargs):
+    def __init__(self, in_channels=1, out_channels=2, **kwargs):
         try:
             super().__init__(
                 in_channels=in_channels, out_channels=out_channels, **kwargs
