@@ -1360,7 +1360,7 @@ def combine_blocks(  # TODO FIXME PLEASE this is a horrible design
     b=11,
 ):
     """Combines two QWidget objects and puts them side by side (first on the left/top and second on the right/bottom depending on "horizontal")
-       Weird argument names due the initial implementation of it.  # TODO maybe fix arg names
+       Weird argument names due the initial implementation of it.  # TODO maybe fix arg names or refactor
 
     Args:
         left_or_above (QWidget): First widget, to be added on the left/above of "second"

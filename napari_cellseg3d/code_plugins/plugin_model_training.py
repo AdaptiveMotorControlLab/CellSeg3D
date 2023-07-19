@@ -167,10 +167,10 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.validation_values = []
 
         # self.model_choice.setCurrentIndex(0)
-        ################### # TODO(cyril) : disable if we implement WNet training
+        ###################
+        # TODO(cyril) : disable if we implement WNet training
         wnet_index = self.model_choice.findText("WNet")
         self.model_choice.removeItem(wnet_index)
-
         ################################
         # interface
 
@@ -911,7 +911,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             sample_size=patch_size,
             do_augmentation=self.augment_choice.isChecked(),
             deterministic_config=deterministic_config,
-        )  # TODO(cyril) continue to put params in config
+        )
 
         return self.worker_config
 

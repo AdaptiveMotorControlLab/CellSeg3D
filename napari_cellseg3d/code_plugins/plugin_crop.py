@@ -37,7 +37,7 @@ class Cropping(BasePluginSingleImage):
         """
 
         super().__init__(viewer)
-        self.docked_widgets = []  # TODO add remove on close
+        self.docked_widgets = []
         self.results_path = Path.home() / Path("cellseg3d/cropped")
 
         self.btn_start = ui.Button("Start", self._start)
@@ -266,9 +266,6 @@ class Cropping(BasePluginSingleImage):
         """Launches cropping process by loading the files from the chosen folders,
         and adds control widgets to the napari Viewer for moving the cropped volume.
         """
-        # TODO maybe implement proper reset function so multiple runs can be done without closing napari
-        # maybe use singletons or make docked widgets attributes that are hidden upon opening
-
         if not self._check_ready():
             logger.warning("Please select at least one valid layer !")
             return
@@ -355,7 +352,7 @@ class Cropping(BasePluginSingleImage):
         self,
         layer,
         colormap="inferno",
-        contrast_lim=(200, 1000),  # TODO generalize ?
+        contrast_lim=(200, 1000),
         opacity=0.7,
         visible=True,
     ):

@@ -220,13 +220,6 @@ class BasePluginSingleImage(QTabWidget):
         """Method to be defined by children classes"""
         raise NotImplementedError("To be defined in child classes")
 
-    # def _show_filetype_choice(self): # TODO(cyril): remove?
-    #     """Method to show/hide the filetype choice when "loading as folder" is (de)selected"""
-    #     show = self.load_as_stack_choice.isChecked()
-    #     if show is not None:
-    #         self.filetype_choice.setVisible(show)
-    #         # self.lbl_ft.setVisible(show)
-
     def _show_file_dialog(self):
         """Open file dialog and process path for a single file"""
         # if self.load_as_stack_choice.isChecked():

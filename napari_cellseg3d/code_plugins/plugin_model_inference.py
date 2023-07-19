@@ -124,9 +124,9 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         self.anisotropy_wdgt = ui.AnisotropyWidgets(
             self,
-            default_x=1.5,
-            default_y=1.5,
-            default_z=5,  # TODO change default
+            default_x=1,
+            default_y=1,
+            default_z=1,
         )
 
         # self.worker_config.post_process_config.zoom.zoom_values = [
