@@ -666,7 +666,7 @@ class TrainingWorker(GeneratorWorker):
                                 .astype(np.uint16),
                             ]
                         )
-                        [np.squeeze(vol) for vol in checkpoint_output]
+                        # [np.squeeze(vol) for vol in checkpoint_output]
 
                         metric = dice_metric.aggregate().detach().item()
                         dice_metric.reset()
