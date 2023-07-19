@@ -12,8 +12,8 @@ class SwinUNETR_(SwinUNETR):
     def __init__(
         self,
         in_channels=1,
-        out_channels=2,
-        input_img_size=128,
+        out_channels=1,
+        input_img_size=(64, 64, 64),
         use_checkpoint=True,
         **kwargs,
     ):
@@ -24,6 +24,9 @@ class SwinUNETR_(SwinUNETR):
                 out_channels=out_channels,
                 feature_size=48,
                 use_checkpoint=use_checkpoint,
+                drop_rate=0.5,
+                attn_drop_rate=0.5,
+                use_v2=True,
                 **kwargs,
             )
         except TypeError as e:
@@ -34,6 +37,9 @@ class SwinUNETR_(SwinUNETR):
                 out_channels=1,
                 feature_size=48,
                 use_checkpoint=use_checkpoint,
+                drop_rate=0.5,
+                attn_drop_rate=0.5,
+                use_v2=True,
             )
 
     # def forward(self, x_in):
