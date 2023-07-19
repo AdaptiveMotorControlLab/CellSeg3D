@@ -203,6 +203,16 @@ class QuantileNormalization(Transform):
         return utils.quantile_normalization(img)
 
 
+class RemapTensor(Transform):
+    def __init__(self, new_max, new_min):
+        super().__init__()
+        self.max = new_max
+        self.min = new_min
+
+    def __call__(self, img):
+        return utils.remap_image(img, new_max=self.max, new_min=self.min)
+
+
 @dataclass
 class InferenceResult:
     """Class to record results of a segmentation job"""
