@@ -203,7 +203,7 @@ class UtilsDropdown(metaclass=utils.Singleton):
             if action == possible_action:
                 text = possible_action.text().split(": ")[1]
                 widget = UTILITIES_WIDGETS[text](widget._viewer)
-                widget._viewer.window.add_dock_widget(widget)
+                widget._viewer.window.add_dock_widget(widget, name=text)
 
 
 ##############
