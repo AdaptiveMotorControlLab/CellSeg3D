@@ -99,6 +99,7 @@ class ModelFramework(BasePluginFolder):
             text_label="Device",
         )
         self.device_choice.tooltips = "Choose the device to use for training.\nIf you have a GPU, it is recommended to use it"
+        self.device_choice.setCurrentIndex(len(available_devices) - 1)
 
         ###################################################
         # status report docked widget
