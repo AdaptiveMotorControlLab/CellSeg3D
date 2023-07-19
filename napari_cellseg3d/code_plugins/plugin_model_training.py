@@ -975,14 +975,20 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         # self.clean_cache()
 
     def on_stop(self):
+        self._remove_result_layers()
         self.worker = None
         self.btn_start.setText("Start")
         [btn.setVisible(True) for btn in self.close_buttons]
 
+    def _remove_result_layers(self):
+        for layer in self.result_layers:
+            self._viewer.layers.remove(layer)
+        self.result_layers = []
+
     def _display_results(self, images, names, complete_missing=False):
         if not complete_missing:
             layer_output = self._viewer.add_image(
-                data=images[0], name=names[0], colormap="viridis"
+                data=images[0], name=names[0], colormap="turbo"
             )
             layer_image = self._viewer.add_image(
                 data=images[1], name=names[1], colormap="inferno"
@@ -991,6 +997,9 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 data=images[2].astype(np.uint16), name=names[2]
             )
             self.result_layers += [layer_output, layer_image, layer_labels]
+            self._viewer.grid.enabled = True
+            self._viewer.dims.ndisplay = 3
+            self._viewer.reset_view()
         else:
             # add only the missing layers
             for i in range(3):
@@ -999,7 +1008,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 ]:
                     if i == 0:
                         layer_output = self._viewer.add_image(
-                            data=images[i], name=names[i], colormap="viridis"
+                            data=images[i], name=names[i], colormap="turbo"
                         )
                         self.result_layers[0] = layer_output
                     elif i == 1:
@@ -1009,7 +1018,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                         self.result_layers[1] = layer_image
                     else:
                         layer_labels = self._viewer.add_labels(
-                            data=images[i], name=names[i]
+                            data=images[i].astype(np.uint16), name=names[i]
                         )
                         self.result_layers[2] = layer_labels
                 self.result_layers[i].data = images[i]
