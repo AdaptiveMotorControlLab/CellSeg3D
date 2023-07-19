@@ -44,7 +44,6 @@ from napari_cellseg3d.code_models.workers_utils import (
     PRETRAINED_WEIGHTS_DIR,
     LogSignal,
     QuantileNormalizationd,
-    RemapTensor,
     TrainingReport,
     WeightsDownloader,
 )
@@ -640,14 +639,16 @@ class TrainingWorker(GeneratorWorker):
                             # TODO : more parameters/flexibility
                             post_pred = Compose(
                                 [
-                                    RemapTensor(new_max=1, new_min=0),
+                                    # RemapTensor(new_max=1, new_min=0),
                                     AsDiscrete(threshold=0.5),  # needed ?
                                     EnsureType(),
                                 ]
                             )  #
                             post_label = EnsureType()
 
-                            output_raw = [RemapTensor(0, 1)(t) for t in pred]
+                            # output_raw = [RemapTensor(0, 1)(t) for t in pred]
+                            output_raw = pred
+
                             val_outputs = [
                                 post_pred(res_tensor) for res_tensor in pred
                             ]
@@ -658,7 +659,7 @@ class TrainingWorker(GeneratorWorker):
 
                             # logger.debug(len(val_outputs))
                             # logger.debug(len(val_labels))
-                            dice_test = np.array(
+                            dice_test = np.array(  # TODO(cyril): remove
                                 [
                                     utils.dice_coeff(i, j)
                                     for i, j in zip(val_outputs, val_labels)
@@ -673,6 +674,7 @@ class TrainingWorker(GeneratorWorker):
                         checkpoint_output.append(
                             [
                                 output_raw[0].detach().cpu(),
+                                val_outputs[0].detach().cpu(),
                                 val_inputs[0].detach().cpu(),
                                 val_labels[0].detach().cpu(),
                             ]
@@ -682,7 +684,7 @@ class TrainingWorker(GeneratorWorker):
                             for channel in checkpoint_output
                             for item in channel
                         ]
-                        checkpoint_output[2] = checkpoint_output[2].astype(
+                        checkpoint_output[3] = checkpoint_output[2].astype(
                             np.uint16
                         )
 

@@ -996,13 +996,21 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             layer_output = self._viewer.add_image(
                 data=images[0], name=names[0], colormap="turbo"
             )
+            layer_output_discrete = self._viewer.add_image(
+                data=images[1], name=names[1], colormap="bop orange"
+            )
             layer_image = self._viewer.add_image(
-                data=images[1], name=names[1], colormap="inferno"
+                data=images[2], name=names[2], colormap="inferno"
             )
             layer_labels = self._viewer.add_labels(
-                data=images[2], name=names[2]
+                data=images[3], name=names[3]
             )
-            self.result_layers += [layer_output, layer_image, layer_labels]
+            self.result_layers += [
+                layer_output,
+                layer_output_discrete,
+                layer_image,
+                layer_labels,
+            ]
             self._viewer.grid.enabled = True
             self._viewer.dims.ndisplay = 3
             self._viewer.reset_view()
@@ -1018,15 +1026,22 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                         )
                         self.result_layers[0] = layer_output
                     elif i == 1:
+                        layer_output_discrete = self._viewer.add_image(
+                            data=images[i],
+                            name=names[i],
+                            colormap="bop orange",
+                        )
+                        self.result_layers[1] = layer_output_discrete
+                    elif i == 2:
                         layer_image = self._viewer.add_image(
                             data=images[i], name=names[i], colormap="inferno"
                         )
-                        self.result_layers[1] = layer_image
+                        self.result_layers[2] = layer_image
                     else:
                         layer_labels = self._viewer.add_labels(
                             data=images[i], name=names[i]
                         )
-                        self.result_layers[2] = layer_labels
+                        self.result_layers[3] = layer_labels
                 self.result_layers[i].data = images[i]
                 self.result_layers[i].refresh()
 
@@ -1042,6 +1057,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             try:
                 layer_names = [
                     "Validation output",
+                    "Validation output (discrete)",
                     "Validation image",
                     "Validation labels",
                 ]
