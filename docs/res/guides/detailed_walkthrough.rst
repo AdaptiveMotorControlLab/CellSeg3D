@@ -239,25 +239,13 @@ Scoring, review, analysis
 ----------------------------
 
 
-Model performance : Metrics utility
-****************************************
-
-
-Using the metrics utility module, you can compare the model's predictions to any ground truth
+.. Using the metrics utility module, you can compare the model's predictions to any ground truth
 labels you might have.
-
 Simply provide your prediction and ground truth labels, and compute the results.
 A Dice metric of 1 indicates perfect matching, whereas a score of 0 indicates complete mismatch.
-
 Select which score **you consider as sub-optimal**, and all results below this will be **shown in napari**.
-
-
 If at any time the **orientation of your prediction labels changed compared to the ground truth**, check the
 "Find best orientation" option to compensate for it.
-
-.. note::
-    Using inference on the images you used for training might yield to higher scores due to the fitting.
-    If you wish to know how well the model performs on more general datasets, use different images for inference and scoring.
 
 
 Labels review
