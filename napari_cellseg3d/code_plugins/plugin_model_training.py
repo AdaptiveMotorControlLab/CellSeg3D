@@ -949,8 +949,10 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         self.log.print_and_log("Done")
         self.log.print_and_log("*" * 10)
-
-        self._make_csv()
+        try:
+            self._make_csv()
+        except ValueError as e:
+            logger.warning(f"Error while saving CSV report: {e}")
 
         self.btn_start.setText("Start")
         [btn.setVisible(True) for btn in self.close_buttons]
