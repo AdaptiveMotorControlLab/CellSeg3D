@@ -521,9 +521,10 @@ class TrainingWorker(GeneratorWorker):
                     self.warn(warn)
                     self._weight_error = True
 
-            if self.config.device.type == "cuda":
+            if "cuda" in self.config.device:
+                device_id = self.config.device.split(":")[-1]
                 self.log("\nUsing GPU :")
-                self.log(torch.cuda.get_device_name(0))
+                self.log(torch.cuda.get_device_name(int(device_id)))
             else:
                 self.log("Using CPU")
 
