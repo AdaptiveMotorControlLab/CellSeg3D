@@ -577,9 +577,9 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 opacity=0.7,
             )
 
-        out_colormap = "twilight"
-        if self.worker_config.post_process_config.thresholding.enabled:
-            out_colormap = "turbo"
+        out_colormap = "turbo"
+        # if self.worker_config.post_process_config.thresholding.enabled:
+        # out_colormap = "twilight"
 
         viewer.add_image(
             result.result,
