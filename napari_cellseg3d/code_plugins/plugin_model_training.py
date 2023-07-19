@@ -994,7 +994,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 data=images[1], name=names[1], colormap="inferno"
             )
             layer_labels = self._viewer.add_labels(
-                data=images[2].astype(np.uint16), name=names[2]
+                data=images[2], name=names[2]
             )
             self.result_layers += [layer_output, layer_image, layer_labels]
             self._viewer.grid.enabled = True
@@ -1018,7 +1018,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                         self.result_layers[1] = layer_image
                     else:
                         layer_labels = self._viewer.add_labels(
-                            data=images[i].astype(np.uint16), name=names[i]
+                            data=images[i], name=names[i]
                         )
                         self.result_layers[2] = layer_labels
                 self.result_layers[i].data = images[i]
