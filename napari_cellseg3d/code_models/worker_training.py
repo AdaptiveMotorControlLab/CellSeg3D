@@ -17,6 +17,7 @@ from monai.data import (
 from monai.inferers import sliding_window_inference
 from monai.metrics import DiceMetric
 from monai.transforms import (
+    AsDiscrete,
     Compose,
     EnsureChannelFirstd,
     EnsureType,
@@ -637,8 +638,8 @@ class TrainingWorker(GeneratorWorker):
 
                             # TODO : more parameters/flexibility
                             post_pred = Compose(
-                                # AsDiscrete(threshold=0.6), # needed ?
-                                EnsureType()
+                                AsDiscrete(threshold=0.5),  # needed ?
+                                EnsureType(),
                             )  #
                             post_label = EnsureType()
 
