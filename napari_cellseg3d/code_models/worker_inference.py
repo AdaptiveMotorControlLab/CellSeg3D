@@ -9,7 +9,7 @@ from monai.data import DataLoader, Dataset
 from monai.inferers import sliding_window_inference
 from monai.transforms import (
     AddChannel,
-    AsDiscrete,
+    # AsDiscrete,
     Compose,
     EnsureChannelFirstd,
     EnsureType,
@@ -35,6 +35,7 @@ from napari_cellseg3d.code_models.workers_utils import (
     QuantileNormalization,
     QuantileNormalizationd,
     RemapTensor,
+    Threshold,
     WeightsDownloader,
 )
 
@@ -727,7 +728,8 @@ class InferenceWorker(GeneratorWorker):
                 post_process_transforms = Compose(
                     [
                         RemapTensor(new_max=1.0, new_min=0.0),
-                        AsDiscrete(threshold=t),
+                        # AsDiscrete(threshold=t),
+                        Threshold(threshold=t),
                         EnsureType(),
                     ]
                 )

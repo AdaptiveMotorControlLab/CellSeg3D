@@ -213,6 +213,15 @@ class RemapTensor(Transform):
         return utils.remap_image(img, new_max=self.max, new_min=self.min)
 
 
+class Threshold(Transform):
+    def __init__(self, threshold=0.5):
+        super().__init__()
+        self.threshold = threshold
+
+    def __call__(self, img):
+        return torch.where(img > self.threshold, 1, 0)
+
+
 @dataclass
 class InferenceResult:
     """Class to record results of a segmentation job"""

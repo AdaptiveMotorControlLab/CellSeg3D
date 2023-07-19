@@ -17,7 +17,7 @@ from monai.data import (
 from monai.inferers import sliding_window_inference
 from monai.metrics import DiceMetric
 from monai.transforms import (
-    AsDiscrete,
+    # AsDiscrete,
     Compose,
     EnsureChannelFirstd,
     EnsureType,
@@ -45,6 +45,7 @@ from napari_cellseg3d.code_models.workers_utils import (
     LogSignal,
     QuantileNormalizationd,
     RemapTensor,
+    Threshold,
     TrainingReport,
     WeightsDownloader,
 )
@@ -638,10 +639,11 @@ class TrainingWorker(GeneratorWorker):
                             labs = decollate_batch(val_labels)
 
                             # TODO : more parameters/flexibility
+
                             post_pred = Compose(
                                 [
                                     RemapTensor(new_max=1, new_min=0),
-                                    AsDiscrete(threshold=0.25),  # needed ?
+                                    Threshold(threshold=0.5),
                                     EnsureType(),
                                 ]
                             )  #
