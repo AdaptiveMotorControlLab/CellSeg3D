@@ -657,16 +657,19 @@ class TrainingWorker(GeneratorWorker):
 
                         checkpoint_output.append(
                             [
-                                val_outputs[0].detach().cpu().numpy(),
-                                val_inputs[0].detach().cpu().numpy(),
-                                val_labels[0]
-                                .detach()
-                                .cpu()
-                                .numpy()
-                                .astype(np.uint16),
+                                val_outputs[0].detach().cpu(),
+                                val_inputs[0].detach().cpu(),
+                                val_labels[0].detach().cpu(),
                             ]
                         )
-                        # [np.squeeze(vol) for vol in checkpoint_output]
+                        checkpoint_output = [
+                            item.numpy()
+                            for batch in checkpoint_output
+                            for item in batch
+                        ]
+                        checkpoint_output[2] = checkpoint_output[2].astype(
+                            np.uint16
+                        )
 
                         metric = dice_metric.aggregate().detach().item()
                         dice_metric.reset()
