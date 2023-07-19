@@ -530,7 +530,7 @@ class TrainingWorker(GeneratorWorker):
 
             self.log_parameters()
 
-            device = self.config.device
+            device = torch.device(self.config.device)
 
             # if model_name == "test":
             #     self.quit()
