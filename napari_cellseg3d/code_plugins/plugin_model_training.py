@@ -983,7 +983,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 data=images[1], name=names[1], colormap="inferno"
             )
             layer_labels = self._viewer.add_labels(
-                data=images[2], name=names[2]
+                data=images[2].astype(np.uint16), name=names[2]
             )
             self.result_layers += [layer_output, layer_image, layer_labels]
         else:
