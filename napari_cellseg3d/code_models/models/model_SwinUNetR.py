@@ -1,5 +1,4 @@
 from monai.networks.nets import SwinUNETR
-from torch import sigmoid
 
 from napari_cellseg3d.utils import LOGGER
 
@@ -37,10 +36,10 @@ class SwinUNETR_(SwinUNETR):
                 use_checkpoint=use_checkpoint,
             )
 
-    def forward(self, x_in):
-        y = super().forward(x_in)
-        # return softmax(y, dim=1)
-        return sigmoid(y)
+    # def forward(self, x_in):
+    #     y = super().forward(x_in)
+    # return softmax(y, dim=1)
+    # return sigmoid(y)
 
     # def get_output(self, input):
     #     out = self(input)

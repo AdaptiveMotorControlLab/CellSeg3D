@@ -3,6 +3,7 @@ import time
 from math import ceil
 from pathlib import Path
 
+import numpy as np
 import torch
 
 # MONAI
@@ -655,17 +656,16 @@ class TrainingWorker(GeneratorWorker):
 
                         checkpoint_output.append(
                             [
-                                val_outputs[0].detach().cpu(),
-                                val_inputs[0].detach().cpu(),
-                                val_labels[0].detach().cpu(),
+                                val_outputs[0].detach().cpu().numpy(),
+                                val_inputs[0].detach().cpu().numpy(),
+                                val_labels[0]
+                                .detach()
+                                .cpu()
+                                .numpy()
+                                .astype(np.uint16),
                             ]
                         )
-
-                        checkpoint_output = [
-                            item.numpy()
-                            for batch in checkpoint_output
-                            for item in batch
-                        ]
+                        [np.squeeze(vol) for vol in checkpoint_output]
 
                         metric = dice_metric.aggregate().detach().item()
                         dice_metric.reset()
