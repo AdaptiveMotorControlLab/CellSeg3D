@@ -916,6 +916,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         self.remove_docked_widgets()
         self.display_status_report()
+        self._remove_result_layers()
 
         self.log.print_and_log(f"Worker started at {utils.get_time()}")
         self.log.print_and_log("\nWorker is running...")
@@ -997,7 +998,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 data=images[0], name=names[0], colormap="turbo"
             )
             layer_output_discrete = self._viewer.add_image(
-                data=images[1], name=names[1], colormap="bop orange"
+                data=images[1], name=names[1], colormap="bop blue"
             )
             layer_image = self._viewer.add_image(
                 data=images[2], name=names[2], colormap="inferno"

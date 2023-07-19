@@ -312,6 +312,7 @@ class Cropping(BasePluginSingleImage):
         vw = self._viewer
 
         vw.dims.ndisplay = 3
+        vw.grid.enabled = False
         vw.scale_bar.visible = True
 
         if self.aniso_widgets.enabled():
