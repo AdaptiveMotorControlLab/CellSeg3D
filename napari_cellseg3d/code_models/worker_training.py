@@ -653,12 +653,14 @@ class TrainingWorker(GeneratorWorker):
 
                             # logger.debug(len(val_outputs))
                             # logger.debug(len(val_labels))
-                            dice_test = [
-                                utils.dice_coeff(i, j)
-                                for i, j in zip(val_outputs, val_labels)
-                            ]
+                            dice_test = np.array(
+                                [
+                                    utils.dice_coeff(i, j)
+                                    for i, j in zip(val_outputs, val_labels)
+                                ]
+                            )
                             logger.debug(
-                                f"TEST VALIDATION Dice score : {dice_test}"
+                                f"TEST VALIDATION Dice score : {dice_test.mean()}"
                             )
 
                             dice_metric(y_pred=val_outputs, y=val_labels)
