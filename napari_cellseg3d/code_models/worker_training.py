@@ -643,6 +643,7 @@ class TrainingWorker(GeneratorWorker):
                             )  #
                             post_label = EnsureType()
 
+                            output_raw = [t for t in pred]
                             val_outputs = [
                                 post_pred(res_tensor) for res_tensor in pred
                             ]
@@ -667,7 +668,7 @@ class TrainingWorker(GeneratorWorker):
 
                         checkpoint_output.append(
                             [
-                                val_outputs[0].detach().cpu(),
+                                output_raw[0].detach().cpu(),
                                 val_inputs[0].detach().cpu(),
                                 val_labels[0].detach().cpu(),
                             ]
