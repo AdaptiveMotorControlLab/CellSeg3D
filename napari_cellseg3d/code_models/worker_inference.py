@@ -130,7 +130,7 @@ class InferenceWorker(GeneratorWorker):
 
         self.error_signal.emit(exception, msg)
         self.errored.emit(exception)
-        raise exception
+        yield exception
         # self.quit()
 
     def log_parameters(self):
