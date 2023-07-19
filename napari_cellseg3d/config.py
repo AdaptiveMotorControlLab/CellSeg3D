@@ -247,7 +247,7 @@ class TrainingWorkerConfig:
     weights_info: WeightsInfo = None
     train_data_dict: dict = None
     validation_percent: float = 0.8
-    max_epochs: int = 5
+    max_epochs: int = 50
     loss_function: callable = None
     learning_rate: np.float64 = 1e-3
     scheduler_patience: int = 10
