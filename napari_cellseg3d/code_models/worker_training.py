@@ -546,10 +546,10 @@ class TrainingWorker(GeneratorWorker):
                 if device.type == "cuda":
                     self.log("Memory Usage:")
                     alloc_mem = round(
-                        torch.cuda.memory_allocated(0) / 1024**3, 1
+                        torch.cuda.memory_allocated(device_id) / 1024**3, 1
                     )
                     reserved_mem = round(
-                        torch.cuda.memory_reserved(0) / 1024**3, 1
+                        torch.cuda.memory_reserved(device_id) / 1024**3, 1
                     )
                     self.log(f"Allocated: {alloc_mem}GB")
                     self.log(f"Cached: {reserved_mem}GB")
@@ -593,6 +593,9 @@ class TrainingWorker(GeneratorWorker):
 
                 self.log("Updating scheduler...")
                 scheduler.step(epoch_loss)
+                self.log(
+                    f"Current learning rate: {optimizer.param_groups[0]['lr']}"
+                )
 
                 checkpoint_output = []
                 eta = (
