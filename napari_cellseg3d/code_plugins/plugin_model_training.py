@@ -879,7 +879,11 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         validation_percent = self.validation_percent_choice.slider_value / 100
 
         results_path_folder = Path(
-            self.results_path + f"/{model_config.name}_{utils.get_date_time()}"
+            self.results_path
+            + f"/{model_config.name}_"
+            + f"{self.loss_choice.currentText()}_"
+            + f"{self.epoch_choice.value()}e_"
+            + f"{utils.get_date_time()}"
         )
         Path(results_path_folder).mkdir(
             parents=True, exist_ok=False
