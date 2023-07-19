@@ -33,6 +33,7 @@ from napari_cellseg3d.code_models.workers_utils import (
     LogSignal,
     ONNXModelWrapper,
     QuantileNormalization,
+    QuantileNormalizationd,
     RemapTensor,
     Threshold,
     WeightsDownloader,
@@ -193,7 +194,7 @@ class InferenceWorker(GeneratorWorker):
                     EnsureChannelFirstd(keys=["image"]),
                     # Orientationd(keys=["image"], axcodes="PLI"),
                     # anisotropic_transform,
-                    # QuantileNormalizationd(keys=["image"]),
+                    QuantileNormalizationd(keys=["image"]),
                     EnsureTyped(keys=["image"]),
                 ]
             )
@@ -203,7 +204,7 @@ class InferenceWorker(GeneratorWorker):
                     LoadImaged(keys=["image"]),
                     # AddChanneld(keys=["image"]), #already done
                     EnsureChannelFirstd(keys=["image"]),
-                    # QuantileNormalizationd(keys=["image"]),
+                    QuantileNormalizationd(keys=["image"]),
                     # Orientationd(keys=["image"], axcodes="PLI"),
                     # anisotropic_transform,
                     SpatialPadd(keys=["image"], spatial_size=pad),
@@ -247,7 +248,7 @@ class InferenceWorker(GeneratorWorker):
                     # anisotropic_transform,
                     AddChannel(),
                     # SpatialPad(spatial_size=pad),
-                    # QuantileNormalization(),
+                    QuantileNormalization(),
                     AddChannel(),
                     EnsureType(),
                 ],
@@ -262,7 +263,7 @@ class InferenceWorker(GeneratorWorker):
                     ToTensor(),
                     # anisotropic_transform,
                     AddChannel(),
-                    # QuantileNormalization(),
+                    QuantileNormalization(),
                     SpatialPad(spatial_size=pad),
                     AddChannel(),
                     EnsureType(),
@@ -300,12 +301,12 @@ class InferenceWorker(GeneratorWorker):
             # logger.debug(f"model : {model}")
             logger.debug(f"inputs shape : {inputs.shape}")
             logger.debug(f"inputs type : {inputs.dtype}")
-            normalizazion = QuantileNormalization()
+            # normalization = QuantileNormalization()
             try:
                 # outputs = model(inputs)
 
                 def model_output_wrapper(inputs):
-                    inputs = normalizazion(inputs)
+                    # inputs = normalization(inputs)
                     result = model(inputs)
                     return post_process_transforms(result)
 
