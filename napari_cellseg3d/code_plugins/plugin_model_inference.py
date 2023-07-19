@@ -447,6 +447,8 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.window_infer_box,
                 self.window_infer_params,
                 self.keep_data_on_cpu_box,
+                self.device_choice.label,
+                self.device_choice,
             ],
         )
         self.window_infer_params.setVisible(False)
@@ -786,7 +788,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             window_config = config.SlidingWindowConfig()
 
         self.worker_config = config.InferenceWorkerConfig(
-            device=self.get_device(),
+            device=self.check_device_choice(),
             model_info=self.model_info,
             weights_config=self.weights_config,
             results_path=self.results_path,

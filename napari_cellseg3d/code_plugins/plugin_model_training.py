@@ -536,6 +536,11 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.validation_percent_choice.container,
             data_tab.layout,
         )
+        ui.GroupedWidget.create_single_widget_group(
+            "Device",
+            self.device_choice,
+            data_tab.layout,
+        )
         ################
         ui.add_blank(self, data_tab.layout)
         ################
@@ -692,7 +697,8 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             ui.LEFT_AL,
         )
 
-        self.container_seed.setVisible(False)
+        # self.container_seed.setVisible(False)
+        self.use_deterministic_choice.setChecked(True)
 
         seed_w.setLayout(seed_l)
         train_tab.layout.addWidget(seed_w)
@@ -883,7 +889,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         logger.debug("Loading config...")
         self.worker_config = config.TrainingWorkerConfig(
-            device=self.get_device(),
+            device=self.check_device_choice(),
             model_info=model_config,
             weights_info=self.weights_config,
             train_data_dict=self.data,
