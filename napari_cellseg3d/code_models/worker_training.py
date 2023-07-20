@@ -15,6 +15,12 @@ from monai.data import (
     pad_list_data_collate,
 )
 from monai.inferers import sliding_window_inference
+from monai.losses import (
+    DiceCELoss,
+    DiceLoss,
+    GeneralizedDiceLoss,
+    TverskyLoss,
+)
 from monai.metrics import DiceMetric
 from monai.transforms import (
     # AsDiscrete,
@@ -124,6 +130,25 @@ class TrainingWorker(GeneratorWorker):
         self.val_files = []
         #######################################
         self.downloader = WeightsDownloader()
+
+        self.loss_dict = {
+            "Dice": DiceLoss(sigmoid=True),
+            # "BCELoss": torch.nn.BCELoss(), # dev
+            # "BCELogits": torch.nn.BCEWithLogitsLoss(),
+            "Generalized Dice": GeneralizedDiceLoss(sigmoid=True),
+            "DiceCE": DiceCELoss(sigmoid=True, lambda_ce=0.5),
+            "Tversky": TverskyLoss(sigmoid=True),
+            # "Focal loss": FocalLoss(),
+            # "Dice-Focal loss": DiceFocalLoss(sigmoid=True, lambda_dice=0.5),
+        }
+        self.loss_function = None
+
+    def set_loss_from_config(self):
+        try:
+            self.loss_function = self.loss_dict[self.config.loss_function]
+        except KeyError as e:
+            self.raise_error(e, "Loss function not found, aborting job")
+        return self.loss_function
 
     def set_download_log(self, widget):
         self.downloader.log_widget = widget
@@ -532,6 +557,7 @@ class TrainingWorker(GeneratorWorker):
             self.log_parameters()
 
             device = torch.device(self.config.device)
+            self.set_loss_from_config()
 
             # if model_name == "test":
             #     self.quit()
@@ -571,7 +597,7 @@ class TrainingWorker(GeneratorWorker):
                         ]  # TODO(cyril): adapt if additional channels
                         if len(outputs.shape) < 4:
                             outputs = outputs.unsqueeze(0)
-                    loss = self.config.loss_function(outputs, labels)
+                    loss = self.loss_function(outputs, labels)
                     loss.backward()
                     optimizer.step()
                     epoch_loss += loss.detach().item()

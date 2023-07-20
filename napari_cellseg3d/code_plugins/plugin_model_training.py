@@ -15,14 +15,6 @@ from matplotlib.figure import Figure
 if TYPE_CHECKING:
     import napari
 
-# MONAI
-from monai.losses import (
-    DiceCELoss,
-    DiceLoss,
-    GeneralizedDiceLoss,
-    TverskyLoss,
-)
-
 # Qt
 from qtpy.QtWidgets import QSizePolicy
 
@@ -139,17 +131,15 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         """Whether the worker should stop or not"""
         self.start_time = None
 
-        self.loss_dict = {
-            "Dice": DiceLoss(sigmoid=True),
-            # "BCELoss": torch.nn.BCELoss(), # dev
-            # "BCELogits": torch.nn.BCEWithLogitsLoss(),
-            "Generalized Dice": GeneralizedDiceLoss(sigmoid=True),
-            "DiceCE": DiceCELoss(sigmoid=True, lambda_ce=0.5),
-            "Tversky": TverskyLoss(sigmoid=True),
-            # "Focal loss": FocalLoss(),
-            # "Dice-Focal loss": DiceFocalLoss(sigmoid=True, lambda_dice=0.5),
-        }
-        """Dict of loss functions"""
+        self.loss_list = [  # MUST BE MATCHED WITH THE LOSS FUNCTIONS IN THE TRAINING WORKER DICT
+            "Dice",
+            "Generalized Dice",
+            "DiceCE",
+            "Tversky",
+            # "Focal loss",
+            # "Dice-Focal loss",
+        ]
+        """List of loss functions"""
 
         self.canvas = None
         """Canvas to plot loss and dice metric in"""
@@ -192,10 +182,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         )
 
         self.loss_choice = ui.DropdownMenu(
-            # sorted(
-            list(
-                self.loss_dict.keys(),
-            ),
+            self.loss_list,
             text_label="Loss function",
         )
         self.lbl_loss_choice = self.loss_choice.label
@@ -382,10 +369,6 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             validation.setMaximum(max_epoch)
         elif validation.maximum() < max_epoch:
             validation.setMaximum(max_epoch)
-
-    def get_loss(self, key):
-        """Getter for loss function selected by user"""
-        return self.loss_dict[key]
 
     def _toggle_patch_dims(self):
         if self.patch_choice.isChecked():
@@ -899,7 +882,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             train_data_dict=self.data,
             validation_percent=validation_percent,
             max_epochs=self.epoch_choice.value(),
-            loss_function=self.get_loss(self.loss_choice.currentText()),
+            loss_function=self.loss_choice.currentText(),
             learning_rate=float(self.learning_rate_choice.currentText()),
             scheduler_patience=self.scheduler_patience_choice.value(),
             scheduler_factor=self.scheduler_factor_choice.slider_value,
