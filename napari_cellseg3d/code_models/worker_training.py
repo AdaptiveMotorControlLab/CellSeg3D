@@ -132,12 +132,12 @@ class TrainingWorker(GeneratorWorker):
         self.downloader = WeightsDownloader()
 
         self.loss_dict = {
-            "Dice": DiceLoss(sigmoid=True, smooth_nr=0.0),
+            "Dice": DiceLoss(sigmoid=True),
             # "BCELoss": torch.nn.BCELoss(), # dev
             # "BCELogits": torch.nn.BCEWithLogitsLoss(),
             "Generalized Dice": GeneralizedDiceLoss(sigmoid=True),
             "DiceCE": DiceCELoss(sigmoid=True, lambda_ce=0.5),
-            "Tversky": TverskyLoss(sigmoid=True, smooth_nr=0.0),
+            "Tversky": TverskyLoss(sigmoid=True),
             # "Focal loss": FocalLoss(),
             # "Dice-Focal loss": DiceFocalLoss(sigmoid=True, lambda_dice=0.5),
         }
