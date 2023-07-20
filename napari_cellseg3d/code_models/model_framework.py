@@ -337,7 +337,7 @@ class ModelFramework(BasePluginFolder):
     def empty_cuda_cache(self):
         """Empties the cuda cache if the device is a cuda device"""
         if self.get_device(show=False).type == "cuda":
-            logger.info("Attempting to empty cache...")
+            logger.info("Emptying cache...")
             torch.cuda.empty_cache()
             logger.info("Attempt complete : Cache emptied")
 
