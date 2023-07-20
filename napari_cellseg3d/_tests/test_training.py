@@ -53,6 +53,14 @@ def test_update_loss_plot(make_napari_viewer_proxy):
     assert widget.train_loss_plot is not None
 
 
+def test_check_matching_losses():
+    plugin = Trainer(None)
+    config = plugin._set_worker_config()
+    worker = plugin._create_worker_from_config(config)
+
+    assert plugin.loss_list == list(worker.loss_dict.keys())
+
+
 def test_training(make_napari_viewer_proxy, qtbot):
     im_path = str(Path(__file__).resolve().parent / "res/test.tif")
 
@@ -73,9 +81,6 @@ def test_training(make_napari_viewer_proxy, qtbot):
 
     assert widget.check_ready()
 
-    #################
-    # Training is too long to test properly this way. Do not use on Github
-    #################
     MODEL_LIST["test"] = TestModel
     widget.model_choice.addItem("test")
     widget.model_choice.setCurrentText("test")
