@@ -241,11 +241,10 @@ class InferenceWorker(GeneratorWorker):
         logger.debug(volume.shape)
         logger.debug(volume.dtype)
 
-        normalization = (
-            QuantileNormalization()
-            if self.config.model_info.name != "WNet"
-            else lambda x: x
-        )
+        normalization = QuantileNormalization()
+        # if self.config.model_info.name != "WNet"
+        # else lambda x: x
+        # )
         if self.config.sliding_window_config.is_enabled():
             load_transforms = Compose(
                 [
