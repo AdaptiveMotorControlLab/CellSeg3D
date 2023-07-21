@@ -757,8 +757,6 @@ class LayerSelecter(ContainerWidget):
     ):
         super().__init__(parent=parent, fixed=False)
         self._viewer = viewer
-
-        self.image = None
         self.layer_type = layer_type
 
         self.layer_list = DropdownMenu(
@@ -789,11 +787,14 @@ class LayerSelecter(ContainerWidget):
         self.layer_list.setToolTip(self.layer_list.currentText())
 
     def _update_description(self):
-        if self.layer_list.currentText() != "":
-            self.layer_description.setVisible(True)
-            shape_desc = f"Shape : {self.layer_data().shape}"
-            self.layer_description.setText(shape_desc)
-        else:
+        try:
+            if self.layer_list.currentText() != "":
+                self.layer_description.setVisible(True)
+                shape_desc = f"Shape : {self.layer_data().shape}"
+                self.layer_description.setText(shape_desc)
+            else:
+                self.layer_description.setVisible(False)
+        except KeyError:
             self.layer_description.setVisible(False)
 
     def _add_layer(self, event):
