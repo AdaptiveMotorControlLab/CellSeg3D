@@ -1,7 +1,3 @@
-from pathlib import Path
-
-from tifffile import imread
-
 from napari_cellseg3d._tests.fixtures import LogFixture
 from napari_cellseg3d.code_models.instance_segmentation import (
     INSTANCE_SEGMENTATION_METHOD_LIST,
@@ -17,10 +13,9 @@ from napari_cellseg3d.utils import rand_gen
 
 
 def test_inference(make_napari_viewer_proxy, qtbot):
-    im_path = str(Path(__file__).resolve().parent / "res/test.tif")
-    image = imread(im_path)
-
-    assert image.shape == (6, 6, 6)
+    dims = 6
+    image = rand_gen.random(size=(dims, dims, dims))
+    # assert image.shape == (dims, dims, dims)
 
     viewer = make_napari_viewer_proxy()
     widget = Inferer(viewer)
@@ -46,14 +41,15 @@ def test_inference(make_napari_viewer_proxy, qtbot):
     widget.model_choice.addItem(test_model_name)
     widget.model_choice.setCurrentText(test_model_name)
 
+    widget.window_infer_box.setChecked(False)
     widget.worker_config = widget._set_worker_config()
     assert widget.worker_config is not None
     assert widget.model_info is not None
-    widget.window_infer_box.setChecked(False)
 
     worker = widget._create_worker_from_config(widget.worker_config)
     assert worker.config is not None
     assert worker.config.model_info is not None
+    assert worker.config.sliding_window_config.is_enabled() is False
     worker.config.layer = viewer.layers[0].data
     worker.config.post_process_config.instance.enabled = True
     worker.config.post_process_config.instance.method = (
