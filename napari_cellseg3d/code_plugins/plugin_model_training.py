@@ -903,6 +903,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         self.remove_docked_widgets()
         self.display_status_report()
+        self.log.clear()
         self._remove_result_layers()
 
         self.log.print_and_log(f"Worker started at {utils.get_time()}")

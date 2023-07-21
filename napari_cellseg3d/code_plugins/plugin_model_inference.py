@@ -843,6 +843,8 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         if isinstance(result, Exception):
             self.on_error(result)
             # raise result
+        if result is None:
+            self.on_error("Worker yielded None")
         # viewer, progress, show_res, show_res_number, zoon, show_original
 
         # check that viewer checkbox is on and that max number of displays has not been reached.
