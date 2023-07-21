@@ -119,7 +119,7 @@ class InferenceWorker(GeneratorWorker):
         """Sends a warning to main thread"""
         self.warn_signal.emit(warning)
 
-    def raise_error(self, exception, msg):
+    def _raise_error(self, exception, msg):
         """Raises an error in main thread"""
         logger.error(msg, exc_info=True)
         logger.error(exception, exc_info=True)
@@ -131,8 +131,8 @@ class InferenceWorker(GeneratorWorker):
 
         self.error_signal.emit(exception, msg)
         self.errored.emit(exception)
+        self.quit()
         yield exception
-        # self.quit()
 
     def log_parameters(self):
         config = self.config
@@ -334,7 +334,8 @@ class InferenceWorker(GeneratorWorker):
             except Exception as e:
                 logger.exception(e)
                 logger.debug("failed to run sliding window inference")
-                self.raise_error(e, "Error during sliding window inference")
+                self._raise_error(e, "Error during sliding window inference")
+                # raise e
             logger.debug(f"Inference output shape: {outputs.shape}")
 
             self.log("Post-processing...")
@@ -346,7 +347,8 @@ class InferenceWorker(GeneratorWorker):
             return out
         except Exception as e:
             logger.exception(e)
-            self.raise_error(e, "Error during sliding window inference")
+            self._raise_error(e, "Error during sliding window inference")
+            # raise e
             # sys.stdout = old_stdout
             # sys.stderr = old_stderr
 
@@ -437,7 +439,7 @@ class InferenceWorker(GeneratorWorker):
         try:
             imwrite(file_path, image)
         except ValueError as e:
-            self.raise_error(e, "Error during image saving")
+            raise e
         filename = Path(file_path).stem
 
         if from_layer:
@@ -595,7 +597,7 @@ class InferenceWorker(GeneratorWorker):
             stats=stats,
         )
 
-    # @thread_worker(connect={"errored": self.raise_error})
+    # @thread_worker(connect={"errored": self._raise_error})
     def inference(self):
         """
         Requires:
@@ -659,10 +661,10 @@ class InferenceWorker(GeneratorWorker):
                     # device=self.config.device,
                     num_classes=self.config.model_info.num_classes,
                 )
-                # try:
-                model = model.to(self.config.device)
-                # except Exception as e:
-                #     self.raise_error(e, "Issue loading model to device")
+                try:
+                    model = model.to(self.config.device)
+                except RuntimeError as e:
+                    self._raise_error(e, "Issue loading model to device")
                 # logger.debug(f"model : {model}")
                 if model is None:
                     raise ValueError("Model is None")
@@ -687,13 +689,14 @@ class InferenceWorker(GeneratorWorker):
                         strict=True,
                     )
                     self.log(f"Weights status : {missing}")
-                except RuntimeError as e:
-                    self.raise_error(e, "Error when loading weights")
+                except Exception as e:
+                    self._raise_error(e, "Error when loading weights")
+                    return None
                 self.log("Done")
             # except Exception as e:
-            #     self.raise_error(e, "Issue loading weights")
+            #     self._raise_error(e, "Issue loading weights")
             # except Exception as e:
-            #     self.raise_error(e, "Issue instantiating model")
+            #     self._raise_error(e, "Issue instantiating model")
 
             # if model_name == "SegResNet":
             #     model = model_class(
@@ -779,11 +782,11 @@ class InferenceWorker(GeneratorWorker):
                 yield self.inference_on_layer(
                     input_image, model, post_process_transforms
                 )
+
             model.to("cpu")
             # self.quit()
         except Exception as e:
             logger.exception(e)
-            self.raise_error(e, "Inference failed")
-            self.quit()
+            self._raise_error(e, "Inference failed")
         finally:
             self.quit()
