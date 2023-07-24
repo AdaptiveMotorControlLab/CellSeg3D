@@ -16,6 +16,7 @@ __credits__ = [
     "Xide Xia",
     "Brian Kulis",
 ]
+NUM_GROUPS = 8
 
 
 class WNet_encoder(nn.Module):
@@ -179,11 +180,13 @@ class InBlock(nn.Module):
             nn.Conv3d(in_channels, out_channels, 3, padding=1),
             nn.ReLU(),
             nn.Dropout(p=dropout),
-            nn.BatchNorm3d(out_channels),
+            # nn.BatchNorm3d(out_channels),
+            nn.GroupNorm(num_groups=NUM_GROUPS, num_channels=out_channels),
             nn.Conv3d(out_channels, out_channels, 3, padding=1),
             nn.ReLU(),
             nn.Dropout(p=dropout),
-            nn.BatchNorm3d(out_channels),
+            # nn.BatchNorm3d(out_channels),
+            nn.GroupNorm(num_groups=NUM_GROUPS, num_channels=out_channels),
         )
 
     def forward(self, x):
@@ -202,12 +205,14 @@ class Block(nn.Module):
             nn.Conv3d(in_channels, out_channels, 1),
             nn.ReLU(),
             nn.Dropout(p=dropout),
-            nn.BatchNorm3d(out_channels),
+            # nn.BatchNorm3d(out_channels),
+            nn.GroupNorm(num_groups=NUM_GROUPS, num_channels=out_channels),
             nn.Conv3d(out_channels, out_channels, 3, padding=1),
             nn.Conv3d(out_channels, out_channels, 1),
             nn.ReLU(),
             nn.Dropout(p=dropout),
-            nn.BatchNorm3d(out_channels),
+            # nn.BatchNorm3d(out_channels),
+            nn.GroupNorm(num_groups=NUM_GROUPS, num_channels=out_channels),
         )
 
     def forward(self, x):
@@ -225,11 +230,13 @@ class OutBlock(nn.Module):
             nn.Conv3d(in_channels, 64, 3, padding=1),
             nn.ReLU(),
             nn.Dropout(p=dropout),
-            nn.BatchNorm3d(64),
+            # nn.BatchNorm3d(64),
+            nn.GroupNorm(num_groups=NUM_GROUPS, num_channels=64),
             nn.Conv3d(64, 64, 3, padding=1),
             nn.ReLU(),
             nn.Dropout(p=dropout),
-            nn.BatchNorm3d(64),
+            # nn.BatchNorm3d(64),
+            nn.GroupNorm(num_groups=NUM_GROUPS, num_channels=64),
             nn.Conv3d(64, out_channels, 1),
         )
 
