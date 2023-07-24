@@ -534,7 +534,8 @@ class TrainingWorker(GeneratorWorker):
                         torch.load(
                             weights,
                             map_location=self.config.device,
-                        )
+                        ),
+                        strict=True,
                     )
                 except RuntimeError as e:
                     logger.error(f"Error when loading weights : {e}")
