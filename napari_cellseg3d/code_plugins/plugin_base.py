@@ -462,9 +462,8 @@ class BasePluginFolder(BasePluginSingleImage):
 
 
 class BasePluginUtils(BasePluginFolder):
-    """Small subclass used to have centralized widgets in utilities"""
+    """Small subclass used to have centralized widgets layer and result path selection in utilities"""
 
-    needs_extra_layer = True
     save_path = None
     utils_default_paths = [Path.home() / "cellseg3d"]
 
@@ -486,7 +485,7 @@ class BasePluginUtils(BasePluginFolder):
         self.parent = parent
 
         self.layer = None
-        """Should contain the layer associated with the results of the utility"""
+        """Should contain the layer associated with the results of the utility widget"""
 
     def _update_default_paths(self, path=None):
         """Override to also update utilities' pool of default paths"""

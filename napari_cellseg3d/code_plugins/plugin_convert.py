@@ -286,7 +286,11 @@ class ToSemanticUtils(BasePluginUtils):
                     semantic,
                 )
                 self.layer = utils.show_result(
-                    self._viewer, layer, semantic, f"semantic_{layer.name}"
+                    self._viewer,
+                    layer,
+                    semantic,
+                    f"semantic_{layer.name}",
+                    existing_layer=self.layer,
                 )
         elif (
             self.folder_choice.isChecked() and len(self.labels_filepaths) != 0
@@ -474,7 +478,7 @@ class ThresholdUtils(BasePluginUtils):
                     self._viewer,
                     layer,
                     removed,
-                    f"threshold{layer.name}",
+                    f"threshold_{layer.name}",
                     existing_layer=self.layer,
                 )
         elif (

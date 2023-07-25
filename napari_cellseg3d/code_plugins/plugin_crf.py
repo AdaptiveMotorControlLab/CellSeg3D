@@ -156,6 +156,7 @@ class CRFWidget(BasePluginUtils):
 
         self.worker = None
         self.log = None
+        self.layer = None
 
     def _build(self):
         self.setMinimumWidth(100)
@@ -275,9 +276,12 @@ class CRFWidget(BasePluginUtils):
             str(self.result_name + "_crf.tif"),
             result,
         )
-        self._viewer.add_image(
+        self.layer = utils.show_result(
+            self._viewer,
+            self.result_layer,
             result,
             name="crf_" + self.result_name,
+            existing_layer=self.layer,
         )
 
     def _on_start(self):
