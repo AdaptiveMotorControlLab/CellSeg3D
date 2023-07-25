@@ -16,7 +16,7 @@ __credits__ = [
     "Xide Xia",
     "Brian Kulis",
 ]
-NUM_GROUPS = 16
+NUM_GROUPS = 4
 
 
 class WNet_encoder(nn.Module):
@@ -100,21 +100,22 @@ class UNet(nn.Module):
         self.in_b = InBlock(in_channels, self.channels[0], dropout=dropout)
         self.conv1 = Block(channels[0], self.channels[1], dropout=dropout)
         self.conv2 = Block(channels[1], self.channels[2], dropout=dropout)
-        self.conv3 = Block(channels[2], self.channels[3], dropout=dropout)
-        self.bot = Block(channels[3], self.channels[4], dropout=dropout)
-        self.deconv1 = Block(channels[4], self.channels[3], dropout=dropout)
-        self.conv_trans1 = nn.ConvTranspose3d(
-            self.channels[4], self.channels[3], 2, stride=2
-        )
+        # self.conv3 = Block(channels[2], self.channels[3], dropout=dropout)
+        # self.bot = Block(channels[3], self.channels[4], dropout=dropout)
+        self.bot = Block(channels[2], self.channels[3], dropout=dropout)
+        # self.deconv1 = Block(channels[4], self.channels[3], dropout=dropout)
         self.deconv2 = Block(channels[3], self.channels[2], dropout=dropout)
+        self.deconv3 = Block(channels[2], self.channels[1], dropout=dropout)
+        self.out_b = OutBlock(channels[1], out_channels, dropout=dropout)
+        # self.conv_trans1 = nn.ConvTranspose3d(
+        #     self.channels[4], self.channels[3], 2, stride=2
+        # )
         self.conv_trans2 = nn.ConvTranspose3d(
             self.channels[3], self.channels[2], 2, stride=2
         )
-        self.deconv3 = Block(channels[2], self.channels[1], dropout=dropout)
         self.conv_trans3 = nn.ConvTranspose3d(
             self.channels[2], self.channels[1], 2, stride=2
         )
-        self.out_b = OutBlock(channels[1], out_channels, dropout=dropout)
         self.conv_trans_out = nn.ConvTranspose3d(
             self.channels[1], self.channels[0], 2, stride=2
         )
@@ -127,17 +128,18 @@ class UNet(nn.Module):
         in_b = self.in_b(x)
         c1 = self.conv1(self.max_pool(in_b))
         c2 = self.conv2(self.max_pool(c1))
-        c3 = self.conv3(self.max_pool(c2))
-        x = self.bot(self.max_pool(c3))
-        x = self.deconv1(
-            torch.cat(
-                [
-                    c3,
-                    self.conv_trans1(x),
-                ],
-                dim=1,
-            )
-        )
+        # c3 = self.conv3(self.max_pool(c2))
+        # x = self.bot(self.max_pool(c3))
+        x = self.bot(self.max_pool(c2))
+        # x = self.deconv1(
+        #     torch.cat(
+        #         [
+        #             c3,
+        #             self.conv_trans1(x),
+        #         ],
+        #         dim=1,
+        #     )
+        # )
         x = self.deconv2(
             torch.cat(
                 [
