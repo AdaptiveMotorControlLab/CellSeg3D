@@ -16,7 +16,7 @@ __credits__ = [
     "Xide Xia",
     "Brian Kulis",
 ]
-NUM_GROUPS = 4
+NUM_GROUPS = 16
 
 
 class WNet_encoder(nn.Module):
