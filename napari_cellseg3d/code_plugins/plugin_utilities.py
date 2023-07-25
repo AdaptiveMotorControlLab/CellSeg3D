@@ -13,6 +13,7 @@ from napari_cellseg3d import utils
 from napari_cellseg3d.code_plugins.plugin_base import BasePluginUtils
 from napari_cellseg3d.code_plugins.plugin_convert import (
     AnisoUtils,
+    FragmentUtils,
     RemoveSmallUtils,
     ThresholdUtils,
     ToInstanceUtils,
@@ -24,6 +25,7 @@ from napari_cellseg3d.utils import LOGGER as logger
 
 UTILITIES_WIDGETS = {
     "Crop": Cropping,
+    "Fragment 3D volume": FragmentUtils,
     "Correct anisotropy": AnisoUtils,
     "Remove small objects": RemoveSmallUtils,
     "Convert to instance labels": ToInstanceUtils,
@@ -39,7 +41,16 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
         self._viewer = viewer
         self.current_widget = None
 
-        attr_names = ["crop", "aniso", "small", "inst", "sem", "thresh", "crf"]
+        attr_names = [
+            "crop",
+            "frag",
+            "aniso",
+            "small",
+            "inst",
+            "sem",
+            "thresh",
+            "crf",
+        ]
         self._create_utils_widgets(attr_names)
         self.utils_choice = ui.DropdownMenu(
             UTILITIES_WIDGETS.keys(), text_label="Utilities"

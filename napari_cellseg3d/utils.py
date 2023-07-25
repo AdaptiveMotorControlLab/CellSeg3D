@@ -61,13 +61,11 @@ def save_layer(results_path, image_name, image):
         results_path: path to folder containing result
         image_name: image name for saving
         image: data array containing image
-
-    Returns:
-
     """
     path = str(results_path / Path(image_name))  # TODO flexible filetype
     LOGGER.info(f"Saved as : {path}")
-    imwrite(path, image)
+    image = image.astype(np.float32)
+    imwrite(path, image, dtype="float32")
 
 
 def show_result(

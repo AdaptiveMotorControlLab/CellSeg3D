@@ -14,11 +14,104 @@ from napari_cellseg3d.code_models.instance_segmentation import (
     to_semantic,
 )
 from napari_cellseg3d.code_plugins.plugin_base import BasePluginUtils
+from napari_cellseg3d.dev_scripts.crop_data import crop_3d_image
 
 MAX_W = ui.UTILS_MAX_WIDTH
 MAX_H = ui.UTILS_MAX_HEIGHT
 
 logger = utils.LOGGER
+
+
+class FragmentUtils(BasePluginUtils):
+    """Class to crop large 3D volumes into smaller fragments"""
+
+    save_path = Path.home() / Path("cellseg3d/fragmented")
+
+    def __init__(self, viewer: "napari.Viewer.viewer", parent=None):
+        """Creates a FragmentUtils widget
+
+        Args:
+            viewer: viewer in which to process data
+            parent: parent widget
+        """
+        super().__init__(
+            viewer,
+            parent,
+            loads_labels=False,
+        )
+        self.data_panel = self._build_io_panel()
+        self.start_btn = ui.Button("Start", self._start)
+        self.size_selection = ui.AnisotropyWidgets(
+            parent=self,
+            default_x=64,
+            default_y=64,
+            default_z=64,
+            always_visible=True,
+            use_integer_counter=True,
+        )
+        [
+            lbl.setText(f"Size in {ax} (pixels):")
+            for lbl, ax in zip(self.size_selection.box_widgets_lbl, "xyz")
+        ]
+        [
+            w.setToolTip(f"Size of crop for {dim} axis")
+            for w, dim in zip(self.size_selection.box_widgets, "xyz")
+        ]
+
+        self.image_layer_loader.layer_list.label.setText("Layer :")
+        self.image_layer_loader.set_layer_type(napari.layers.Layer)
+
+        self.results_path = str(self.save_path)
+        self.results_filewidget.text_field.setText(str(self.results_path))
+        self.results_filewidget.check_ready()
+
+        self._build()
+
+    def _build(self):
+        container = ui.ContainerWidget()
+
+        ui.add_widgets(
+            container.layout,
+            [
+                self.data_panel,
+                self.size_selection,
+                self.start_btn,
+            ],
+        )
+
+        ui.ScrollArea.make_scrollable(
+            container.layout,
+            self,
+            max_wh=[MAX_W, MAX_H],
+        )
+
+        self._set_io_visibility()
+        self.setSizePolicy(
+            QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
+        )
+
+    def _fragment(self, crops, name):
+        dir_name = f"/{name}_fragmented_{utils.get_time_filepath()}"
+        Path(self.results_path + dir_name).mkdir(parents=True, exist_ok=False)
+        for i, crop in enumerate(crops):
+            utils.save_layer(
+                self.results_path + dir_name,
+                f"{name}_fragmented_{i}.tif",
+                crop,
+            )
+
+    def _start(self):
+        sizes = self.size_selection.resolution_zyx()
+        if self.layer_choice.isChecked():
+            layer = self.image_layer_loader.layer()
+            crops = crop_3d_image(layer.data, sizes)
+            self._fragment(crops, layer.name)
+        elif self.folder_choice.isChecked():
+            paths = self.images_filepaths
+            for path in paths:
+                data = imread(path)
+                crops = crop_3d_image(data, sizes)
+                self._fragment(crops, Path(path).stem)
 
 
 class AnisoUtils(BasePluginUtils):
