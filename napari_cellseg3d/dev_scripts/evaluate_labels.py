@@ -365,7 +365,7 @@ def map_labels(
     counts_model_labels = np.bincount(model_labels.flatten())
     counts_gt_labels = np.bincount(gt_labels.flatten())
     # transformation to use np.unique to map the labels
-    n_digit_model_labels = len(str(np.max(model_labels)))
+    n_digit_model_labels = len(str(np.max(model_labels)))+1
     gt_labels = (
         gt_labels * 10**n_digit_model_labels
     )  # add 0 at the end of the gt labels to be able to concatenate them with the model labels
