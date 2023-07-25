@@ -32,7 +32,7 @@ class WNet_encoder(nn.Module):
         self.encoder = UNet(
             in_channels=in_channels,
             out_channels=out_channels,
-            encoder=True,
+            softmax=False,
         )
 
     def forward(self, x):
@@ -55,10 +55,10 @@ class WNet(nn.Module):
     ):
         super(WNet, self).__init__()
         self.encoder = UNet(
-            in_channels, num_classes, encoder=True, dropout=dropout
+            in_channels, num_classes, softmax=True, dropout=dropout
         )
         self.decoder = UNet(
-            num_classes, out_channels, encoder=False, dropout=dropout
+            num_classes, out_channels, softmax=False, dropout=dropout
         )
 
     def forward(self, x):
@@ -84,7 +84,7 @@ class UNet(nn.Module):
         in_channels: int,
         out_channels: int,
         channels: List[int] = None,
-        encoder: bool = True,
+        softmax: bool = True,
         dropout: float = 0.65,
     ):
         if channels is None:
@@ -120,7 +120,7 @@ class UNet(nn.Module):
         )
 
         self.sm = nn.Softmax(dim=1)
-        self.encoder = encoder
+        self.softmax = softmax
 
     def forward(self, x):
         """Forward pass of the U-Net model."""
@@ -165,7 +165,7 @@ class UNet(nn.Module):
                 dim=1,
             )
         )
-        if self.encoder:
+        if self.softmax:
             x = self.sm(x)
         return x
 
