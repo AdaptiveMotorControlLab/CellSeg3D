@@ -70,7 +70,9 @@ def save_layer(results_path, image_name, image):
     imwrite(path, image)
 
 
-def show_result(viewer, layer, image, name):
+def show_result(
+    viewer, layer, image, name, existing_layer: napari.layers.Layer = None
+):
     """
     Adds layers to a viewer to show result to user
 
@@ -83,16 +85,30 @@ def show_result(viewer, layer, image, name):
     Returns:
 
     """
-    if isinstance(layer, napari.layers.Image):
-        LOGGER.debug("Added resulting image layer")
-        viewer.add_image(image, name=name)
-    elif isinstance(layer, napari.layers.Labels):
-        LOGGER.debug("Added resulting label layer")
-        viewer.add_labels(image, name=name)
+    if existing_layer is None:
+        if isinstance(layer, napari.layers.Image):
+            LOGGER.info("Added resulting image layer")
+            results_layer = viewer.add_image(image, name=name)
+        elif isinstance(layer, napari.layers.Labels):
+            LOGGER.info("Added resulting label layer")
+            results_layer = viewer.add_labels(image, name=name)
+        else:
+            LOGGER.warning(
+                f"Results not shown, unsupported layer type {type(layer)}"
+            )
     else:
-        LOGGER.warning(
-            f"Results not shown, unsupported layer type {type(layer)}"
-        )
+        try:
+            viewer.layers[existing_layer.name].data = image
+            results_layer = viewer.layers[existing_layer.name]
+        except KeyError:
+            LOGGER.warning(
+                f"Results not shown, layer {existing_layer.name} not found"
+                "Showing new layer instead"
+            )
+            results_layer = show_result(
+                viewer, layer, image, name, existing_layer=None
+            )
+    return results_layer
 
 
 class Singleton(type):
