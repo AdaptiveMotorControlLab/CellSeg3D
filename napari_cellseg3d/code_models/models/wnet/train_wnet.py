@@ -115,11 +115,11 @@ def create_dataset_dict_no_labs(volume_directory):
 
 
 ################################
-#        Config & WANDB        #
+#    WNet: Config & WANDB      #
 ################################
 
 
-class Config:
+class WNetTrainingWorkerConfig:
     def __init__(self):
         # WNet
         self.in_channels = 1
@@ -144,29 +144,20 @@ class Config:
         self.num_epochs = 100
         self.val_interval = 5
         self.batch_size = 2
-        self.num_workers = 4
-
-        # CRF
-        self.sa = 50  # 10
-        self.sb = 20
-        self.sg = 1
-        self.w1 = 50  # 10
-        self.w2 = 20
-        self.n_iter = 5
 
         # Data
-        self.train_volume_directory = "./../dataset/VIP_full"
-        self.eval_volume_directory = "./../dataset/VIP_cropped/eval/"
+        # self.train_volume_directory = "./../dataset/VIP_full"
+        # self.eval_volume_directory = "./../dataset/VIP_cropped/eval/"
         self.normalize_input = True
         self.normalizing_function = remap_image  # normalize_quantile
-        self.use_patch = False
-        self.patch_size = (64, 64, 64)
-        self.num_patches = 30
-        self.eval_num_patches = 20
-        self.do_augmentation = True
-        self.parallel = False
+        # self.use_patch = False
+        # self.patch_size = (64, 64, 64)
+        # self.num_patches = 30
+        # self.eval_num_patches = 20
+        # self.do_augmentation = True
+        # self.parallel = False
 
-        self.save_model = True
+        # self.save_model = True
         self.save_model_path = (
             r"./../results/new_model/wnet_new_model_all_data_3class.pth"
         )
@@ -177,7 +168,7 @@ class Config:
         self.weights_path = None
 
 
-c = Config()
+c = WNetTrainingWorkerConfig()
 ###############
 # Scheduler config
 ###############
@@ -283,9 +274,9 @@ WANDB_CONFIG = {
 
 def train(weights_path=None, train_config=None):
     if train_config is None:
-        config = Config()
+        config = WNetTrainingWorkerConfig()
     ##############
-    # disable metadata tracking
+    # disable metadata tracking in MONAI
     set_track_meta(False)
     ##############
     if WANDB_INSTALLED:
@@ -698,7 +689,7 @@ def get_dataset(config):
     """Creates a Dataset from the original data using the tifffile library
 
     Args:
-        config (Config): The configuration object
+        config (WNetTrainingWorkerConfig): The configuration object
 
     Returns:
         (tuple): A tuple containing the shape of the data and the dataset
@@ -776,7 +767,7 @@ def get_patch_dataset(config):
     """Creates a Dataset from the original data using the tifffile library
 
     Args:
-        config (Config): The configuration object
+        config (WNetTrainingWorkerConfig): The configuration object
 
     Returns:
         (tuple): A tuple containing the shape of the data and the dataset
@@ -885,7 +876,7 @@ def get_dataset_monai(config):
     """Creates a Dataset applying some transforms/augmentation on the data using the MONAI library
 
     Args:
-        config (Config): The configuration object
+        config (WNetTrainingWorkerConfig): The configuration object
 
     Returns:
         (tuple): A tuple containing the shape of the data and the dataset

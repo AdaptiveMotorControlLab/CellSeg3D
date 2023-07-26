@@ -14,7 +14,7 @@ def test_update_loss_plot(make_napari_viewer_proxy):
     view = make_napari_viewer_proxy()
     widget = Trainer(view)
 
-    widget.worker_config = config.TrainingWorkerConfig()
+    widget.worker_config = config.SupervisedTrainingWorkerConfig()
     widget.worker_config.validation_interval = 1
     widget.worker_config.results_path_folder = "."
 
@@ -55,8 +55,8 @@ def test_update_loss_plot(make_napari_viewer_proxy):
 
 def test_check_matching_losses():
     plugin = Trainer(None)
-    config = plugin._set_worker_config()
-    worker = plugin._create_worker_from_config(config)
+    config = plugin._set_supervised_worker_config()
+    worker = plugin._create_supervised_worker_from_config(config)
 
     assert plugin.loss_list == list(worker.loss_dict.keys())
 
@@ -84,9 +84,9 @@ def test_training(make_napari_viewer_proxy, qtbot):
     MODEL_LIST["test"] = TestModel
     widget.model_choice.addItem("test")
     widget.model_choice.setCurrentText("test")
-    worker_config = widget._set_worker_config()
+    worker_config = widget._set_supervised_worker_config()
     assert worker_config.model_info.name == "test"
-    worker = widget._create_worker_from_config(worker_config)
+    worker = widget._create_supervised_worker_from_config(worker_config)
     worker.config.train_data_dict = [{"image": im_path, "label": im_path}]
     worker.config.val_data_dict = [{"image": im_path, "label": im_path}]
     worker.config.max_epochs = 1

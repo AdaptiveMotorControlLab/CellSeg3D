@@ -27,7 +27,7 @@ from napari_cellseg3d.code_models.worker_training import (
 )
 from napari_cellseg3d.code_models.workers_utils import TrainingReport
 
-NUMBER_TABS = 3  # how many tabs in the widget
+NUMBER_TABS = 4  # how many tabs in the widget
 DEFAULT_PATCH_SIZE = 64  # default patch size for training
 logger = utils.LOGGER
 
@@ -37,7 +37,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
     Features parameter selection for training, dynamic loss plotting and automatic saving of the best weights during
     training through validation."""
 
-    default_config = config.TrainingWorkerConfig()
+    default_config = config.SupervisedTrainingWorkerConfig()
 
     def __init__(
         self,
@@ -159,8 +159,8 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         # self.model_choice.setCurrentIndex(0)
         ###################
         # TODO(cyril) : disable if we implement WNet training
-        wnet_index = self.model_choice.findText("WNet")
-        self.model_choice.removeItem(wnet_index)
+        # wnet_index = self.model_choice.findText("WNet")
+        # self.model_choice.removeItem(wnet_index)
         ################################
         # interface
 
@@ -275,7 +275,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             "Deterministic training", func=self._toggle_deterministic_param
         )
         self.box_seed = ui.IntIncrementCounter(
-            upper=10000000,
+            upper=1000000000,
             default=self.default_config.deterministic_config.seed,
         )
         self.lbl_seed = ui.make_label("Seed", self)
@@ -286,68 +286,85 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.progress.setVisible(False)
         """Dock widget containing the progress bar"""
 
-        self.btn_start = ui.Button("Start training", self.start)
-
+        self.start_button_supervised = None  # button created later and only shown if supervised model is selected
+        self.loss_group = None  # group box created later and only shown if supervised model is selected
+        ############################
+        ############################
+        # WNet parameters
+        self.wnet_widgets = (
+            None  # widgets created later and only shown if WNet is selected
+        )
+        self.advanced_next_button = (
+            None  # button created later and only shown if WNet is selected
+        )
+        self.start_button_unsupervised = (
+            None  # button created later and only shown if WNet is selected
+        )
+        ############################
         # self.btn_model_path.setVisible(False)
         # self.lbl_model_path.setVisible(False)
-
         ############################
         ############################
-        def set_tooltips():
-            # tooltips
-            self.zip_choice.setToolTip(
-                "Checking this will save a copy of the results as a zip folder"
-            )
-            self.validation_percent_choice.tooltips = "Choose the proportion of images to retain for training.\nThe remaining images will be used for validation"
-            self.epoch_choice.tooltips = "The number of epochs to train for.\nThe more you train, the better the model will fit the training data"
-            self.loss_choice.setToolTip(
-                "The loss function to use for training.\nSee the list in the training guide for more info"
-            )
-            self.sample_choice_slider.tooltips = (
-                "The number of samples to extract per image"
-            )
-            self.batch_choice.tooltips = (
-                "The batch size to use for training.\n A larger value will feed more images per iteration to the model,\n"
-                " which is faster and possibly improves performance, but uses more memory"
-            )
-            self.val_interval_choice.tooltips = (
-                "The number of epochs to perform before validating data.\n "
-                "The lower the value, the more often the score of the model will be computed and the more often the weights will be saved."
-            )
-            self.learning_rate_choice.setToolTip(
-                "The learning rate to use in the optimizer. \nUse a lower value if you're using pre-trained weights"
-            )
-            self.scheduler_factor_choice.setToolTip(
-                "The factor by which to reduce the learning rate once the loss reaches a plateau"
-            )
-            self.scheduler_patience_choice.setToolTip(
-                "The amount of epochs to wait for before reducing the learning rate"
-            )
-            self.augment_choice.setToolTip(
-                "Check this to enable data augmentation, which will randomly deform, flip and shift the intensity in images"
-                " to provide a more general dataset. \nUse this if you're extracting more than 10 samples per image"
-            )
-            [
-                w.setToolTip("Size of the sample to extract")
-                for w in self.patch_size_widgets
-            ]
-            self.patch_choice.setToolTip(
-                "Check this to automatically crop your images in smaller, cubic images for training."
-                "\nShould be used if you have a small dataset (and large images)"
-            )
-            self.use_deterministic_choice.setToolTip(
-                "Enable deterministic training for reproducibility."
-                "Using the same seed with all other parameters being similar should yield the exact same results between two runs."
-            )
-            self.use_transfer_choice.setToolTip(
-                "Use this you want to initialize the model with pre-trained weights or use your own weights."
-            )
-            self.box_seed.setToolTip("Seed to use for RNG")
-
-        ############################
-        ############################
-        set_tooltips()
+        self._set_tooltips()
         self._build()
+        self.model_choice.currentTextChanged.connect(
+            self._toggle_unsupervised_mode
+        )
+        self._toggle_unsupervised_mode()
+
+    def _set_tooltips(self):
+        # tooltips
+        self.zip_choice.setToolTip(
+            "Checking this will save a copy of the results as a zip folder"
+        )
+        self.validation_percent_choice.tooltips = "Choose the proportion of images to retain for training.\nThe remaining images will be used for validation"
+        self.epoch_choice.tooltips = "The number of epochs to train for.\nThe more you train, the better the model will fit the training data"
+        self.loss_choice.setToolTip(
+            "The loss function to use for training.\nSee the list in the training guide for more info"
+        )
+        self.sample_choice_slider.tooltips = (
+            "The number of samples to extract per image"
+        )
+        self.batch_choice.tooltips = (
+            "The batch size to use for training.\n A larger value will feed more images per iteration to the model,\n"
+            " which is faster and possibly improves performance, but uses more memory"
+        )
+        self.val_interval_choice.tooltips = (
+            "The number of epochs to perform before validating data.\n "
+            "The lower the value, the more often the score of the model will be computed and the more often the weights will be saved."
+        )
+        self.learning_rate_choice.setToolTip(
+            "The learning rate to use in the optimizer. \nUse a lower value if you're using pre-trained weights"
+        )
+        self.scheduler_factor_choice.setToolTip(
+            "The factor by which to reduce the learning rate once the loss reaches a plateau"
+        )
+        self.scheduler_patience_choice.setToolTip(
+            "The amount of epochs to wait for before reducing the learning rate"
+        )
+        self.augment_choice.setToolTip(
+            "Check this to enable data augmentation, which will randomly deform, flip and shift the intensity in images"
+            " to provide a more general dataset. \nUse this if you're extracting more than 10 samples per image"
+        )
+        [
+            w.setToolTip("Size of the sample to extract")
+            for w in self.patch_size_widgets
+        ]
+        self.patch_choice.setToolTip(
+            "Check this to automatically crop your images in smaller, cubic images for training."
+            "\nShould be used if you have a small dataset (and large images)"
+        )
+        self.use_deterministic_choice.setToolTip(
+            "Enable deterministic training for reproducibility."
+            "Using the same seed with all other parameters being similar should yield the exact same results between two runs."
+        )
+        self.use_transfer_choice.setToolTip(
+            "Use this you want to initialize the model with pre-trained weights or use your own weights."
+        )
+        self.box_seed.setToolTip("Seed to use for RNG")
+
+    def _make_start_button(self):
+        return ui.Button("Start training", self.start, parent=self)
 
     def _hide_unused(self):
         [
@@ -411,6 +428,33 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             return False
         return True
 
+    def _toggle_unsupervised_mode(self):
+        """Change all the UI elements needed for unsupervised learning mode"""
+        if self.model_choice.currentText() == "WNet":
+            self.setTabVisible(3, True)
+            self.setTabEnabled(3, True)
+            self.start_button_unsupervised.setVisible(True)
+            self.start_button_supervised.setVisible(False)
+            self.advanced_next_button.setVisible(True)
+            self.start_btn = self.start_button_unsupervised
+            # loss
+            # self.loss_choice.setVisible(False)
+            self.loss_group.setVisible(False)
+            self.scheduler_factor_choice.setVisible(False)
+            self.scheduler_patience_choice.setVisible(False)
+        else:
+            self.setTabVisible(3, False)
+            self.setTabEnabled(3, False)
+            self.start_button_unsupervised.setVisible(False)
+            self.start_button_supervised.setVisible(True)
+            self.advanced_next_button.setVisible(False)
+            self.start_btn = self.start_button_supervised
+            # loss
+            # self.loss_choice.setVisible(True)
+            self.loss_group.setVisible(True)
+            self.scheduler_factor_choice.setVisible(True)
+            self.scheduler_patience_choice.setVisible(True)
+
     def _build(self):
         """Builds the layout of the widget and creates the following tabs and prompts:
 
@@ -453,10 +497,64 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ########
         ################
         ########################
-        # first tab : model and dataset choices
-        data_tab = ui.ContainerWidget()
+        # first tab : model, weights and device choices
+        model_tab = ui.ContainerWidget()
         ################
-        # first group : Data
+        ui.GroupedWidget.create_single_widget_group(
+            "Model",
+            self.model_choice,
+            model_tab.layout,
+        )  # model choice
+        self.model_choice.label.setVisible(False)
+        ui.add_blank(model_tab, model_tab.layout)
+        ################
+        transfer_group_w, transfer_group_l = ui.make_group("Transfer learning")
+
+        ui.add_widgets(
+            transfer_group_l,
+            [
+                self.use_transfer_choice,
+                self.custom_weights_choice,
+                self.weights_filewidget,
+            ],
+        )
+        self.custom_weights_choice.setVisible(False)
+        self.weights_filewidget.setVisible(False)
+
+        transfer_group_w.setLayout(transfer_group_l)
+        model_tab.layout.addWidget(transfer_group_w, alignment=ui.LEFT_AL)
+        ################
+        ui.add_blank(self, model_tab.layout)
+        ################
+        ui.GroupedWidget.create_single_widget_group(
+            "Device",
+            self.device_choice,
+            model_tab.layout,
+        )
+        ################
+        ui.add_blank(self, model_tab.layout)
+        ################
+        # buttons
+        ui.add_widgets(
+            model_tab.layout,
+            [
+                self._make_next_button(),  # next
+                ui.add_blank(self),
+                self.close_buttons[0],  # close
+            ],
+        )
+        ##################
+        ############
+        ######
+        # Second tab : image sizes, data augmentation, patches size and behaviour
+        ######
+        ############
+        ##################
+        data_tab_w = ui.ContainerWidget()
+        data_tab_l = data_tab_w.layout
+        ##################
+        ################
+        # group : Data
         data_group, data_layout = ui.make_group("Data")
 
         ui.add_widgets(
@@ -491,61 +589,11 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.results_filewidget.text_field.setText(self.results_path)
 
         data_group.setLayout(data_layout)
-        data_tab.layout.addWidget(data_group, alignment=ui.LEFT_AL)
+        data_tab_l.addWidget(data_group, alignment=ui.LEFT_AL)
         # end of first group : Data
         ################
-        ui.add_blank(widget=data_tab, layout=data_tab.layout)
+        ui.add_blank(widget=data_tab_w, layout=data_tab_l)
         ################
-        transfer_group_w, transfer_group_l = ui.make_group("Transfer learning")
-
-        ui.add_widgets(
-            transfer_group_l,
-            [
-                self.use_transfer_choice,
-                self.custom_weights_choice,
-                self.weights_filewidget,
-            ],
-        )
-        self.custom_weights_choice.setVisible(False)
-        self.weights_filewidget.setVisible(False)
-
-        transfer_group_w.setLayout(transfer_group_l)
-        data_tab.layout.addWidget(transfer_group_w, alignment=ui.LEFT_AL)
-        ################
-        ui.add_blank(self, data_tab.layout)
-        ################
-        ui.GroupedWidget.create_single_widget_group(
-            "Validation (%)",
-            self.validation_percent_choice.container,
-            data_tab.layout,
-        )
-        ui.GroupedWidget.create_single_widget_group(
-            "Device",
-            self.device_choice,
-            data_tab.layout,
-        )
-        ################
-        ui.add_blank(self, data_tab.layout)
-        ################
-        # buttons
-        ui.add_widgets(
-            data_tab.layout,
-            [
-                self._make_next_button(),  # next
-                ui.add_blank(self),
-                self.close_buttons[0],  # close
-            ],
-        )
-        ##################
-        ############
-        ######
-        # second tab : image sizes, data augmentation, patches size and behaviour
-        ######
-        ############
-        ##################
-        augment_tab_w = ui.ContainerWidget()
-        augment_tab_l = augment_tab_w.layout
-        ##################
         # extract patches or not
 
         patch_size_w = ui.ContainerWidget()
@@ -579,27 +627,36 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             horizontal=False,
         )
         ui.GroupedWidget.create_single_widget_group(
-            "Sampling", sampling, augment_tab_l, b=0, t=11
+            "Sampling", sampling, data_tab_l, b=0, t=11
         )
         #######################
         #######################
-        ui.add_blank(augment_tab_w, augment_tab_l)
+        ui.add_blank(data_tab_w, data_tab_l)
         #######################
         #######################
         ui.GroupedWidget.create_single_widget_group(
             "Augmentation",
             self.augment_choice,
-            augment_tab_l,
+            data_tab_l,
         )
         # augment data toggle
 
         self.augment_choice.toggle()
         #######################
+        ui.add_blank(data_tab_w, data_tab_l)
         #######################
-        ui.add_blank(augment_tab_w, augment_tab_l)
+        ui.GroupedWidget.create_single_widget_group(
+            "Validation (%)",
+            self.validation_percent_choice.container,
+            data_tab_l,
+        )
+
         #######################
         #######################
-        augment_tab_l.addWidget(
+        ui.add_blank(self, data_tab_l)
+        #######################
+        #######################
+        data_tab_l.addWidget(
             ui.combine_blocks(
                 left_or_above=self._make_prev_button(),
                 right_or_below=self._make_next_button(),
@@ -608,40 +665,29 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             alignment=ui.LEFT_AL,
         )
 
-        augment_tab_l.addWidget(self.close_buttons[1], alignment=ui.LEFT_AL)
+        data_tab_l.addWidget(self.close_buttons[1], alignment=ui.LEFT_AL)
         ##################
         ############
         ######
-        # third tab : training parameters
+        # Third tab : training parameters
         ######
         ############
         ##################
         train_tab = ui.ContainerWidget()
         ##################
-        # solo groups for loss and model
         ui.add_blank(train_tab, train_tab.layout)
-
-        ui.GroupedWidget.create_single_widget_group(
-            "Model",
-            self.model_choice,
-            train_tab.layout,
-        )  # model choice
-        self.model_choice.label.setVisible(False)
-
-        ui.add_blank(train_tab, train_tab.layout)
-        ui.GroupedWidget.create_single_widget_group(
+        ##################
+        self.loss_group = ui.GroupedWidget.create_single_widget_group(
             "Loss",
             self.loss_choice,
             train_tab.layout,
         )  # loss choice
         self.lbl_loss_choice.setVisible(False)
-
-        # end of solo groups for loss and model
+        # end of solo groups for loss
         ##################
         ui.add_blank(train_tab, train_tab.layout)
         ##################
         # training params group
-
         train_param_group_w, train_param_group_l = ui.make_group(
             "Training parameters", r=1, b=5, t=11
         )
@@ -679,24 +725,29 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             [self.use_deterministic_choice, self.container_seed],
             ui.LEFT_AL,
         )
-
         # self.container_seed.setVisible(False)
         self.use_deterministic_choice.setChecked(True)
-
         seed_w.setLayout(seed_l)
         train_tab.layout.addWidget(seed_w)
-
         # end of deterministic choice group
         ##################
         # buttons
 
         ui.add_blank(self, train_tab.layout)
 
+        self.advanced_next_button = self._make_next_button()
+        self.advanced_next_button.setVisible(False)
+        self.start_button_supervised = self._make_start_button()
+
         ui.add_widgets(
             train_tab.layout,
             [
-                self._make_prev_button(),  # previous
-                self.btn_start,  # start
+                ui.combine_blocks(
+                    left_or_above=self._make_prev_button(),  # previous
+                    right_or_below=self.advanced_next_button,  # next (only if unsupervised)
+                    l=1,
+                ),
+                self.start_button_supervised,  # start
                 ui.add_blank(self),
                 self.close_buttons[2],
             ],
@@ -704,17 +755,105 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ##################
         ############
         ######
-        # end of tab layouts
+        # Fourth tab : advanced parameters (unsupervised only)
+        ######
+        ############
+        ##################
+        advanced_tab = ui.ContainerWidget(parent=self)
+        self.wnet_widgets = ui.WNetWidgets(parent=advanced_tab)
+        ui.add_blank(advanced_tab, advanced_tab.layout)
+        ##################
+        model_params_group_w, model_params_group_l = ui.make_group(
+            "WNet parameters", r=20, b=5, t=11
+        )
+        ui.add_widgets(
+            model_params_group_l,
+            [
+                self.wnet_widgets.num_classes_choice.label,
+                self.wnet_widgets.num_classes_choice,
+                self.wnet_widgets.loss_choice.label,
+                self.wnet_widgets.loss_choice,
+            ],
+        )
+        model_params_group_w.setLayout(model_params_group_l)
+        advanced_tab.layout.addWidget(model_params_group_w)
+        ##################
+        ui.add_blank(advanced_tab, advanced_tab.layout)
+        ##################
+        ncuts_loss_params_group_w, ncuts_loss_params_group_l = ui.make_group(
+            "NCuts loss parameters", r=35, b=5, t=11
+        )
+        ui.add_widgets(
+            ncuts_loss_params_group_l,
+            [
+                self.wnet_widgets.intensity_sigma_choice.label,
+                self.wnet_widgets.intensity_sigma_choice,
+                self.wnet_widgets.spatial_sigma_choice.label,
+                self.wnet_widgets.spatial_sigma_choice,
+                self.wnet_widgets.radius_choice.label,
+                self.wnet_widgets.radius_choice,
+            ],
+        )
+        ncuts_loss_params_group_w.setLayout(ncuts_loss_params_group_l)
+        advanced_tab.layout.addWidget(ncuts_loss_params_group_w)
+        ##################
+        ui.add_blank(advanced_tab, advanced_tab.layout)
+        ##################
+        losses_weights_group_w, losses_weights_group_l = ui.make_group(
+            "Losses weights", r=1, b=5, t=11
+        )
 
+        # container for reconstruction weight and divide factor
+        reconstruction_weight_container = ui.ContainerWidget(
+            vertical=False, parent=losses_weights_group_w
+        )
+        ui.add_widgets(
+            reconstruction_weight_container.layout,
+            [
+                self.wnet_widgets.reconstruction_weight_choice,
+                ui.make_label(" / "),
+                self.wnet_widgets.reconstruction_weight_divide_factor_choice,
+            ],
+        )
+
+        ui.add_widgets(
+            losses_weights_group_l,
+            [
+                self.wnet_widgets.ncuts_weight_choice.label,
+                self.wnet_widgets.ncuts_weight_choice,
+                self.wnet_widgets.reconstruction_weight_choice.label,
+                reconstruction_weight_container,
+            ],
+        )
+        losses_weights_group_w.setLayout(losses_weights_group_l)
+        advanced_tab.layout.addWidget(losses_weights_group_w)
+        ##################
+        ui.add_blank(advanced_tab, advanced_tab.layout)
+        ##################
+        # buttons
+        self.start_button_unsupervised = self._make_start_button()
+        ui.add_widgets(
+            advanced_tab.layout,
+            [
+                self._make_prev_button(),  # previous
+                self.start_button_unsupervised,  # start
+                ui.add_blank(self),
+                self.close_buttons[3],
+            ],
+        )
+        ##################
+        ############
+        ######
+        # end of tab layouts
         ui.ScrollArea.make_scrollable(
-            contained_layout=data_tab.layout,
-            parent=data_tab,
+            contained_layout=model_tab.layout,
+            parent=model_tab,
             min_wh=[200, 300],
         )  # , max_wh=[200,1000])
 
         ui.ScrollArea.make_scrollable(
-            contained_layout=augment_tab_l,
-            parent=augment_tab_w,
+            contained_layout=data_tab_l,
+            parent=data_tab_w,
             min_wh=[200, 300],
         )
 
@@ -723,29 +862,27 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             parent=train_tab,
             min_wh=[200, 300],
         )
-        self.addTab(data_tab, "Data")
-        self.addTab(augment_tab_w, "Augmentation")
+        ui.ScrollArea.make_scrollable(
+            contained_layout=advanced_tab.layout,
+            parent=advanced_tab,
+            min_wh=[200, 300],
+        )
+
+        self.addTab(model_tab, "Model")
+        self.addTab(data_tab_w, "Data")
         self.addTab(train_tab, "Training")
+        self.addTab(advanced_tab, "Advanced")
         self.setMinimumSize(220, 100)
 
         self._hide_unused()
 
         default_results_path = (
-            config.TrainingWorkerConfig().results_path_folder
+            config.SupervisedTrainingWorkerConfig().results_path_folder
         )
         self.results_filewidget.text_field.setText(default_results_path)
         self.results_filewidget.check_ready()
         self._check_results_path(default_results_path)
         self.results_path = default_results_path
-
-    # def _show_dialog_lab(self):
-    #     """Shows the  dialog to load label files in a path, loads them (see :doc:model_framework) and changes the widget
-    #     label :py:attr:`self.label_filewidget.text_field` accordingly"""
-    #     folder = ui.open_folder_dialog(self, self._default_path)
-    #
-    #     if folder:
-    #         self.label_path = folder
-    #         self.labels_filewidget.text_field.setText(self.label_path)
 
     def send_log(self, text):
         """Sends a message via the Log attribute"""
@@ -790,7 +927,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 pass
             else:
                 self.worker.start()
-                self.btn_start.setText("Running... Click to stop")
+                self.start_btn.setText("Running... Click to stop")
         else:  # starting a new job goes here
             self.log.print_and_log("Starting...")
             self.log.print_and_log("*" * 20)
@@ -806,7 +943,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.config = config.TrainerConfig(
                 save_as_zip=self.zip_choice.isChecked()
             )
-            self._set_worker_config()
+            self._set_supervised_worker_config()
 
             self.worker = TrainingWorker(worker_config=self.worker_config)
             self.worker.set_download_log(self.log)
@@ -829,15 +966,15 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 f"Stop requested at {utils.get_time()}. \nWaiting for next yielding step..."
             )
             self.stop_requested = True
-            self.btn_start.setText("Stopping... Please wait")
+            self.start_btn.setText("Stopping... Please wait")
             self.log.print_and_log("*" * 20)
             self.worker.quit()
         else:
             self.worker.start()
-            self.btn_start.setText("Running...  Click to stop")
+            self.start_btn.setText("Running...  Click to stop")
 
-    def _create_worker_from_config(
-        self, worker_config: config.TrainingWorkerConfig
+    def _create_supervised_worker_from_config(
+        self, worker_config: config.SupervisedTrainingWorkerConfig
     ):
         if isinstance(config, config.TrainerConfig):
             raise TypeError(
@@ -845,7 +982,9 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             )
         return TrainingWorker(worker_config=worker_config)
 
-    def _set_worker_config(self) -> config.TrainingWorkerConfig:
+    def _set_supervised_worker_config(
+        self,
+    ) -> config.SupervisedTrainingWorkerConfig:
         model_config = config.ModelInfo(name=self.model_choice.currentText())
 
         self.weights_config.path = self.weights_config.path
@@ -875,7 +1014,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         patch_size = [w.value() for w in self.patch_size_widgets]
 
         logger.debug("Loading config...")
-        self.worker_config = config.TrainingWorkerConfig(
+        self.worker_config = config.SupervisedTrainingWorkerConfig(
             device=self.check_device_choice(),
             model_info=model_config,
             weights_info=self.weights_config,
@@ -938,7 +1077,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         except ValueError as e:
             logger.warning(f"Error while saving CSV report: {e}")
 
-        self.btn_start.setText("Start")
+        self.start_btn.setText("Start")
         [btn.setVisible(True) for btn in self.close_buttons]
 
         # del self.worker
@@ -974,7 +1113,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
     def on_stop(self):
         self._remove_result_layers()
         self.worker = None
-        self.btn_start.setText("Start")
+        self.start_btn.setText("Start")
         [btn.setVisible(True) for btn in self.close_buttons]
 
     def _remove_result_layers(self):

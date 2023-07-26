@@ -1,10 +1,12 @@
 import platform
 import time
+from abc import abstractmethod
 from math import ceil
 from pathlib import Path
 
 import numpy as np
 import torch
+import torch.nn as nn
 
 # MONAI
 from monai.data import (
@@ -14,6 +16,7 @@ from monai.data import (
     decollate_batch,
     pad_list_data_collate,
 )
+from monai.data.meta_obj import set_track_meta
 from monai.inferers import sliding_window_inference
 from monai.losses import (
     DiceCELoss,
@@ -23,8 +26,9 @@ from monai.losses import (
 )
 from monai.metrics import DiceMetric
 from monai.transforms import (
-    # AsDiscrete,
+    AsDiscrete,
     Compose,
+    EnsureChannelFirst,
     EnsureChannelFirstd,
     EnsureType,
     EnsureTyped,
@@ -37,7 +41,9 @@ from monai.transforms import (
     RandRotate90d,
     RandShiftIntensityd,
     RandSpatialCropSamplesd,
+    ScaleIntensityRanged,
     SpatialPadd,
+    ToTensor,
 )
 from monai.utils import set_determinism
 
@@ -46,6 +52,8 @@ from napari.qt.threading import GeneratorWorker
 
 # local
 from napari_cellseg3d import config, utils
+from napari_cellseg3d.code_models.models.wnet.model import WNet
+from napari_cellseg3d.code_models.models.wnet.soft_Ncuts import SoftNCutsLoss
 from napari_cellseg3d.code_models.workers_utils import (
     PRETRAINED_WEIGHTS_DIR,
     LogSignal,
@@ -60,6 +68,17 @@ logger = utils.LOGGER
 VERBOSE_SCHEDULER = True
 logger.debug(f"PRETRAINED WEIGHT DIR LOCATION : {PRETRAINED_WEIGHTS_DIR}")
 
+try:
+    import wandb
+
+    WANDB_INSTALLED = True
+except ImportError:
+    logger.warning(
+        "wandb not installed, wandb config will not be taken into account",
+        stacklevel=1,
+    )
+    WANDB_INSTALLED = False
+
 """
 Writing something to log messages from outside the main thread needs specific care,
 Following the instructions in the guides below to have a worker with custom signals,
@@ -70,14 +89,742 @@ a custom worker function was implemented.
 # https://www.pythoncentral.io/pysidepyqt-tutorial-creating-your-own-signals-and-slots/
 # https://napari-staging-site.github.io/guides/stable/threading.html
 
+# TODO list for WNet training :
+# 1. Create a custom base worker for training to avoid code duplication
+# 2. Create a custom worker for WNet training
+# 3. Adapt UI for WNet training (Advanced tab + model choice on first tab)
+# 4. Adapt plots and TrainingReport for WNet training
 
-class TrainingWorker(GeneratorWorker):
-    """A custom worker to run training jobs in.
-    Inherits from :py:class:`napari.qt.threading.GeneratorWorker`"""
+
+class TrainingWorkerBase(GeneratorWorker):
+    """A basic worker abstract class, to run training jobs in.
+    Contains the minimal common elements required for training models."""
+
+    def __init__(self):
+        super().__init__(self.train)
+        self._signals = LogSignal()
+        self.log_signal = self._signals.log_signal
+        self.warn_signal = self._signals.warn_signal
+        self.error_signal = self._signals.error_signal
+        self.downloader = WeightsDownloader()
+        self.train_files = []
+        self.val_files = []
+        self.config = None
+
+        self._weight_error = False
+        ################################
+
+    def set_download_log(self, widget):
+        """Sets the log widget for the downloader to output to"""
+        self.downloader.log_widget = widget
+
+    def log(self, text):
+        """Sends a signal that ``text`` should be logged
+        Goes in a Log object, defined in :py:mod:`napari_cellseg3d.interface
+        Sends a signal to the main thread to log the text.
+        Signal is defined in napari_cellseg3d.workers_utils.LogSignal
+
+        Args:
+            text (str): text to logged
+        """
+        self.log_signal.emit(text)
+
+    def warn(self, warning):
+        """Sends a warning to main thread"""
+        self.warn_signal.emit(warning)
+
+    def raise_error(self, exception, msg):
+        """Sends an error to main thread"""
+        logger.error(msg, exc_info=True)
+        logger.error(exception, exc_info=True)
+        self.error_signal.emit(exception, msg)
+        self.errored.emit(exception)
+        self.quit()
+
+    @abstractmethod
+    def log_parameters(self):
+        """Logs the parameters of the training"""
+        raise NotImplementedError
+
+    @abstractmethod
+    def train(self):
+        """Starts a training job"""
+        raise NotImplementedError
+
+
+class WNetTrainingWorker(TrainingWorkerBase):
+    """A custom worker to run WNet (unsupervised) training jobs in.
+    Inherits from :py:class:`napari.qt.threading.GeneratorWorker` via :py:class:`TrainingWorkerBase`
+    """
 
     def __init__(
         self,
-        worker_config: config.TrainingWorkerConfig,
+        worker_config: config.WNetTrainingWorkerConfig,
+    ):
+        super().__init__()
+        self.config = worker_config
+
+    @staticmethod
+    def create_dataset_dict_no_labs(volume_directory):
+        """Creates unsupervised data dictionary for MONAI transforms and training."""
+        images_filepaths = sorted(
+            Path.glob(str(Path(volume_directory) / "*.tif"))
+        )
+        if len(images_filepaths) == 0:
+            raise ValueError(f"Data folder {volume_directory} is empty")
+
+        logger.info("Images :")
+        for file in images_filepaths:
+            logger.info(Path(file).stem)
+        logger.info("*" * 10)
+        return [{"image": image_name} for image_name in images_filepaths]
+
+    @staticmethod
+    def create_dataset_dict(volume_directory, label_directory):
+        """Creates data dictionary for MONAI transforms and training."""
+        images_filepaths = sorted(
+            [str(file) for file in Path(volume_directory).glob("*.tif")]
+        )
+
+        labels_filepaths = sorted(
+            [str(file) for file in Path(label_directory).glob("*.tif")]
+        )
+        if len(images_filepaths) == 0 or len(labels_filepaths) == 0:
+            raise ValueError(
+                f"Data folders are empty \n{volume_directory} \n{label_directory}"
+            )
+
+        logger.info("Images :")
+        for file in images_filepaths:
+            logger.info(Path(file).stem)
+        logger.info("*" * 10)
+        logger.info("Labels :")
+        for file in labels_filepaths:
+            logger.info(Path(file).stem)
+        try:
+            data_dicts = [
+                {"image": image_name, "label": label_name}
+                for image_name, label_name in zip(
+                    images_filepaths, labels_filepaths
+                )
+            ]
+        except ValueError as e:
+            raise ValueError(
+                f"Number of images and labels does not match : \n{volume_directory} \n{label_directory}"
+            ) from e
+        # self.log(f"Loaded eval image: {data_dicts}")
+        return data_dicts
+
+    def get_patch_dataset(self, volume_directory):
+        """Creates a Dataset from the original data using the tifffile library
+
+        Args:
+            volume_directory (str): Path to the directory containing the data
+
+        Returns:
+            (tuple): A tuple containing the shape of the data and the dataset
+        """
+
+        train_files = self.create_dataset_dict_no_labs(
+            volume_directory=volume_directory
+        )
+
+        patch_func = Compose(
+            [
+                LoadImaged(keys=["image"], image_only=True),
+                EnsureChannelFirstd(keys=["image"], channel_dim="no_channel"),
+                RandSpatialCropSamplesd(
+                    keys=["image"],
+                    roi_size=(
+                        self.config.sample_size
+                    ),  # multiply by axis_stretch_factor if anisotropy
+                    # max_roi_size=(120, 120, 120),
+                    random_size=False,
+                    num_samples=self.config.num_samples,
+                ),
+                Orientationd(keys=["image"], axcodes="PLI"),
+                SpatialPadd(
+                    keys=["image"],
+                    spatial_size=(
+                        utils.get_padding_dim(self.config.sample_size)
+                    ),
+                ),
+                EnsureTyped(keys=["image"]),
+            ]
+        )
+
+        train_transforms = Compose(
+            [
+                ScaleIntensityRanged(
+                    keys=["image"],
+                    a_min=0,
+                    a_max=2000,
+                    b_min=0.0,
+                    b_max=1.0,
+                    clip=True,
+                ),
+                RandShiftIntensityd(keys=["image"], offsets=0.1, prob=0.5),
+                RandFlipd(keys=["image"], spatial_axis=[1], prob=0.5),
+                RandFlipd(keys=["image"], spatial_axis=[2], prob=0.5),
+                RandRotate90d(keys=["image"], prob=0.1, max_k=3),
+                EnsureTyped(keys=["image"]),
+            ]
+        )
+
+        dataset = PatchDataset(
+            data=train_files,
+            samples_per_image=self.config.num_samples,
+            patch_func=patch_func,
+            transform=train_transforms,
+        )
+
+        return self.config.sample_size, dataset
+
+    def get_patch_eval_dataset(self, volume_directory):
+        eval_files = self.create_dataset_dict(
+            volume_directory=volume_directory + "/vol",
+            label_directory=volume_directory + "/lab",
+        )
+
+        patch_func = Compose(
+            [
+                LoadImaged(keys=["image", "label"], image_only=True),
+                EnsureChannelFirstd(
+                    keys=["image", "label"], channel_dim="no_channel"
+                ),
+                # NormalizeIntensityd(keys=["image"]) if config.normalize_input else lambda x: x,
+                RandSpatialCropSamplesd(
+                    keys=["image", "label"],
+                    roi_size=(
+                        self.config.sample_size
+                    ),  # multiply by axis_stretch_factor if anisotropy
+                    # max_roi_size=(120, 120, 120),
+                    random_size=False,
+                    num_samples=self.config.eval_num_patches,
+                ),
+                Orientationd(keys=["image", "label"], axcodes="PLI"),
+                SpatialPadd(
+                    keys=["image", "label"],
+                    spatial_size=(
+                        utils.get_padding_dim(self.config.sample_size)
+                    ),
+                ),
+                EnsureTyped(keys=["image", "label"]),
+            ]
+        )
+
+        eval_transforms = Compose(
+            [
+                EnsureTyped(keys=["image", "label"]),
+            ]
+        )
+
+        return PatchDataset(
+            data=eval_files,
+            samples_per_image=self.config.eval_num_patches,
+            patch_func=patch_func,
+            transform=eval_transforms,
+        )
+
+    def get_dataset_monai(self):
+        """Creates a Dataset applying some transforms/augmentation on the data using the MONAI library
+
+        Args:
+            config (WNetTrainingWorkerConfig): The configuration object
+
+        Returns:
+            (tuple): A tuple containing the shape of the data and the dataset
+        """
+        # train_files = self.create_dataset_dict_no_labs(
+        #     volume_directory=self.config.train_volume_directory
+        # )
+        # self.log(train_files)
+        # self.log(len(train_files))
+        # self.log(train_files[0])
+        train_files = self.config.train_data_dict
+
+        first_volume = LoadImaged(keys=["image"])(train_files[0])
+        first_volume_shape = first_volume["image"].shape
+
+        # Transforms to be applied to each volume
+        load_single_images = Compose(
+            [
+                LoadImaged(keys=["image"]),
+                EnsureChannelFirstd(keys=["image"]),
+                Orientationd(keys=["image"], axcodes="PLI"),
+                SpatialPadd(
+                    keys=["image"],
+                    spatial_size=(utils.get_padding_dim(first_volume_shape)),
+                ),
+                EnsureTyped(keys=["image"]),
+            ]
+        )
+
+        if self.config.do_augmentation:
+            train_transforms = Compose(
+                [
+                    ScaleIntensityRanged(
+                        keys=["image"],
+                        a_min=0,
+                        a_max=2000,
+                        b_min=0.0,
+                        b_max=1.0,
+                        clip=True,
+                    ),
+                    RandShiftIntensityd(keys=["image"], offsets=0.1, prob=0.5),
+                    RandFlipd(keys=["image"], spatial_axis=[1], prob=0.5),
+                    RandFlipd(keys=["image"], spatial_axis=[2], prob=0.5),
+                    RandRotate90d(keys=["image"], prob=0.1, max_k=3),
+                    EnsureTyped(keys=["image"]),
+                ]
+            )
+        else:
+            train_transforms = EnsureTyped(keys=["image"])
+
+        # Create the dataset
+        dataset = CacheDataset(
+            data=train_files,
+            transform=Compose([load_single_images, train_transforms]),
+        )
+
+        return first_volume_shape, dataset
+
+    # def get_scheduler(self, optimizer, verbose=False):
+    #     scheduler_name = self.config.scheduler
+    #     if scheduler_name == "None":
+    #         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+    #             optimizer,
+    #             T_max=100,
+    #             eta_min=config.lr - 1e-6,
+    #             verbose=verbose,
+    #         )
+    #
+    #     elif scheduler_name == "ReduceLROnPlateau":
+    #         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+    #             optimizer,
+    #             mode="min",
+    #             factor=schedulers["ReduceLROnPlateau"]["factor"],
+    #             patience=schedulers["ReduceLROnPlateau"]["patience"],
+    #             verbose=verbose,
+    #         )
+    #     elif scheduler_name == "CosineAnnealingLR":
+    #         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+    #             optimizer,
+    #             T_max=schedulers["CosineAnnealingLR"]["T_max"],
+    #             eta_min=schedulers["CosineAnnealingLR"]["eta_min"],
+    #             verbose=verbose,
+    #         )
+    #     elif scheduler_name == "CosineAnnealingWarmRestarts":
+    #         scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
+    #             optimizer,
+    #             T_0=schedulers["CosineAnnealingWarmRestarts"]["T_0"],
+    #             eta_min=schedulers["CosineAnnealingWarmRestarts"]["eta_min"],
+    #             T_mult=schedulers["CosineAnnealingWarmRestarts"]["T_mult"],
+    #             verbose=verbose,
+    #         )
+    #     elif scheduler_name == "CyclicLR":
+    #         scheduler = torch.optim.lr_scheduler.CyclicLR(
+    #             optimizer,
+    #             base_lr=schedulers["CyclicLR"]["base_lr"],
+    #             max_lr=schedulers["CyclicLR"]["max_lr"],
+    #             step_size_up=schedulers["CyclicLR"]["step_size_up"],
+    #             mode=schedulers["CyclicLR"]["mode"],
+    #             cycle_momentum=False,
+    #         )
+    #     else:
+    #         raise ValueError(f"Scheduler {scheduler_name} not provided")
+    #     return scheduler
+    def train(self):
+        if self.config is None:
+            self.config = config.WNetTrainingWorkerConfig()
+        ##############
+        # disable metadata tracking in MONAI
+        set_track_meta(False)
+        ##############
+        # if WANDB_INSTALLED:
+        #     wandb.init(
+        #         config=WANDB_CONFIG, project="WNet-benchmark", mode=WANDB_MODE
+        #     )
+
+        set_determinism(
+            seed=self.config.deterministic_config.seed
+        )  # use default seed from NP_MAX
+        torch.use_deterministic_algorithms(True, warn_only=True)
+
+        normalize_function = self.config.normalizing_function
+        CUDA = torch.cuda.is_available()
+        device = torch.device("cuda" if CUDA else "cpu")
+
+        self.log(f"Using device: {device}")
+
+        self.log("Config:")
+        [self.log(str(a)) for a in self.config.__dict__.items()]
+
+        self.log("Initializing training...")
+        self.log("Getting the data")
+
+        if self.config.sampling:
+            (data_shape, dataset) = self.get_patch_dataset(self.config)
+        else:
+            (data_shape, dataset) = self.get_dataset(self.config)
+            transform = Compose(
+                [
+                    ToTensor(),
+                    EnsureChannelFirst(channel_dim=0),
+                ]
+            )
+            dataset = [transform(im) for im in dataset]
+            for data in dataset:
+                self.log(f"Data shape: {data.shape}")
+                break
+
+        dataloader = DataLoader(
+            dataset,
+            batch_size=self.config.batch_size,
+            shuffle=True,
+            num_workers=self.config.num_workers,
+            collate_fn=pad_list_data_collate,
+        )
+
+        if self.config.eval_volume_dict is not None:
+            eval_dataset = self.get_patch_eval_dataset(
+                self.config.eval_volume_dict
+            )  # FIXME
+
+            eval_dataloader = DataLoader(
+                eval_dataset,
+                batch_size=self.config.batch_size,
+                shuffle=False,
+                num_workers=self.config.num_workers,
+                collate_fn=pad_list_data_collate,
+            )
+
+        dice_metric = DiceMetric(
+            include_background=False, reduction="mean", get_not_nans=False
+        )
+        ###################################################
+        #               Training the model                #
+        ###################################################
+        self.log("Initializing the model:")
+
+        self.log("- getting the model")
+        # Initialize the model
+        model = WNet(
+            in_channels=self.config.in_channels,
+            out_channels=self.config.out_channels,
+            num_classes=self.config.num_classes,
+            dropout=self.config.dropout,
+        )
+        model = (
+            nn.DataParallel(model).cuda()
+            if CUDA and self.config.parallel
+            else model
+        )
+        model.to(device)
+
+        if self.config.use_clipping:
+            for p in model.parameters():
+                p.register_hook(
+                    lambda grad: torch.clamp(
+                        grad,
+                        min=-self.config.clipping,
+                        max=self.config.clipping,
+                    )
+                )
+
+        if WANDB_INSTALLED:
+            wandb.watch(model, log_freq=100)
+
+        if self.config.weights_info.path is not None:
+            model.load_state_dict(
+                torch.load(self.config.weights_info.path, map_location=device)
+            )
+
+        self.log("- getting the optimizers")
+        # Initialize the optimizers
+        if self.config.weight_decay is not None:
+            decay = self.config.weight_decay
+            optimizer = torch.optim.Adam(
+                model.parameters(), lr=self.config.lr, weight_decay=decay
+            )
+        else:
+            optimizer = torch.optim.Adam(model.parameters(), lr=self.config.lr)
+
+        self.log("- getting the loss functions")
+        # Initialize the Ncuts loss function
+        criterionE = SoftNCutsLoss(
+            data_shape=data_shape,
+            device=device,
+            intensity_sigma=self.config.intensity_sigma,
+            spatial_sigma=self.config.spatial_sigma,
+            radius=self.config.radius,
+        )
+
+        if self.config.reconstruction_loss == "MSE":
+            criterionW = nn.MSELoss()
+        elif self.config.reconstruction_loss == "BCE":
+            criterionW = nn.BCELoss()
+        else:
+            raise ValueError(
+                f"Unknown reconstruction loss : {self.config.reconstruction_loss} not supported"
+            )
+
+        self.log("- getting the learning rate schedulers")
+        # Initialize the learning rate schedulers
+        # scheduler = get_scheduler(self.config, optimizer)
+        # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        #     optimizer, mode="min", factor=0.5, patience=10, verbose=True
+        # )
+        model.train()
+
+        self.log("Ready")
+        self.log("Training the model")
+        self.log("*" * 50)
+
+        startTime = time.time()
+        ncuts_losses = []
+        rec_losses = []
+        total_losses = []
+        best_dice = -1
+
+        # Train the model
+        for epoch in range(self.config.num_epochs):
+            self.log(f"Epoch {epoch + 1} of {self.config.num_epochs}")
+
+            epoch_ncuts_loss = 0
+            epoch_rec_loss = 0
+            epoch_loss = 0
+
+            for _i, batch in enumerate(dataloader):
+                # raise NotImplementedError("testing")
+                if self.config.sampling:
+                    image = batch["image"].to(device)
+                else:
+                    image = batch.to(device)
+                    if self.config.batch_size == 1:
+                        image = image.unsqueeze(0)
+                    else:
+                        image = image.unsqueeze(0)
+                        image = torch.swapaxes(image, 0, 1)
+
+                # Forward pass
+                enc = model.forward_encoder(image)
+                # Compute the Ncuts loss
+                Ncuts = criterionE(enc, image)
+                epoch_ncuts_loss += Ncuts.item()
+                # if WANDB_INSTALLED:
+                #     wandb.log({"Ncuts loss": Ncuts.item()})
+
+                # Forward pass
+                enc, dec = model(image)
+
+                # Compute the reconstruction loss
+                if isinstance(criterionW, nn.MSELoss):
+                    reconstruction_loss = criterionW(dec, image)
+                elif isinstance(criterionW, nn.BCELoss):
+                    reconstruction_loss = criterionW(
+                        torch.sigmoid(dec),
+                        utils.remap_image(image, new_max=1),
+                    )
+
+                epoch_rec_loss += reconstruction_loss.item()
+                if WANDB_INSTALLED:
+                    wandb.log(
+                        {"Reconstruction loss": reconstruction_loss.item()}
+                    )
+
+                # Backward pass for the reconstruction loss
+                optimizer.zero_grad()
+                alpha = self.config.n_cuts_weight
+                beta = self.config.rec_loss_weight
+
+                loss = alpha * Ncuts + beta * reconstruction_loss
+                epoch_loss += loss.item()
+                # if WANDB_INSTALLED:
+                #     wandb.log({"Sum of losses": loss.item()})
+                loss.backward(loss)
+                optimizer.step()
+
+                # if self.config.scheduler == "CosineAnnealingWarmRestarts":
+                #     scheduler.step(epoch + _i / len(dataloader))
+                # if (
+                #         self.config.scheduler == "CosineAnnealingLR"
+                #         or self.config.scheduler == "CyclicLR"
+                # ):
+                #     scheduler.step()
+
+            ncuts_losses.append(epoch_ncuts_loss / len(dataloader))
+            rec_losses.append(epoch_rec_loss / len(dataloader))
+            total_losses.append(epoch_loss / len(dataloader))
+
+            # if WANDB_INSTALLED:
+            #     wandb.log({"Ncuts loss_epoch": ncuts_losses[-1]})
+            #     wandb.log({"Reconstruction loss_epoch": rec_losses[-1]})
+            #     wandb.log({"Sum of losses_epoch": total_losses[-1]})
+            # wandb.log({"epoch": epoch})
+            # wandb.log({"learning_rate model": optimizerW.param_groups[0]["lr"]})
+            # wandb.log({"learning_rate encoder": optimizerE.param_groups[0]["lr"]})
+            # wandb.log({"learning_rate model": optimizer.param_groups[0]["lr"]})
+
+            self.log("Ncuts loss: " + str(ncuts_losses[-1]))
+            if epoch > 0:
+                self.log(
+                    "Ncuts loss difference: "
+                    + str(ncuts_losses[-1] - ncuts_losses[-2])
+                )
+            self.log("Reconstruction loss: " + str(rec_losses[-1]))
+            if epoch > 0:
+                self.log(
+                    "Reconstruction loss difference: "
+                    + str(rec_losses[-1] - rec_losses[-2])
+                )
+            self.log("Sum of losses: " + str(total_losses[-1]))
+            if epoch > 0:
+                self.log(
+                    "Sum of losses difference: "
+                    + str(total_losses[-1] - total_losses[-2]),
+                )
+
+            # Update the learning rate
+            # if self.config.scheduler == "ReduceLROnPlateau":
+            #     # schedulerE.step(epoch_ncuts_loss)
+            #     # schedulerW.step(epoch_rec_loss)
+            #     scheduler.step(epoch_rec_loss)
+            if (
+                self.config.eval_volume_directory is not None
+                and (epoch + 1) % self.config.val_interval == 0
+            ):
+                model.eval()
+                self.log("Validating...")
+                with torch.no_grad():
+                    for _k, val_data in enumerate(eval_dataloader):
+                        val_inputs, val_labels = (
+                            val_data["image"].to(device),
+                            val_data["label"].to(device),
+                        )
+
+                        # normalize val_inputs across channels
+                        for i in range(val_inputs.shape[0]):
+                            for j in range(val_inputs.shape[1]):
+                                val_inputs[i][j] = normalize_function(
+                                    val_inputs[i][j]
+                                )
+
+                        val_outputs = model.forward_encoder(val_inputs)
+                        val_outputs = AsDiscrete(threshold=0.5)(val_outputs)
+
+                        # compute metric for current iteration
+                        for channel in range(val_outputs.shape[1]):
+                            max_dice_channel = torch.argmax(
+                                torch.Tensor(
+                                    [
+                                        utils.dice_coeff(
+                                            y_pred=val_outputs[
+                                                :,
+                                                channel : (channel + 1),
+                                                :,
+                                                :,
+                                                :,
+                                            ],
+                                            y_true=val_labels,
+                                        )
+                                    ]
+                                )
+                            )
+
+                        dice_metric(
+                            y_pred=val_outputs[
+                                :,
+                                max_dice_channel : (max_dice_channel + 1),
+                                :,
+                                :,
+                                :,
+                            ],
+                            y=val_labels,
+                        )
+
+                    # aggregate the final mean dice result
+                    metric = dice_metric.aggregate().item()
+                    self.log("Validation Dice score: ", metric)
+                    if best_dice < metric < 2:
+                        best_dice = metric
+                        epoch + 1
+                        if self.config.save_model:
+                            save_best_path = Path(
+                                self.config.save_model_path
+                            ).parents[0]
+                            save_best_path.mkdir(parents=True, exist_ok=True)
+                            save_best_name = Path(
+                                self.config.save_model_path
+                            ).stem
+                            save_path = (
+                                str(save_best_path / save_best_name)
+                                + "_best_metric.pth"
+                            )
+                            self.log(f"Saving new best model to {save_path}")
+                            torch.save(model.state_dict(), save_path)
+
+                    if WANDB_INSTALLED:
+                        # log validation dice score for each validation round
+                        wandb.log({"val/dice_metric": metric})
+
+                    # reset the status for next validation round
+                    dice_metric.reset()
+
+            eta = (
+                (time.time() - startTime)
+                * (self.config.num_epochs / (epoch + 1) - 1)
+                / 60
+            )
+            self.log(
+                f"ETA: {eta} minutes",
+            )
+            self.log("-" * 20)
+
+            # Save the model # FIXME
+            if self.config.save_model and epoch % self.config.save_every == 0:
+                torch.save(model.state_dict(), self.config.save_model_path)
+                # with open(self.config.save_losses_path, "wb") as f:
+                #     pickle.dump((ncuts_losses, rec_losses), f)
+
+        self.log("Training finished")
+        self.log(f"Best dice metric : {best_dice}")
+        # if WANDB_INSTALLED and self.config.eval_volume_directory is not None:
+        #     wandb.log(
+        #         {
+        #             "best_dice_metric": best_dice,
+        #             "best_metric_epoch": best_dice_epoch,
+        #         }
+        #     )
+        self.log("*" * 50)
+
+        # Save the model FIXME
+        if self.config.save_model:
+            print("Saving the model to: ", self.config.save_model_path)
+            torch.save(model.state_dict(), self.config.save_model_path)
+            # with open(self.config.save_losses_path, "wb") as f:
+            #     pickle.dump((ncuts_losses, rec_losses), f)
+        # if WANDB_INSTALLED:
+        #     model_artifact = wandb.Artifact(
+        #         "WNet",
+        #         type="model",
+        #         description="WNet benchmark",
+        #         metadata=dict(WANDB_CONFIG),
+        #     )
+        #     model_artifact.add_file(self.config.save_model_path)
+        #     wandb.log_artifact(model_artifact)
+
+        return ncuts_losses, rec_losses, model
+
+
+class TrainingWorker(TrainingWorkerBase):
+    """A custom worker to run supervised training jobs in.
+    Inherits from :py:class:`napari.qt.threading.GeneratorWorker` via :py:class:`TrainingWorkerBase`
+    """
+
+    def __init__(
+        self,
+        worker_config: config.SupervisedTrainingWorkerConfig,
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~train` function. Note: See :py:func:`~train`
 
@@ -116,21 +863,9 @@ class TrainingWorker(GeneratorWorker):
 
 
         """
-        super().__init__(self.train)
-        self._signals = LogSignal()
-        self.log_signal = self._signals.log_signal
-        self.warn_signal = self._signals.warn_signal
-        self.error_signal = self._signals.error_signal
-
-        self._weight_error = False
-        #############################################
+        super().__init__()  # worker function is self.train in parent class
         self.config = worker_config
-
-        self.train_files = []
-        self.val_files = []
         #######################################
-        self.downloader = WeightsDownloader()
-
         self.loss_dict = {
             "Dice": DiceLoss(sigmoid=True),
             # "BCELoss": torch.nn.BCELoss(), # dev
@@ -149,29 +884,6 @@ class TrainingWorker(GeneratorWorker):
         except KeyError as e:
             self.raise_error(e, "Loss function not found, aborting job")
         return self.loss_function
-
-    def set_download_log(self, widget):
-        self.downloader.log_widget = widget
-
-    def log(self, text):
-        """Sends a signal that ``text`` should be logged
-
-        Args:
-            text (str): text to logged
-        """
-        self.log_signal.emit(text)
-
-    def warn(self, warning):
-        """Sends a warning to main thread"""
-        self.warn_signal.emit(warning)
-
-    def raise_error(self, exception, msg):
-        """Sends an error to main thread"""
-        logger.error(msg, exc_info=True)
-        logger.error(exception, exc_info=True)
-        self.error_signal.emit(exception, msg)
-        self.errored.emit(exception)
-        self.quit()
 
     def log_parameters(self):
         self.log("-" * 20)
