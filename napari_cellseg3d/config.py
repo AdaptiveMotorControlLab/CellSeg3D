@@ -14,7 +14,7 @@ from napari_cellseg3d.code_models.models.model_SwinUNetR import SwinUNETR_
 from napari_cellseg3d.code_models.models.model_TRAILMAP_MS import TRAILMAP_MS_
 from napari_cellseg3d.code_models.models.model_VNet import VNet_
 from napari_cellseg3d.code_models.models.model_WNet import WNet_
-from napari_cellseg3d.utils import LOGGER, remap_image
+from napari_cellseg3d.utils import LOGGER
 
 logger = LOGGER
 
@@ -24,10 +24,10 @@ logger = LOGGER
 MODEL_LIST = {
     "SegResNet": SegResNet_,
     "VNet": VNet_,
-    # "TRAILMAP": TRAILMAP,
     "TRAILMAP_MS": TRAILMAP_MS_,
     "SwinUNetR": SwinUNETR_,
     "WNet": WNet_,
+    # "TRAILMAP": TRAILMAP,
     # "test" : DO NOT USE, reserved for testing
 }
 
@@ -232,7 +232,7 @@ class InferenceWorkerConfig:
 class DeterministicConfig:
     """Class to record deterministic config"""
 
-    enabled: bool = False
+    enabled: bool = True
     seed: int = 34936339  # default seed from NP_MAX
 
 
@@ -256,7 +256,7 @@ class TrainingWorkerConfig:
     deterministic_config: DeterministicConfig = DeterministicConfig()
     scheduler_factor: float = 0.5
     scheduler_patience: int = 10
-    weights_info: WeightsInfo = None
+    weights_info: WeightsInfo = WeightsInfo()
     # data params
     results_path_folder: str = str(Path.home() / Path("cellseg3d/training"))
     sampling: bool = False
@@ -287,6 +287,7 @@ class WNetTrainingWorkerConfig(TrainingWorkerConfig):
     dropout: float = 0.65
     use_clipping: bool = False  # use gradient clipping
     clipping: float = 1.0  # clipping value
+    weight_decay: float = 1e-5  # weight decay (used 0.01 historically)
     # NCuts loss params
     intensity_sigma: float = 1.0
     spatial_sigma: float = 4.0
@@ -299,11 +300,10 @@ class WNetTrainingWorkerConfig(TrainingWorkerConfig):
         0.5 / 100
     )  # must be adjusted depending on images; compare to NCuts loss value
     # normalization params
-    normalizing_function: callable = remap_image
+    # normalizing_function: callable = remap_image # FIXME: call directly in worker, not a param
     # data params
     train_data_dict: dict = None
     eval_volume_dict: str = None
-    eval_num_patches: int = 10
 
 
 ################

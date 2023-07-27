@@ -28,7 +28,6 @@ from monai.metrics import DiceMetric
 from monai.transforms import (
     AsDiscrete,
     Compose,
-    EnsureChannelFirst,
     EnsureChannelFirstd,
     EnsureType,
     EnsureTyped,
@@ -43,7 +42,6 @@ from monai.transforms import (
     RandSpatialCropSamplesd,
     ScaleIntensityRanged,
     SpatialPadd,
-    ToTensor,
 )
 from monai.utils import set_determinism
 
@@ -164,70 +162,15 @@ class WNetTrainingWorker(TrainingWorkerBase):
         super().__init__()
         self.config = worker_config
 
-    @staticmethod
-    def create_dataset_dict_no_labs(volume_directory):
-        """Creates unsupervised data dictionary for MONAI transforms and training."""
-        images_filepaths = sorted(
-            Path.glob(str(Path(volume_directory) / "*.tif"))
-        )
-        if len(images_filepaths) == 0:
-            raise ValueError(f"Data folder {volume_directory} is empty")
-
-        logger.info("Images :")
-        for file in images_filepaths:
-            logger.info(Path(file).stem)
-        logger.info("*" * 10)
-        return [{"image": image_name} for image_name in images_filepaths]
-
-    @staticmethod
-    def create_dataset_dict(volume_directory, label_directory):
-        """Creates data dictionary for MONAI transforms and training."""
-        images_filepaths = sorted(
-            [str(file) for file in Path(volume_directory).glob("*.tif")]
-        )
-
-        labels_filepaths = sorted(
-            [str(file) for file in Path(label_directory).glob("*.tif")]
-        )
-        if len(images_filepaths) == 0 or len(labels_filepaths) == 0:
-            raise ValueError(
-                f"Data folders are empty \n{volume_directory} \n{label_directory}"
-            )
-
-        logger.info("Images :")
-        for file in images_filepaths:
-            logger.info(Path(file).stem)
-        logger.info("*" * 10)
-        logger.info("Labels :")
-        for file in labels_filepaths:
-            logger.info(Path(file).stem)
-        try:
-            data_dicts = [
-                {"image": image_name, "label": label_name}
-                for image_name, label_name in zip(
-                    images_filepaths, labels_filepaths
-                )
-            ]
-        except ValueError as e:
-            raise ValueError(
-                f"Number of images and labels does not match : \n{volume_directory} \n{label_directory}"
-            ) from e
-        # self.log(f"Loaded eval image: {data_dicts}")
-        return data_dicts
-
-    def get_patch_dataset(self, volume_directory):
+    def get_patch_dataset(self, train_transforms):
         """Creates a Dataset from the original data using the tifffile library
 
         Args:
-            volume_directory (str): Path to the directory containing the data
+            train_data_dict (dict): dict with the Paths to the directory containing the data
 
         Returns:
             (tuple): A tuple containing the shape of the data and the dataset
         """
-
-        train_files = self.create_dataset_dict_no_labs(
-            volume_directory=volume_directory
-        )
 
         patch_func = Compose(
             [
@@ -252,27 +195,8 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 EnsureTyped(keys=["image"]),
             ]
         )
-
-        train_transforms = Compose(
-            [
-                ScaleIntensityRanged(
-                    keys=["image"],
-                    a_min=0,
-                    a_max=2000,
-                    b_min=0.0,
-                    b_max=1.0,
-                    clip=True,
-                ),
-                RandShiftIntensityd(keys=["image"], offsets=0.1, prob=0.5),
-                RandFlipd(keys=["image"], spatial_axis=[1], prob=0.5),
-                RandFlipd(keys=["image"], spatial_axis=[2], prob=0.5),
-                RandRotate90d(keys=["image"], prob=0.1, max_k=3),
-                EnsureTyped(keys=["image"]),
-            ]
-        )
-
         dataset = PatchDataset(
-            data=train_files,
+            data=self.config.train_data_dict,
             samples_per_image=self.config.num_samples,
             patch_func=patch_func,
             transform=train_transforms,
@@ -280,53 +204,39 @@ class WNetTrainingWorker(TrainingWorkerBase):
 
         return self.config.sample_size, dataset
 
-    def get_patch_eval_dataset(self, volume_directory):
-        eval_files = self.create_dataset_dict(
-            volume_directory=volume_directory + "/vol",
-            label_directory=volume_directory + "/lab",
-        )
-
-        patch_func = Compose(
+    def get_patch_dataset_eval(self, eval_dataset_dict):
+        eval_transforms = Compose(
             [
                 LoadImaged(keys=["image", "label"], image_only=True),
                 EnsureChannelFirstd(
                     keys=["image", "label"], channel_dim="no_channel"
                 ),
-                # NormalizeIntensityd(keys=["image"]) if config.normalize_input else lambda x: x,
-                RandSpatialCropSamplesd(
-                    keys=["image", "label"],
-                    roi_size=(
-                        self.config.sample_size
-                    ),  # multiply by axis_stretch_factor if anisotropy
-                    # max_roi_size=(120, 120, 120),
-                    random_size=False,
-                    num_samples=self.config.eval_num_patches,
-                ),
+                # RandSpatialCropSamplesd(
+                #     keys=["image", "label"],
+                #     roi_size=(
+                #         self.config.sample_size
+                #     ),  # multiply by axis_stretch_factor if anisotropy
+                #     # max_roi_size=(120, 120, 120),
+                #     random_size=False,
+                #     num_samples=self.config.num_samples,
+                # ),
                 Orientationd(keys=["image", "label"], axcodes="PLI"),
-                SpatialPadd(
-                    keys=["image", "label"],
-                    spatial_size=(
-                        utils.get_padding_dim(self.config.sample_size)
-                    ),
-                ),
+                # SpatialPadd(
+                #     keys=["image", "label"],
+                #     spatial_size=(
+                #         utils.get_padding_dim(self.config.sample_size)
+                #     ),
+                # ),
                 EnsureTyped(keys=["image", "label"]),
             ]
         )
 
-        eval_transforms = Compose(
-            [
-                EnsureTyped(keys=["image", "label"]),
-            ]
-        )
-
-        return PatchDataset(
-            data=eval_files,
-            samples_per_image=self.config.eval_num_patches,
-            patch_func=patch_func,
+        return CacheDataset(
+            data=eval_dataset_dict,
             transform=eval_transforms,
         )
 
-    def get_dataset_monai(self):
+    def get_dataset(self, train_transforms):
         """Creates a Dataset applying some transforms/augmentation on the data using the MONAI library
 
         Args:
@@ -359,27 +269,6 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 EnsureTyped(keys=["image"]),
             ]
         )
-
-        if self.config.do_augmentation:
-            train_transforms = Compose(
-                [
-                    ScaleIntensityRanged(
-                        keys=["image"],
-                        a_min=0,
-                        a_max=2000,
-                        b_min=0.0,
-                        b_max=1.0,
-                        clip=True,
-                    ),
-                    RandShiftIntensityd(keys=["image"], offsets=0.1, prob=0.5),
-                    RandFlipd(keys=["image"], spatial_axis=[1], prob=0.5),
-                    RandFlipd(keys=["image"], spatial_axis=[2], prob=0.5),
-                    RandRotate90d(keys=["image"], prob=0.1, max_k=3),
-                    EnsureTyped(keys=["image"]),
-                ]
-            )
-        else:
-            train_transforms = EnsureTyped(keys=["image"])
 
         # Create the dataset
         dataset = CacheDataset(
@@ -434,50 +323,46 @@ class WNetTrainingWorker(TrainingWorkerBase):
     #     else:
     #         raise ValueError(f"Scheduler {scheduler_name} not provided")
     #     return scheduler
-    def train(self):
-        if self.config is None:
-            self.config = config.WNetTrainingWorkerConfig()
-        ##############
-        # disable metadata tracking in MONAI
-        set_track_meta(False)
-        ##############
-        # if WANDB_INSTALLED:
-        #     wandb.init(
-        #         config=WANDB_CONFIG, project="WNet-benchmark", mode=WANDB_MODE
-        #     )
 
-        set_determinism(
-            seed=self.config.deterministic_config.seed
-        )  # use default seed from NP_MAX
-        torch.use_deterministic_algorithms(True, warn_only=True)
-
-        normalize_function = self.config.normalizing_function
-        CUDA = torch.cuda.is_available()
-        device = torch.device("cuda" if CUDA else "cpu")
-
-        self.log(f"Using device: {device}")
-
-        self.log("Config:")
-        [self.log(str(a)) for a in self.config.__dict__.items()]
-
-        self.log("Initializing training...")
-        self.log("Getting the data")
-
-        if self.config.sampling:
-            (data_shape, dataset) = self.get_patch_dataset(self.config)
-        else:
-            (data_shape, dataset) = self.get_dataset(self.config)
-            transform = Compose(
+    def _get_data(self):
+        if self.config.do_augmentation:
+            train_transforms = Compose(
                 [
-                    ToTensor(),
-                    EnsureChannelFirst(channel_dim=0),
+                    ScaleIntensityRanged(
+                        keys=["image"],
+                        a_min=0,
+                        a_max=2000,
+                        b_min=0.0,
+                        b_max=1.0,
+                        clip=True,
+                    ),
+                    RandShiftIntensityd(keys=["image"], offsets=0.1, prob=0.5),
+                    RandFlipd(keys=["image"], spatial_axis=[1], prob=0.5),
+                    RandFlipd(keys=["image"], spatial_axis=[2], prob=0.5),
+                    RandRotate90d(keys=["image"], prob=0.1, max_k=3),
+                    EnsureTyped(keys=["image"]),
                 ]
             )
-            dataset = [transform(im) for im in dataset]
-            for data in dataset:
-                self.log(f"Data shape: {data.shape}")
-                break
+        else:
+            train_transforms = EnsureTyped(keys=["image"])
 
+        if self.config.sampling:
+            self.log("Loading patch dataset")
+            (data_shape, dataset) = self.get_patch_dataset(train_transforms)
+        else:
+            self.log("Loading volume dataset")
+            (data_shape, dataset) = self.get_dataset(train_transforms)
+            # transform = Compose(
+            #     [
+            #         ToTensor(),
+            #         EnsureChannelFirst(channel_dim=0),
+            #     ]
+            # )
+            # dataset = [transform(im) for im in dataset]
+            # for data in dataset:
+            #     self.log(f"Data shape: {data.shape}")
+            #     break
+        logger.debug(f"Data shape : {data_shape}")
         dataloader = DataLoader(
             dataset,
             batch_size=self.config.batch_size,
@@ -487,9 +372,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
         )
 
         if self.config.eval_volume_dict is not None:
-            eval_dataset = self.get_patch_eval_dataset(
-                self.config.eval_volume_dict
-            )  # FIXME
+            eval_dataset = self.get_dataset(train_transforms)
 
             eval_dataloader = DataLoader(
                 eval_dataset,
@@ -498,326 +381,469 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 num_workers=self.config.num_workers,
                 collate_fn=pad_list_data_collate,
             )
-
-        dice_metric = DiceMetric(
-            include_background=False, reduction="mean", get_not_nans=False
-        )
-        ###################################################
-        #               Training the model                #
-        ###################################################
-        self.log("Initializing the model:")
-
-        self.log("- getting the model")
-        # Initialize the model
-        model = WNet(
-            in_channels=self.config.in_channels,
-            out_channels=self.config.out_channels,
-            num_classes=self.config.num_classes,
-            dropout=self.config.dropout,
-        )
-        model = (
-            nn.DataParallel(model).cuda()
-            if CUDA and self.config.parallel
-            else model
-        )
-        model.to(device)
-
-        if self.config.use_clipping:
-            for p in model.parameters():
-                p.register_hook(
-                    lambda grad: torch.clamp(
-                        grad,
-                        min=-self.config.clipping,
-                        max=self.config.clipping,
-                    )
-                )
-
-        if WANDB_INSTALLED:
-            wandb.watch(model, log_freq=100)
-
-        if self.config.weights_info.path is not None:
-            model.load_state_dict(
-                torch.load(self.config.weights_info.path, map_location=device)
-            )
-
-        self.log("- getting the optimizers")
-        # Initialize the optimizers
-        if self.config.weight_decay is not None:
-            decay = self.config.weight_decay
-            optimizer = torch.optim.Adam(
-                model.parameters(), lr=self.config.lr, weight_decay=decay
-            )
         else:
-            optimizer = torch.optim.Adam(model.parameters(), lr=self.config.lr)
+            eval_dataloader = None
+        return dataloader, eval_dataloader, data_shape
 
-        self.log("- getting the loss functions")
-        # Initialize the Ncuts loss function
-        criterionE = SoftNCutsLoss(
-            data_shape=data_shape,
-            device=device,
-            intensity_sigma=self.config.intensity_sigma,
-            spatial_sigma=self.config.spatial_sigma,
-            radius=self.config.radius,
-        )
-
-        if self.config.reconstruction_loss == "MSE":
-            criterionW = nn.MSELoss()
-        elif self.config.reconstruction_loss == "BCE":
-            criterionW = nn.BCELoss()
-        else:
-            raise ValueError(
-                f"Unknown reconstruction loss : {self.config.reconstruction_loss} not supported"
-            )
-
-        self.log("- getting the learning rate schedulers")
-        # Initialize the learning rate schedulers
-        # scheduler = get_scheduler(self.config, optimizer)
-        # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        #     optimizer, mode="min", factor=0.5, patience=10, verbose=True
-        # )
-        model.train()
-
-        self.log("Ready")
-        self.log("Training the model")
-        self.log("*" * 50)
-
-        startTime = time.time()
-        ncuts_losses = []
-        rec_losses = []
-        total_losses = []
-        best_dice = -1
-
-        # Train the model
-        for epoch in range(self.config.num_epochs):
-            self.log(f"Epoch {epoch + 1} of {self.config.num_epochs}")
-
-            epoch_ncuts_loss = 0
-            epoch_rec_loss = 0
-            epoch_loss = 0
-
-            for _i, batch in enumerate(dataloader):
-                # raise NotImplementedError("testing")
-                if self.config.sampling:
-                    image = batch["image"].to(device)
-                else:
-                    image = batch.to(device)
-                    if self.config.batch_size == 1:
-                        image = image.unsqueeze(0)
-                    else:
-                        image = image.unsqueeze(0)
-                        image = torch.swapaxes(image, 0, 1)
-
-                # Forward pass
-                enc = model.forward_encoder(image)
-                # Compute the Ncuts loss
-                Ncuts = criterionE(enc, image)
-                epoch_ncuts_loss += Ncuts.item()
-                # if WANDB_INSTALLED:
-                #     wandb.log({"Ncuts loss": Ncuts.item()})
-
-                # Forward pass
-                enc, dec = model(image)
-
-                # Compute the reconstruction loss
-                if isinstance(criterionW, nn.MSELoss):
-                    reconstruction_loss = criterionW(dec, image)
-                elif isinstance(criterionW, nn.BCELoss):
-                    reconstruction_loss = criterionW(
-                        torch.sigmoid(dec),
-                        utils.remap_image(image, new_max=1),
-                    )
-
-                epoch_rec_loss += reconstruction_loss.item()
-                if WANDB_INSTALLED:
-                    wandb.log(
-                        {"Reconstruction loss": reconstruction_loss.item()}
-                    )
-
-                # Backward pass for the reconstruction loss
-                optimizer.zero_grad()
-                alpha = self.config.n_cuts_weight
-                beta = self.config.rec_loss_weight
-
-                loss = alpha * Ncuts + beta * reconstruction_loss
-                epoch_loss += loss.item()
-                # if WANDB_INSTALLED:
-                #     wandb.log({"Sum of losses": loss.item()})
-                loss.backward(loss)
-                optimizer.step()
-
-                # if self.config.scheduler == "CosineAnnealingWarmRestarts":
-                #     scheduler.step(epoch + _i / len(dataloader))
-                # if (
-                #         self.config.scheduler == "CosineAnnealingLR"
-                #         or self.config.scheduler == "CyclicLR"
-                # ):
-                #     scheduler.step()
-
-            ncuts_losses.append(epoch_ncuts_loss / len(dataloader))
-            rec_losses.append(epoch_rec_loss / len(dataloader))
-            total_losses.append(epoch_loss / len(dataloader))
-
+    def train(self):
+        try:
+            if self.config is None:
+                self.config = config.WNetTrainingWorkerConfig()
+            ##############
+            # disable metadata tracking in MONAI
+            set_track_meta(False)
+            ##############
             # if WANDB_INSTALLED:
-            #     wandb.log({"Ncuts loss_epoch": ncuts_losses[-1]})
-            #     wandb.log({"Reconstruction loss_epoch": rec_losses[-1]})
-            #     wandb.log({"Sum of losses_epoch": total_losses[-1]})
-            # wandb.log({"epoch": epoch})
-            # wandb.log({"learning_rate model": optimizerW.param_groups[0]["lr"]})
-            # wandb.log({"learning_rate encoder": optimizerE.param_groups[0]["lr"]})
-            # wandb.log({"learning_rate model": optimizer.param_groups[0]["lr"]})
+            #     wandb.init(
+            #         config=WANDB_CONFIG, project="WNet-benchmark", mode=WANDB_MODE
+            #     )
 
-            self.log("Ncuts loss: " + str(ncuts_losses[-1]))
-            if epoch > 0:
-                self.log(
-                    "Ncuts loss difference: "
-                    + str(ncuts_losses[-1] - ncuts_losses[-2])
+            set_determinism(
+                seed=self.config.deterministic_config.seed
+            )  # use default seed from NP_MAX
+            torch.use_deterministic_algorithms(True, warn_only=True)
+
+            normalize_function = utils.remap_image
+            device = self.config.device
+
+            self.log(f"Using device: {device}")
+
+            self.log("Config:")
+            [self.log(str(a)) for a in self.config.__dict__.items()]
+
+            self.log("Initializing training...")
+            self.log("Getting the data")
+
+            dataloader, eval_dataloader, data_shape = self._get_data()
+
+            dice_metric = DiceMetric(
+                include_background=False, reduction="mean", get_not_nans=False
+            )
+            ###################################################
+            #               Training the model                #
+            ###################################################
+            self.log("Initializing the model:")
+
+            self.log("- Getting the model")
+            # Initialize the model
+            model = WNet(
+                in_channels=self.config.in_channels,
+                out_channels=self.config.out_channels,
+                num_classes=self.config.num_classes,
+                dropout=self.config.dropout,
+            )
+            model.to(device)
+
+            if self.config.use_clipping:
+                for p in model.parameters():
+                    p.register_hook(
+                        lambda grad: torch.clamp(
+                            grad,
+                            min=-self.config.clipping,
+                            max=self.config.clipping,
+                        )
+                    )
+
+            if WANDB_INSTALLED:
+                wandb.watch(model, log_freq=100)
+
+            if self.config.weights_info.custom:
+                if self.config.weights_info.use_pretrained:
+                    weights_file = "wnet.pth"
+                    self.downloader.download_weights("WNet", weights_file)
+                    weights = PRETRAINED_WEIGHTS_DIR / Path(weights_file)
+                    self.config.weights_info.path = weights
+                else:
+                    weights = str(Path(self.config.weights_info.path))
+
+                try:
+                    model.load_state_dict(
+                        torch.load(
+                            weights,
+                            map_location=self.config.device,
+                        ),
+                        strict=True,
+                    )
+                except RuntimeError as e:
+                    logger.error(f"Error when loading weights : {e}")
+                    logger.exception(e)
+                    warn = (
+                        "WARNING:\nIt'd seem that the weights were incompatible with the model,\n"
+                        "the model will be trained from random weights"
+                    )
+                    self.log(warn)
+                    self.warn(warn)
+                    self._weight_error = True
+            else:
+                self.log("Model will be trained from scratch")
+            self.log("- Getting the optimizer")
+            # Initialize the optimizers
+            if self.config.weight_decay is not None:
+                decay = self.config.weight_decay
+                optimizer = torch.optim.Adam(
+                    model.parameters(),
+                    lr=self.config.learning_rate,
+                    weight_decay=decay,
                 )
-            self.log("Reconstruction loss: " + str(rec_losses[-1]))
-            if epoch > 0:
-                self.log(
-                    "Reconstruction loss difference: "
-                    + str(rec_losses[-1] - rec_losses[-2])
-                )
-            self.log("Sum of losses: " + str(total_losses[-1]))
-            if epoch > 0:
-                self.log(
-                    "Sum of losses difference: "
-                    + str(total_losses[-1] - total_losses[-2]),
+            else:
+                optimizer = torch.optim.Adam(
+                    model.parameters(), lr=self.config.learning_rate
                 )
 
-            # Update the learning rate
-            # if self.config.scheduler == "ReduceLROnPlateau":
-            #     # schedulerE.step(epoch_ncuts_loss)
-            #     # schedulerW.step(epoch_rec_loss)
-            #     scheduler.step(epoch_rec_loss)
-            if (
-                self.config.eval_volume_directory is not None
-                and (epoch + 1) % self.config.val_interval == 0
-            ):
-                model.eval()
-                self.log("Validating...")
-                with torch.no_grad():
-                    for _k, val_data in enumerate(eval_dataloader):
-                        val_inputs, val_labels = (
-                            val_data["image"].to(device),
-                            val_data["label"].to(device),
+            self.log("- Getting the loss functions")
+            # Initialize the Ncuts loss function
+            criterionE = SoftNCutsLoss(
+                data_shape=data_shape,
+                device=device,
+                intensity_sigma=self.config.intensity_sigma,
+                spatial_sigma=self.config.spatial_sigma,
+                radius=self.config.radius,
+            )
+
+            if self.config.reconstruction_loss == "MSE":
+                criterionW = nn.MSELoss()
+            elif self.config.reconstruction_loss == "BCE":
+                criterionW = nn.BCELoss()
+            else:
+                raise ValueError(
+                    f"Unknown reconstruction loss : {self.config.reconstruction_loss} not supported"
+                )
+
+            # self.log("- getting the learning rate schedulers")
+            # Initialize the learning rate schedulers
+            # scheduler = get_scheduler(self.config, optimizer)
+            # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            #     optimizer, mode="min", factor=0.5, patience=10, verbose=True
+            # )
+            model.train()
+
+            self.log("Ready")
+            self.log("Training the model")
+            self.log("*" * 20)
+
+            startTime = time.time()
+            ncuts_losses = []
+            rec_losses = []
+            total_losses = []
+            best_dice = -1
+
+            # Train the model
+            for epoch in range(self.config.max_epochs):
+                self.log(f"Epoch {epoch + 1} of {self.config.max_epochs}")
+
+                epoch_ncuts_loss = 0
+                epoch_rec_loss = 0
+                epoch_loss = 0
+
+                for _i, batch in enumerate(dataloader):
+                    # raise NotImplementedError("testing")
+                    image = batch["image"].to(device)
+                    # if self.config.batch_size == 1:
+                    #     image = image.unsqueeze(0)
+                    # else:
+                    #     image = image.unsqueeze(0)
+                    #     image = torch.swapaxes(image, 0, 1)
+
+                    # Forward pass
+                    enc = model.forward_encoder(image)
+                    # Compute the Ncuts loss
+                    Ncuts = criterionE(enc, image)
+                    epoch_ncuts_loss += Ncuts.item()
+                    # if WANDB_INSTALLED:
+                    #     wandb.log({"Ncuts loss": Ncuts.item()})
+
+                    # Forward pass
+                    enc, dec = model(image)
+
+                    # Compute the reconstruction loss
+                    if isinstance(criterionW, nn.MSELoss):
+                        reconstruction_loss = criterionW(dec, image)
+                    elif isinstance(criterionW, nn.BCELoss):
+                        reconstruction_loss = criterionW(
+                            torch.sigmoid(dec),
+                            utils.remap_image(image, new_max=1),
                         )
 
-                        # normalize val_inputs across channels
-                        for i in range(val_inputs.shape[0]):
-                            for j in range(val_inputs.shape[1]):
-                                val_inputs[i][j] = normalize_function(
-                                    val_inputs[i][j]
-                                )
+                    epoch_rec_loss += reconstruction_loss.item()
+                    if WANDB_INSTALLED:
+                        wandb.log(
+                            {"Reconstruction loss": reconstruction_loss.item()}
+                        )
 
-                        val_outputs = model.forward_encoder(val_inputs)
-                        val_outputs = AsDiscrete(threshold=0.5)(val_outputs)
+                    # Backward pass for the reconstruction loss
+                    optimizer.zero_grad()
+                    alpha = self.config.n_cuts_weight
+                    beta = self.config.rec_loss_weight
 
-                        # compute metric for current iteration
-                        for channel in range(val_outputs.shape[1]):
-                            max_dice_channel = torch.argmax(
-                                torch.Tensor(
-                                    [
-                                        utils.dice_coeff(
-                                            y_pred=val_outputs[
-                                                :,
-                                                channel : (channel + 1),
-                                                :,
-                                                :,
-                                                :,
-                                            ],
-                                            y_true=val_labels,
-                                        )
-                                    ]
-                                )
+                    loss = alpha * Ncuts + beta * reconstruction_loss
+                    epoch_loss += loss.item()
+                    # if WANDB_INSTALLED:
+                    #     wandb.log({"Sum of losses": loss.item()})
+                    loss.backward(loss)
+                    optimizer.step()
+
+                    # if self.config.scheduler == "CosineAnnealingWarmRestarts":
+                    #     scheduler.step(epoch + _i / len(dataloader))
+                    # if (
+                    #         self.config.scheduler == "CosineAnnealingLR"
+                    #         or self.config.scheduler == "CyclicLR"
+                    # ):
+                    #     scheduler.step()
+
+                    yield TrainingReport(
+                        show_plot=False, weights=model.state_dict()
+                    )
+
+                ncuts_losses.append(epoch_ncuts_loss / len(dataloader))
+                rec_losses.append(epoch_rec_loss / len(dataloader))
+                total_losses.append(epoch_loss / len(dataloader))
+
+                if eval_dataloader is None:
+                    try:
+                        enc_out = enc[0].detach().cpu().numpy()
+                        dec_out = dec[0].detach().cpu().numpy()
+                        image = image[0].detach().cpu().numpy()
+
+                        images_dict = {
+                            "Encoder output": {
+                                "data": enc_out,
+                                "cmap": "turbo",
+                            },
+                            "Encoder output (discrete)": {
+                                "data": AsDiscrete(threshold=0.5)(
+                                    enc_out
+                                ).numpy(),
+                                "cmap": "turbo",
+                            },
+                            "Decoder output": {
+                                "data": dec_out,
+                                "cmap": "gist_earth",
+                            },
+                            "Input image": {"data": image, "cmap": "inferno"},
+                        }
+
+                        yield TrainingReport(
+                            show_plot=True,
+                            epoch=epoch,
+                            loss_1_values={"SoftNCuts loss": ncuts_losses},
+                            loss_2_values=rec_losses,
+                            weights=model.state_dict(),
+                            images_dict=images_dict,
+                        )
+                    except TypeError:
+                        pass
+
+                # if WANDB_INSTALLED:
+                #     wandb.log({"Ncuts loss_epoch": ncuts_losses[-1]})
+                #     wandb.log({"Reconstruction loss_epoch": rec_losses[-1]})
+                #     wandb.log({"Sum of losses_epoch": total_losses[-1]})
+                # wandb.log({"epoch": epoch})
+                # wandb.log({"learning_rate model": optimizerW.param_groups[0]["lr"]})
+                # wandb.log({"learning_rate encoder": optimizerE.param_groups[0]["lr"]})
+                # wandb.log({"learning_rate model": optimizer.param_groups[0]["lr"]})
+
+                self.log("Ncuts loss: " + str(ncuts_losses[-1]))
+                if epoch > 0:
+                    self.log(
+                        "Ncuts loss difference: "
+                        + str(ncuts_losses[-1] - ncuts_losses[-2])
+                    )
+                self.log("Reconstruction loss: " + str(rec_losses[-1]))
+                if epoch > 0:
+                    self.log(
+                        "Reconstruction loss difference: "
+                        + str(rec_losses[-1] - rec_losses[-2])
+                    )
+                self.log("Sum of losses: " + str(total_losses[-1]))
+                if epoch > 0:
+                    self.log(
+                        "Sum of losses difference: "
+                        + str(total_losses[-1] - total_losses[-2]),
+                    )
+
+                # Update the learning rate
+                # if self.config.scheduler == "ReduceLROnPlateau":
+                #     # schedulerE.step(epoch_ncuts_loss)
+                #     # schedulerW.step(epoch_rec_loss)
+                #     scheduler.step(epoch_rec_loss)
+                if (
+                    eval_dataloader is not None
+                    and (epoch + 1) % self.config.validation_interval == 0
+                ):
+                    model.eval()
+                    self.log("Validating...")
+                    with torch.no_grad():
+                        for _k, val_data in enumerate(eval_dataloader):
+                            val_inputs, val_labels = (
+                                val_data["image"].to(device),
+                                val_data["label"].to(device),
                             )
 
-                        dice_metric(
-                            y_pred=val_outputs[
-                                :,
-                                max_dice_channel : (max_dice_channel + 1),
-                                :,
-                                :,
-                                :,
-                            ],
-                            y=val_labels,
-                        )
+                            # normalize val_inputs across channels
+                            for i in range(val_inputs.shape[0]):
+                                for j in range(val_inputs.shape[1]):
+                                    val_inputs[i][j] = normalize_function(
+                                        val_inputs[i][j]
+                                    )
 
-                    # aggregate the final mean dice result
-                    metric = dice_metric.aggregate().item()
-                    self.log("Validation Dice score: ", metric)
-                    if best_dice < metric < 2:
-                        best_dice = metric
-                        epoch + 1
-                        if self.config.save_model:
-                            save_best_path = Path(
-                                self.config.save_model_path
-                            ).parents[0]
-                            save_best_path.mkdir(parents=True, exist_ok=True)
-                            save_best_name = Path(
-                                self.config.save_model_path
-                            ).stem
+                            val_outputs = sliding_window_inference(
+                                val_inputs,
+                                roi_size=[64, 64, 64],
+                                sw_batch_size=1,
+                                predictor=model.forward_encoder,
+                                overlap=0,
+                                progress=True,
+                            )
+                            val_outputs = AsDiscrete(threshold=0.5)(
+                                val_outputs
+                            )
+                            val_decoder_outputs = model.forward_decoder(
+                                val_outputs
+                            )
+
+                            # compute metric for current iteration
+                            for channel in range(val_outputs.shape[1]):
+                                max_dice_channel = torch.argmax(
+                                    torch.Tensor(
+                                        [
+                                            utils.dice_coeff(
+                                                y_pred=val_outputs[
+                                                    :,
+                                                    channel : (channel + 1),
+                                                    :,
+                                                    :,
+                                                    :,
+                                                ],
+                                                y_true=val_labels,
+                                            )
+                                        ]
+                                    )
+                                )
+
+                            dice_metric(
+                                y_pred=val_outputs[
+                                    :,
+                                    max_dice_channel : (max_dice_channel + 1),
+                                    :,
+                                    :,
+                                    :,
+                                ],
+                                y=val_labels,
+                            )
+
+                        # aggregate the final mean dice result
+                        metric = dice_metric.aggregate().item()
+                        self.log(f"Validation Dice score: {metric}")
+                        if best_dice < metric <= 1:
+                            best_dice = metric
+                            # save the best model
+                            save_best_path = self.config.results_path_folder
+                            # save_best_path.mkdir(parents=True, exist_ok=True)
+                            save_best_name = "wnet"
                             save_path = (
-                                str(save_best_path / save_best_name)
+                                str(Path(save_best_path) / save_best_name)
                                 + "_best_metric.pth"
                             )
                             self.log(f"Saving new best model to {save_path}")
                             torch.save(model.state_dict(), save_path)
 
-                    if WANDB_INSTALLED:
-                        # log validation dice score for each validation round
-                        wandb.log({"val/dice_metric": metric})
+                        if WANDB_INSTALLED:
+                            # log validation dice score for each validation round
+                            wandb.log({"val/dice_metric": metric})
 
-                    # reset the status for next validation round
-                    dice_metric.reset()
+                        display_dict = {
+                            "Decoder output": {
+                                "data": val_decoder_outputs[0],
+                                "cmap": "gist_earth",
+                            },
+                            "Encoder output": {
+                                "data": val_outputs[0],
+                                "cmap": "turbo",
+                            },
+                            "Labels": {
+                                "data": val_labels[0],
+                                "cmap": "bop blue",
+                            },
+                            "Inputs": {
+                                "data": val_inputs[0],
+                                "cmap": "inferno",
+                            },
+                        }
 
-            eta = (
-                (time.time() - startTime)
-                * (self.config.num_epochs / (epoch + 1) - 1)
-                / 60
+                        yield TrainingReport(
+                            epoch=epoch,
+                            loss_1_values={
+                                "Ncuts loss": ncuts_losses,
+                                "Dice metric": metric,
+                            },
+                            loss_2_values=rec_losses,
+                            weights=model.state_dict(),
+                            images_dict=display_dict,
+                        )
+
+                        # reset the status for next validation round
+                        dice_metric.reset()
+
+                eta = (
+                    (time.time() - startTime)
+                    * (self.config.max_epochs / (epoch + 1) - 1)
+                    / 60
+                )
+                self.log(
+                    f"ETA: {eta} minutes",
+                )
+                self.log("-" * 20)
+
+                # Save the model
+                if epoch % 5 == 0:
+                    torch.save(
+                        model.state_dict(),
+                        self.config.results_path_folder + "/wnet_.pth",
+                    )
+
+            self.log("Training finished")
+            if best_dice > -1:
+                self.log(f"Best dice metric : {best_dice}")
+            # if WANDB_INSTALLED and self.config.eval_volume_directory is not None:
+            #     wandb.log(
+            #         {
+            #             "best_dice_metric": best_dice,
+            #             "best_metric_epoch": best_dice_epoch,
+            #         }
+            #     )
+            self.log("*" * 50)
+
+            # Save the model
+
+            print(
+                "Saving the model to: ",
+                self.config.results_path_folder + "/wnet.pth",
             )
-            self.log(
-                f"ETA: {eta} minutes",
+            torch.save(
+                model.state_dict(),
+                self.config.results_path_folder + "/wnet.pth",
             )
-            self.log("-" * 20)
 
-            # Save the model # FIXME
-            if self.config.save_model and epoch % self.config.save_every == 0:
-                torch.save(model.state_dict(), self.config.save_model_path)
-                # with open(self.config.save_losses_path, "wb") as f:
-                #     pickle.dump((ncuts_losses, rec_losses), f)
+            # if WANDB_INSTALLED:
+            #     model_artifact = wandb.Artifact(
+            #         "WNet",
+            #         type="model",
+            #         description="WNet benchmark",
+            #         metadata=dict(WANDB_CONFIG),
+            #     )
+            #     model_artifact.add_file(self.config.save_model_path)
+            #     wandb.log_artifact(model_artifact)
 
-        self.log("Training finished")
-        self.log(f"Best dice metric : {best_dice}")
-        # if WANDB_INSTALLED and self.config.eval_volume_directory is not None:
-        #     wandb.log(
-        #         {
-        #             "best_dice_metric": best_dice,
-        #             "best_metric_epoch": best_dice_epoch,
-        #         }
-        #     )
-        self.log("*" * 50)
-
-        # Save the model FIXME
-        if self.config.save_model:
-            print("Saving the model to: ", self.config.save_model_path)
-            torch.save(model.state_dict(), self.config.save_model_path)
-            # with open(self.config.save_losses_path, "wb") as f:
-            #     pickle.dump((ncuts_losses, rec_losses), f)
-        # if WANDB_INSTALLED:
-        #     model_artifact = wandb.Artifact(
-        #         "WNet",
-        #         type="model",
-        #         description="WNet benchmark",
-        #         metadata=dict(WANDB_CONFIG),
-        #     )
-        #     model_artifact.add_file(self.config.save_model_path)
-        #     wandb.log_artifact(model_artifact)
-
-        return ncuts_losses, rec_losses, model
+            return ncuts_losses, rec_losses, model
+        except Exception as e:
+            msg = f"Training failed with exception: {e}"
+            self.log(msg)
+            self.raise_error(e, msg)
+            self.quit()
+            raise e
 
 
-class TrainingWorker(TrainingWorkerBase):
+class SupervisedTrainingWorker(TrainingWorkerBase):
     """A custom worker to run supervised training jobs in.
     Inherits from :py:class:`napari.qt.threading.GeneratorWorker` via :py:class:`TrainingWorkerBase`
     """
@@ -1436,13 +1462,32 @@ class TrainingWorker(TrainingWorkerBase):
                         dice_metric.reset()
                         val_metric_values.append(metric)
 
+                        images_dict = {
+                            "Validation output": {
+                                "data": checkpoint_output[0],
+                                "cmap": "turbo",
+                            },
+                            "Validation output (discrete)": {
+                                "data": checkpoint_output[1],
+                                "cmap": "bop blue",
+                            },
+                            "Validation image": {
+                                "data": checkpoint_output[2],
+                                "cmap": "inferno",
+                            },
+                            "Validation labels": {
+                                "data": checkpoint_output[3],
+                                "cmap": "green",
+                            },
+                        }
+
                         train_report = TrainingReport(
                             show_plot=True,
                             epoch=epoch,
-                            loss_values=epoch_loss_values,
-                            validation_metric=val_metric_values,
+                            loss_1_values={"Loss": epoch_loss_values},
+                            loss_2_values=val_metric_values,
                             weights=model.state_dict(),
-                            images=checkpoint_output,
+                            images_dict=images_dict,
                         )
                         self.log("Validation completed")
                         yield train_report

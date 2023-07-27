@@ -1,4 +1,3 @@
-import contextlib
 import threading
 from functools import partial
 from typing import List, Optional
@@ -36,7 +35,6 @@ from qtpy.QtWidgets import (
 
 # Local
 from napari_cellseg3d import utils
-from napari_cellseg3d.config import WNetTrainingWorkerConfig
 
 """
 User interface functions and aliases"""
@@ -873,9 +871,7 @@ class FilePathWidget(QWidget):  # TODO include load as folder
 
         self.build()
         self.check_ready()
-
-        if self._required:
-            self._text_field.textChanged.connect(self.check_ready)
+        self.text_field.textChanged.connect(self.check_ready)
 
     def build(self):
         """Builds the layout of the widget"""
@@ -914,11 +910,15 @@ class FilePathWidget(QWidget):  # TODO include load as folder
 
     def check_ready(self):
         """Check if a path is correctly set"""
-        if self.text_field.text() in ["", self._initial_desc]:
+        if (
+            self.text_field.text() in ["", self._initial_desc]
+            and self.required
+        ):
             self.update_field_color("indianred")
             self.text_field.setToolTip("Mandatory field !")
             return False
         self.update_field_color(f"{napari_param_darkgrey}")
+        self.text_field.setToolTip(f"{self.text_field.text()}")
         return True
 
     @property
@@ -928,12 +928,6 @@ class FilePathWidget(QWidget):  # TODO include load as folder
     @required.setter
     def required(self, is_required):
         """If set to True, will be colored red if incorrectly set"""
-        if is_required:
-            self.text_field.textChanged.connect(self.check_ready)
-        else:
-            with contextlib.suppress(TypeError):
-                self.text_field.textChanged.disconnect(self.check_ready)
-
         self.check_ready()
         self._required = is_required
 
@@ -1417,96 +1411,3 @@ def open_url(url):
         url (str): Url to be opened
     """
     QDesktopServices.openUrl(QUrl(url, QUrl.TolerantMode))
-
-
-class WNetWidgets:
-    """A collection of widgets for the WNet training GUI"""
-
-    default_config = WNetTrainingWorkerConfig()
-
-    def __init__(self, parent):
-        self.num_classes_choice = DropdownMenu(
-            entries=["2", "3", "4"],
-            parent=parent,
-            text_label="Number of classes",
-        )
-        self.intensity_sigma_choice = DoubleIncrementCounter(
-            lower=1.0,
-            upper=100.0,
-            default=self.default_config.intensity_sigma,
-            parent=parent,
-            text_label="Intensity sigma",
-        )
-        self.intensity_sigma_choice.setMaximumWidth(20)
-        self.spatial_sigma_choice = DoubleIncrementCounter(
-            lower=1.0,
-            upper=100.0,
-            default=self.default_config.spatial_sigma,
-            parent=parent,
-            text_label="Spatial sigma",
-        )
-        self.spatial_sigma_choice.setMaximumWidth(20)
-        self.radius_choice = IntIncrementCounter(
-            lower=1,
-            upper=5,
-            default=self.default_config.radius,
-            parent=parent,
-            text_label="Radius",
-        )
-        self.radius_choice.setMaximumWidth(20)
-        self.loss_choice = DropdownMenu(
-            entries=["MSE", "BCE"], parent=parent, text_label="Loss function"
-        )
-        self.ncuts_weight_choice = DoubleIncrementCounter(
-            lower=0.1,
-            upper=1.0,
-            default=self.default_config.n_cuts_weight,
-            parent=parent,
-            text_label="NCuts weight",
-        )
-        self.reconstruction_weight_choice = DoubleIncrementCounter(
-            lower=0.1,
-            upper=1.0,
-            default=0.5,
-            parent=parent,
-            text_label="Reconstruction weight",
-        )
-        self.reconstruction_weight_choice.setMaximumWidth(20)
-        self.reconstruction_weight_divide_factor_choice = IntIncrementCounter(
-            lower=1,
-            upper=10000,
-            default=100,
-            parent=parent,
-            text_label="Reconstruction weight divide factor",
-        )
-        self.reconstruction_weight_divide_factor_choice.setMaximumWidth(20)
-        self.evaluation_patches_choice = Slider(
-            lower=1,
-            upper=100,
-            default=self.default_config.eval_num_patches,
-            parent=parent,
-            text_label="Number of patches for evaluation",
-        )
-
-        self._set_tooltips()
-
-    def _set_tooltips(self):
-        self.num_classes_choice.setToolTip("Number of classes to segment")
-        self.intensity_sigma_choice.setToolTip(
-            "Intensity sigma for the NCuts loss"
-        )
-        self.spatial_sigma_choice.setToolTip(
-            "Spatial sigma for the NCuts loss"
-        )
-        self.radius_choice.setToolTip("Radius of NCuts loss region")
-        self.loss_choice.setToolTip("Loss function to use for reconstruction")
-        self.ncuts_weight_choice.setToolTip("Weight of the NCuts loss")
-        self.reconstruction_weight_choice.setToolTip(
-            "Weight of the reconstruction loss"
-        )
-        self.reconstruction_weight_divide_factor_choice.setToolTip(
-            "Divide factor for the reconstruction loss.\nThis might have to be changed depending on your images.\nIf you notice that the reconstruction loss is too high, raise this factor until the\nreconstruction loss is in the same order of magnitude as the NCuts loss."
-        )
-        self.evaluation_patches_choice.setToolTip(
-            "Number of patches to use for evaluation"
-        )

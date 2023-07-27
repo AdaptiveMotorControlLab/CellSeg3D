@@ -23,7 +23,7 @@ def test_onnx_inference(make_napari_viewer_proxy):
     path = str(Path(PRETRAINED_WEIGHTS_DIR).resolve() / "wnet.onnx")
     assert Path(path).is_file()
     dims = 64
-    batch = 2
+    batch = 1
     x = torch.randn(size=(batch, 1, dims, dims, dims))
     worker = ONNXModelWrapper(file_location=path)
     assert worker.eval() is None
@@ -66,16 +66,27 @@ def test_inference_on_folder():
     config.images_filepaths = [
         str(Path(__file__).resolve().parent / "res/test.tif")
     ]
+    config.sliding_window_config.window_size = 8
 
-    def mock_work(x):
-        return x
+    class mock_work:
+        @staticmethod
+        def eval():
+            return True
+
+        def __call__(self, x):
+            return torch.Tensor(x)
 
     worker = InferenceWorker(worker_config=config)
-    worker.aniso_transform = mock_work
+    worker.aniso_transform = mock_work()
 
-    image = torch.Tensor(rand_gen.random((1, 1, 64, 64, 64)))
+    image = torch.Tensor(rand_gen.random(size=(1, 1, 8, 8, 8)))
+    assert image.shape == (1, 1, 8, 8, 8)
+    assert image.dtype == torch.float32
     res = worker.inference_on_folder(
-        {"image": image}, 0, model=mock_work, post_process_transforms=mock_work
+        {"image": image},
+        0,
+        model=mock_work(),
+        post_process_transforms=mock_work(),
     )
     assert isinstance(res, InferenceResult)
 

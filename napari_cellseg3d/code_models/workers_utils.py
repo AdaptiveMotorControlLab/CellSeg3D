@@ -239,7 +239,11 @@ class InferenceResult:
 class TrainingReport:
     show_plot: bool = True
     epoch: int = 0
-    loss_values: t.Dict = None  # TODO(cyril) : change to dict and unpack different losses for e.g. WNet with several losses
-    validation_metric: t.List = None
+    loss_1_values: t.Dict = None  # example : {"Loss" : [0.1, 0.2, 0.3]}
+    loss_2_values: t.List = None
     weights: np.array = None
-    images: t.List[np.array] = None
+    images_dict: t.Dict = (
+        None  # output, discrete output, target, target labels
+    )
+    # OR decoder output, encoder output, target, target labels
+    # format : {"Layer name" : {"data" : np.array, "cmap" : "turbo"}}

@@ -23,7 +23,8 @@ from napari_cellseg3d import config, utils
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.code_models.model_framework import ModelFramework
 from napari_cellseg3d.code_models.worker_training import (
-    TrainingWorker,
+    SupervisedTrainingWorker,
+    WNetTrainingWorker,
 )
 from napari_cellseg3d.code_models.workers_utils import TrainingReport
 
@@ -80,10 +81,6 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
             * A choice of using random or deterministic training
 
-        TODO training plugin:
-        * Custom model loading
-
-
         Args:
             viewer: napari viewer to display the widget in
 
@@ -121,7 +118,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         self.config = config.TrainerConfig()
 
-        self.model = None  # TODO : custom model loading ?
+        self.model = None
         self.worker = None
         """Training worker for multithreading, should be a TrainingWorker instance from :doc:model_workers.py"""
         self.worker_config = None
@@ -130,6 +127,9 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.stop_requested = False
         """Whether the worker should stop or not"""
         self.start_time = None
+        """Start time of the latest job"""
+        self.unsupervised_mode = False
+        self.unsupervised_eval_data = None
 
         self.loss_list = [  # MUST BE MATCHED WITH THE LOSS FUNCTIONS IN THE TRAINING WORKER DICT
             "Dice",
@@ -143,29 +143,45 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         self.canvas = None
         """Canvas to plot loss and dice metric in"""
-        self.train_loss_plot = None
+        self.plot_1 = None
         """Plot for loss"""
-        self.dice_metric_plot = None
+        self.plot_2 = None
         """Plot for dice metric"""
         self.plot_dock = None
         """Docked widget with plots"""
         self.result_layers = []
         """Layers to display checkpoint"""
 
-        self.df = None
-        self.loss_values = []
-        self.validation_values = []
+        self.plot_1_labels = {
+            "title": {
+                "supervised": "Epoch average loss",
+                "unsupervised": "Metrics",
+            },
+            "ylabel": {
+                "supervised": "Loss",
+                "unsupervised": "",
+            },
+        }
+        self.plot_2_labels = {
+            "title": {
+                "supervised": "Epoch average dice metric",
+                "unsupervised": "Reconstruction loss",
+            },
+            "ylabel": {
+                "supervised": "Metric",
+                "unsupervised": "Loss",
+            },
+        }
 
-        # self.model_choice.setCurrentIndex(0)
-        ###################
-        # TODO(cyril) : disable if we implement WNet training
-        # wnet_index = self.model_choice.findText("WNet")
-        # self.model_choice.removeItem(wnet_index)
-        ################################
+        self.df = None
+        self.loss_1_values = []
+        self.loss_2_values = []
+
+        ###########
         # interface
+        ###########
 
         self.zip_choice = ui.CheckBox("Compress results")
-
         self.validation_percent_choice = ui.Slider(
             lower=10,
             upper=90,
@@ -214,20 +230,10 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self._update_validation_choice
         )
 
-        learning_rate_vals = [
-            "1e-2",
-            "1e-3",
-            "1e-4",
-            "1e-5",
-            "1e-6",
-        ]
-
-        self.learning_rate_choice = ui.DropdownMenu(
-            learning_rate_vals, text_label="Learning rate"
+        self.learning_rate_choice = LearningRateWidget(parent=self)
+        self.lbl_learning_rate_choice = (
+            self.learning_rate_choice.lr_value_choice.label
         )
-        self.lbl_learning_rate_choice = self.learning_rate_choice.label
-
-        self.learning_rate_choice.setCurrentIndex(1)
 
         self.scheduler_patience_choice = ui.IntIncrementCounter(
             1,
@@ -286,8 +292,10 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.progress.setVisible(False)
         """Dock widget containing the progress bar"""
 
-        self.start_button_supervised = None  # button created later and only shown if supervised model is selected
-        self.loss_group = None  # group box created later and only shown if supervised model is selected
+        # widgets created later and only shown if supervised model is selected
+        self.start_button_supervised = None
+        self.loss_group = None
+        self.validation_group = None
         ############################
         ############################
         # WNet parameters
@@ -428,32 +436,42 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             return False
         return True
 
-    def _toggle_unsupervised_mode(self):
+    def _toggle_unsupervised_mode(self, enabled=False):
         """Change all the UI elements needed for unsupervised learning mode"""
-        if self.model_choice.currentText() == "WNet":
-            self.setTabVisible(3, True)
-            self.setTabEnabled(3, True)
-            self.start_button_unsupervised.setVisible(True)
-            self.start_button_supervised.setVisible(False)
-            self.advanced_next_button.setVisible(True)
+        if self.model_choice.currentText() == "WNet" or enabled:
+            unsupervised = True
             self.start_btn = self.start_button_unsupervised
-            # loss
-            # self.loss_choice.setVisible(False)
-            self.loss_group.setVisible(False)
-            self.scheduler_factor_choice.setVisible(False)
-            self.scheduler_patience_choice.setVisible(False)
+            self.image_filewidget.text_field.setText("Validation images")
+            self.labels_filewidget.text_field.setText("Validation labels")
         else:
-            self.setTabVisible(3, False)
-            self.setTabEnabled(3, False)
-            self.start_button_unsupervised.setVisible(False)
-            self.start_button_supervised.setVisible(True)
-            self.advanced_next_button.setVisible(False)
+            unsupervised = False
             self.start_btn = self.start_button_supervised
-            # loss
-            # self.loss_choice.setVisible(True)
-            self.loss_group.setVisible(True)
-            self.scheduler_factor_choice.setVisible(True)
-            self.scheduler_patience_choice.setVisible(True)
+            self.image_filewidget.text_field.setText("Images directory")
+            self.labels_filewidget.text_field.setText("Labels directory")
+
+        supervised = not unsupervised
+        self.unsupervised_mode = unsupervised
+
+        self.setTabVisible(3, unsupervised)
+        self.setTabEnabled(3, unsupervised)
+        self.start_button_unsupervised.setVisible(unsupervised)
+        self.start_button_supervised.setVisible(supervised)
+        self.advanced_next_button.setVisible(unsupervised)
+        # loss
+        # self.loss_choice.setVisible(supervised)
+        self.loss_group.setVisible(supervised)
+        # scheduler
+        self.scheduler_factor_choice.container.setVisible(supervised)
+        self.scheduler_factor_choice.label.setVisible(supervised)
+        self.scheduler_patience_choice.setVisible(supervised)
+        self.scheduler_patience_choice.label.setVisible(supervised)
+        # data
+        self.unsupervised_images_filewidget.setVisible(unsupervised)
+        self.validation_group.setVisible(supervised)
+        self.image_filewidget.required = supervised
+        self.labels_filewidget.required = supervised
+
+        self._check_all_filepaths()
 
     def _build(self):
         """Builds the layout of the widget and creates the following tabs and prompts:
@@ -560,14 +578,11 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ui.add_widgets(
             data_layout,
             [
-                # ui.combine_blocks(
-                #     self.filetype_choice, self.filetype_choice.label
-                # ),  # file extension
+                self.unsupervised_images_filewidget,
                 self.image_filewidget,
                 self.labels_filewidget,
+                ui.make_label("Results :", parent=self),
                 self.results_filewidget,
-                # ui.combine_blocks(self.model_choice, self.model_choice.label), # model choice
-                # TODO : add custom model choice
                 self.zip_choice,  # save as zip
             ],
         )
@@ -645,12 +660,11 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         #######################
         ui.add_blank(data_tab_w, data_tab_l)
         #######################
-        ui.GroupedWidget.create_single_widget_group(
+        self.validation_group = ui.GroupedWidget.create_single_widget_group(
             "Validation (%)",
             self.validation_percent_choice.container,
             data_tab_l,
         )
-
         #######################
         #######################
         ui.add_blank(self, data_tab_l)
@@ -675,7 +689,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ##################
         train_tab = ui.ContainerWidget()
         ##################
-        ui.add_blank(train_tab, train_tab.layout)
+        # ui.add_blank(train_tab, train_tab.layout)
         ##################
         self.loss_group = ui.GroupedWidget.create_single_widget_group(
             "Loss",
@@ -760,7 +774,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ############
         ##################
         advanced_tab = ui.ContainerWidget(parent=self)
-        self.wnet_widgets = ui.WNetWidgets(parent=advanced_tab)
+        self.wnet_widgets = WNetWidgets(parent=advanced_tab)
         ui.add_blank(advanced_tab, advanced_tab.layout)
         ##################
         model_params_group_w, model_params_group_l = ui.make_group(
@@ -934,18 +948,26 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
             self._reset_loss_plot()
 
-            try:
-                self.data = self.create_train_dataset_dict()
-            except ValueError as err:
-                self.data = None
-                raise err
-
             self.config = config.TrainerConfig(
                 save_as_zip=self.zip_choice.isChecked()
             )
-            self._set_supervised_worker_config()
 
-            self.worker = TrainingWorker(worker_config=self.worker_config)
+            if self.unsupervised_mode:
+                try:
+                    self.data = self.create_dataset_dict_no_labs()
+                except ValueError as err:
+                    self.data = None
+                    raise err
+            else:
+                try:
+                    self.data = self.create_train_dataset_dict()
+                except ValueError as err:
+                    self.data = None
+                    raise err
+
+            # self._set_worker_config()
+            self.worker = self._create_worker()  # calls _set_worker_config
+
             self.worker.set_download_log(self.log)
 
             [btn.setVisible(False) for btn in self.close_buttons]
@@ -978,13 +1000,27 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
     ):
         if isinstance(config, config.TrainerConfig):
             raise TypeError(
-                "Expected a TrainingWorkerConfig, got a TrainerConfig"
+                "Expected a SupervisedTrainingWorkerConfig, got a TrainerConfig"
             )
-        return TrainingWorker(worker_config=worker_config)
+        return SupervisedTrainingWorker(worker_config=worker_config)
 
-    def _set_supervised_worker_config(
+    def _create_unsupervised_worker_from_config(
+        self, worker_config: config.WNetTrainingWorkerConfig
+    ):
+        return WNetTrainingWorker(worker_config=worker_config)
+
+    def _create_worker(self):
+        self._set_worker_config()
+        if self.unsupervised_mode:
+            return self._create_unsupervised_worker_from_config(
+                self.worker_config
+            )
+        return self._create_supervised_worker_from_config(self.worker_config)
+
+    def _set_worker_config(
         self,
-    ) -> config.SupervisedTrainingWorkerConfig:
+    ) -> config.TrainingWorkerConfig:
+        logger.debug("Loading config...")
         model_config = config.ModelInfo(name=self.model_choice.currentText())
 
         self.weights_config.path = self.weights_config.path
@@ -992,13 +1028,10 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.weights_config.use_pretrained = (
             not self.use_transfer_choice.isChecked()
         )
-
         deterministic_config = config.DeterministicConfig(
             enabled=self.use_deterministic_choice.isChecked(),
             seed=self.box_seed.value(),
         )
-
-        validation_percent = self.validation_percent_choice.slider_value / 100
 
         results_path_folder = Path(
             self.results_path
@@ -1010,10 +1043,36 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         Path(results_path_folder).mkdir(
             parents=True, exist_ok=False
         )  # avoid overwrite where possible
-
         patch_size = [w.value() for w in self.patch_size_widgets]
 
-        logger.debug("Loading config...")
+        if self.unsupervised_mode:
+            try:
+                self.unsupervised_eval_data = self.create_train_dataset_dict()
+            except ValueError:
+                self.unsupervised_eval_data = None
+            self.worker_config = self._set_unsupervised_worker_config(
+                results_path_folder,
+                patch_size,
+                deterministic_config,
+                self.unsupervised_eval_data,
+            )
+        else:
+            self.worker_config = self._set_supervised_worker_config(
+                model_config,
+                results_path_folder,
+                patch_size,
+                deterministic_config,
+            )
+        return self.worker_config
+
+    def _set_supervised_worker_config(
+        self,
+        model_config,
+        results_path_folder,
+        patch_size,
+        deterministic_config,
+    ):
+        validation_percent = self.validation_percent_choice.slider_value / 100
         self.worker_config = config.SupervisedTrainingWorkerConfig(
             device=self.check_device_choice(),
             model_info=model_config,
@@ -1022,7 +1081,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             validation_percent=validation_percent,
             max_epochs=self.epoch_choice.value(),
             loss_function=self.loss_choice.currentText(),
-            learning_rate=float(self.learning_rate_choice.currentText()),
+            learning_rate=self.learning_rate_choice.get_learning_rate(),
             scheduler_patience=self.scheduler_patience_choice.value(),
             scheduler_factor=self.scheduler_factor_choice.slider_value,
             validation_interval=self.val_interval_choice.value(),
@@ -1036,6 +1095,43 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         )
 
         return self.worker_config
+
+    def _set_unsupervised_worker_config(
+        self,
+        results_path_folder,
+        patch_size,
+        deterministic_config,
+        eval_volume_dict,
+    ) -> config.WNetTrainingWorkerConfig:
+        self.worker_config = config.WNetTrainingWorkerConfig(
+            device=self.check_device_choice(),
+            weights_info=self.weights_config,
+            train_data_dict=self.data,
+            max_epochs=self.epoch_choice.value(),
+            learning_rate=self.learning_rate_choice.get_learning_rate(),
+            validation_interval=self.val_interval_choice.value(),
+            batch_size=self.batch_choice.slider_value,
+            results_path_folder=str(results_path_folder),
+            sampling=self.patch_choice.isChecked(),
+            num_samples=self.sample_choice_slider.slider_value,
+            sample_size=patch_size,
+            do_augmentation=self.augment_choice.isChecked(),
+            deterministic_config=deterministic_config,
+            num_classes=int(
+                self.wnet_widgets.num_classes_choice.currentText()
+            ),
+            reconstruction_loss=self.wnet_widgets.loss_choice.currentText(),
+            n_cuts_weight=self.wnet_widgets.ncuts_weight_choice.value(),
+            rec_loss_weight=self.wnet_widgets.get_reconstruction_weight(),
+            eval_volume_dict=eval_volume_dict,
+        )
+
+        return self.worker_config
+
+    def _is_current_job_supervised(self):
+        if isinstance(self.worker, WNetTrainingWorker):
+            return False
+        return True
 
     def on_start(self):
         """Catches started signal from worker"""
@@ -1121,61 +1217,41 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self._viewer.layers.remove(layer)
         self.result_layers = []
 
-    def _display_results(self, images, names, complete_missing=False):
+    def _display_results(self, images_dict, complete_missing=False):
+        layer_list = []
         if not complete_missing:
-            layer_output = self._viewer.add_image(
-                data=images[0], name=names[0], colormap="turbo"
-            )
-            layer_output_discrete = self._viewer.add_image(
-                data=images[1], name=names[1], colormap="bop blue"
-            )
-            layer_image = self._viewer.add_image(
-                data=images[2], name=names[2], colormap="inferno"
-            )
-            layer_labels = self._viewer.add_labels(
-                data=images[3], name=names[3]
-            )
-            self.result_layers += [
-                layer_output,
-                layer_output_discrete,
-                layer_image,
-                layer_labels,
-            ]
+            for layer_name in list(images_dict.keys()):
+                logger.debug(f"Adding layer {layer_name}")
+                layer = self._viewer.add_image(
+                    data=images_dict[layer_name]["data"],
+                    name=layer_name,
+                    colormap=images_dict[layer_name]["cmap"],
+                )
+                layer_list.append(layer)
+            self.result_layers += layer_list
             self._viewer.grid.enabled = True
             self._viewer.dims.ndisplay = 3
             self._viewer.reset_view()
         else:
-            # add only the missing layers
-            for i in range(3):
-                if names[i] not in [
+            for i, layer_name in enumerate(list(images_dict.keys())):
+                if layer_name not in [
                     layer.name for layer in self._viewer.layers
                 ]:
-                    if i == 0:
-                        layer_output = self._viewer.add_image(
-                            data=images[i], name=names[i], colormap="turbo"
-                        )
-                        self.result_layers[0] = layer_output
-                    elif i == 1:
-                        layer_output_discrete = self._viewer.add_image(
-                            data=images[i],
-                            name=names[i],
-                            colormap="bop orange",
-                        )
-                        self.result_layers[1] = layer_output_discrete
-                    elif i == 2:
-                        layer_image = self._viewer.add_image(
-                            data=images[i], name=names[i], colormap="inferno"
-                        )
-                        self.result_layers[2] = layer_image
-                    else:
-                        layer_labels = self._viewer.add_labels(
-                            data=images[i], name=names[i]
-                        )
-                        self.result_layers[3] = layer_labels
-                self.result_layers[i].data = images[i]
-                self.result_layers[i].refresh()
+                    logger.debug(f"Adding missing layer {layer_name}")
+                    layer = self._viewer.add_image(
+                        data=images_dict[layer_name]["data"],
+                        name=layer_name,
+                        colormap=images_dict[layer_name]["cmap"],
+                    )
+                    layer_list[i] = layer
+                else:
+                    logger.debug(f"Refreshing layer {layer_name}")
+                    self.result_layers[i].data = images_dict[layer_name][
+                        "data"
+                    ]
+                    self.result_layers[i].refresh()
 
-    def on_yield(self, report: TrainingReport):
+    def on_yield(self, report: TrainingReport):  # TODO refactor for dict
         # logger.info(
         #     f"\nCatching results : for epoch {data['epoch']},
         #     loss is {data['losses']} and validation is {data['val_metrics']}"
@@ -1185,20 +1261,17 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         if report.show_plot:
             try:
-                layer_names = [
-                    "Validation output",
-                    "Validation output (discrete)",
-                    "Validation image",
-                    "Validation labels",
-                ]
-                range(len(report.images))
-                self.log.print_and_log(len(report.images))
+                self.log.print_and_log(len(report.images_dict))
 
-                if report.epoch + 1 == self.worker_config.validation_interval:
-                    self._display_results(report.images, layer_names)
+                if (
+                    report.epoch == 0
+                    or report.epoch + 1
+                    == self.worker_config.validation_interval
+                ):
+                    self._display_results(report.images_dict)
                 else:
                     self._display_results(
-                        report.images, layer_names, complete_missing=True
+                        report.images_dict, complete_missing=True
                     )
             except Exception as e:
                 logger.exception(e)
@@ -1207,9 +1280,9 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 100 * (report.epoch + 1) // self.worker_config.max_epochs
             )
 
-            self.update_loss_plot(report.loss_values, report.validation_metric)
-            self.loss_values = report.loss_values
-            self.validation_values = report.validation_metric
+            self.update_loss_plot(report.loss_1_values, report.loss_2_values)
+            self.loss_1_values = report.loss_1_values
+            self.loss_2_values = report.loss_2_values
 
         if self.stop_requested:
             self.log.print_and_log(
@@ -1226,110 +1299,106 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.on_stop()
             self.stop_requested = False
 
-    # def clean_cache(self):
-    #     """Attempts to clear memory after training"""
-    #     # del self.worker
-    #     self.worker = None
-    #     # if self.model is not None:
-    #     #     del self.model
-    #     #     self.model = None
-    #
-    #     # del self.data
-    #     # self.close()
-    #     # del self
-    #     if self.get_device(show=False).type == "cuda":
-    #         self.empty_cuda_cache()
-
     def _make_csv(self):
         size_column = range(1, self.worker_config.max_epochs + 1)
 
-        if len(self.loss_values) == 0 or self.loss_values is None:
+        if len(self.loss_1_values) == 0 or self.loss_1_values is None:
             logger.warning("No loss values to add to csv !")
             return
 
-        val = utils.fill_list_in_between(
-            self.validation_values,
-            self.worker_config.validation_interval - 1,
-            "",
-        )[: len(size_column)]
+        if self._is_current_job_supervised():
+            val = utils.fill_list_in_between(
+                self.loss_2_values,
+                self.worker_config.validation_interval - 1,
+                "",
+            )[: len(size_column)]
+            self.df = pd.DataFrame(
+                {
+                    "epoch": size_column,
+                    "loss": self.loss_1_values,
+                    "validation": val,
+                }
+            )
+            if len(val) != len(self.loss_1_values):
+                err = f"Validation and loss values don't have the same length ! Got {len(val)} and {len(self.loss_1_values)}"
+                logger.error(err)
+                raise ValueError(err)
+        else:
+            self.df = pd.DataFrame(
+                {
+                    "epoch": size_column,
+                    "Ncuts loss": self.loss_1_values,
+                    "Reconstruction loss": self.loss_2_values,
+                }
+            )
 
-        if len(val) != len(self.loss_values):
-            err = f"Validation and loss values don't have the same length ! Got {len(val)} and {len(self.loss_values)}"
-            logger.error(err)
-            # return None
-            raise ValueError(err)
-
-        self.df = pd.DataFrame(
-            {
-                "epoch": size_column,
-                "loss": self.loss_values,
-                "validation": val,
-            }
-        )
         path = Path(self.worker_config.results_path_folder) / Path(
             "training.csv"
         )
         self.df.to_csv(path, index=False)
 
-    def plot_loss(self, loss, dice_metric):
+    def _plot_loss(
+        self,
+        loss_values_1: dict,
+        loss_values_2: list,
+        show_plot_2_max: bool = True,
+    ):
         """Creates two subplots to plot the training loss and validation metric"""
+        plot_key = (
+            "supervised"
+            if self._is_current_job_supervised()
+            else "unsupervised"
+        )
         with plt.style.context("dark_background"):
             # update loss
-            self.train_loss_plot.set_title("Epoch average loss")
-            self.train_loss_plot.set_xlabel("Epoch")
-            self.train_loss_plot.set_ylabel("Loss")
-            x = [i + 1 for i in range(len(loss))]
-            y = loss
-            self.train_loss_plot.plot(x, y)
-            # self.train_loss_plot.set_ylim(0, 1)
+            self.plot_1.set_title(self.plot_1_labels["title"][plot_key])
+            self.plot_1.set_xlabel("Epoch")
+            self.plot_1.set_ylabel(self.plot_2_labels["ylabel"][plot_key])
 
-            # update metrics
-            x = [
-                self.worker_config.validation_interval * (i + 1)
-                for i in range(len(dice_metric))
-            ]
-            y = dice_metric
+            for metric_name in list(loss_values_1.keys()):
+                if metric_name == "Dice coefficient":
+                    x = [
+                        self.worker_config.validation_interval * (i + 1)
+                        for i in range(len(loss_values_1[metric_name]))
+                    ]
+                else:
+                    x = [i + 1 for i in range(len(loss_values_1[metric_name]))]
+                y = loss_values_1[metric_name]
+                self.plot_1.plot(x, y, label=metric_name)
+            self.plot_1.legend(loc="lower right")
 
-            epoch_min = (
-                np.argmax(y) + 1
-            ) * self.worker_config.validation_interval
-            dice_min = np.max(y)
+            # update plot 2
+            if self._is_current_job_supervised():
+                x = [
+                    self.worker_config.validation_interval * (i + 1)
+                    for i in range(len(loss_values_2))
+                ]
+            else:
+                x = [i + 1 for i in range(len(loss_values_2))]
+            y = loss_values_2
 
-            self.dice_metric_plot.plot(x, y, zorder=1)
+            self.plot_2.plot(x, y, zorder=1)
             # self.dice_metric_plot.set_ylim(0, 1)
-            self.dice_metric_plot.set_title(
-                "Validation metric : Mean Dice coefficient"
-            )
-            self.dice_metric_plot.set_xlabel("Epoch")
-            self.dice_metric_plot.set_ylabel("Dice")
+            self.plot_2.set_title(self.plot_2_labels["title"][plot_key])
+            self.plot_2.set_xlabel("Epoch")
+            self.plot_2.set_ylabel(self.plot_2_labels["ylabel"][plot_key])
 
-            self.dice_metric_plot.scatter(
-                epoch_min,
-                dice_min,
-                c="r",
-                label="Maximum Dice coeff.",
-                zorder=5,
-            )
-            self.dice_metric_plot.legend(
-                facecolor=ui.napari_grey, loc="lower right"
-            )
+            if show_plot_2_max:
+                epoch_min = (
+                    np.argmax(y) + 1
+                ) * self.worker_config.validation_interval
+                dice_min = np.max(y)
+                self.plot_2.scatter(
+                    epoch_min,
+                    dice_min,
+                    c="r",
+                    label="Maximum Dice coeff.",
+                    zorder=5,
+                )
+            self.plot_2.legend(facecolor=ui.napari_grey, loc="lower right")
             self.canvas.draw_idle()
 
-            # plot_path = self.worker_config.results_path_folder / Path(
-            #     "../Loss_plots"
-            # )
-            # Path(plot_path).mkdir(parents=True, exist_ok=True)
-            #
-            # if self.canvas is not None:
-            #     self.canvas.figure.savefig(
-            #         str(
-            #             plot_path
-            #             / f"checkpoint_metric_plots_{utils.get_date_time()}.png"
-            #         ),
-            #         format="png",
-            #     )
-
-    def update_loss_plot(self, loss, metric):
+    def update_loss_plot(self, loss_1: dict, loss_2: list):
         """
         Updates the plots on subsequent validation steps.
         Creates the plot on the second validation step (epoch == val_interval*2).
@@ -1339,7 +1408,8 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         Returns: returns empty if the epoch is < than 2 * validation interval.
         """
 
-        epoch = len(loss)
+        epoch = len(loss_1[list(loss_1.keys())[0]])
+        logger.debug(f"Updating loss plot for epoch {epoch}")
         if epoch < self.worker_config.validation_interval * 2:
             return
         if epoch == self.worker_config.validation_interval * 2:
@@ -1347,13 +1417,13 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             with plt.style.context("dark_background"):
                 self.canvas = FigureCanvas(Figure(figsize=(10, 1.5)))
                 # loss plot
-                self.train_loss_plot = self.canvas.figure.add_subplot(1, 2, 1)
+                self.plot_1 = self.canvas.figure.add_subplot(1, 2, 1)
                 # dice metric validation plot
-                self.dice_metric_plot = self.canvas.figure.add_subplot(1, 2, 2)
+                self.plot_2 = self.canvas.figure.add_subplot(1, 2, 2)
 
                 self.canvas.figure.set_facecolor(bckgrd_color)
-                self.dice_metric_plot.set_facecolor(bckgrd_color)
-                self.train_loss_plot.set_facecolor(bckgrd_color)
+                self.plot_2.set_facecolor(bckgrd_color)
+                self.plot_1.set_facecolor(bckgrd_color)
 
                 # self.canvas.figure.tight_layout()
 
@@ -1377,26 +1447,164 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                     self.canvas, name="Loss plots", area="bottom"
                 )
                 self.plot_dock._close_btn = False
+                self.docked_widgets.append(self.plot_dock)
             except AttributeError as e:
                 logger.exception(e)
                 logger.error(
                     "Plot dock widget could not be added. Should occur in testing only"
                 )
-
-            self.docked_widgets.append(self.plot_dock)
-            self.plot_loss(loss, metric)
+            self._plot_loss(loss_1, loss_2)
         else:
             with plt.style.context("dark_background"):
-                self.train_loss_plot.cla()
-                self.dice_metric_plot.cla()
+                self.plot_1.cla()
+                self.plot_2.cla()
 
-                self.plot_loss(loss, metric)
+                self._plot_loss(loss_1, loss_2)
 
     def _reset_loss_plot(self):
-        if (
-            self.train_loss_plot is not None
-            and self.dice_metric_plot is not None
-        ):
+        if self.plot_1 is not None and self.plot_2 is not None:
             with plt.style.context("dark_background"):
-                self.train_loss_plot.cla()
-                self.dice_metric_plot.cla()
+                self.plot_1.cla()
+                self.plot_2.cla()
+
+
+class LearningRateWidget(ui.ContainerWidget):
+    def __init__(self, parent=None):
+        super().__init__(vertical=False, parent=parent)
+
+        self.lr_exponent_dict = {
+            "1e-2": 1e-2,
+            "1e-3": 1e-3,
+            "1e-4": 1e-4,
+            "1e-5": 1e-5,
+            "1e-6": 1e-6,
+            "1e-7": 1e-7,
+            "1e-8": 1e-8,
+        }
+
+        self.lr_value_choice = ui.IntIncrementCounter(
+            lower=1,
+            upper=9,
+            default=1,
+            text_label="Learning rate : ",
+            parent=self,
+            fixed=False,
+        )
+        self.lr_exponent_choice = ui.DropdownMenu(
+            list(self.lr_exponent_dict.keys()),
+            parent=self,
+            fixed=False,
+        )
+        self._build()
+
+    def _build(self):
+        self.lr_value_choice.setFixedWidth(20)
+        # self.lr_exponent_choice.setFixedWidth(100)
+        self.lr_exponent_choice.setCurrentIndex(1)
+        ui.add_widgets(
+            self.layout,
+            [
+                self.lr_value_choice,
+                ui.make_label("x"),
+                self.lr_exponent_choice,
+            ],
+        )
+
+    def get_learning_rate(self) -> float:
+        return float(
+            self.lr_value_choice.value()
+            * self.lr_exponent_dict[self.lr_exponent_choice.currentText()]
+        )
+
+
+class WNetWidgets:
+    """A collection of widgets for the WNet training GUI"""
+
+    default_config = config.WNetTrainingWorkerConfig()
+
+    def __init__(self, parent):
+        self.num_classes_choice = ui.DropdownMenu(
+            entries=["2", "3", "4"],
+            parent=parent,
+            text_label="Number of classes",
+        )
+        self.intensity_sigma_choice = ui.DoubleIncrementCounter(
+            lower=1.0,
+            upper=100.0,
+            default=self.default_config.intensity_sigma,
+            parent=parent,
+            text_label="Intensity sigma",
+        )
+        self.intensity_sigma_choice.setMaximumWidth(20)
+        self.spatial_sigma_choice = ui.DoubleIncrementCounter(
+            lower=1.0,
+            upper=100.0,
+            default=self.default_config.spatial_sigma,
+            parent=parent,
+            text_label="Spatial sigma",
+        )
+        self.spatial_sigma_choice.setMaximumWidth(20)
+        self.radius_choice = ui.IntIncrementCounter(
+            lower=1,
+            upper=5,
+            default=self.default_config.radius,
+            parent=parent,
+            text_label="Radius",
+        )
+        self.radius_choice.setMaximumWidth(20)
+        self.loss_choice = ui.DropdownMenu(
+            entries=["MSE", "BCE"],
+            parent=parent,
+            text_label="Reconstruction loss",
+        )
+        self.ncuts_weight_choice = ui.DoubleIncrementCounter(
+            lower=0.1,
+            upper=1.0,
+            default=self.default_config.n_cuts_weight,
+            parent=parent,
+            text_label="NCuts weight",
+        )
+        self.reconstruction_weight_choice = ui.DoubleIncrementCounter(
+            lower=0.1,
+            upper=1.0,
+            default=0.5,
+            parent=parent,
+            text_label="Reconstruction weight",
+        )
+        self.reconstruction_weight_choice.setMaximumWidth(20)
+        self.reconstruction_weight_divide_factor_choice = (
+            ui.IntIncrementCounter(
+                lower=1,
+                upper=10000,
+                default=100,
+                parent=parent,
+                text_label="Reconstruction weight divide factor",
+            )
+        )
+        self.reconstruction_weight_divide_factor_choice.setMaximumWidth(20)
+
+        self._set_tooltips()
+
+    def _set_tooltips(self):
+        self.num_classes_choice.setToolTip("Number of classes to segment")
+        self.intensity_sigma_choice.setToolTip(
+            "Intensity sigma for the NCuts loss"
+        )
+        self.spatial_sigma_choice.setToolTip(
+            "Spatial sigma for the NCuts loss"
+        )
+        self.radius_choice.setToolTip("Radius of NCuts loss region")
+        self.loss_choice.setToolTip("Loss function to use for reconstruction")
+        self.ncuts_weight_choice.setToolTip("Weight of the NCuts loss")
+        self.reconstruction_weight_choice.setToolTip(
+            "Weight of the reconstruction loss"
+        )
+        self.reconstruction_weight_divide_factor_choice.setToolTip(
+            "Divide factor for the reconstruction loss.\nThis might have to be changed depending on your images.\nIf you notice that the reconstruction loss is too high, raise this factor until the\nreconstruction loss is in the same order of magnitude as the NCuts loss."
+        )
+
+    def get_reconstruction_weight(self):
+        return float(
+            self.reconstruction_weight_choice.value()
+            / self.reconstruction_weight_divide_factor_choice.value()
+        )

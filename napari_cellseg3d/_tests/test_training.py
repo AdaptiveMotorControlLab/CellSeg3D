@@ -9,61 +9,87 @@ from napari_cellseg3d.code_plugins.plugin_model_training import (
 )
 from napari_cellseg3d.config import MODEL_LIST
 
+im_path = Path(__file__).resolve().parent / "res/test.tif"
+im_path_str = str(im_path)
+
+
+def test_create_supervised_worker_from_config(make_napari_viewer_proxy):
+    widget = Trainer(make_napari_viewer_proxy())
+    worker = widget._create_worker()
+    default_config = config.SupervisedTrainingWorkerConfig()
+    excluded = [
+        "results_path_folder",
+        "loss_function",
+        "model_info",
+        "sample_size",
+        "weights_info",
+    ]
+    for attr in dir(default_config):
+        if not attr.startswith("__") and attr not in excluded:
+            assert getattr(default_config, attr) == getattr(
+                worker.config, attr
+            )
+
+
+def test_create_unspervised_worker_from_config(make_napari_viewer_proxy):
+    widget = Trainer(make_napari_viewer_proxy())
+    widget.model_choice.setCurrentText("WNet")
+    widget._toggle_unsupervised_mode(enabled=True)
+    default_config = config.WNetTrainingWorkerConfig()
+    worker = widget._create_worker()
+    excluded = ["results_path_folder", "sample_size", "weights_info"]
+    for attr in dir(default_config):
+        if not attr.startswith("__") and attr not in excluded:
+            assert getattr(default_config, attr) == getattr(
+                worker.config, attr
+            )
+
 
 def test_update_loss_plot(make_napari_viewer_proxy):
     view = make_napari_viewer_proxy()
     widget = Trainer(view)
 
     widget.worker_config = config.SupervisedTrainingWorkerConfig()
+    assert widget._is_current_job_supervised() is True
     widget.worker_config.validation_interval = 1
     widget.worker_config.results_path_folder = "."
 
-    epoch_loss_values = [1]
+    epoch_loss_values = {"loss": [1]}
     metric_values = []
-
     widget.update_loss_plot(epoch_loss_values, metric_values)
-
-    assert widget.dice_metric_plot is None
-    assert widget.train_loss_plot is None
+    assert widget.plot_2 is None
+    assert widget.plot_1 is None
 
     widget.worker_config.validation_interval = 2
 
-    epoch_loss_values = [0, 1]
+    epoch_loss_values = {"loss": [0, 1]}
     metric_values = [0.2]
-
     widget.update_loss_plot(epoch_loss_values, metric_values)
+    assert widget.plot_2 is None
+    assert widget.plot_1 is None
 
-    assert widget.dice_metric_plot is None
-    assert widget.train_loss_plot is None
-
-    epoch_loss_values = [0, 1, 0.5, 0.7]
-    metric_values = [0.2, 0.3]
-
+    epoch_loss_values = {"loss": [0, 1, 0.5, 0.7]}
+    metric_values = [0.1, 0.2]
     widget.update_loss_plot(epoch_loss_values, metric_values)
+    assert widget.plot_2 is not None
+    assert widget.plot_1 is not None
 
-    assert widget.dice_metric_plot is not None
-    assert widget.train_loss_plot is not None
-
-    epoch_loss_values = [0, 1, 0.5, 0.7, 0.5, 0.7]
+    epoch_loss_values = {"loss": [0, 1, 0.5, 0.7, 0.5, 0.7]}
     metric_values = [0.2, 0.3, 0.5, 0.7]
-
     widget.update_loss_plot(epoch_loss_values, metric_values)
-
-    assert widget.dice_metric_plot is not None
-    assert widget.train_loss_plot is not None
+    assert widget.plot_2 is not None
+    assert widget.plot_1 is not None
 
 
 def test_check_matching_losses():
     plugin = Trainer(None)
-    config = plugin._set_supervised_worker_config()
+    config = plugin._set_worker_config()
     worker = plugin._create_supervised_worker_from_config(config)
 
     assert plugin.loss_list == list(worker.loss_dict.keys())
 
 
 def test_training(make_napari_viewer_proxy, qtbot):
-    im_path = str(Path(__file__).resolve().parent / "res/test.tif")
-
     viewer = make_napari_viewer_proxy()
     widget = Trainer(viewer)
     widget.log = LogFixture()
@@ -74,8 +100,8 @@ def test_training(make_napari_viewer_proxy, qtbot):
 
     assert not widget.check_ready()
 
-    widget.images_filepaths = [im_path]
-    widget.labels_filepaths = [im_path]
+    widget.images_filepaths = [im_path_str]
+    widget.labels_filepaths = [im_path_str]
     widget.epoch_choice.setValue(1)
     widget.val_interval_choice.setValue(1)
 
@@ -84,11 +110,16 @@ def test_training(make_napari_viewer_proxy, qtbot):
     MODEL_LIST["test"] = TestModel
     widget.model_choice.addItem("test")
     widget.model_choice.setCurrentText("test")
-    worker_config = widget._set_supervised_worker_config()
+    widget.unsupervised_mode = False
+    worker_config = widget._set_worker_config()
     assert worker_config.model_info.name == "test"
     worker = widget._create_supervised_worker_from_config(worker_config)
-    worker.config.train_data_dict = [{"image": im_path, "label": im_path}]
-    worker.config.val_data_dict = [{"image": im_path, "label": im_path}]
+    worker.config.train_data_dict = [
+        {"image": im_path_str, "label": im_path_str}
+    ]
+    worker.config.val_data_dict = [
+        {"image": im_path_str, "label": im_path_str}
+    ]
     worker.config.max_epochs = 1
     worker.config.validation_interval = 2
     worker.log_parameters()
@@ -99,20 +130,34 @@ def test_training(make_napari_viewer_proxy, qtbot):
 
     widget.worker = worker
     res.show_plot = True
-    res.loss_values = [1, 1, 1, 1]
-    res.validation_metric = [1, 1, 1, 1]
+    res.loss_1_values = {"loss": [1, 1, 1, 1]}
+    res.loss_2_values = [1, 1, 1, 1]
     widget.on_yield(res)
-    assert widget.loss_values == [1, 1, 1, 1]
-    assert widget.validation_values == [1, 1, 1, 1]
+    assert widget.loss_1_values["loss"] == [1, 1, 1, 1]
+    assert widget.loss_2_values == [1, 1, 1, 1]
 
-    # def on_error(e):
-    #     print(e)
-    #     assert False
-    #
-    # with qtbot.waitSignal(
-    #     signal=widget.worker.finished, timeout=10000, raising=True
-    # ) as blocker:
-    #     blocker.connect(widget.worker.errored)
-    #     widget.worker.error_signal.connect(on_error)
-    #     widget.worker.train()
-    #     assert widget.worker is not None
+
+def test_unsupervised_worker(make_napari_viewer_proxy):
+    viewer = make_napari_viewer_proxy()
+    widget = Trainer(viewer)
+
+    widget.model_choice.setCurrentText("WNet")
+    widget._toggle_unsupervised_mode(enabled=True)
+
+    widget.unsupervised_images_filewidget.text_field.setText(
+        str(im_path.parent)
+    )
+    widget.data = widget.create_dataset_dict_no_labs()
+    worker = widget._create_worker()
+    dataloader, eval_dataloader, data_shape = worker._get_data()
+    assert eval_dataloader is None
+    assert data_shape == (6, 6, 6)
+
+    widget.images_filepaths = [str(im_path.parent)]
+    widget.labels_filepaths = [str(im_path.parent)]
+    widget.unsupervised_eval_data = widget.create_train_dataset_dict()
+    assert widget.unsupervised_eval_data is not None
+    worker = widget._create_worker()
+    dataloader, eval_dataloader, data_shape = worker._get_data()
+    assert eval_dataloader is not None
+    assert data_shape == (6, 6, 6)
