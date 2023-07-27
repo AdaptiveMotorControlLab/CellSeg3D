@@ -475,9 +475,9 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ui.add_widgets(
             data_layout,
             [
-                ui.combine_blocks(
-                    self.filetype_choice, self.filetype_choice.label
-                ),  # file extension
+                # ui.combine_blocks(
+                #     self.filetype_choice, self.filetype_choice.label
+                # ),  # file extension
                 self.image_filewidget,
                 self.labels_filewidget,
                 self.results_filewidget,
@@ -1052,15 +1052,23 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             logger.warning("No loss values to add to csv !")
             return
 
+        val = utils.fill_list_in_between(
+            self.validation_values,
+            self.worker_config.validation_interval - 1,
+            "",
+        )[: len(size_column)]
+
+        if len(val) != len(self.loss_values):
+            err = f"Validation and loss values don't have the same length ! Got {len(val)} and {len(self.loss_values)}"
+            logger.error(err)
+            # return None
+            raise ValueError(err)
+
         self.df = pd.DataFrame(
             {
                 "epoch": size_column,
                 "loss": self.loss_values,
-                "validation": utils.fill_list_in_between(
-                    self.validation_values,
-                    self.worker_config.validation_interval - 1,
-                    "",
-                )[: len(size_column)],
+                "validation": val,
             }
         )
         path = Path(self.worker_config.results_path_folder) / Path(

@@ -360,7 +360,7 @@ class InferenceWorker(GeneratorWorker):
         if config.keep_on_cpu:
             self.log("Dataset loaded to CPU")
         else:
-            self.log(f"Dataset loaded on {config.device}")
+            self.log(f"Dataset loaded on {config.device} device")
 
         if config.post_process_config.zoom.enabled:
             self.log(
@@ -379,36 +379,9 @@ class InferenceWorker(GeneratorWorker):
 
         # TODO : better solution than loading first image always ?
         data_check = LoadImaged(keys=["image"])(images_dict[0])
-
         check = data_check["image"].shape
-
-        # self.log("\nChecking dimensions...")
         pad = utils.get_padding_dim(check)
 
-        # dims = self.model_dict["model_input_size"]
-        #
-        # if self.model_dict["name"] == "SegResNet":
-        #     model = self.model_dict["class"].get_net(
-        #         input_image_size=[
-        #             dims,
-        #             dims,
-        #             dims,
-        #         ]
-        #     )
-        # elif self.model_dict["name"] == "SwinUNetR":
-        #     model = self.model_dict["class"].get_net(
-        #         img_size=[dims, dims, dims],
-        #         use_checkpoint=False,
-        #     )
-        # else:
-        #     model = self.model_dict["class"].get_net()
-        #
-        # self.log_parameters()
-        #
-        # model.to(self.config.device)
-
-        # logger.debug("FILEPATHS PRINT")
-        # logger.debug(self.images_filepaths)
         if self.config.sliding_window_config.is_enabled():
             load_transforms = Compose(
                 [
@@ -443,7 +416,7 @@ class InferenceWorker(GeneratorWorker):
 
     def load_layer(self):
         self.log("\nLoading layer\n")
-        data = np.squeeze(self.config.layer)
+        data = np.squeeze(self.config.layer.data)
 
         volume = np.array(data, dtype=np.int16)
 
@@ -574,7 +547,7 @@ class InferenceWorker(GeneratorWorker):
         original=None,
         stats=None,
         i=0,
-    ):
+    ) -> InferenceResult:
         if not from_layer and original is None:
             raise ValueError(
                 "If the image is not from a layer, an original should always be available"
@@ -723,9 +696,10 @@ class InferenceWorker(GeneratorWorker):
         self.save_image(out, i=i)
         instance_labels, stats = self.get_instance_result(out, i=i)
         if self.config.use_crf:
+            crf_in = inputs.detach().cpu().numpy()
             try:
                 crf_results = self.run_crf(
-                    inputs,
+                    crf_in,
                     out,
                     aniso_transform=self.aniso_transform,
                     image_id=i,

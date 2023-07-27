@@ -543,6 +543,121 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         # self.setMinimumSize(180, 100)
         # self.setBaseSize(210, 400)
 
+    def _update_progress_bar(self, image_id: int, total: int):
+        pbar_value = image_id // total
+        if pbar_value == 0:
+            pbar_value = 1
+
+        self.progress.setValue(100 * pbar_value)
+
+    def _display_results(self, result: InferenceResult):
+        viewer = self._viewer
+        if self.worker_config.post_process_config.zoom.enabled:
+            zoom = self.worker_config.post_process_config.zoom.zoom_values
+        else:
+            zoom = [1, 1, 1]
+        image_id = result.image_id
+        model_name = self.model_choice.currentText()
+
+        viewer.dims.ndisplay = 3
+        viewer.scale_bar.visible = True
+
+        if self.config.show_original and result.original is not None:
+            viewer.add_image(
+                result.original,
+                colormap="inferno",
+                name=f"original_{image_id}",
+                scale=zoom,
+                opacity=0.7,
+            )
+
+        out_colormap = "twilight"
+        if self.worker_config.post_process_config.thresholding.enabled:
+            out_colormap = "turbo"
+
+        viewer.add_image(
+            result.result,
+            colormap=out_colormap,
+            name=f"pred_{image_id}_{model_name}",
+            opacity=0.8,
+        )
+        if result.crf_results is not None:
+            logger.debug(f"CRF results shape : {result.crf_results.shape}")
+            viewer.add_image(
+                result.crf_results,
+                name=f"CRF_results_image_{image_id}",
+                colormap="viridis",
+            )
+        if (
+            result.instance_labels is not None
+            and self.worker_config.post_process_config.instance.enabled
+        ):
+            method_name = (
+                self.worker_config.post_process_config.instance.method.name
+            )
+
+            number_cells = (
+                np.unique(result.instance_labels.flatten()).size - 1
+            )  # remove background
+
+            name = f"({number_cells} objects)_{method_name}_instance_labels_{image_id}"
+
+            viewer.add_labels(result.instance_labels, name=name)
+
+            if result.stats is not None and isinstance(
+                result.stats, list
+            ):  # list for several channels
+                # logger.debug(f"len stats : {len(result.stats)}")
+
+                for i, stats in enumerate(result.stats):
+                    # stats = result.stats
+
+                    if self.worker_config.compute_stats and stats is not None:
+                        stats_dict = stats.get_dict()
+                        stats_df = pd.DataFrame(stats_dict)
+
+                        self.log.print_and_log(
+                            f"Number of instances in channel {i} : {stats.number_objects[0]}"
+                        )
+
+                        csv_name = f"/{method_name}_seg_results_{image_id}_channel_{i}_{utils.get_date_time()}.csv"
+                        stats_df.to_csv(
+                            self.worker_config.results_path + csv_name,
+                            index=False,
+                        )
+
+                    # self.log.print_and_log(
+                    #     f"OBJECTS DETECTED : {number_cells}\n"
+                    # )
+
+    def _setup_worker(self):
+        if self.folder_choice.isChecked():
+            self.worker_config.images_filepaths = self.images_filepaths
+            self.worker = InferenceWorker(worker_config=self.worker_config)
+
+        elif self.layer_choice.isChecked():
+            self.worker_config.layer = self.image_layer_loader.layer()
+            self.worker = InferenceWorker(worker_config=self.worker_config)
+
+        else:
+            raise ValueError("Please select to load a layer or folder")
+
+        self.worker.set_download_log(self.log)
+
+        self.worker.started.connect(self.on_start)
+
+        self.worker.log_signal.connect(self.log.print_and_log)
+        self.worker.warn_signal.connect(self.log.warn)
+        self.worker.error_signal.connect(self.log.error)
+
+        self.worker.yielded.connect(partial(self.on_yield))  #
+        self.worker.errored.connect(partial(self.on_error))
+        self.worker.finished.connect(self.on_finish)
+
+        if self.get_device(show=False) == "cuda":
+            self.worker.finished.connect(self.empty_cuda_cache)
+        return self.worker
+
     def start(self):
         """Start the inference process, enables :py:attr:`~self.worker` and does the following:
 
@@ -580,37 +695,10 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         else:
             self.log.print_and_log("Starting...")
             self.log.print_and_log("*" * 20)
-
             self._set_worker_config()
-            #####################
-            #####################
-            #####################
-
-            if self.folder_choice.isChecked():
-                self.worker_config.images_filepaths = self.images_filepaths
-                self.worker = InferenceWorker(worker_config=self.worker_config)
-
-            elif self.layer_choice.isChecked():
-                self.worker_config.layer = self.image_layer_loader.layer_data()
-                self.worker = InferenceWorker(worker_config=self.worker_config)
-
-            else:
-                raise ValueError("Please select to load a layer or folder")
-
-            self.worker.set_download_log(self.log)
-
-            self.worker.started.connect(self.on_start)
-
-            self.worker.log_signal.connect(self.log.print_and_log)
-            self.worker.warn_signal.connect(self.log.warn)
-            self.worker.error_signal.connect(self.log.error)
-
-            self.worker.yielded.connect(partial(self.on_yield))  #
-            self.worker.errored.connect(partial(self.on_error))
-            self.worker.finished.connect(self.on_finish)
-
-            if self.get_device(show=False) == "cuda":
-                self.worker.finished.connect(self.empty_cuda_cache)
+            if self.worker_config is None:
+                raise RuntimeError("Worker config was not set correctly")
+            self._setup_worker()
             self.btn_close.setVisible(False)
 
         if self.worker.is_running:  # if worker is running, tries to stop
@@ -629,6 +717,19 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         if isinstance(worker_config, config.InfererConfig):
             raise TypeError("Please provide a valid worker config object")
         return InferenceWorker(worker_config=worker_config)
+
+    def _set_self_config(self):
+        self.config = config.InfererConfig(
+            model_info=self.model_info,
+            show_results=self.view_checkbox.isChecked(),
+            show_results_count=self.display_number_choice_slider.slider_value,
+            show_original=self.show_original_checkbox.isChecked(),
+            anisotropy_resolution=self.anisotropy_wdgt.resolution_xyz,
+        )
+        if self.layer_choice.isChecked():
+            self.config.show_results = True
+            self.config.show_results_count = 5
+            self.config.show_original = False
 
     def _set_worker_config(self) -> config.InferenceWorkerConfig:
         self.model_info = config.ModelInfo(
@@ -683,7 +784,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             model_info=self.model_info,
             weights_config=self.weights_config,
             results_path=self.results_path,
-            filetype=self.filetype_choice.currentText(),
+            filetype=".tif",
             keep_on_cpu=self.keep_data_on_cpu_box.isChecked(),
             compute_stats=self.save_stats_to_csv_box.isChecked(),
             post_process_config=self.post_process_config,
@@ -696,19 +797,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
     def on_start(self):
         """Catches start signal from worker to call :py:func:`~display_status_report`"""
         self.display_status_report()
-
-        self.config = config.InfererConfig(
-            model_info=self.model_info,
-            show_results=self.view_checkbox.isChecked(),
-            show_results_count=self.display_number_choice_slider.slider_value,
-            show_original=self.show_original_checkbox.isChecked(),
-            anisotropy_resolution=self.anisotropy_wdgt.resolution_xyz,
-        )
-        if self.layer_choice.isChecked():
-            self.config.show_results = True
-            self.config.show_results_count = 5
-            self.config.show_original = False
-
+        self._set_self_config()
         self.log.print_and_log(f"Worker started at {utils.get_time()}")
         self.log.print_and_log(f"Saving results to : {self.results_path}")
         self.log.print_and_log("Worker is running...")
@@ -718,14 +807,8 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.log.print_and_log("!" * 20)
         self.log.print_and_log("Worker errored...")
         self.log.error(error)
-        # self.log.print_and_log("Trying to clean up...")
         self.worker.quit()
-        self.btn_start.setText("Start")
-        self.btn_close.setVisible(True)
-
-        self.worker_config = None
-        self.worker = None
-        self.empty_cuda_cache()
+        self.on_finish()
 
     def on_finish(self):
         """Catches finished signal from worker, resets workspace for next run."""
@@ -737,6 +820,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.worker = None
         self.worker_config = None
         self.empty_cuda_cache()
+        return True  # signal clean exit
 
     def on_yield(self, result: InferenceResult):
         """
@@ -757,102 +841,16 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         # widget.log.print_and_log(result)
         try:
             image_id = result.image_id
-            model_name = result.model_name
             if self.worker_config.images_filepaths is not None:
                 total = len(self.worker_config.images_filepaths)
             else:
                 total = 1
-
-            viewer = self._viewer
-
-            pbar_value = image_id // total
-            if pbar_value == 0:
-                pbar_value = 1
-
-            self.progress.setValue(100 * pbar_value)
+            self._update_progress_bar(image_id, total)
 
             if (
                 self.config.show_results
                 and image_id <= self.config.show_results_count
             ):
-                zoom = self.worker_config.post_process_config.zoom.zoom_values
-
-                viewer.dims.ndisplay = 3
-                viewer.scale_bar.visible = True
-
-                if self.config.show_original and result.original is not None:
-                    viewer.add_image(
-                        result.original,
-                        colormap="inferno",
-                        name=f"original_{image_id}",
-                        scale=zoom,
-                        opacity=0.7,
-                    )
-
-                out_colormap = "twilight"
-                if self.worker_config.post_process_config.thresholding.enabled:
-                    out_colormap = "turbo"
-
-                viewer.add_image(
-                    result.result,
-                    colormap=out_colormap,
-                    name=f"pred_{image_id}_{model_name}",
-                    opacity=0.8,
-                )
-                if result.crf_results is not None:
-                    logger.debug(
-                        f"CRF results shape : {result.crf_results.shape}"
-                    )
-                    viewer.add_image(
-                        result.crf_results,
-                        name=f"CRF_results_image_{image_id}",
-                        colormap="viridis",
-                    )
-                if (
-                    result.instance_labels is not None
-                    and self.worker_config.post_process_config.instance.enabled
-                ):
-                    method_name = (
-                        self.worker_config.post_process_config.instance.method.name
-                    )
-
-                    number_cells = (
-                        np.unique(result.instance_labels.flatten()).size - 1
-                    )  # remove background
-
-                    name = f"({number_cells} objects)_{method_name}_instance_labels_{image_id}"
-
-                    viewer.add_labels(result.instance_labels, name=name)
-
-                    from napari_cellseg3d.utils import LOGGER as log
-
-                    if result.stats is not None and isinstance(
-                        result.stats, list
-                    ):
-                        log.debug(f"len stats : {len(result.stats)}")
-
-                        for i, stats in enumerate(result.stats):
-                            # stats = result.stats
-
-                            if (
-                                self.worker_config.compute_stats
-                                and stats is not None
-                            ):
-                                stats_dict = stats.get_dict()
-                                stats_df = pd.DataFrame(stats_dict)
-
-                                self.log.print_and_log(
-                                    f"Number of instances in channel {i} : {stats.number_objects[0]}"
-                                )
-
-                                csv_name = f"/{method_name}_seg_results_{image_id}_channel_{i}_{utils.get_date_time()}.csv"
-                                stats_df.to_csv(
-                                    self.worker_config.results_path + csv_name,
-                                    index=False,
-                                )
-
-                            # self.log.print_and_log(
-                            #     f"OBJECTS DETECTED : {number_cells}\n"
-                            # )
+                self._display_results(result)
         except Exception as e:
             self.on_error(e)

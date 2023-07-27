@@ -96,7 +96,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
 
     def _update_results_path(self):
         p = self.image_filewidget.text_field.text()
-        if p is not None and p != "" and Path(p).is_file():
+        if p is not None and Path(p).is_file():
             self.results_filewidget.text_field.setText(str(Path(p).parent))
 
     def _build(self):
@@ -109,7 +109,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
 
         # ui.add_blank(self, layout)
         ###########################
-        self.filetype_choice.setVisible(False)
+        # self.filetype_choice.setVisible(False)
         layout.addWidget(self.io_panel)
         self._set_io_visibility()
         self.layer_choice.toggle()
@@ -137,7 +137,6 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
                     b=5,
                 ),
                 self.new_csv_choice,
-                self.results_filewidget,
             ],
         )
 
@@ -202,7 +201,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         self.config.model_name = self.csv_textbox.text()
 
         self.config.new_csv = self.new_csv_choice.isChecked()
-        self.config.filetype = self.filetype_choice.currentText()
+        self.config.filetype = self.filetype
 
         if self.anisotropy_widgets.enabled:
             zoom = self.anisotropy_widgets.scaling_zyx()
@@ -359,7 +358,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         canvas_dock._close_btn = False
 
         @viewer.mouse_drag_callbacks.append
-        def update_canvas_canvas(viewer, event):
+        def update_canvas(viewer, event):
             if "shift" in event.modifiers:
                 try:
                     cursor_position = np.round(viewer.cursor.position).astype(

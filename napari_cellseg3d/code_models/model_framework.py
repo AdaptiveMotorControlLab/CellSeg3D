@@ -121,16 +121,21 @@ class ModelFramework(BasePluginFolder):
         if self.log is not None:
             self.log.print_and_log(text)
 
-    def save_log(self):
+    def save_log(self, do_timestamp=True):
         """Saves the worker's log to disk at self.results_path when called"""
         if self.log is not None:
             log = self.log.toPlainText()
 
             path = self.results_path
 
+            if do_timestamp:
+                log_name = f"Log_report_{utils.get_date_time()}.txt"
+            else:
+                log_name = "Log_report.txt"
+
             if len(log) != 0:
                 with Path.open(
-                    path + f"/Log_report_{utils.get_date_time()}.txt",
+                    Path(path) / log_name,
                     "x",
                 ) as f:
                     f.write(log)
@@ -142,7 +147,7 @@ class ModelFramework(BasePluginFolder):
         else:
             logger.warning(f"No logger defined : Log is {self.log}")
 
-    def save_log_to_path(self, path):
+    def save_log_to_path(self, path, do_timestamp=True):
         """Saves the worker log to a specific path. Cannot be used with connect.
 
         Args:
@@ -150,9 +155,13 @@ class ModelFramework(BasePluginFolder):
         """
 
         log = self.log.toPlainText()
-        path = str(
-            Path(path) / Path(f"Log_report_{utils.get_date_time()}.txt")
-        )
+
+        if do_timestamp:
+            log_name = f"Log_report_{utils.get_date_time()}.txt"
+        else:
+            log_name = "Log_report.txt"
+
+        path = str(Path(path) / log_name)
 
         if len(log) != 0:
             with Path.open(
@@ -255,10 +264,6 @@ class ModelFramework(BasePluginFolder):
         logger.debug(f"Training data dict : {data_dicts}")
 
         return data_dicts
-
-    def get_model(self, key):  # TODO remove
-        """Getter for module (class and functions) associated to currently selected model"""
-        return self.models_dict[key]
 
     @staticmethod
     def get_available_models():

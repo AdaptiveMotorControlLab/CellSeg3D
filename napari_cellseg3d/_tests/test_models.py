@@ -1,4 +1,7 @@
+from pathlib import Path
+
 import numpy as np
+import pytest
 import torch
 from numpy.random import PCG64, Generator
 
@@ -8,6 +11,7 @@ from napari_cellseg3d.code_models.crf import (
     crf_batch,
     crf_with_config,
 )
+from napari_cellseg3d.code_models.models.model_TRAILMAP_MS import TRAILMAP_MS_
 from napari_cellseg3d.code_models.models.wnet.soft_Ncuts import SoftNCutsLoss
 from napari_cellseg3d.config import MODEL_LIST, CRFConfig
 
@@ -50,6 +54,15 @@ def test_soft_ncuts_loss():
     res = loss.forward(labels, labels)
     assert isinstance(res, torch.Tensor)
     assert 0 <= res <= 1  # ASSUMES NUMBER OF CLASS IS 2, NOT CORRECT IF K>2
+
+    loss = SoftNCutsLoss(
+        data_shape=[dims, dims, dims],
+        device="cpu",
+        intensity_sigma=4,
+        spatial_sigma=4,
+        radius=None,  # test radius=None init
+    )
+    assert loss.radius == 5
 
 
 def test_crf_batch():
@@ -95,3 +108,33 @@ def test_crf_worker(qtbot):
 
     result = next(crf._run_crf_job())
     on_yield(result)
+
+
+def test_pretrained_weights_compatibility():
+    from napari_cellseg3d.code_models.workers import WeightsDownloader
+    from napari_cellseg3d.config import MODEL_LIST, PRETRAINED_WEIGHTS_DIR
+
+    for model_name in MODEL_LIST:
+        file_name = MODEL_LIST[model_name].weights_file
+        WeightsDownloader().download_weights(model_name, file_name)
+        model = MODEL_LIST[model_name](input_img_size=[128, 128, 128])
+        try:
+            model.load_state_dict(
+                torch.load(
+                    str(Path(PRETRAINED_WEIGHTS_DIR) / file_name),
+                    map_location="cpu",
+                ),
+                strict=True,
+            )
+        except RuntimeError:
+            pytest.fail(f"Failed to load weights for {model_name}")
+
+
+def test_trailmap_init():
+    test = TRAILMAP_MS_(
+        input_img_size=[128, 128, 128],
+        in_channels=1,
+        out_channels=1,
+        dropout_prob=0.3,
+    )
+    assert isinstance(test, TRAILMAP_MS_)

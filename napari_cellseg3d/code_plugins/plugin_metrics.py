@@ -77,7 +77,7 @@ class MetricsUtils(BasePluginFolder):
     def _build(self):
         """Builds the layout of the widget."""
 
-        self.filetype_choice.label.setVisible(False)
+        # self.filetype_choice.label.setVisible(False)
 
         w = ui.ContainerWidget()
         self.layout = w.layout

@@ -99,6 +99,7 @@ class Cropping(BasePluginSingleImage):
         self._x = 0
         self._y = 0
         self._z = 0
+        self.sliders = []
 
         self._crop_size_x = DEFAULT_CROP_SIZE
         self._crop_size_y = DEFAULT_CROP_SIZE
@@ -385,15 +386,15 @@ class Cropping(BasePluginSingleImage):
             )
         return layer
 
-    def _check_for_empty_layer(self, layer, volume_data):
-        if layer.data.all() == np.zeros_like(layer.data).all():
-            layer.colormap = "red"
-            layer.data = np.random.random(layer.data.shape)
-            layer.refresh()
-        else:
-            layer.colormap = "twilight_shifted"
-            layer.data = volume_data
-            layer.refresh()
+    # def _check_for_empty_layer(self, layer, volume_data):  # tries to recolor empty layers so that cropping is visible
+    #     if layer.data.all() == np.zeros_like(layer.data).all():
+    #         layer.colormap = "red"
+    #         layer.data = np.random.random(layer.data.shape)
+    #         layer.refresh()
+    #     else:
+    #         layer.colormap = "twilight_shifted"
+    #         layer.data = volume_data
+    #         layer.refresh()
 
     def _add_crop_layer(self, layer, cropx, cropy, cropz):
         crop_data = layer.data[:cropx, :cropy, :cropz]
@@ -557,6 +558,7 @@ class Cropping(BasePluginSingleImage):
             ui.Slider(text_label=axis, lower=0, upper=end, step=step)
             for axis, end, step in zip("zyx", ends, stepsizes)
         ]
+        self.sliders = sliders
         for axis, slider in enumerate(sliders):
             slider.valueChanged.connect(
                 lambda event, axis=axis: set_slice(

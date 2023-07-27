@@ -738,8 +738,8 @@ class AnisotropyWidgets(QWidget):
 
         """
 
-        base = max(aniso_res)
-        return [res / base for res in aniso_res]
+        base = min(aniso_res)
+        return [base / res for res in aniso_res]
 
     def enabled(self):
         """Returns : whether anisotropy correction has been enabled or not"""
