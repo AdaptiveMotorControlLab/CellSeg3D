@@ -86,7 +86,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#get-time">get_time</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#time-difference">time_difference</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-time-filepath">get_time_filepath</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#save-stack">save_stack</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-padding-dim">get_padding_dim</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dice-coeff">dice_coeff</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#sphericity-volume-area">sphericity_volume_area</a></li>
@@ -187,23 +186,6 @@ Should be used as a metaclass for classes without inheritance (object type)</p>
 </dd></dl>
 
 </section>
-<section id="save-stack">
-<h3>save_stack<a class="headerlink" href="#save-stack" title="Permalink to this headline"></a></h3>
-<dl class="py function">
-<dt class="sig sig-object py" id="napari_cellseg3d.utils.save_stack">
-<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.utils.</span></span><span class="sig-name descname"><span class="pre">save_stack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filetype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.png'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.utils.save_stack" title="Permalink to this definition"></a></dt>
-<dd><p>Saves the files in labels at location out_path as a stack of len(labels) .png files</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>images</strong> – array of label images</p></li>
-<li><p><strong>out_path</strong> – path to the directory for saving</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-</section>
 <section id="get-padding-dim">
 <h3>get_padding_dim<a class="headerlink" href="#get-padding-dim" title="Permalink to this headline"></a></h3>
 <dl class="py function">
@@ -230,7 +212,7 @@ Shows a warning if the padding dimensions are very large.</p>
 <h3>dice_coeff<a class="headerlink" href="#dice-coeff" title="Permalink to this headline"></a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="napari_cellseg3d.utils.dice_coeff">
-<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.utils.</span></span><span class="sig-name descname"><span class="pre">dice_coeff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.utils.dice_coeff" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.utils.</span></span><span class="sig-name descname"><span class="pre">dice_coeff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.utils.dice_coeff" title="Permalink to this definition"></a></dt>
 <dd><p>Compute Dice-Sorensen coefficient between two numpy arrays</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
