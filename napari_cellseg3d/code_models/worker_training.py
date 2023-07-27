@@ -92,6 +92,7 @@ a custom worker function was implemented.
 # 2. Create a custom worker for WNet training
 # 3. Adapt UI for WNet training (Advanced tab + model choice on first tab)
 # 4. Adapt plots and TrainingReport for WNet training
+# 5. log_parameters function
 
 
 class TrainingWorkerBase(GeneratorWorker):
@@ -408,7 +409,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
 
             self.log(f"Using device: {device}")
 
-            self.log("Config:")
+            self.log("Config:")  # FIXME log_parameters func instead
             [self.log(str(a)) for a in self.config.__dict__.items()]
 
             self.log("Initializing training...")
@@ -773,7 +774,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         yield TrainingReport(
                             epoch=epoch,
                             loss_1_values={
-                                "Ncuts loss": ncuts_losses,
+                                "SoftNcuts loss": ncuts_losses,
                                 "Dice metric": metric,
                             },
                             loss_2_values=rec_losses,

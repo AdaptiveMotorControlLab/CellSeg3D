@@ -174,7 +174,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         }
 
         self.df = None
-        self.loss_1_values = []
+        self.loss_1_values = {}
         self.loss_2_values = []
 
         ###########
@@ -1267,7 +1267,8 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                     report.epoch == 0
                     or report.epoch + 1
                     == self.worker_config.validation_interval
-                ):
+                ) and len(self.result_layers) == 0:
+                    self.result_layers = []
                     self._display_results(report.images_dict)
                 else:
                     self._display_results(
@@ -1312,6 +1313,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.worker_config.validation_interval - 1,
                 "",
             )[: len(size_column)]
+
             self.df = pd.DataFrame(
                 {
                     "epoch": size_column,
@@ -1324,13 +1326,25 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 logger.error(err)
                 raise ValueError(err)
         else:
-            self.df = pd.DataFrame(
-                {
-                    "epoch": size_column,
-                    "Ncuts loss": self.loss_1_values,
-                    "Reconstruction loss": self.loss_2_values,
-                }
-            )
+            ncuts_loss = self.loss_1_values["SoftNCuts"]
+            try:
+                dice_metric = self.loss_1_values["Dice metric"]
+                self.df = pd.DataFrame(
+                    {
+                        "epoch": size_column,
+                        "Ncuts loss": ncuts_loss,
+                        "Dice metric": dice_metric,
+                        "Reconstruction loss": self.loss_2_values,
+                    }
+                )
+            except KeyError:
+                self.df = pd.DataFrame(
+                    {
+                        "epoch": size_column,
+                        "Ncuts loss": ncuts_loss,
+                        "Reconstruction loss": self.loss_2_values,
+                    }
+                )
 
         path = Path(self.worker_config.results_path_folder) / Path(
             "training.csv"
@@ -1410,6 +1424,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         epoch = len(loss_1[list(loss_1.keys())[0]])
         logger.debug(f"Updating loss plot for epoch {epoch}")
+        plot_max = self._is_current_job_supervised()
         if epoch < self.worker_config.validation_interval * 2:
             return
         if epoch == self.worker_config.validation_interval * 2:
@@ -1453,13 +1468,13 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 logger.error(
                     "Plot dock widget could not be added. Should occur in testing only"
                 )
-            self._plot_loss(loss_1, loss_2)
+            self._plot_loss(loss_1, loss_2, show_plot_2_max=plot_max)
         else:
             with plt.style.context("dark_background"):
                 self.plot_1.cla()
                 self.plot_2.cla()
 
-                self._plot_loss(loss_1, loss_2)
+                self._plot_loss(loss_1, loss_2, show_plot_2_max=plot_max)
 
     def _reset_loss_plot(self):
         if self.plot_1 is not None and self.plot_2 is not None:
