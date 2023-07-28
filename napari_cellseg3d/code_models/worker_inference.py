@@ -436,6 +436,8 @@ class InferenceWorker(GeneratorWorker):
             + f"_{time}"
             + filetype
         )
+        if not Path(self.config.results_path).exists():
+            Path(self.config.results_path).mkdir(parents=True, exist_ok=True)
         try:
             imwrite(file_path, image)
         except ValueError as e:
