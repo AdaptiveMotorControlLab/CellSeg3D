@@ -66,18 +66,27 @@ def test_inference_on_folder():
     config.images_filepaths = [
         str(Path(__file__).resolve().parent / "res/test.tif")
     ]
+    config.sliding_window_config.window_size = 64
 
-    def mock_work(x):
-        return x
+    class mock_work:
+        def __call__(self, x):
+            return x
+
+        def eval(self):
+            return None
 
     worker = InferenceWorker(worker_config=config)
-    worker.aniso_transform = mock_work
+    worker.aniso_transform = mock_work()
 
     image = torch.Tensor(rand_gen.random((1, 1, 64, 64, 64)))
     res = worker.inference_on_folder(
-        {"image": image}, 0, model=mock_work, post_process_transforms=mock_work
+        {"image": image},
+        0,
+        model=mock_work(),
+        post_process_transforms=mock_work(),
     )
     assert isinstance(res, InferenceResult)
+    assert res.result is not None
 
 
 def test_post_processing():
