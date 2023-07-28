@@ -7,7 +7,7 @@ logger = LOGGER
 
 class SwinUNETR_(SwinUNETR):
     use_default_training = True
-    weights_file = "Swin64_best_metric.pth"
+    weights_file = "SwinUNetR_latest.pth"
 
     def __init__(
         self,
