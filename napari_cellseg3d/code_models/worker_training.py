@@ -208,7 +208,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
     def get_dataset_eval(self, eval_dataset_dict):
         eval_transforms = Compose(
             [
-                LoadImaged(keys=["image", "label"], image_only=True),
+                LoadImaged(keys=["image", "label"]),
                 EnsureChannelFirstd(
                     keys=["image", "label"], channel_dim="no_channel"
                 ),
@@ -373,7 +373,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
         )
 
         if self.config.eval_volume_dict is not None:
-            eval_dataset = self.get_dataset_eval(train_transforms)
+            eval_dataset = self.get_dataset_eval(self.config.eval_volume_dict)
 
             eval_dataloader = DataLoader(
                 eval_dataset,
@@ -617,7 +617,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                                 "cmap": "turbo",
                             },
                             "Decoder output": {
-                                "data": dec_out,
+                                "data": np.squeeze(dec_out),
                                 "cmap": "gist_earth",
                             },
                             "Input image": {"data": np.squeeze(image), "cmap": "inferno"},
@@ -766,22 +766,27 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         if WANDB_INSTALLED:
                             # log validation dice score for each validation round
                             wandb.log({"val/dice_metric": metric})
+                        
+                        dec_out_val = val_decoder_outputs[0].detach().cpu().numpy()
+                        enc_out_val = val_outputs[0].detach().cpu().numpy()
+                        lab_out_val = val_labels[0].detach().cpu().numpy()
+                        val_in = val_inputs[0].detach.cpu().nummpy()
 
                         display_dict = {
                             "Decoder output": {
-                                "data": val_decoder_outputs[0],
+                                "data": np.squeeze(dec_out_val),
                                 "cmap": "gist_earth",
                             },
                             "Encoder output": {
-                                "data": val_outputs[0],
+                                "data": enc_out_val,
                                 "cmap": "turbo",
                             },
                             "Labels": {
-                                "data": val_labels[0],
+                                "data": lab_out_val,
                                 "cmap": "bop blue",
                             },
                             "Inputs": {
-                                "data": val_inputs[0],
+                                "data": val_in,
                                 "cmap": "inferno",
                             },
                         }
