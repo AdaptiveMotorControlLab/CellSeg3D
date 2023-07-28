@@ -1450,7 +1450,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                     label="Maximum Dice coeff.",
                     zorder=5,
                 )
-            self.plot_2.legend(facecolor=ui.napari_grey, loc="lower right")
+                self.plot_2.legend(facecolor=ui.napari_grey, loc="lower right")
             self.canvas.draw_idle()
 
     def update_loss_plot(self, loss_1: dict, loss_2: list):

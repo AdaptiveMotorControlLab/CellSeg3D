@@ -15,6 +15,7 @@ im_path_str = str(im_path)
 
 def test_create_supervised_worker_from_config(make_napari_viewer_proxy):
     widget = Trainer(make_napari_viewer_proxy())
+    widget.device_choice.setCurrentIndex(0)
     worker = widget._create_worker()
     default_config = config.SupervisedTrainingWorkerConfig()
     excluded = [

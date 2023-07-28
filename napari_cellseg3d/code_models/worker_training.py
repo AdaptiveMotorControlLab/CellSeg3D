@@ -205,7 +205,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
 
         return self.config.sample_size, dataset
 
-    def get_patch_dataset_eval(self, eval_dataset_dict):
+    def get_dataset_eval(self, eval_dataset_dict):
         eval_transforms = Compose(
             [
                 LoadImaged(keys=["image", "label"], image_only=True),
@@ -373,7 +373,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
         )
 
         if self.config.eval_volume_dict is not None:
-            eval_dataset = self.get_dataset(train_transforms)
+            eval_dataset = self.get_dataset_eval(train_transforms)
 
             eval_dataloader = DataLoader(
                 eval_dataset,
@@ -620,7 +620,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                                 "data": dec_out,
                                 "cmap": "gist_earth",
                             },
-                            "Input image": {"data": image, "cmap": "inferno"},
+                            "Input image": {"data": np.squeeze(image), "cmap": "inferno"},
                         }
 
                         yield TrainingReport(
@@ -667,7 +667,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 self.log(f"Reconstruction loss: {rec_losses[-1]:.5f}")
                 self.log(f"Sum of losses: {total_losses[-1]:.5f}")
                 if epoch > 0:
-                    self.lof(
+                    self.log(
                         f"Ncuts loss difference: {ncuts_losses[-1] - ncuts_losses[-2]:.5f}"
                     )
                     self.log(
