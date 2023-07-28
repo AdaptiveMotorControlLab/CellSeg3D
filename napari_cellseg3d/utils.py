@@ -95,9 +95,6 @@ def show_result(viewer, layer, image, name):
         )
 
 
-####################
-
-
 class Singleton(type):
     """
     Singleton class that can only be instantiated once at a time,
