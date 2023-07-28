@@ -3,7 +3,7 @@ from monai.networks.nets import SegResNetVAE
 
 class SegResNet_(SegResNetVAE):
     use_default_training = True
-    weights_file = "SegResNet.pth"
+    weights_file = "SegResNet_latest.pth"
 
     def __init__(
         self, input_img_size, out_channels=1, dropout_prob=0.3, **kwargs

@@ -89,6 +89,7 @@ def test_inference_on_folder():
         post_process_transforms=mock_work(),
     )
     assert isinstance(res, InferenceResult)
+    assert res.result is not None
 
 
 def test_post_processing():
