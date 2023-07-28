@@ -66,6 +66,7 @@ def test_inference_on_folder():
     config.images_filepaths = [
         str(Path(__file__).resolve().parent / "res/test.tif")
     ]
+    config.sliding_window_config.window_size = 64
 
     class mock_work:
         def __call__(self, x):
@@ -85,6 +86,7 @@ def test_inference_on_folder():
         post_process_transforms=mock_work(),
     )
     assert isinstance(res, InferenceResult)
+    assert res.result is not None
 
 
 def test_post_processing():

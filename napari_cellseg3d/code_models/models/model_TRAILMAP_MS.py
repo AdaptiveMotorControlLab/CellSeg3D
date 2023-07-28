@@ -4,7 +4,7 @@ from napari_cellseg3d.utils import LOGGER as logger
 
 class TRAILMAP_MS_(UNet3D):
     use_default_training = True
-    weights_file = "TRAILMAP_MS_best_metric_epoch_26.pth"
+    weights_file = "TRAILMAP_MS_best_metric.pth"
 
     # original model from Liqun Luo lab, transferred to pytorch and trained on mesoSPIM-acquired data (mostly TPH2 as of July 2022)
 
