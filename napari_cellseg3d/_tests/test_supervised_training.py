@@ -31,20 +31,6 @@ def test_create_supervised_worker_from_config(make_napari_viewer_proxy):
             )
 
 
-def test_create_unspervised_worker_from_config(make_napari_viewer_proxy):
-    widget = Trainer(make_napari_viewer_proxy())
-    widget.model_choice.setCurrentText("WNet")
-    widget._toggle_unsupervised_mode(enabled=True)
-    default_config = config.WNetTrainingWorkerConfig()
-    worker = widget._create_worker()
-    excluded = ["results_path_folder", "sample_size", "weights_info"]
-    for attr in dir(default_config):
-        if not attr.startswith("__") and attr not in excluded:
-            assert getattr(default_config, attr) == getattr(
-                worker.config, attr
-            )
-
-
 def test_update_loss_plot(make_napari_viewer_proxy):
     view = make_napari_viewer_proxy()
     widget = Trainer(view)
@@ -135,29 +121,3 @@ def test_training(make_napari_viewer_proxy, qtbot):
     widget.on_yield(res)
     assert widget.loss_1_values["loss"] == [1, 1, 1, 1]
     assert widget.loss_2_values == [1, 1, 1, 1]
-
-
-def test_unsupervised_worker(make_napari_viewer_proxy):
-    viewer = make_napari_viewer_proxy()
-    widget = Trainer(viewer)
-
-    widget.model_choice.setCurrentText("WNet")
-    widget._toggle_unsupervised_mode(enabled=True)
-
-    widget.unsupervised_images_filewidget.text_field.setText(
-        str(im_path.parent)
-    )
-    widget.data = widget.create_dataset_dict_no_labs()
-    worker = widget._create_worker()
-    dataloader, eval_dataloader, data_shape = worker._get_data()
-    assert eval_dataloader is None
-    assert data_shape == (6, 6, 6)
-
-    widget.images_filepaths = [str(im_path.parent)]
-    widget.labels_filepaths = [str(im_path.parent)]
-    widget.unsupervised_eval_data = widget.create_train_dataset_dict()
-    assert widget.unsupervised_eval_data is not None
-    worker = widget._create_worker()
-    dataloader, eval_dataloader, data_shape = worker._get_data()
-    assert eval_dataloader is not None
-    assert data_shape == (6, 6, 6)

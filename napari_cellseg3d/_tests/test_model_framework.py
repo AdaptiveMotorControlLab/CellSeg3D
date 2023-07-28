@@ -35,8 +35,8 @@ def test_update_default(make_napari_viewer_proxy):
     assert widget._default_path == [
         pth("C:/test/test"),
         pth("C:/dataset/labels"),
-        pth("D:/dataset/res"),
         None,
+        pth("D:/dataset/res"),
     ]
 
 

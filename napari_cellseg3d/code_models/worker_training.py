@@ -643,23 +643,38 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 # wandb.log({"learning_rate encoder": optimizerE.param_groups[0]["lr"]})
                 # wandb.log({"learning_rate model": optimizer.param_groups[0]["lr"]})
 
-                self.log("Ncuts loss: " + str(ncuts_losses[-1]))
+                # self.log("Ncuts loss: " + str(ncuts_losses[-1]))
+                # if epoch > 0:
+                #     self.log(
+                #         "Ncuts loss difference: "
+                #         + str(ncuts_losses[-1] - ncuts_losses[-2])
+                #     )
+                # self.log("Reconstruction loss: " + str(rec_losses[-1]))
+                # if epoch > 0:
+                #     self.log(
+                #         "Reconstruction loss difference: "
+                #         + str(rec_losses[-1] - rec_losses[-2])
+                #     )
+                # self.log("Sum of losses: " + str(total_losses[-1]))
+                # if epoch > 0:
+                #     self.log(
+                #         "Sum of losses difference: "
+                #         + str(total_losses[-1] - total_losses[-2]),
+                #     )
+
+                # show losses and differences with 5 points precision
+                self.log(f"Ncuts loss: {ncuts_losses[-1]:.5f}")
+                self.log(f"Reconstruction loss: {rec_losses[-1]:.5f}")
+                self.log(f"Sum of losses: {total_losses[-1]:.5f}")
                 if epoch > 0:
-                    self.log(
-                        "Ncuts loss difference: "
-                        + str(ncuts_losses[-1] - ncuts_losses[-2])
+                    self.lof(
+                        f"Ncuts loss difference: {ncuts_losses[-1] - ncuts_losses[-2]:.5f}"
                     )
-                self.log("Reconstruction loss: " + str(rec_losses[-1]))
-                if epoch > 0:
                     self.log(
-                        "Reconstruction loss difference: "
-                        + str(rec_losses[-1] - rec_losses[-2])
+                        f"Reconstruction loss difference: {rec_losses[-1] - rec_losses[-2]:.5f}"
                     )
-                self.log("Sum of losses: " + str(total_losses[-1]))
-                if epoch > 0:
                     self.log(
-                        "Sum of losses difference: "
-                        + str(total_losses[-1] - total_losses[-2]),
+                        f"Sum of losses difference: {total_losses[-1] - total_losses[-2]:.5f}"
                     )
 
                 # Update the learning rate
@@ -774,7 +789,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         yield TrainingReport(
                             epoch=epoch,
                             loss_1_values={
-                                "SoftNcuts loss": ncuts_losses,
+                                "SoftNCuts loss": ncuts_losses,
                                 "Dice metric": metric,
                             },
                             loss_2_values=rec_losses,

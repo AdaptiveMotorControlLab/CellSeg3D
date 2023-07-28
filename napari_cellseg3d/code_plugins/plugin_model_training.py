@@ -1009,8 +1009,10 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
     ):
         return WNetTrainingWorker(worker_config=worker_config)
 
-    def _create_worker(self):
-        self._set_worker_config()
+    def _create_worker(self, additional_results_description=None):
+        self._set_worker_config(
+            additional_description=additional_results_description
+        )
         if self.unsupervised_mode:
             return self._create_unsupervised_worker_from_config(
                 self.worker_config
@@ -1019,7 +1021,15 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
     def _set_worker_config(
         self,
+        additional_description=None,
     ) -> config.TrainingWorkerConfig:
+        """Creates a worker config for supervised or unsupervised training
+        Args:
+            additional_description: Additional description to add to the results folder name
+
+        Returns:
+            A worker config
+        """
         logger.debug("Loading config...")
         model_config = config.ModelInfo(name=self.model_choice.currentText())
 
@@ -1033,10 +1043,21 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             seed=self.box_seed.value(),
         )
 
+        loss_name = (
+            (f"{self.loss_choice.currentText()}_")
+            if not self.unsupervised_mode
+            else ""
+        )
+        additional_description = (
+            (f"{additional_description}_")
+            if additional_description is not None
+            else ""
+        )
         results_path_folder = Path(
             self.results_path
             + f"/{model_config.name}_"
-            + f"{self.loss_choice.currentText()}_"
+            + additional_description
+            + loss_name
             + f"{self.epoch_choice.value()}e_"
             + f"{utils.get_date_time()}"
         )
@@ -1072,6 +1093,16 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         patch_size,
         deterministic_config,
     ):
+        """Sets the worker config for supervised training
+        Args:
+            model_config: Model config
+            results_path_folder: Path to results folder
+            patch_size: Patch size
+            deterministic_config: Deterministic config
+
+        Returns:
+            A worker config
+        """
         validation_percent = self.validation_percent_choice.slider_value / 100
         self.worker_config = config.SupervisedTrainingWorkerConfig(
             device=self.check_device_choice(),
@@ -1103,6 +1134,16 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         deterministic_config,
         eval_volume_dict,
     ) -> config.WNetTrainingWorkerConfig:
+        """Sets the worker config for unsupervised training
+        Args:
+            results_path_folder: Path to results folder
+            patch_size: Patch size
+            deterministic_config: Deterministic config
+            eval_volume_dict: Evaluation volume dictionary
+
+        Returns:
+            A worker config
+        """
         self.worker_config = config.WNetTrainingWorkerConfig(
             device=self.check_device_choice(),
             weights_info=self.weights_config,
