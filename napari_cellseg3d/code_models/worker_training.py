@@ -620,7 +620,10 @@ class WNetTrainingWorker(TrainingWorkerBase):
                                 "data": np.squeeze(dec_out),
                                 "cmap": "gist_earth",
                             },
-                            "Input image": {"data": np.squeeze(image), "cmap": "inferno"},
+                            "Input image": {
+                                "data": np.squeeze(image),
+                                "cmap": "inferno",
+                            },
                         }
 
                         yield TrainingReport(
@@ -766,8 +769,10 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         if WANDB_INSTALLED:
                             # log validation dice score for each validation round
                             wandb.log({"val/dice_metric": metric})
-                        
-                        dec_out_val = val_decoder_outputs[0].detach().cpu().numpy()
+
+                        dec_out_val = (
+                            val_decoder_outputs[0].detach().cpu().numpy()
+                        )
                         enc_out_val = val_outputs[0].detach().cpu().numpy()
                         lab_out_val = val_labels[0].detach().cpu().numpy()
                         val_in = val_inputs[0].detach.cpu().nummpy()
@@ -810,9 +815,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     * (self.config.max_epochs / (epoch + 1) - 1)
                     / 60
                 )
-                self.log(
-                    f"ETA: {eta} minutes",
-                )
+                self.log(f"ETA: {eta:.2f} minutes")
                 self.log("-" * 20)
 
                 # Save the model
