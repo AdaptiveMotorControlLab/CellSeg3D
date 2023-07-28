@@ -115,7 +115,7 @@ def test_pretrained_weights_compatibility():
     for model_name in MODEL_LIST:
         file_name = MODEL_LIST[model_name].weights_file
         WeightsDownloader().download_weights(model_name, file_name)
-        model = MODEL_LIST[model_name](input_img_size=[128, 128, 128])
+        model = MODEL_LIST[model_name](input_img_size=[64, 64, 64])
         try:
             model.load_state_dict(
                 torch.load(
