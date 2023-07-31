@@ -584,7 +584,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     loss = alpha * Ncuts + beta * reconstruction_loss
                     epoch_loss += loss.item()
                     if WANDB_INSTALLED:
-                        wandb.log({"Sum of losses": loss.item()})
+                        wandb.log({"Weighted sum of losses": loss.item()})
                     loss.backward(loss)
                     optimizer.step()
 
@@ -651,26 +651,6 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 # wandb.log({"learning_rate encoder": optimizerE.param_groups[0]["lr"]})
                 # wandb.log({"learning_rate model": optimizer.param_groups[0]["lr"]})
 
-                # self.log("Ncuts loss: " + str(ncuts_losses[-1]))
-                # if epoch > 0:
-                #     self.log(
-                #         "Ncuts loss difference: "
-                #         + str(ncuts_losses[-1] - ncuts_losses[-2])
-                #     )
-                # self.log("Reconstruction loss: " + str(rec_losses[-1]))
-                # if epoch > 0:
-                #     self.log(
-                #         "Reconstruction loss difference: "
-                #         + str(rec_losses[-1] - rec_losses[-2])
-                #     )
-                # self.log("Sum of losses: " + str(total_losses[-1]))
-                # if epoch > 0:
-                #     self.log(
-                #         "Sum of losses difference: "
-                #         + str(total_losses[-1] - total_losses[-2]),
-                #     )
-
-                # show losses and differences with 5 points precision
                 self.log(f"Ncuts loss: {ncuts_losses[-1]:.5f}")
                 self.log(f"Reconstruction loss: {rec_losses[-1]:.5f}")
                 self.log(f"Sum of losses: {total_losses[-1]:.5f}")
@@ -718,10 +698,15 @@ class WNetTrainingWorker(TrainingWorkerBase):
                                 overlap=0,
                                 progress=True,
                             )
-                            val_outputs = AsDiscrete(threshold=0.5)(
-                                val_outputs
+                            val_decoder_outputs = sliding_window_inference(
+                                val_outputs,
+                                roi_size=[64, 64, 64],
+                                sw_batch_size=1,
+                                predictor=model.forward_decoder,
+                                overlap=0,
+                                progress=True,
                             )
-                            val_decoder_outputs = model.forward_decoder(
+                            val_outputs = AsDiscrete(threshold=0.5)(
                                 val_outputs
                             )
 
