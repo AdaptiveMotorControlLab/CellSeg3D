@@ -619,7 +619,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                                 "data": AsDiscrete(threshold=0.5)(
                                     enc_out
                                 ).numpy(),
-                                "cmap": "turbo",
+                                "cmap": "bop blue",
                             },
                             "Decoder output": {
                                 "data": np.squeeze(dec_out),
@@ -634,7 +634,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         yield TrainingReport(
                             show_plot=True,
                             epoch=epoch,
-                            loss_1_values={"SoftNCuts loss": ncuts_losses},
+                            loss_1_values={"SoftNCuts": ncuts_losses},
                             loss_2_values=rec_losses,
                             weights=model.state_dict(),
                             images_dict=images_dict,
@@ -804,7 +804,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         yield TrainingReport(
                             epoch=epoch,
                             loss_1_values={
-                                "SoftNCuts loss": ncuts_losses,
+                                "SoftNCuts": ncuts_losses,
                                 "Dice metric": metric,
                             },
                             loss_2_values=rec_losses,
