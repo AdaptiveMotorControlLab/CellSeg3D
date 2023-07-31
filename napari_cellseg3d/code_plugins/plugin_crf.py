@@ -282,6 +282,7 @@ class CRFWidget(BasePluginUtils):
             result,
             name="crf_" + self.result_name,
             existing_layer=self.layer,
+            colormap="bop orange",
         )
 
     def _on_start(self):

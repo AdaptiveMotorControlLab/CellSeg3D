@@ -69,8 +69,13 @@ def save_layer(results_path, image_name, image):
 
 
 def show_result(
-    viewer, layer, image, name, existing_layer: napari.layers.Layer = None
-):
+    viewer,
+    layer,
+    image,
+    name,
+    existing_layer: napari.layers.Layer = None,
+    colormap="bop orange",
+) -> napari.layers.Layer:
     """
     Adds layers to a viewer to show result to user
 
@@ -81,12 +86,15 @@ def show_result(
         name: name of the added layer
 
     Returns:
-
+        napari.layers.Layer: the layer added to the viewer
     """
+    colormap = colormap if colormap is not None else "gray"
     if existing_layer is None:
         if isinstance(layer, napari.layers.Image):
             LOGGER.info("Added resulting image layer")
-            results_layer = viewer.add_image(image, name=name)
+            results_layer = viewer.add_image(
+                image, name=name, colormap=colormap
+            )
         elif isinstance(layer, napari.layers.Labels):
             LOGGER.info("Added resulting label layer")
             results_layer = viewer.add_labels(image, name=name)
