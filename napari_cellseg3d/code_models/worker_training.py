@@ -654,7 +654,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
 
                 self.log(f"Ncuts loss: {ncuts_losses[-1]:.5f}")
                 self.log(f"Reconstruction loss: {rec_losses[-1]:.5f}")
-                self.log(f"Sum of losses: {total_losses[-1]:.5f}")
+                self.log(f"Weighted sum of losses: {total_losses[-1]:.5f}")
                 if epoch > 0:
                     self.log(
                         f"Ncuts loss difference: {ncuts_losses[-1] - ncuts_losses[-2]:.5f}"
@@ -663,7 +663,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         f"Reconstruction loss difference: {rec_losses[-1] - rec_losses[-2]:.5f}"
                     )
                     self.log(
-                        f"Sum of losses difference: {total_losses[-1] - total_losses[-2]:.5f}"
+                        f"Weighted sum of losses difference: {total_losses[-1] - total_losses[-2]:.5f}"
                     )
 
                 # Update the learning rate
@@ -757,7 +757,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         # aggregate the final mean dice result
                         metric = dice_metric.aggregate().item()
                         dice_values.append(metric)
-                        self.log(f"Validation Dice score: {metric}")
+                        self.log(f"Validation Dice score: {metric:.3f}")
                         if best_dice < metric <= 1:
                             best_dice = metric
                             # save the best model
