@@ -316,9 +316,9 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self._set_tooltips()
         self._build()
         self.model_choice.currentTextChanged.connect(
-            self._toggle_unsupervised_mode
+            partial(self._toggle_unsupervised_mode, enabled=False)
         )
-        self._toggle_unsupervised_mode()
+        self._toggle_unsupervised_mode(enabled=False)
 
     def _set_tooltips(self):
         # tooltips
