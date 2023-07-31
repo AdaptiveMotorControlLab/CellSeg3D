@@ -774,7 +774,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         )
                         enc_out_val = val_outputs[0].detach().cpu().numpy()
                         lab_out_val = val_labels[0].detach().cpu().numpy()
-                        val_in = val_inputs[0].detach.cpu().nummpy()
+                        val_in = val_inputs[0].detach.cpu().numpy()
 
                         display_dict = {
                             "Decoder output": {
