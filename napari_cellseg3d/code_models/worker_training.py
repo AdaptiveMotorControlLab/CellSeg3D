@@ -774,7 +774,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         )
                         enc_out_val = val_outputs[0].detach().cpu().numpy()
                         lab_out_val = val_labels[0].detach().cpu().numpy()
-                        val_in = val_inputs[0].detach.cpu().numpy()
+                        val_in = val_inputs[0].detach().cpu().numpy()
 
                         display_dict = {
                             "Decoder output": {
@@ -782,15 +782,15 @@ class WNetTrainingWorker(TrainingWorkerBase):
                                 "cmap": "gist_earth",
                             },
                             "Encoder output": {
-                                "data": enc_out_val,
+                                "data": np.squeeze(enc_out_val),
                                 "cmap": "turbo",
                             },
                             "Labels": {
-                                "data": lab_out_val,
+                                "data": np.squeeze(lab_out_val),
                                 "cmap": "bop blue",
                             },
                             "Inputs": {
-                                "data": val_in,
+                                "data": np.squeeze(val_in),
                                 "cmap": "inferno",
                             },
                         }
