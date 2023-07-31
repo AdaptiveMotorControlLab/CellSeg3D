@@ -5,6 +5,7 @@ from napari_cellseg3d.code_plugins.plugin_model_training import (
     Trainer,
 )
 
+
 def test_unsupervised_worker(make_napari_viewer_proxy):
     im_path = Path(__file__).resolve().parent / "res/test.tif"
     # im_path_str = str(im_path)
@@ -34,8 +35,8 @@ def test_unsupervised_worker(make_napari_viewer_proxy):
     assert eval_dataloader is None
     assert data_shape == (6, 6, 6)
 
-    widget.images_filepaths = [str(im_path.parent)]
-    widget.labels_filepaths = [str(im_path.parent)]
+    widget.images_filepaths = [str(im_path)]
+    widget.labels_filepaths = [str(im_path)]
     # widget.unsupervised_eval_data = widget.create_train_dataset_dict()
     worker = widget._create_worker(additional_results_description="TEST_3")
     dataloader, eval_dataloader, data_shape = worker._get_data()
