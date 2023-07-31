@@ -1291,9 +1291,9 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                         "data"
                     ]
                     self.result_layers[i].refresh()
-                    self.result_layers[
-                        i
-                    ].contrast_limits.reset_contrast_limits_range()
+                    # self.result_layers[
+                    #     i
+                    # ].contrast_limits.reset_contrast_limits_range()
 
     def on_yield(self, report: TrainingReport):  # TODO refactor for dict
         # logger.info(
