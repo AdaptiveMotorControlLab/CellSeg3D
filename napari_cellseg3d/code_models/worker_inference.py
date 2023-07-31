@@ -784,6 +784,12 @@ class InferenceWorker(GeneratorWorker):
                 )
 
             model.to("cpu")
+            model = None
+            del model
+            inference_loader = None
+            del inference_loader
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
             # self.quit()
         except Exception as e:
             logger.exception(e)
