@@ -880,10 +880,8 @@ class WNetTrainingWorker(TrainingWorkerBase):
             #             "best_metric_epoch": best_dice_epoch,
             #         }
             #     )
-            self.log("*" * 50)
 
             # Save the model
-
             print(
                 "Saving the model to: ",
                 self.config.results_path_folder + "/wnet.pth",
