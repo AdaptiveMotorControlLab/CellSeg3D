@@ -698,7 +698,9 @@ class WNetTrainingWorker(TrainingWorkerBase):
                                 roi_size=[64, 64, 64],
                                 sw_batch_size=1,
                                 predictor=model.forward_encoder,
-                                overlap=0,
+                                overlap=0.1,
+                                mode="gaussian",
+                                sigma_scale=0.01,
                                 progress=True,
                             )
                             val_decoder_outputs = sliding_window_inference(
@@ -706,7 +708,9 @@ class WNetTrainingWorker(TrainingWorkerBase):
                                 roi_size=[64, 64, 64],
                                 sw_batch_size=1,
                                 predictor=model.forward_decoder,
-                                overlap=0,
+                                overlap=0.1,
+                                mode="gaussian",
+                                sigma_scale=0.01,
                                 progress=True,
                             )
                             val_outputs = AsDiscrete(threshold=0.5)(
@@ -787,13 +791,13 @@ class WNetTrainingWorker(TrainingWorkerBase):
                                 "data": np.squeeze(enc_out_val),
                                 "cmap": "turbo",
                             },
-                            "Labels": {
-                                "data": np.squeeze(lab_out_val),
-                                "cmap": "bop blue",
-                            },
                             "Inputs": {
                                 "data": np.squeeze(val_in),
                                 "cmap": "inferno",
+                            },
+                            "Labels": {
+                                "data": np.squeeze(lab_out_val),
+                                "cmap": "bop blue",
                             },
                         }
 
@@ -1414,6 +1418,8 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                                         sw_batch_size=self.config.batch_size,
                                         predictor=model,
                                         overlap=0.25,
+                                        mode="gaussian",
+                                        sigma_scale=0.01,
                                         sw_device=self.config.device,
                                         device=self.config.device,
                                         progress=False,

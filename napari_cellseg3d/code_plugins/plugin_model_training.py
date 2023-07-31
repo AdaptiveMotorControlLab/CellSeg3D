@@ -1259,6 +1259,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.result_layers = []
 
     def _display_results(self, images_dict, complete_missing=False):
+        """Show various model input/outputs in napari viewer as a list of layers"""
         layer_list = []
         if not complete_missing:
             for layer_name in list(images_dict.keys()):
@@ -1291,9 +1292,8 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                         "data"
                     ]
                     self.result_layers[i].refresh()
-                    # self.result_layers[
-                    #     i
-                    # ].contrast_limits.reset_contrast_limits_range()
+                    clims = self.result_layers[i].contrast_limits
+                    [c.reset_contrast_limits_range() for c in clims]
 
     def on_yield(self, report: TrainingReport):  # TODO refactor for dict
         # logger.info(
@@ -1395,6 +1395,17 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         )
         self.df.to_csv(path, index=False)
 
+    def _show_plot_max(self, plot, y):
+        x_max = (np.argmax(y) + 1) * self.worker_config.validation_interval
+        dice_max = np.max(y)
+        plot.scatter(
+            x_max,
+            dice_max,
+            c="r",
+            label="Max. Dice.",
+            zorder=5,
+        )
+
     def _plot_loss(
         self,
         loss_values_1: dict,
@@ -1414,7 +1425,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.plot_1.set_ylabel(self.plot_2_labels["ylabel"][plot_key])
 
             for metric_name in list(loss_values_1.keys()):
-                if metric_name == "Dice coefficient":
+                if metric_name == "Dice metric":
                     x = [
                         self.worker_config.validation_interval * (i + 1)
                         for i in range(len(loss_values_1[metric_name]))
@@ -1423,7 +1434,10 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                     x = [i + 1 for i in range(len(loss_values_1[metric_name]))]
                 y = loss_values_1[metric_name]
                 self.plot_1.plot(x, y, label=metric_name)
-            self.plot_1.legend(loc="lower right")
+                if metric_name == "Dice metric":
+                    self._show_plot_max(self.plot_1, y)
+
+            self.plot_1.legend(loc="best")
 
             # update plot 2
             if self._is_current_job_supervised():
@@ -1442,17 +1456,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.plot_2.set_ylabel(self.plot_2_labels["ylabel"][plot_key])
 
             if show_plot_2_max:
-                epoch_min = (
-                    np.argmax(y) + 1
-                ) * self.worker_config.validation_interval
-                dice_min = np.max(y)
-                self.plot_2.scatter(
-                    epoch_min,
-                    dice_min,
-                    c="r",
-                    label="Maximum Dice coeff.",
-                    zorder=5,
-                )
+                self._show_plot_max(self.plot_2, y)
                 self.plot_2.legend(facecolor=ui.napari_grey, loc="lower right")
             self.canvas.draw_idle()
 
