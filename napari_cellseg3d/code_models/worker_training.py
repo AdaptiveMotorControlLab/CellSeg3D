@@ -1633,6 +1633,14 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             self.log("Saving complete, exiting")
             model.to("cpu")
             # clear (V)RAM
+            model = None
+            del model
+            val_loader = None
+            del val_loader
+            train_loader = None
+            del train_loader
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
             # val_ds = None
             # train_ds = None
             # val_loader = None
