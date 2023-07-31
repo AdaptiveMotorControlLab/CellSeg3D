@@ -689,7 +689,9 @@ class WNetTrainingWorker(TrainingWorkerBase):
                                     val_inputs[i][j] = normalize_function(
                                         val_inputs[i][j]
                                     )
-
+                            logger.debug(
+                                f"Val inputs shape: {val_inputs.shape}"
+                            )
                             val_outputs = sliding_window_inference(
                                 val_inputs,
                                 roi_size=[64, 64, 64],
@@ -709,26 +711,33 @@ class WNetTrainingWorker(TrainingWorkerBase):
                             val_outputs = AsDiscrete(threshold=0.5)(
                                 val_outputs
                             )
+                            logger.debug(
+                                f"Val outputs shape: {val_outputs.shape}"
+                            )
+                            logger.debug(
+                                f"Val labels shape: {val_labels.shape}"
+                            )
+                            logger.debug(
+                                f"Val decoder outputs shape: {val_decoder_outputs.shape}"
+                            )
 
-                            # compute metric for current iteration
+                            dices = []
                             for channel in range(val_outputs.shape[1]):
-                                max_dice_channel = torch.argmax(
-                                    torch.Tensor(
-                                        [
-                                            utils.dice_coeff(
-                                                y_pred=val_outputs[
-                                                    :,
-                                                    channel : (channel + 1),
-                                                    :,
-                                                    :,
-                                                    :,
-                                                ],
-                                                y_true=val_labels,
-                                            )
-                                        ]
+                                dices.append(
+                                    utils.dice_coeff(
+                                        y_pred=val_outputs[
+                                            0, channel : (channel + 1), :, :, :
+                                        ],
+                                        y_true=val_labels[0],
                                     )
                                 )
-
+                            logger.debug(f"DICE COEFF: {dices}")
+                            max_dice_channel = torch.argmax(
+                                torch.Tensor(dices)
+                            )
+                            logger.debug(
+                                f"MAX DICE CHANNEL: {max_dice_channel}"
+                            )
                             dice_metric(
                                 y_pred=val_outputs[
                                     :,
