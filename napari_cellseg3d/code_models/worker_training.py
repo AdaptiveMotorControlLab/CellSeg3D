@@ -57,6 +57,7 @@ from napari_cellseg3d.code_models.workers_utils import (
     LogSignal,
     QuantileNormalizationd,
     RemapTensor,
+    RemapTensord,
     Threshold,
     TrainingReport,
     WeightsDownloader,
@@ -268,6 +269,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     spatial_size=(utils.get_padding_dim(first_volume_shape)),
                 ),
                 EnsureTyped(keys=["image"]),
+                RemapTensord(keys=["image"], new_min=0.0, new_max=100.0),
             ]
         )
 
