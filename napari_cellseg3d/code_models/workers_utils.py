@@ -217,23 +217,23 @@ class RemapTensor(Transform):
         return utils.remap_image(img, new_max=self.max, new_min=self.min)
 
 
-class RemapTensord(MapTransform):
-    def __init__(
-        self, keys, new_max, new_min, allow_missing_keys: bool = False
-    ):
-        super().__init__(keys, allow_missing_keys)
-        self.max = new_max
-        self.min = new_min
-
-    def __call__(self, data):
-        d = dict(data)
-        for key in self.keys:
-            for i in range(d[key].shape[0]):
-                logger.debug(f"remapping across channel {i}")
-                d[key][i] = utils.remap_image(
-                    d[key][i], new_max=self.max, new_min=self.min
-                )
-        return d
+# class RemapTensord(MapTransform):
+#     def __init__(
+#         self, keys, new_max, new_min, allow_missing_keys: bool = False
+#     ):
+#         super().__init__(keys, allow_missing_keys)
+#         self.max = new_max
+#         self.min = new_min
+#
+#     def __call__(self, data):
+#         d = dict(data)
+#         for key in self.keys:
+#             for i in range(d[key].shape[0]):
+#                 logger.debug(f"remapping across channel {i}")
+#                 d[key][i] = utils.remap_image(
+#                     d[key][i], new_max=self.max, new_min=self.min
+#                 )
+#         return d
 
 
 class Threshold(Transform):

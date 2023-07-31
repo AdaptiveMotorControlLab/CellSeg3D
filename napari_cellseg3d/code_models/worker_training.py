@@ -57,7 +57,7 @@ from napari_cellseg3d.code_models.workers_utils import (
     LogSignal,
     QuantileNormalizationd,
     RemapTensor,
-    RemapTensord,
+    # RemapTensord,
     Threshold,
     TrainingReport,
     WeightsDownloader,
@@ -269,7 +269,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     spatial_size=(utils.get_padding_dim(first_volume_shape)),
                 ),
                 EnsureTyped(keys=["image"]),
-                RemapTensord(keys=["image"], new_min=0.0, new_max=100.0),
+                # RemapTensord(keys=["image"], new_min=0.0, new_max=100.0),
             ]
         )
 
@@ -541,6 +541,9 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 for _i, batch in enumerate(dataloader):
                     # raise NotImplementedError("testing")
                     image = batch["image"].to(device)
+                    for i in range(image.shape[0]):
+                        for j in range(image.shape[1]):
+                            image[i, j] = normalize_function(image[i, j])
                     # if self.config.batch_size == 1:
                     #     image = image.unsqueeze(0)
                     # else:
@@ -580,8 +583,8 @@ class WNetTrainingWorker(TrainingWorkerBase):
 
                     loss = alpha * Ncuts + beta * reconstruction_loss
                     epoch_loss += loss.item()
-                    # if WANDB_INSTALLED:
-                    #     wandb.log({"Sum of losses": loss.item()})
+                    if WANDB_INSTALLED:
+                        wandb.log({"Sum of losses": loss.item()})
                     loss.backward(loss)
                     optimizer.step()
 
