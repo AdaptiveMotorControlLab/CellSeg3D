@@ -1435,8 +1435,8 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.plot_1.plot(x, y, label=metric_name)
                 if metric_name == "Dice metric":
                     self._show_plot_max(self.plot_1, y)
-
-            self.plot_1.legend(loc="best")
+            if len(loss_values_1.keys()) > 1:
+                self.plot_1.legend(loc="best", fontsize="10", markerscale=0.6)
 
             # update plot 2
             if self._is_current_job_supervised():
@@ -1520,7 +1520,6 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             with plt.style.context("dark_background"):
                 self.plot_1.cla()
                 self.plot_2.cla()
-
                 self._plot_loss(loss_1, loss_2, show_plot_2_max=plot_max)
 
     def _reset_loss_plot(self):
