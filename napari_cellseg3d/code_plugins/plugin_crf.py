@@ -270,7 +270,6 @@ class CRFWidget(BasePluginUtils):
 
     def _on_yield(self, result):
         self.crf_results.append(result)
-
         utils.save_layer(
             self.results_filewidget.text_field.text(),
             str(self.result_name + "_crf.tif"),
