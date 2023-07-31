@@ -1402,7 +1402,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             x_max,
             dice_max,
             c="r",
-            label="Max. Dice.",
+            label="Max. Dice",
             zorder=5,
         )
 

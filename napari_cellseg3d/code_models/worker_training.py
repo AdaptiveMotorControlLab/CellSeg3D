@@ -68,8 +68,6 @@ VERBOSE_SCHEDULER = True
 logger.debug(f"PRETRAINED WEIGHT DIR LOCATION : {PRETRAINED_WEIGHTS_DIR}")
 
 try:
-    import wandb
-
     WANDB_INSTALLED = True
 except ImportError:
     logger.warning(
@@ -411,25 +409,25 @@ class WNetTrainingWorker(TrainingWorkerBase):
         self.log(f"Using {self.config.num_classes} classes")
         self.log(f"Weight decay: {self.config.weight_decay}")
         self.log("* NCuts : ")
-        self.log(f"- Insensity sigma {self.config.intensity_sigma}")
+        self.log(f"- Intensity sigma {self.config.intensity_sigma}")
         self.log(f"- Spatial sigma {self.config.spatial_sigma}")
         self.log(f"- Radius : {self.config.radius}")
         self.log(f"* Reconstruction loss : {self.config.reconstruction_loss}")
         self.log(
-            f"Weighted sum : {self.config.n_cuts_weight}*Ncuts + {self.config.rec_loss_weight}*Reconstruction"
+            f"Weighted sum : {self.config.n_cuts_weight}*NCuts + {self.config.rec_loss_weight}*Reconstruction"
         )
         ##############
         self.log("-- Data --")
         self.log("Training data :")
         [
-            self.log(f"\n{v}")
+            self.log(f"{v}")
             for d in self.config.train_data_dict
             for k, v in d.items()
         ]
         if self.config.eval_volume_dict is not None:
             self.log("Validation data :")
             [
-                self.log(f"\n{k}: {v}")
+                self.log(f"{k}: {v}")
                 for d in self.config.eval_volume_dict
                 for k, v in d.items()
             ]
@@ -443,9 +441,9 @@ class WNetTrainingWorker(TrainingWorkerBase):
             set_track_meta(False)
             ##############
             # if WANDB_INSTALLED:
-            #     wandb.init(
-            #         config=WANDB_CONFIG, project="WNet-benchmark", mode=WANDB_MODE
-            #     )
+            # wandb.init(
+            #     config=WANDB_CONFIG, project="WNet-benchmark", mode=WANDB_MODE
+            # )
 
             set_determinism(
                 seed=self.config.deterministic_config.seed
@@ -455,12 +453,8 @@ class WNetTrainingWorker(TrainingWorkerBase):
             normalize_function = utils.remap_image
             device = self.config.device
 
-            self.log(f"Using device: {device}")
-
-            # self.log("Config:")  # FIXME log_parameters func instead
-            # [self.log(str(a)) for a in self.config.__dict__.items()]
+            # self.log(f"Using device: {device}")
             self.log_parameters()
-
             self.log("Initializing training...")
             self.log("Getting the data")
 
@@ -473,7 +467,6 @@ class WNetTrainingWorker(TrainingWorkerBase):
             #               Training the model                #
             ###################################################
             self.log("Initializing the model:")
-
             self.log("- Getting the model")
             # Initialize the model
             model = WNet(
@@ -494,8 +487,8 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         )
                     )
 
-            if WANDB_INSTALLED:
-                wandb.watch(model, log_freq=100)
+            # if WANDB_INSTALLED:
+            #     wandb.watch(model, log_freq=100)
 
             if self.config.weights_info.custom:
                 if self.config.weights_info.use_pretrained:
@@ -619,10 +612,10 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         )
 
                     epoch_rec_loss += reconstruction_loss.item()
-                    if WANDB_INSTALLED:
-                        wandb.log(
-                            {"Reconstruction loss": reconstruction_loss.item()}
-                        )
+                    # if WANDB_INSTALLED:
+                    #     wandb.log(
+                    #         {"Reconstruction loss": reconstruction_loss.item()}
+                    #     )
 
                     # Backward pass for the reconstruction loss
                     optimizer.zero_grad()
@@ -631,8 +624,8 @@ class WNetTrainingWorker(TrainingWorkerBase):
 
                     loss = alpha * Ncuts + beta * reconstruction_loss
                     epoch_loss += loss.item()
-                    if WANDB_INSTALLED:
-                        wandb.log({"Weighted sum of losses": loss.item()})
+                    # if WANDB_INSTALLED:
+                    #     wandb.log({"Weighted sum of losses": loss.item()})
                     loss.backward(loss)
                     optimizer.step()
 
@@ -818,9 +811,9 @@ class WNetTrainingWorker(TrainingWorkerBase):
                             self.log(f"Saving new best model to {save_path}")
                             torch.save(model.state_dict(), save_path)
 
-                        if WANDB_INSTALLED:
-                            # log validation dice score for each validation round
-                            wandb.log({"val/dice_metric": metric})
+                        # if WANDB_INSTALLED:
+                        # log validation dice score for each validation round
+                        # wandb.log({"val/dice_metric": metric})
 
                         dec_out_val = (
                             val_decoder_outputs[0].detach().cpu().numpy()
