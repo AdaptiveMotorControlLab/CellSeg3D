@@ -529,6 +529,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
             rec_losses = []
             total_losses = []
             best_dice = -1
+            dice_values = []
 
             # Train the model
             for epoch in range(self.config.max_epochs):
@@ -751,6 +752,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
 
                         # aggregate the final mean dice result
                         metric = dice_metric.aggregate().item()
+                        dice_values.append(metric)
                         self.log(f"Validation Dice score: {metric}")
                         if best_dice < metric <= 1:
                             best_dice = metric
@@ -799,7 +801,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                             epoch=epoch,
                             loss_1_values={
                                 "SoftNCuts": ncuts_losses,
-                                "Dice metric": metric,
+                                "Dice metric": dice_values,
                             },
                             loss_2_values=rec_losses,
                             weights=model.state_dict(),
