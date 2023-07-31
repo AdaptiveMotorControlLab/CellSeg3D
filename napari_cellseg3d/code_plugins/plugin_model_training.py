@@ -1036,7 +1036,8 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.weights_config.path = self.weights_config.path
         self.weights_config.custom = self.custom_weights_choice.isChecked()
         self.weights_config.use_pretrained = (
-            not self.use_transfer_choice.isChecked()
+            self.use_transfer_choice.isChecked()
+            and not self.custom_weights_choice.isChecked()
         )
         deterministic_config = config.DeterministicConfig(
             enabled=self.use_deterministic_choice.isChecked(),
@@ -1436,7 +1437,9 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 if metric_name == "Dice metric":
                     self._show_plot_max(self.plot_1, y)
             if len(loss_values_1.keys()) > 1:
-                self.plot_1.legend(loc="best", fontsize="10", markerscale=0.6)
+                self.plot_1.legend(
+                    loc="lower left", fontsize="10", markerscale=0.6
+                )
 
             # update plot 2
             if self._is_current_job_supervised():

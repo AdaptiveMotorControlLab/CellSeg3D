@@ -388,6 +388,48 @@ class WNetTrainingWorker(TrainingWorkerBase):
             eval_dataloader = None
         return dataloader, eval_dataloader, data_shape
 
+    def log_parameters(self):
+        self.log("*" * 20)
+        self.log("-- Parameters --")
+        self.log(f"Device: {self.config.device}")
+        self.log(f"Batch size: {self.config.batch_size}")
+        self.log(f"Epochs: {self.config.max_epochs}")
+        self.log(f"Learning rate: {self.config.learning_rate}")
+        self.log(f"Validation interval: {self.config.validation_interval}")
+        if self.config.weights_info.custom:
+            self.log(f"Custom weights: {self.config.weights_info.path}")
+        elif self.config.weights_info.use_pretrained:
+            self.log(f"Pretrained weights: {self.config.weights_info.path}")
+        if self.config.sampling:
+            self.log(
+                f"Using {self.config.num_samples} samples of size {self.config.sample_size}"
+            )
+        if self.config.do_augmentation:
+            self.log("Using data augmentation")
+        ##############
+        self.log("-- Model --")
+        self.log(f"Using {self.config.num_classes} classes")
+        self.log(f"Weight decay: {self.config.weight_decay}")
+        self.log("* NCuts : ")
+        self.log(f"- Insensity sigma {self.config.intensity_sigma}")
+        self.log(f"- Spatial sigma {self.config.spatial_sigma}")
+        self.log(f"- Radius : {self.config.radius}")
+        self.log(f"* Reconstruction loss : {self.config.reconstruction_loss}")
+        self.log(
+            f"Weighted sum : {self.config.n_cuts_weight}*Ncuts + {self.config.rec_loss_weight}*Reconstruction"
+        )
+        ##############
+        self.log("-- Data --")
+        self.log("Training data :")
+        [self.log(f"\n{v}") for k, v in self.config.train_data_dict.items()]
+        if self.config.eval_volume_dict is not None:
+            self.log("Validation data :")
+            [
+                self.log(f"\n{k}: {v}")
+                for d in self.config.eval_volume_dict
+                for k, v in d.items()
+            ]
+
     def train(self):
         try:
             if self.config is None:
@@ -411,8 +453,9 @@ class WNetTrainingWorker(TrainingWorkerBase):
 
             self.log(f"Using device: {device}")
 
-            self.log("Config:")  # FIXME log_parameters func instead
-            [self.log(str(a)) for a in self.config.__dict__.items()]
+            # self.log("Config:")  # FIXME log_parameters func instead
+            # [self.log(str(a)) for a in self.config.__dict__.items()]
+            self.log_parameters()
 
             self.log("Initializing training...")
             self.log("Getting the data")
@@ -783,11 +826,11 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         val_in = val_inputs[0].detach().cpu().numpy()
 
                         display_dict = {
-                            "Decoder output": {
+                            "Reconstruction": {
                                 "data": np.squeeze(dec_out_val),
                                 "cmap": "gist_earth",
                             },
-                            "Encoder output": {
+                            "Segmentation": {
                                 "data": np.squeeze(enc_out_val),
                                 "cmap": "turbo",
                             },
@@ -820,7 +863,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     * (self.config.max_epochs / (epoch + 1) - 1)
                     / 60
                 )
-                self.log(f"ETA: {eta:.2f} minutes")
+                self.log(f"ETA: {eta:.1f} minutes")
                 self.log("-" * 20)
 
                 # Save the model
