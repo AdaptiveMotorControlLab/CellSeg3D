@@ -287,7 +287,7 @@ class WNetTrainingWorkerConfig(TrainingWorkerConfig):
     dropout: float = 0.65
     use_clipping: bool = False  # use gradient clipping
     clipping: float = 1.0  # clipping value
-    weight_decay: float = 1e-5  # weight decay (used 0.01 historically)
+    weight_decay: float = 0.01  # 1e-5  # weight decay (used 0.01 historically)
     # NCuts loss params
     intensity_sigma: float = 1.0
     spatial_sigma: float = 4.0
