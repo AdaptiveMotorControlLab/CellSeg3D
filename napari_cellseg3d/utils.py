@@ -179,21 +179,31 @@ def sphericity_axis(semi_major, semi_minor):
     return result
 
 
-def dice_coeff(y_true, y_pred, smooth=1.0):
+def dice_coeff(
+    y_true: Union[torch.Tensor, np.ndarray],
+    y_pred: Union[torch.Tensor, np.ndarray],
+    smooth: float = 1.0,
+) -> Union[torch.Tensor, np.float64]:
     """Compute Dice-Sorensen coefficient between two numpy arrays
-
     Args:
         y_true: Ground truth label
         y_pred: Prediction label
-
     Returns: dice coefficient
-
     """
+    if isinstance(y_true, np.ndarray) and isinstance(y_pred, np.ndarray):
+        sum_tensor = np.sum
+    elif isinstance(y_true, torch.Tensor) and isinstance(y_pred, torch.Tensor):
+        sum_tensor = torch.sum
+    else:
+        raise ValueError(
+            "y_true and y_pred must both be either numpy arrays or torch tensors"
+        )
+
     y_true_f = y_true.flatten()
     y_pred_f = y_pred.flatten()
-    intersection = np.sum(y_true_f * y_pred_f)
+    intersection = sum_tensor(y_true_f * y_pred_f)
     return (2.0 * intersection + smooth) / (
-        np.sum(y_true_f) + np.sum(y_pred_f) + smooth
+        sum_tensor(y_true_f) + sum_tensor(y_pred_f) + smooth
     )
 
 
