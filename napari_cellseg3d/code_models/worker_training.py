@@ -629,6 +629,20 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     #         or self.config.scheduler == "CyclicLR"
                     # ):
                     #     scheduler.step()
+                    if self._abort_requested:
+                        dataloader = None
+                        del dataloader
+                        eval_dataloader = None
+                        del eval_dataloader
+                        model = None
+                        del model
+                        optimizer = None
+                        del optimizer
+                        criterionE = None
+                        del criterionE
+                        criterionW = None
+                        del criterionW
+                        torch.cuda.empty_cache()
 
                     yield TrainingReport(
                         show_plot=False, weights=model.state_dict()
@@ -848,6 +862,21 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         # reset the status for next validation round
                         dice_metric.reset()
 
+                        if self._abort_requested:
+                            dataloader = None
+                            del dataloader
+                            eval_dataloader = None
+                            del eval_dataloader
+                            model = None
+                            del model
+                            optimizer = None
+                            del optimizer
+                            criterionE = None
+                            del criterionE
+                            criterionW = None
+                            del criterionW
+                            torch.cuda.empty_cache()
+
                 eta = (
                     (time.time() - startTime)
                     * (self.config.max_epochs / (epoch + 1) - 1)
@@ -875,9 +904,8 @@ class WNetTrainingWorker(TrainingWorkerBase):
             #     )
 
             # Save the model
-            print(
-                "Saving the model to: ",
-                self.config.results_path_folder + "/wnet.pth",
+            self.log(
+                f"Saving the model to: {self.config.results_path_folder}/wnet.pth",
             )
             torch.save(
                 model.state_dict(),
@@ -894,7 +922,20 @@ class WNetTrainingWorker(TrainingWorkerBase):
             #     model_artifact.add_file(self.config.save_model_path)
             #     wandb.log_artifact(model_artifact)
 
-            return ncuts_losses, rec_losses, model
+            # return ncuts_losses, rec_losses, model
+            dataloader = None
+            del dataloader
+            eval_dataloader = None
+            del eval_dataloader
+            model = None
+            del model
+            optimizer = None
+            del optimizer
+            criterionE = None
+            del criterionE
+            criterionW = None
+            del criterionW
+            torch.cuda.empty_cache()
         except Exception as e:
             msg = f"Training failed with exception: {e}"
             self.log(msg)

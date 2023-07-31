@@ -124,7 +124,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.worker_config = None
         self.data = None
         """Data dictionary containing file paths"""
-        self.stop_requested = False
+        self._stop_requested = False
         """Whether the worker should stop or not"""
         self.start_time = None
         """Start time of the latest job"""
@@ -926,7 +926,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         """
         self.start_time = utils.get_time_filepath()
 
-        if self.stop_requested:
+        if self._stop_requested:
             self.log.print_and_log("Worker is already stopping !")
             return
 
@@ -987,7 +987,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.log.print_and_log(
                 f"Stop requested at {utils.get_time()}. \nWaiting for next yielding step..."
             )
-            self.stop_requested = True
+            self._stop_requested = True
             self.start_btn.setText("Stopping... Please wait")
             self.log.print_and_log("*" * 20)
             self.worker.quit()
@@ -1230,23 +1230,11 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             )
 
         self.worker = None
-        # if zipfile.is_zipfile(self.results_path_folder+".zip"):
-
-        # if not shutil.rmtree.avoids_symlink_attacks:
-        #     raise RuntimeError("shutil.rmtree is not safe on this platform")
-
-        # shutil.rmtree(self.results_path_folder)
-
-        # self.results_path_folder = ""
-
-        # self.clean_cache() # trying to fix memory leak
 
     def on_error(self):
         """Catches errored signal from worker"""
         self.log.print_and_log(f"WORKER ERRORED at {utils.get_time()}")
         self.worker = None
-        # self.empty_cuda_cache()
-        # self.clean_cache()
 
     def on_stop(self):
         self._remove_result_layers()
@@ -1325,7 +1313,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.loss_1_values = report.loss_1_values
             self.loss_2_values = report.loss_2_values
 
-        if self.stop_requested:
+        if self._stop_requested:
             self.log.print_and_log(
                 "Saving weights from aborted training in results folder"
             )
@@ -1338,7 +1326,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             )
             self.log.print_and_log("Saving complete")
             self.on_stop()
-            self.stop_requested = False
+            self._stop_requested = False
 
     def _make_csv(self):
         size_column = range(1, self.worker_config.max_epochs + 1)
