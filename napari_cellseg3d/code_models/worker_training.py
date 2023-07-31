@@ -421,7 +421,11 @@ class WNetTrainingWorker(TrainingWorkerBase):
         ##############
         self.log("-- Data --")
         self.log("Training data :")
-        [self.log(f"\n{v}") for k, v in self.config.train_data_dict.items()]
+        [
+            self.log(f"\n{v}")
+            for d in self.config.train_data_dict
+            for k, v in d.items()
+        ]
         if self.config.eval_volume_dict is not None:
             self.log("Validation data :")
             [
