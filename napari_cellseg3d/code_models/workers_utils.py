@@ -228,9 +228,11 @@ class RemapTensord(MapTransform):
     def __call__(self, data):
         d = dict(data)
         for key in self.keys:
-            d[key] = utils.remap_image(
-                d[key], new_max=self.max, new_min=self.min
-            )
+            for i in range(d[key].shape[0]):
+                logger.debug(f"remapping across channel {i}")
+                d[key][i] = utils.remap_image(
+                    d[key][i], new_max=self.max, new_min=self.min
+                )
         return d
 
 
