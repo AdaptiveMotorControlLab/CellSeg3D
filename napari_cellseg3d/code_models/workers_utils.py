@@ -151,7 +151,7 @@ class ONNXModelWrapper(torch.nn.Module):
         except ImportError as e:
             logger.error("ONNX is not installed but ONNX model was loaded")
             logger.error(e)
-            msg = "PLEASE INSTALL ONNX CPU OR GPU USING pip install napari-cellseg3d[onnx-cpu] OR napari-cellseg3d[onnx-gpu]"
+            msg = "PLEASE INSTALL ONNX CPU OR GPU USING: pip install napari-cellseg3d[onnx-cpu] OR pip install napari-cellseg3d[onnx-gpu]"
             logger.error(msg)
             raise ImportError(msg) from e
 
@@ -177,6 +177,8 @@ class ONNXModelWrapper(torch.nn.Module):
 
 
 class QuantileNormalizationd(MapTransform):
+    """MONAI-style dict transform to normalize each image in a batch individually by quantile normalization."""
+
     def __init__(self, keys, allow_missing_keys: bool = False):
         super().__init__(keys, allow_missing_keys)
 
@@ -199,6 +201,8 @@ class QuantileNormalizationd(MapTransform):
 
 
 class QuantileNormalization(Transform):
+    """MONAI-style transform to normalize each image in a batch individually by quantile normalization."""
+
     def __call__(self, img):
         return utils.quantile_normalization(img)
 
