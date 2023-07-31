@@ -1295,13 +1295,9 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                     self.result_layers[i].refresh()
                     self.result_layers[i].reset_contrast_limits()
 
-    def on_yield(self, report: TrainingReport):  # TODO refactor for dict
-        # logger.info(
-        #     f"\nCatching results : for epoch {data['epoch']},
-        #     loss is {data['losses']} and validation is {data['val_metrics']}"
-        # )
+    def on_yield(self, report: TrainingReport):
         if report == TrainingReport():
-            return
+            return  # skip empty reports
 
         if report.show_plot:
             try:
@@ -1375,7 +1371,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 dice_metric = self.loss_1_values["Dice metric"]
                 self.df = pd.DataFrame(
                     {
-                        "epoch": size_column,
+                        "Epoch": size_column,
                         "Ncuts loss": ncuts_loss,
                         "Dice metric": dice_metric,
                         "Reconstruction loss": self.loss_2_values,
@@ -1384,7 +1380,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             except KeyError:
                 self.df = pd.DataFrame(
                     {
-                        "epoch": size_column,
+                        "Epoch": size_column,
                         "Ncuts loss": ncuts_loss,
                         "Reconstruction loss": self.loss_2_values,
                     }

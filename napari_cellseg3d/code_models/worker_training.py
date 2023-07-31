@@ -86,13 +86,6 @@ a custom worker function was implemented.
 # https://www.pythoncentral.io/pysidepyqt-tutorial-creating-your-own-signals-and-slots/
 # https://napari-staging-site.github.io/guides/stable/threading.html
 
-# TODO list for WNet training :
-# 1. Create a custom base worker for training to avoid code duplication
-# 2. Create a custom worker for WNet training
-# 3. Adapt UI for WNet training (Advanced tab + model choice on first tab)
-# 4. Adapt plots and TrainingReport for WNet training
-# 5. log_parameters function
-
 
 class TrainingWorkerBase(GeneratorWorker):
     """A basic worker abstract class, to run training jobs in.
