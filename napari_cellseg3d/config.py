@@ -285,6 +285,7 @@ class WNetTrainingWorkerConfig(TrainingWorkerConfig):
     out_channels: int = 1  # decoder (reconstruction) output channels
     num_classes: int = 2  # encoder output channels
     dropout: float = 0.65
+    learning_rate: np.float64 = 2e-5
     use_clipping: bool = False  # use gradient clipping
     clipping: float = 1.0  # clipping value
     weight_decay: float = 0.01  # 1e-5  # weight decay (used 0.01 historically)

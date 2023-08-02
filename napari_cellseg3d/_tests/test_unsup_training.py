@@ -5,15 +5,13 @@ from napari_cellseg3d.code_plugins.plugin_model_training import (
     Trainer,
 )
 
+im_path = Path(__file__).resolve().parent / "res/test.tif"
+
 
 def test_unsupervised_worker(make_napari_viewer_proxy):
-    im_path = Path(__file__).resolve().parent / "res/test.tif"
-    # im_path_str = str(im_path)
-
     unsup_viewer = make_napari_viewer_proxy()
     widget = Trainer(viewer=unsup_viewer)
     widget.device_choice.setCurrentIndex(0)
-
     widget.model_choice.setCurrentText("WNet")
     widget._toggle_unsupervised_mode(enabled=True)
 
