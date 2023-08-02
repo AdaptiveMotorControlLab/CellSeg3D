@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from napari_cellseg3d._tests.fixtures import (
     LogFixture,
     LossFixture,
@@ -93,6 +95,22 @@ def test_unsupervised_training(make_napari_viewer_proxy):
     )
     assert isinstance(res, TrainingReport)
     assert not res.show_plot
+    widget.worker._abort_requested = True
+    res = next(
+        widget.worker.train(
+            provided_model=WNetFixture(),
+            provided_optimizer=OptimizerFixture(),
+            provided_loss=LossFixture(),
+        )
+    )
+    assert isinstance(res, TrainingReport)
+    assert not res.show_plot
+    with pytest.raises(
+        AttributeError,
+        match="'WNetTrainingWorker' object has no attribute 'model'",
+    ):
+        assert widget.worker.model is None
+
     widget.worker.config.eval_volume_dict = [
         {"image": im_path_str, "label": im_path_str}
     ]

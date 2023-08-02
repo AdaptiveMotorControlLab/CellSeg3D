@@ -559,6 +559,10 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     loss.backward(loss)
                     optimizer.step()
 
+                    yield TrainingReport(
+                        show_plot=False, weights=model.state_dict()
+                    )
+
                     if self._abort_requested:
                         self.dataloader = None
                         del self.dataloader
@@ -573,10 +577,6 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         criterionW = None
                         del criterionW
                         torch.cuda.empty_cache()
-
-                    yield TrainingReport(
-                        show_plot=False, weights=model.state_dict()
-                    )
 
                 self.ncuts_losses.append(
                     epoch_ncuts_loss / len(self.dataloader)
