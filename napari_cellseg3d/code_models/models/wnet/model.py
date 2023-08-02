@@ -62,7 +62,7 @@ class WNet(nn.Module):
         )
 
     def forward(self, x):
-        """Forward pass of the W-Net model."""
+        """Forward pass of the W-Net model. Returns the segmentation and the reconstructed image."""
         enc = self.forward_encoder(x)
         return enc, self.forward_decoder(enc)
 

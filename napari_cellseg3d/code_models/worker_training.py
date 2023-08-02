@@ -287,10 +287,10 @@ class WNetTrainingWorker(TrainingWorkerBase):
             train_transforms = EnsureTyped(keys=["image"])
 
         if self.config.sampling:
-            self.log("Loading patch dataset")
+            logger.debug("Loading patch dataset")
             (data_shape, dataset) = self.get_patch_dataset(train_transforms)
         else:
-            self.log("Loading volume dataset")
+            logger.debug("Loading volume dataset")
             (data_shape, dataset) = self.get_dataset(train_transforms)
 
         logger.debug(f"Data shape : {data_shape}")
@@ -388,7 +388,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
             dataloader, eval_dataloader, data_shape = self._get_data()
 
             dice_metric = DiceMetric(
-                include_background=False, reduction="mean", get_not_nans=False
+                include_background=True, reduction="mean", get_not_nans=False
             )
             ###################################################
             #               Training the model                #
@@ -510,14 +510,12 @@ class WNetTrainingWorker(TrainingWorkerBase):
                             )
 
                     # Forward pass
-                    enc = model.forward_encoder(image_batch)
+                    enc, dec = model(image_batch)
                     # Compute the Ncuts loss
                     Ncuts = criterionE(enc, image_batch)
                     epoch_ncuts_loss += Ncuts.item()
                     # if WANDB_INSTALLED:
                     #     wandb.log({"Ncuts loss": Ncuts.item()})
-
-                    dec = model.forward_decoder(enc)
 
                     # Compute the reconstruction loss
                     if isinstance(criterionW, nn.MSELoss):
@@ -685,32 +683,33 @@ class WNetTrainingWorker(TrainingWorkerBase):
                                 f"Val decoder outputs shape: {val_decoder_outputs.shape}"
                             )
 
-                            dices = []
+                            # dices = []
                             # Find in which channel the labels are (avoid background)
-                            for channel in range(val_outputs.shape[1]):
-                                dices.append(
-                                    utils.dice_coeff(
-                                        y_pred=val_outputs[
-                                            0, channel : (channel + 1), :, :, :
-                                        ],
-                                        y_true=val_labels[0],
-                                    )
-                                )
-                            logger.debug(f"DICE COEFF: {dices}")
-                            max_dice_channel = torch.argmax(
-                                torch.Tensor(dices)
-                            )
-                            logger.debug(
-                                f"MAX DICE CHANNEL: {max_dice_channel}"
-                            )
+                            # for channel in range(val_outputs.shape[1]):
+                            #     dices.append(
+                            #         utils.dice_coeff(
+                            #             y_pred=val_outputs[
+                            #                 0, channel : (channel + 1), :, :, :
+                            #             ],
+                            #             y_true=val_labels[0],
+                            #         )
+                            #     )
+                            # logger.debug(f"DICE COEFF: {dices}")
+                            # max_dice_channel = torch.argmax(
+                            #     torch.Tensor(dices)
+                            # )
+                            # logger.debug(
+                            #     f"MAX DICE CHANNEL: {max_dice_channel}"
+                            # )
                             dice_metric(
-                                y_pred=val_outputs[
-                                    :,
-                                    max_dice_channel : (max_dice_channel + 1),
-                                    :,
-                                    :,
-                                    :,
-                                ],
+                                y_pred=val_outputs,
+                                # [
+                                #     :,
+                                #     max_dice_channel : (max_dice_channel + 1),
+                                #     :,
+                                #     :,
+                                #     :,
+                                # ],
                                 y=val_labels,
                             )
 
@@ -736,11 +735,19 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         # wandb.log({"val/dice_metric": metric})
 
                         dec_out_val = (
-                            val_decoder_outputs[0].detach().cpu().numpy()
+                            val_decoder_outputs[0]
+                            .detach()
+                            .cpu()
+                            .numpy()
+                            .copy()
                         )
-                        enc_out_val = val_outputs[0].detach().cpu().numpy()
-                        lab_out_val = val_labels[0].detach().cpu().numpy()
-                        val_in = val_inputs[0].detach().cpu().numpy()
+                        enc_out_val = (
+                            val_outputs[0].detach().cpu().numpy().copy()
+                        )
+                        lab_out_val = (
+                            val_labels[0].detach().cpu().numpy().copy()
+                        )
+                        val_in = val_inputs[0].detach().cpu().numpy().copy()
 
                         display_dict = {
                             "Reconstruction": {
@@ -760,6 +767,14 @@ class WNetTrainingWorker(TrainingWorkerBase):
                                 "cmap": "bop blue",
                             },
                         }
+                        val_decoder_outputs = None
+                        del val_decoder_outputs
+                        val_outputs = None
+                        del val_outputs
+                        val_labels = None
+                        del val_labels
+                        val_inputs = None
+                        del val_inputs
 
                         yield TrainingReport(
                             epoch=epoch,
