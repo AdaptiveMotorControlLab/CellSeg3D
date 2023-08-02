@@ -12,12 +12,15 @@ from napari_cellseg3d.config import MODEL_LIST
 im_path = Path(__file__).resolve().parent / "res/test.tif"
 im_path_str = str(im_path)
 
-def test_create_supervised_worker_from_config(make_napari_viewer_proxy):
 
+def test_create_supervised_worker_from_config(make_napari_viewer_proxy):
     viewer = make_napari_viewer_proxy()
     widget = Trainer(viewer=viewer)
     widget.device_choice.setCurrentIndex(0)
-    worker = widget._create_worker()
+    widget.model_choice.setCurrentIndex(0)
+    widget._toggle_unsupervised_mode(enabled=False)
+    assert widget.model_choice.currentText() == list(MODEL_LIST.keys())[0]
+    worker = widget._create_worker(additional_results_description="test")
     default_config = config.SupervisedTrainingWorkerConfig()
     excluded = [
         "results_path_folder",
