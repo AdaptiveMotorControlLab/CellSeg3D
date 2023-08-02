@@ -431,7 +431,11 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             * False and displays a warning if not
 
         """
-        if self.images_filepaths == [] and self.labels_filepaths != []:
+        if (
+            self.images_filepaths == []
+            or self.labels_filepaths == []
+            or len(self.images_filepaths) != len(self.labels_filepaths)
+        ):
             logger.warning("Image and label paths are not correctly set")
             return False
         return True
