@@ -108,10 +108,10 @@ class TrainingWorkerBase(GeneratorWorker):
         self.downloader.log_widget = widget
 
     def log(self, text):
-        """Sends a signal that ``text`` should be logged
+        """Sends a Qt signal that the provided text should be logged
         Goes in a Log object, defined in :py:mod:`napari_cellseg3d.interface
         Sends a signal to the main thread to log the text.
-        Signal is defined in napari_cellseg3d.workers_utils.LogSignal
+        Signal is defined in napari_cellseg3d.workers_utils.LogSignal.
 
         Args:
             text (str): text to logged
@@ -653,7 +653,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 ):
                     model.eval()
                     self.log("Validating...")
-                    yield self._eval(model, epoch)  # validation
+                    yield self.eval(model, epoch)  # validation
 
                     if self._abort_requested:
                         self.dataloader = None
@@ -736,7 +736,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
             self.quit()
             raise e
 
-    def _eval(self, model, epoch) -> TrainingReport:
+    def eval(self, model, epoch) -> TrainingReport:
         with torch.no_grad():
             device = self.config.device
             for _k, val_data in enumerate(self.eval_dataloader):

@@ -4,7 +4,7 @@ Training module guide - Unsupervised models
 ==============================================
 
 .. important::
-    The WNet training is for now only available in the provided jupyter notebook, in the ``notebooks`` folder.
+    The WNet training is for now available as part of the plugin in the Training module.
     Please see the :ref:`training_wnet` section for more information.
 
 Training module guide - Supervised models
@@ -25,14 +25,15 @@ Model            Link to original paper
 ==============   ================================================================================================
 VNet             `Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation`_
 SegResNet        `3D MRI brain tumor segmentation using autoencoder regularization`_
-TRAILMAP_MS       A PyTorch implementation of the `TRAILMAP project on GitHub`_ pretrained with MesoSpim data
-TRAILMAP          An implementation of the `TRAILMAP project on GitHub`_ using a `3DUNet for PyTorch`_
+TRAILMAP_MS       An implementation of the `TRAILMAP project on GitHub`_ using `3DUNet for PyTorch`_
+SwinUNetR         `Swin UNETR, Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images`_
 ==============   ================================================================================================
 
 .. _Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation: https://arxiv.org/pdf/1606.04797.pdf
 .. _3D MRI brain tumor segmentation using autoencoder regularization: https://arxiv.org/pdf/1810.11654.pdf
 .. _TRAILMAP project on GitHub: https://github.com/AlbertPun/TRAILMAP
 .. _3DUnet for Pytorch: https://github.com/wolny/pytorch-3dunet
+.. _Swin UNETR, Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images: https://arxiv.org/abs/2201.01266
 
 .. important::
     | The machine learning models used by this program require all images of a dataset to be of the same size.

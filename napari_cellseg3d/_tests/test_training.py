@@ -124,7 +124,7 @@ def test_unsupervised_training(make_napari_viewer_proxy):
         {"image": im_path_str, "label": im_path_str}
     ]
     widget.worker._get_data()
-    eval_res = widget.worker._eval(
+    eval_res = widget.worker.eval(
         model=WNetFixture(),
         epoch=-10,
     )
