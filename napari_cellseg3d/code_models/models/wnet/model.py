@@ -99,22 +99,22 @@ class UNet(nn.Module):
         self.max_pool = nn.MaxPool3d(2)
         self.in_b = InBlock(in_channels, self.channels[0], dropout=dropout)
         self.conv1 = Block(channels[0], self.channels[1], dropout=dropout)
-        # self.conv2 = Block(channels[1], self.channels[2], dropout=dropout)
+        self.conv2 = Block(channels[1], self.channels[2], dropout=dropout)
         # self.conv3 = Block(channels[2], self.channels[3], dropout=dropout)
         # self.bot = Block(channels[3], self.channels[4], dropout=dropout)
-        # self.bot = Block(channels[2], self.channels[3], dropout=dropout)
-        self.bot = Block(channels[1], self.channels[2], dropout=dropout)
+        self.bot = Block(channels[2], self.channels[3], dropout=dropout)
+        # self.bot = Block(channels[1], self.channels[2], dropout=dropout)
         # self.bot = Block(channels[0], self.channels[1], dropout=dropout)
         # self.deconv1 = Block(channels[4], self.channels[3], dropout=dropout)
-        # self.deconv2 = Block(channels[3], self.channels[2], dropout=dropout)
+        self.deconv2 = Block(channels[3], self.channels[2], dropout=dropout)
         self.deconv3 = Block(channels[2], self.channels[1], dropout=dropout)
         self.out_b = OutBlock(channels[1], out_channels, dropout=dropout)
         # self.conv_trans1 = nn.ConvTranspose3d(
         #     self.channels[4], self.channels[3], 2, stride=2
         # )
-        # self.conv_trans2 = nn.ConvTranspose3d(
-        #     self.channels[3], self.channels[2], 2, stride=2
-        # )
+        self.conv_trans2 = nn.ConvTranspose3d(
+            self.channels[3], self.channels[2], 2, stride=2
+        )
         self.conv_trans3 = nn.ConvTranspose3d(
             self.channels[2], self.channels[1], 2, stride=2
         )
@@ -129,11 +129,11 @@ class UNet(nn.Module):
         """Forward pass of the U-Net model."""
         in_b = self.in_b(x)
         c1 = self.conv1(self.max_pool(in_b))
-        # c2 = self.conv2(self.max_pool(c1))
+        c2 = self.conv2(self.max_pool(c1))
         # c3 = self.conv3(self.max_pool(c2))
         # x = self.bot(self.max_pool(c3))
-        # x = self.bot(self.max_pool(c2))
-        x = self.bot(self.max_pool(c1))
+        x = self.bot(self.max_pool(c2))
+        # x = self.bot(self.max_pool(c1))
         # x = self.bot(self.max_pool(in_b))
         # x = self.deconv1(
         #     torch.cat(
@@ -144,15 +144,15 @@ class UNet(nn.Module):
         #         dim=1,
         #     )
         # )
-        # x = self.deconv2(
-        #     torch.cat(
-        #         [
-        #             c2,
-        #             self.conv_trans2(x),
-        #         ],
-        #         dim=1,
-        #     )
-        # )
+        x = self.deconv2(
+            torch.cat(
+                [
+                    c2,
+                    self.conv_trans2(x),
+                ],
+                dim=1,
+            )
+        )
         x = self.deconv3(
             torch.cat(
                 [
