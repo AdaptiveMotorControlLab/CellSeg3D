@@ -32,7 +32,6 @@ from monai.transforms import (
     EnsureType,
     EnsureTyped,
     LoadImaged,
-    # NormalizeIntensityd,
     Orientationd,
     Rand3DElasticd,
     RandAffined,
@@ -57,7 +56,6 @@ from napari_cellseg3d.code_models.workers_utils import (
     LogSignal,
     QuantileNormalizationd,
     RemapTensor,
-    # RemapTensord,
     Threshold,
     TrainingReport,
     WeightsDownloader,
@@ -238,12 +236,6 @@ class WNetTrainingWorker(TrainingWorkerBase):
         Returns:
             (tuple): A tuple containing the shape of the data and the dataset
         """
-        # train_files = self.create_dataset_dict_no_labs(
-        #     volume_directory=self.config.train_volume_directory
-        # )
-        # self.log(train_files)
-        # self.log(len(train_files))
-        # self.log(train_files[0])
         train_files = self.config.train_data_dict
 
         first_volume = LoadImaged(keys=["image"])(train_files[0])
@@ -271,52 +263,6 @@ class WNetTrainingWorker(TrainingWorkerBase):
         )
 
         return first_volume_shape, dataset
-
-    # def get_scheduler(self, optimizer, verbose=False):
-    #     scheduler_name = self.config.scheduler
-    #     if scheduler_name == "None":
-    #         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-    #             optimizer,
-    #             T_max=100,
-    #             eta_min=config.lr - 1e-6,
-    #             verbose=verbose,
-    #         )
-    #
-    #     elif scheduler_name == "ReduceLROnPlateau":
-    #         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-    #             optimizer,
-    #             mode="min",
-    #             factor=schedulers["ReduceLROnPlateau"]["factor"],
-    #             patience=schedulers["ReduceLROnPlateau"]["patience"],
-    #             verbose=verbose,
-    #         )
-    #     elif scheduler_name == "CosineAnnealingLR":
-    #         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-    #             optimizer,
-    #             T_max=schedulers["CosineAnnealingLR"]["T_max"],
-    #             eta_min=schedulers["CosineAnnealingLR"]["eta_min"],
-    #             verbose=verbose,
-    #         )
-    #     elif scheduler_name == "CosineAnnealingWarmRestarts":
-    #         scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
-    #             optimizer,
-    #             T_0=schedulers["CosineAnnealingWarmRestarts"]["T_0"],
-    #             eta_min=schedulers["CosineAnnealingWarmRestarts"]["eta_min"],
-    #             T_mult=schedulers["CosineAnnealingWarmRestarts"]["T_mult"],
-    #             verbose=verbose,
-    #         )
-    #     elif scheduler_name == "CyclicLR":
-    #         scheduler = torch.optim.lr_scheduler.CyclicLR(
-    #             optimizer,
-    #             base_lr=schedulers["CyclicLR"]["base_lr"],
-    #             max_lr=schedulers["CyclicLR"]["max_lr"],
-    #             step_size_up=schedulers["CyclicLR"]["step_size_up"],
-    #             mode=schedulers["CyclicLR"]["mode"],
-    #             cycle_momentum=False,
-    #         )
-    #     else:
-    #         raise ValueError(f"Scheduler {scheduler_name} not provided")
-    #     return scheduler
 
     def _get_data(self):
         if self.config.do_augmentation:
@@ -346,16 +292,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
         else:
             self.log("Loading volume dataset")
             (data_shape, dataset) = self.get_dataset(train_transforms)
-            # transform = Compose(
-            #     [
-            #         ToTensor(),
-            #         EnsureChannelFirst(channel_dim=0),
-            #     ]
-            # )
-            # dataset = [transform(im) for im in dataset]
-            # for data in dataset:
-            #     self.log(f"Data shape: {data.shape}")
-            #     break
+
         logger.debug(f"Data shape : {data_shape}")
         dataloader = DataLoader(
             dataset,
@@ -438,18 +375,15 @@ class WNetTrainingWorker(TrainingWorkerBase):
             #     config=WANDB_CONFIG, project="WNet-benchmark", mode=WANDB_MODE
             # )
 
-            set_determinism(
-                seed=self.config.deterministic_config.seed
-            )  # use default seed from NP_MAX
+            set_determinism(seed=self.config.deterministic_config.seed)
             torch.use_deterministic_algorithms(True, warn_only=True)
 
             normalize_function = utils.remap_image
             device = self.config.device
 
-            # self.log(f"Using device: {device}")
             self.log_parameters()
             self.log("Initializing training...")
-            self.log("Getting the data")
+            self.log("- Getting the data")
 
             dataloader, eval_dataloader, data_shape = self._get_data()
 
@@ -459,7 +393,6 @@ class WNetTrainingWorker(TrainingWorkerBase):
             ###################################################
             #               Training the model                #
             ###################################################
-            self.log("Initializing the model:")
             self.log("- Getting the model")
             # Initialize the model
             model = WNet(
@@ -545,12 +478,6 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     f"Unknown reconstruction loss : {self.config.reconstruction_loss} not supported"
                 )
 
-            # self.log("- getting the learning rate schedulers")
-            # Initialize the learning rate schedulers
-            # scheduler = get_scheduler(self.config, optimizer)
-            # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            #     optimizer, mode="min", factor=0.5, patience=10, verbose=True
-            # )
             model.train()
 
             self.log("Ready")
@@ -574,34 +501,31 @@ class WNetTrainingWorker(TrainingWorkerBase):
 
                 for _i, batch in enumerate(dataloader):
                     # raise NotImplementedError("testing")
-                    image = batch["image"].to(device)
-                    for i in range(image.shape[0]):
-                        for j in range(image.shape[1]):
-                            image[i, j] = normalize_function(image[i, j])
-                    # if self.config.batch_size == 1:
-                    #     image = image.unsqueeze(0)
-                    # else:
-                    #     image = image.unsqueeze(0)
-                    #     image = torch.swapaxes(image, 0, 1)
+                    image_batch = batch["image"].to(device)
+                    # Normalize the image
+                    for i in range(image_batch.shape[0]):
+                        for j in range(image_batch.shape[1]):
+                            image_batch[i, j] = normalize_function(
+                                image_batch[i, j]
+                            )
 
                     # Forward pass
-                    enc = model.forward_encoder(image)
+                    enc = model.forward_encoder(image_batch)
                     # Compute the Ncuts loss
-                    Ncuts = criterionE(enc, image)
+                    Ncuts = criterionE(enc, image_batch)
                     epoch_ncuts_loss += Ncuts.item()
                     # if WANDB_INSTALLED:
                     #     wandb.log({"Ncuts loss": Ncuts.item()})
 
-                    # Forward pass
-                    enc, dec = model(image)
+                    dec = model.forward_decoder(enc)
 
                     # Compute the reconstruction loss
                     if isinstance(criterionW, nn.MSELoss):
-                        reconstruction_loss = criterionW(dec, image)
+                        reconstruction_loss = criterionW(dec, image_batch)
                     elif isinstance(criterionW, nn.BCELoss):
                         reconstruction_loss = criterionW(
                             torch.sigmoid(dec),
-                            utils.remap_image(image, new_max=1),
+                            utils.remap_image(image_batch, new_max=1),
                         )
 
                     epoch_rec_loss += reconstruction_loss.item()
@@ -622,13 +546,6 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     loss.backward(loss)
                     optimizer.step()
 
-                    # if self.config.scheduler == "CosineAnnealingWarmRestarts":
-                    #     scheduler.step(epoch + _i / len(dataloader))
-                    # if (
-                    #         self.config.scheduler == "CosineAnnealingLR"
-                    #         or self.config.scheduler == "CyclicLR"
-                    # ):
-                    #     scheduler.step()
                     if self._abort_requested:
                         dataloader = None
                         del dataloader
@@ -656,7 +573,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     try:
                         enc_out = enc[0].detach().cpu().numpy()
                         dec_out = dec[0].detach().cpu().numpy()
-                        image = image[0].detach().cpu().numpy()
+                        image_batch = image_batch[0].detach().cpu().numpy()
 
                         images_dict = {
                             "Encoder output": {
@@ -674,7 +591,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                                 "cmap": "gist_earth",
                             },
                             "Input image": {
-                                "data": np.squeeze(image),
+                                "data": np.squeeze(image_batch),
                                 "cmap": "inferno",
                             },
                         }
@@ -713,11 +630,6 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         f"Weighted sum of losses difference: {total_losses[-1] - total_losses[-2]:.5f}"
                     )
 
-                # Update the learning rate
-                # if self.config.scheduler == "ReduceLROnPlateau":
-                #     # schedulerE.step(epoch_ncuts_loss)
-                #     # schedulerW.step(epoch_rec_loss)
-                #     scheduler.step(epoch_rec_loss)
                 if (
                     eval_dataloader is not None
                     and (epoch + 1) % self.config.validation_interval == 0
@@ -774,6 +686,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                             )
 
                             dices = []
+                            # Find in which channel the labels are (avoid background)
                             for channel in range(val_outputs.shape[1]):
                                 dices.append(
                                     utils.dice_coeff(
@@ -1020,19 +933,19 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             f"Percentage of dataset used for validation : {self.config.validation_percent * 100}%"
         )
 
-        self.log("-" * 10)
+        # self.log("-" * 10)
         self.log("Training files :\n")
         [
-            self.log(f"{Path(train_file['image']).name}\n")
+            self.log(f"- {Path(train_file['image']).name}\n")
             for train_file in self.train_files
         ]
-        self.log("-" * 10)
+        # self.log("-" * 10)
         self.log("Validation files :\n")
         [
-            self.log(f"{Path(val_file['image']).name}\n")
+            self.log(f"- {Path(val_file['image']).name}\n")
             for val_file in self.val_files
         ]
-        self.log("-" * 10)
+        # self.log("-" * 10)
 
         if self.config.deterministic_config.enabled:
             self.log("Deterministic training is enabled")
@@ -1067,7 +980,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 )
 
         # self.log("\n")
-        self.log("-" * 20)
+        # self.log("-" * 20)
 
     def train(self):
         """Trains the PyTorch model for the given number of epochs, with the selected model and data,
@@ -1147,7 +1060,8 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
 
             PADDING = utils.get_padding_dim(size)
             model = model_class(input_img_size=PADDING, use_checkpoint=True)
-            model = model.to(self.config.device)
+            device = torch.device(self.config.device)
+            model = model.to(device)
 
             epoch_loss_values = []
             val_metric_values = []
@@ -1204,9 +1118,9 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                             RandFlipd(keys=["image", "label"]),
                             RandRotate90d(keys=["image", "label"]),
                             RandAffined(
-                                keys=["image", "label"],
+                                keys=["image"],
                             ),
-                            EnsureTyped(keys=["image", "label"]),
+                            EnsureTyped(keys=["image"]),
                         ]
                     )
                 )
@@ -1215,19 +1129,15 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
 
             val_transforms = Compose(
                 [
-                    # LoadImaged(keys=["image", "label"]),
-                    # EnsureChannelFirstd(keys=["image", "label"]),
                     EnsureTyped(keys=["image", "label"]),
                 ]
             )
 
-            # self.log("Loading dataset...\n")
-            def get_loader_func(num_samples):
+            def get_patch_loader_func(num_samples):
                 return Compose(
                     [
                         LoadImaged(keys=["image", "label"]),
                         EnsureChannelFirstd(keys=["image", "label"]),
-                        QuantileNormalizationd(keys=["image"]),
                         RandSpatialCropSamplesd(
                             keys=["image", "label"],
                             roi_size=(
@@ -1244,7 +1154,8 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                                 utils.get_padding_dim(self.config.sample_size)
                             ),
                         ),
-                        EnsureTyped(keys=["image", "label"]),
+                        QuantileNormalizationd(keys=["image"]),
+                        EnsureTyped(keys=["image"]),
                     ]
                 )
 
@@ -1260,15 +1171,30 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                         self.config.num_samples
                         * (1 - self.config.validation_percent)
                     )
-                    sample_loader_train = get_loader_func(num_train_samples)
-                    sample_loader_eval = get_loader_func(num_val_samples)
+                    if num_train_samples < 2:
+                        self.log(
+                            "WARNING : not enough samples for training. Raising to 2"
+                        )
+                        num_train_samples = 2
+                    if num_val_samples < 2:
+                        self.log(
+                            "WARNING : not enough samples for validation. Raising to 2"
+                        )
+                        num_val_samples = 2
+
+                    sample_loader_train = get_patch_loader_func(
+                        num_train_samples
+                    )
+                    sample_loader_eval = get_patch_loader_func(num_val_samples)
                 else:
                     num_train_samples = (
                         num_val_samples
                     ) = self.config.num_samples
 
-                    sample_loader_train = get_loader_func(num_train_samples)
-                    sample_loader_eval = get_loader_func(num_val_samples)
+                    sample_loader_train = get_patch_loader_func(
+                        num_train_samples
+                    )
+                    sample_loader_eval = get_patch_loader_func(num_val_samples)
 
                 logger.debug(f"AMOUNT of train samples : {num_train_samples}")
                 logger.debug(
@@ -1276,20 +1202,19 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 )
 
                 logger.debug("train_ds")
-                train_ds = PatchDataset(
+                train_dataset = PatchDataset(
                     data=self.train_files,
                     transform=train_transforms,
                     patch_func=sample_loader_train,
                     samples_per_image=num_train_samples,
                 )
                 logger.debug("val_ds")
-                val_ds = PatchDataset(
+                validation_dataset = PatchDataset(
                     data=self.val_files,
                     transform=val_transforms,
                     patch_func=sample_loader_eval,
                     samples_per_image=num_val_samples,
                 )
-
             else:
                 load_whole_images = Compose(
                     [
@@ -1309,25 +1234,27 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                     ]
                 )
                 logger.debug("Cache dataset : train")
-                train_ds = CacheDataset(
+                train_dataset = CacheDataset(
                     data=self.train_files,
                     transform=Compose(load_whole_images, train_transforms),
                 )
                 logger.debug("Cache dataset : val")
-                val_ds = CacheDataset(
+                validation_dataset = CacheDataset(
                     data=self.val_files, transform=load_whole_images
                 )
             logger.debug("Dataloader")
             train_loader = DataLoader(
-                train_ds,
+                train_dataset,
                 batch_size=self.config.batch_size,
                 shuffle=True,
                 num_workers=2,
                 collate_fn=pad_list_data_collate,
             )
 
-            val_loader = DataLoader(
-                val_ds, batch_size=self.config.batch_size, num_workers=2
+            validation_loader = DataLoader(
+                validation_dataset,
+                batch_size=self.config.batch_size,
+                num_workers=2,
             )
             logger.info("\nDone")
 
@@ -1372,7 +1299,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                     model.load_state_dict(
                         torch.load(
                             weights,
-                            map_location=self.config.device,
+                            map_location=device,
                         ),
                         strict=True,
                     )
@@ -1396,7 +1323,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
 
             self.log_parameters()
 
-            device = torch.device(self.config.device)
+            # device = torch.device(self.config.device)
             self.set_loss_from_config()
 
             # if model_name == "test":
@@ -1427,7 +1354,8 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                         batch_data["image"].to(device),
                         batch_data["label"].to(device),
                     )
-
+                    # logger.debug(f"Inputs shape : {inputs.shape}")
+                    # logger.debug(f"Labels shape : {labels.shape}")
                     optimizer.zero_grad()
                     outputs = model(inputs)
                     # self.log(f"Output dimensions : {outputs.shape}")
@@ -1437,14 +1365,31 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                         ]  # TODO(cyril): adapt if additional channels
                         if len(outputs.shape) < 4:
                             outputs = outputs.unsqueeze(0)
+                    # logger.debug(f"Outputs shape : {outputs.shape}")
                     loss = self.loss_function(outputs, labels)
                     loss.backward()
                     optimizer.step()
                     epoch_loss += loss.detach().item()
                     self.log(
-                        f"* {step}/{len(train_ds) // train_loader.batch_size}, "
+                        f"* {step}/{len(train_dataset) // train_loader.batch_size}, "
                         f"Train loss: {loss.detach().item():.4f}"
                     )
+
+                    if self._abort_requested:
+                        self.log("Aborting training...")
+                        model = None
+                        del model
+                        train_loader = None
+                        del train_loader
+                        validation_loader = None
+                        del validation_loader
+                        optimizer = None
+                        del optimizer
+                        scheduler = None
+                        del scheduler
+                        if device.type == "cuda":
+                            torch.cuda.empty_cache()
+
                     yield TrainingReport(
                         show_plot=False, weights=model.state_dict()
                     )
@@ -1476,7 +1421,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                     model.eval()
                     self.log("Performing validation...")
                     with torch.no_grad():
-                        for val_data in val_loader:
+                        for val_data in validation_loader:
                             val_inputs, val_labels = (
                                 val_data["image"].to(device),
                                 val_data["label"].to(device),
@@ -1635,17 +1580,16 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             # clear (V)RAM
             model = None
             del model
-            val_loader = None
-            del val_loader
             train_loader = None
             del train_loader
-            if torch.cuda.is_available():
+            validation_loader = None
+            del validation_loader
+            optimizer = None
+            del optimizer
+            scheduler = None
+            del scheduler
+            if device.type == "cuda":
                 torch.cuda.empty_cache()
-            # val_ds = None
-            # train_ds = None
-            # val_loader = None
-            # train_loader = None
-            # torch.cuda.empty_cache()
 
         except Exception as e:
             self.raise_error(e, "Error in training")

@@ -976,10 +976,8 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.worker.warn_signal.connect(self.log.warn)
 
             self.worker.started.connect(self.on_start)
-
             self.worker.yielded.connect(partial(self.on_yield))
             self.worker.finished.connect(self.on_finish)
-
             self.worker.errored.connect(self.on_error)
 
         if self.worker.is_running:
@@ -1218,17 +1216,12 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.start_btn.setText("Start")
         [btn.setVisible(True) for btn in self.close_buttons]
 
-        # del self.worker
-
-        # self.empty_cuda_cache()
-
         if self.config.save_as_zip:
             shutil.make_archive(
                 self.worker_config.results_path_folder,
                 "zip",
                 self.worker_config.results_path_folder,
             )
-
         self.worker = None
 
     def on_error(self):
@@ -1239,6 +1232,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
     def on_stop(self):
         self._remove_result_layers()
         self.worker = None
+        self._stop_requested = False
         self.start_btn.setText("Start")
         [btn.setVisible(True) for btn in self.close_buttons]
 
