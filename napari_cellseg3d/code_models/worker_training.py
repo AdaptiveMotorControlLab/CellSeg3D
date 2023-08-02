@@ -362,7 +362,9 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 for k, v in d.items()
             ]
 
-    def train(self):
+    def train(
+        self, provided_model=None, provided_optimizer=None, provided_loss=None
+    ):
         try:
             if self.config is None:
                 self.config = config.WNetTrainingWorkerConfig()
@@ -395,11 +397,15 @@ class WNetTrainingWorker(TrainingWorkerBase):
             ###################################################
             self.log("- Getting the model")
             # Initialize the model
-            model = WNet(
-                in_channels=self.config.in_channels,
-                out_channels=self.config.out_channels,
-                num_classes=self.config.num_classes,
-                dropout=self.config.dropout,
+            model = (
+                WNet(
+                    in_channels=self.config.in_channels,
+                    out_channels=self.config.out_channels,
+                    num_classes=self.config.num_classes,
+                    dropout=self.config.dropout,
+                )
+                if provided_model is None
+                else provided_model
             )
             model.to(device)
 
@@ -458,7 +464,8 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 optimizer = torch.optim.Adam(
                     model.parameters(), lr=self.config.learning_rate
                 )
-
+            if provided_optimizer is not None:
+                optimizer = provided_optimizer
             self.log("- Getting the loss functions")
             # Initialize the Ncuts loss function
             criterionE = SoftNCutsLoss(
@@ -538,6 +545,8 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     beta = self.config.rec_loss_weight
 
                     loss = alpha * Ncuts + beta * reconstruction_loss
+                    if provided_loss is not None:
+                        loss = provided_loss
                     epoch_loss += loss.item()
                     # if WANDB_INSTALLED:
                     #     wandb.log({"Weighted sum of losses": loss.item()})
