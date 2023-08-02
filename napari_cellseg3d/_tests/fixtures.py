@@ -36,23 +36,42 @@ class WNetFixture(torch.nn.Module):
         return self.forward_encoder(x), self.forward_decoder(x)
 
 
-class OptimizerFixture:
-    def __call__(self, x):
+class ModelFixture(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.mock_conv = torch.nn.Conv3d(1, 1, 1)
+        self.mock_conv.requires_grad_(False)
+
+    def forward(self, x):
         return x
+
+
+class OptimizerFixture:
+    def __init__(self):
+        self.param_groups = []
+        self.param_groups.append({"lr": 0})
 
     def zero_grad(self):
         pass
 
-    def step(self):
+    def step(self, *args):
+        pass
+
+
+class SchedulerFixture:
+    def step(self, *args):
         pass
 
 
 class LossFixture:
-    def __call__(self, x):
-        return x
+    def __call__(self, *args):
+        return self
 
-    def backward(self, x):
+    def backward(self, *args):
         pass
 
     def item(self):
         return 0
+
+    def detach(self):
+        return self

@@ -999,7 +999,13 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
         # self.log("\n")
         # self.log("-" * 20)
 
-    def train(self):
+    def train(
+        self,
+        provided_model=None,
+        provided_optimizer=None,
+        provided_loss=None,
+        provided_scheduler=None,
+    ):
         """Trains the PyTorch model for the given number of epochs, with the selected model and data,
         using the chosen batch size, validation interval, loss function, and number of samples.
         Will perform validation once every :py:obj:`val_interval` and save results if the mean dice is better
@@ -1070,13 +1076,16 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                     self.config.train_data_dict[0]
                 )
                 check = data_check["image"].shape
-
             do_sampling = self.config.sampling
-
             size = self.config.sample_size if do_sampling else check
-
             PADDING = utils.get_padding_dim(size)
-            model = model_class(input_img_size=PADDING, use_checkpoint=True)
+
+            model = (
+                model_class(input_img_size=PADDING, use_checkpoint=True)
+                if provided_model is None
+                else provided_model
+            )
+
             device = torch.device(self.config.device)
             model = model.to(device)
 
@@ -1276,8 +1285,10 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             logger.info("\nDone")
 
             logger.debug("Optimizer")
-            optimizer = torch.optim.Adam(
-                model.parameters(), self.config.learning_rate
+            optimizer = (
+                torch.optim.Adam(model.parameters(), self.config.learning_rate)
+                if provided_optimizer is None
+                else provided_optimizer
             )
 
             factor = self.config.scheduler_factor
@@ -1286,12 +1297,16 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 self.log("Setting it to 0.5")
                 factor = 0.5
 
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-                optimizer=optimizer,
-                mode="min",
-                factor=factor,
-                patience=self.config.scheduler_patience,
-                verbose=VERBOSE_SCHEDULER,
+            scheduler = (
+                torch.optim.lr_scheduler.ReduceLROnPlateau(
+                    optimizer=optimizer,
+                    mode="min",
+                    factor=factor,
+                    patience=self.config.scheduler_patience,
+                    verbose=VERBOSE_SCHEDULER,
+                )
+                if provided_scheduler is None
+                else provided_scheduler
             )
             dice_metric = DiceMetric(
                 include_background=True, reduction="mean", ignore_empty=False
@@ -1342,6 +1357,8 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
 
             # device = torch.device(self.config.device)
             self.set_loss_from_config()
+            if provided_loss is not None:
+                self.loss_function = provided_loss
 
             # if model_name == "test":
             #     self.quit()

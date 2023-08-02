@@ -5,7 +5,9 @@ import pytest
 from napari_cellseg3d._tests.fixtures import (
     LogFixture,
     LossFixture,
+    ModelFixture,
     OptimizerFixture,
+    SchedulerFixture,
     WNetFixture,
 )
 from napari_cellseg3d.code_models.models.model_test import TestModel
@@ -33,6 +35,7 @@ def test_supervised_training(make_napari_viewer_proxy):
     widget.labels_filepaths = [im_path_str]
     widget.epoch_choice.setValue(1)
     widget.val_interval_choice.setValue(1)
+    widget.device_choice.setCurrentIndex(0)
 
     assert widget.check_ready()
 
@@ -49,13 +52,19 @@ def test_supervised_training(make_napari_viewer_proxy):
     worker.config.val_data_dict = [
         {"image": im_path_str, "label": im_path_str}
     ]
-    worker.config.max_epochs = 1
+    worker.config.max_epochs = 2
     worker.config.validation_interval = 2
-    worker.log_parameters()
-    res = next(worker.train())
 
-    assert isinstance(res, TrainingReport)
-    assert res.epoch == 0
+    worker.log_parameters()
+    for res_i in worker.train(
+        provided_model=ModelFixture(),
+        provided_optimizer=OptimizerFixture(),
+        provided_loss=LossFixture(),
+        provided_scheduler=SchedulerFixture(),
+    ):
+        assert isinstance(res_i, TrainingReport)
+        res = res_i
+    assert res.epoch == 1
 
     widget.worker = worker
     res.show_plot = True
@@ -86,15 +95,15 @@ def test_unsupervised_training(make_napari_viewer_proxy):
         additional_results_description="wnet_test"
     )
     assert widget.worker.config.train_data_dict is not None
-    res = next(
-        widget.worker.train(
-            provided_model=WNetFixture(),
-            provided_optimizer=OptimizerFixture(),
-            provided_loss=LossFixture(),
-        )
-    )
-    assert isinstance(res, TrainingReport)
-    assert not res.show_plot
+    widget.worker.config.max_epochs = 1
+    for res_i in widget.worker.train(
+        provided_model=WNetFixture(),
+        provided_optimizer=OptimizerFixture(),
+        provided_loss=LossFixture(),
+    ):
+        assert isinstance(res_i, TrainingReport)
+        res = res_i
+    assert res.epoch == 0
     widget.worker._abort_requested = True
     res = next(
         widget.worker.train(
