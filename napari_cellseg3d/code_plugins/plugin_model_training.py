@@ -1608,14 +1608,14 @@ class WNetWidgets:
             text_label="Reconstruction loss",
         )
         self.ncuts_weight_choice = ui.DoubleIncrementCounter(
-            lower=0.1,
+            lower=0.01,
             upper=1.0,
             default=self.default_config.n_cuts_weight,
             parent=parent,
             text_label="NCuts weight",
         )
         self.reconstruction_weight_choice = ui.DoubleIncrementCounter(
-            lower=0.1,
+            lower=0.01,
             upper=1.0,
             default=0.5,
             parent=parent,
