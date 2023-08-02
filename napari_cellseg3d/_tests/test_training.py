@@ -92,3 +92,15 @@ def test_unsupervised_training(make_napari_viewer_proxy):
         )
     )
     assert isinstance(res, TrainingReport)
+    assert not res.show_plot
+    widget.worker.config.eval_volume_dict = [
+        {"image": im_path_str, "label": im_path_str}
+    ]
+    widget.worker._get_data()
+    eval_res = widget.worker._eval(
+        model=WNetFixture(),
+        epoch=-10,
+    )
+    assert isinstance(eval_res, TrainingReport)
+    assert eval_res.show_plot
+    assert eval_res.epoch == -10

@@ -153,6 +153,21 @@ class WNetTrainingWorker(TrainingWorkerBase):
         super().__init__()
         self.config = worker_config
 
+        self.dice_metric = DiceMetric(
+            include_background=True, reduction="mean", get_not_nans=False
+        )
+        self.normalize_function = utils.remap_image
+        self.start_time = time.time()
+        self.ncuts_losses = []
+        self.rec_losses = []
+        self.total_losses = []
+        self.best_dice = -1
+        self.dice_values = []
+
+        self.dataloader: DataLoader = None
+        self.eval_dataloader: DataLoader = None
+        self.data_shape = None
+
     def get_patch_dataset(self, train_transforms):
         """Creates a Dataset from the original data using the tifffile library
 
@@ -288,13 +303,15 @@ class WNetTrainingWorker(TrainingWorkerBase):
 
         if self.config.sampling:
             logger.debug("Loading patch dataset")
-            (data_shape, dataset) = self.get_patch_dataset(train_transforms)
+            (self.data_shape, dataset) = self.get_patch_dataset(
+                train_transforms
+            )
         else:
             logger.debug("Loading volume dataset")
-            (data_shape, dataset) = self.get_dataset(train_transforms)
+            (self.data_shape, dataset) = self.get_dataset(train_transforms)
 
-        logger.debug(f"Data shape : {data_shape}")
-        dataloader = DataLoader(
+        logger.debug(f"Data shape : {self.data_shape}")
+        self.dataloader = DataLoader(
             dataset,
             batch_size=self.config.batch_size,
             shuffle=True,
@@ -305,7 +322,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
         if self.config.eval_volume_dict is not None:
             eval_dataset = self.get_dataset_eval(self.config.eval_volume_dict)
 
-            eval_dataloader = DataLoader(
+            self.eval_dataloader = DataLoader(
                 eval_dataset,
                 batch_size=self.config.batch_size,
                 shuffle=False,
@@ -313,8 +330,8 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 collate_fn=pad_list_data_collate,
             )
         else:
-            eval_dataloader = None
-        return dataloader, eval_dataloader, data_shape
+            self.eval_dataloader = None
+        return self.dataloader, self.eval_dataloader, self.data_shape
 
     def log_parameters(self):
         self.log("*" * 20)
@@ -380,18 +397,14 @@ class WNetTrainingWorker(TrainingWorkerBase):
             set_determinism(seed=self.config.deterministic_config.seed)
             torch.use_deterministic_algorithms(True, warn_only=True)
 
-            normalize_function = utils.remap_image
             device = self.config.device
 
             self.log_parameters()
             self.log("Initializing training...")
             self.log("- Getting the data")
 
-            dataloader, eval_dataloader, data_shape = self._get_data()
+            self._get_data()
 
-            dice_metric = DiceMetric(
-                include_background=True, reduction="mean", get_not_nans=False
-            )
             ###################################################
             #               Training the model                #
             ###################################################
@@ -469,7 +482,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
             self.log("- Getting the loss functions")
             # Initialize the Ncuts loss function
             criterionE = SoftNCutsLoss(
-                data_shape=data_shape,
+                data_shape=self.data_shape,
                 device=device,
                 intensity_sigma=self.config.intensity_sigma,
                 spatial_sigma=self.config.spatial_sigma,
@@ -491,13 +504,6 @@ class WNetTrainingWorker(TrainingWorkerBase):
             self.log("Training the model")
             self.log("*" * 20)
 
-            startTime = time.time()
-            ncuts_losses = []
-            rec_losses = []
-            total_losses = []
-            best_dice = -1
-            dice_values = []
-
             # Train the model
             for epoch in range(self.config.max_epochs):
                 self.log(f"Epoch {epoch + 1} of {self.config.max_epochs}")
@@ -506,13 +512,13 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 epoch_rec_loss = 0
                 epoch_loss = 0
 
-                for _i, batch in enumerate(dataloader):
+                for _i, batch in enumerate(self.dataloader):
                     # raise NotImplementedError("testing")
                     image_batch = batch["image"].to(device)
                     # Normalize the image
                     for i in range(image_batch.shape[0]):
                         for j in range(image_batch.shape[1]):
-                            image_batch[i, j] = normalize_function(
+                            image_batch[i, j] = self.normalize_function(
                                 image_batch[i, j]
                             )
 
@@ -554,10 +560,10 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     optimizer.step()
 
                     if self._abort_requested:
-                        dataloader = None
-                        del dataloader
-                        eval_dataloader = None
-                        del eval_dataloader
+                        self.dataloader = None
+                        del self.dataloader
+                        self.eval_dataloader = None
+                        del self.eval_dataloader
                         model = None
                         del model
                         optimizer = None
@@ -572,11 +578,13 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         show_plot=False, weights=model.state_dict()
                     )
 
-                ncuts_losses.append(epoch_ncuts_loss / len(dataloader))
-                rec_losses.append(epoch_rec_loss / len(dataloader))
-                total_losses.append(epoch_loss / len(dataloader))
+                self.ncuts_losses.append(
+                    epoch_ncuts_loss / len(self.dataloader)
+                )
+                self.rec_losses.append(epoch_rec_loss / len(self.dataloader))
+                self.total_losses.append(epoch_loss / len(self.dataloader))
 
-                if eval_dataloader is None:
+                if self.eval_dataloader is None:
                     try:
                         enc_out = enc[0].detach().cpu().numpy()
                         dec_out = dec[0].detach().cpu().numpy()
@@ -606,8 +614,8 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         yield TrainingReport(
                             show_plot=True,
                             epoch=epoch,
-                            loss_1_values={"SoftNCuts": ncuts_losses},
-                            loss_2_values=rec_losses,
+                            loss_1_values={"SoftNCuts": self.ncuts_losses},
+                            loss_2_values=self.rec_losses,
                             weights=model.state_dict(),
                             images_dict=images_dict,
                         )
@@ -615,207 +623,55 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         pass
 
                 # if WANDB_INSTALLED:
-                #     wandb.log({"Ncuts loss_epoch": ncuts_losses[-1]})
-                #     wandb.log({"Reconstruction loss_epoch": rec_losses[-1]})
-                #     wandb.log({"Sum of losses_epoch": total_losses[-1]})
+                #     wandb.log({"Ncuts loss_epoch": self.ncuts_losses[-1]})
+                #     wandb.log({"Reconstruction loss_epoch": self.rec_losses[-1]})
+                #     wandb.log({"Sum of losses_epoch": self.total_losses[-1]})
                 # wandb.log({"epoch": epoch})
                 # wandb.log({"learning_rate model": optimizerW.param_groups[0]["lr"]})
                 # wandb.log({"learning_rate encoder": optimizerE.param_groups[0]["lr"]})
                 # wandb.log({"learning_rate model": optimizer.param_groups[0]["lr"]})
 
-                self.log(f"Ncuts loss: {ncuts_losses[-1]:.5f}")
-                self.log(f"Reconstruction loss: {rec_losses[-1]:.5f}")
-                self.log(f"Weighted sum of losses: {total_losses[-1]:.5f}")
+                self.log(f"Ncuts loss: {self.ncuts_losses[-1]:.5f}")
+                self.log(f"Reconstruction loss: {self.rec_losses[-1]:.5f}")
+                self.log(
+                    f"Weighted sum of losses: {self.total_losses[-1]:.5f}"
+                )
                 if epoch > 0:
                     self.log(
-                        f"Ncuts loss difference: {ncuts_losses[-1] - ncuts_losses[-2]:.5f}"
+                        f"Ncuts loss difference: {self.ncuts_losses[-1] - self.ncuts_losses[-2]:.5f}"
                     )
                     self.log(
-                        f"Reconstruction loss difference: {rec_losses[-1] - rec_losses[-2]:.5f}"
+                        f"Reconstruction loss difference: {self.rec_losses[-1] - self.rec_losses[-2]:.5f}"
                     )
                     self.log(
-                        f"Weighted sum of losses difference: {total_losses[-1] - total_losses[-2]:.5f}"
+                        f"Weighted sum of losses difference: {self.total_losses[-1] - self.total_losses[-2]:.5f}"
                     )
 
                 if (
-                    eval_dataloader is not None
+                    self.eval_dataloader is not None
                     and (epoch + 1) % self.config.validation_interval == 0
                 ):
                     model.eval()
                     self.log("Validating...")
-                    with torch.no_grad():
-                        for _k, val_data in enumerate(eval_dataloader):
-                            val_inputs, val_labels = (
-                                val_data["image"].to(device),
-                                val_data["label"].to(device),
-                            )
+                    yield self._eval(model, epoch)  # validation
 
-                            # normalize val_inputs across channels
-                            for i in range(val_inputs.shape[0]):
-                                for j in range(val_inputs.shape[1]):
-                                    val_inputs[i][j] = normalize_function(
-                                        val_inputs[i][j]
-                                    )
-                            logger.debug(
-                                f"Val inputs shape: {val_inputs.shape}"
-                            )
-                            val_outputs = sliding_window_inference(
-                                val_inputs,
-                                roi_size=[64, 64, 64],
-                                sw_batch_size=1,
-                                predictor=model.forward_encoder,
-                                overlap=0.1,
-                                mode="gaussian",
-                                sigma_scale=0.01,
-                                progress=True,
-                            )
-                            val_decoder_outputs = sliding_window_inference(
-                                val_outputs,
-                                roi_size=[64, 64, 64],
-                                sw_batch_size=1,
-                                predictor=model.forward_decoder,
-                                overlap=0.1,
-                                mode="gaussian",
-                                sigma_scale=0.01,
-                                progress=True,
-                            )
-                            val_outputs = AsDiscrete(threshold=0.5)(
-                                val_outputs
-                            )
-                            logger.debug(
-                                f"Val outputs shape: {val_outputs.shape}"
-                            )
-                            logger.debug(
-                                f"Val labels shape: {val_labels.shape}"
-                            )
-                            logger.debug(
-                                f"Val decoder outputs shape: {val_decoder_outputs.shape}"
-                            )
-
-                            # dices = []
-                            # Find in which channel the labels are (avoid background)
-                            # for channel in range(val_outputs.shape[1]):
-                            #     dices.append(
-                            #         utils.dice_coeff(
-                            #             y_pred=val_outputs[
-                            #                 0, channel : (channel + 1), :, :, :
-                            #             ],
-                            #             y_true=val_labels[0],
-                            #         )
-                            #     )
-                            # logger.debug(f"DICE COEFF: {dices}")
-                            # max_dice_channel = torch.argmax(
-                            #     torch.Tensor(dices)
-                            # )
-                            # logger.debug(
-                            #     f"MAX DICE CHANNEL: {max_dice_channel}"
-                            # )
-                            dice_metric(
-                                y_pred=val_outputs,
-                                # [
-                                #     :,
-                                #     max_dice_channel : (max_dice_channel + 1),
-                                #     :,
-                                #     :,
-                                #     :,
-                                # ],
-                                y=val_labels,
-                            )
-
-                        # aggregate the final mean dice result
-                        metric = dice_metric.aggregate().item()
-                        dice_values.append(metric)
-                        self.log(f"Validation Dice score: {metric:.3f}")
-                        if best_dice < metric <= 1:
-                            best_dice = metric
-                            # save the best model
-                            save_best_path = self.config.results_path_folder
-                            # save_best_path.mkdir(parents=True, exist_ok=True)
-                            save_best_name = "wnet"
-                            save_path = (
-                                str(Path(save_best_path) / save_best_name)
-                                + "_best_metric.pth"
-                            )
-                            self.log(f"Saving new best model to {save_path}")
-                            torch.save(model.state_dict(), save_path)
-
-                        # if WANDB_INSTALLED:
-                        # log validation dice score for each validation round
-                        # wandb.log({"val/dice_metric": metric})
-
-                        dec_out_val = (
-                            val_decoder_outputs[0]
-                            .detach()
-                            .cpu()
-                            .numpy()
-                            .copy()
-                        )
-                        enc_out_val = (
-                            val_outputs[0].detach().cpu().numpy().copy()
-                        )
-                        lab_out_val = (
-                            val_labels[0].detach().cpu().numpy().copy()
-                        )
-                        val_in = val_inputs[0].detach().cpu().numpy().copy()
-
-                        display_dict = {
-                            "Reconstruction": {
-                                "data": np.squeeze(dec_out_val),
-                                "cmap": "gist_earth",
-                            },
-                            "Segmentation": {
-                                "data": np.squeeze(enc_out_val),
-                                "cmap": "turbo",
-                            },
-                            "Inputs": {
-                                "data": np.squeeze(val_in),
-                                "cmap": "inferno",
-                            },
-                            "Labels": {
-                                "data": np.squeeze(lab_out_val),
-                                "cmap": "bop blue",
-                            },
-                        }
-                        val_decoder_outputs = None
-                        del val_decoder_outputs
-                        val_outputs = None
-                        del val_outputs
-                        val_labels = None
-                        del val_labels
-                        val_inputs = None
-                        del val_inputs
-
-                        yield TrainingReport(
-                            epoch=epoch,
-                            loss_1_values={
-                                "SoftNCuts": ncuts_losses,
-                                "Dice metric": dice_values,
-                            },
-                            loss_2_values=rec_losses,
-                            weights=model.state_dict(),
-                            images_dict=display_dict,
-                        )
-
-                        # reset the status for next validation round
-                        dice_metric.reset()
-
-                        if self._abort_requested:
-                            dataloader = None
-                            del dataloader
-                            eval_dataloader = None
-                            del eval_dataloader
-                            model = None
-                            del model
-                            optimizer = None
-                            del optimizer
-                            criterionE = None
-                            del criterionE
-                            criterionW = None
-                            del criterionW
-                            torch.cuda.empty_cache()
+                    if self._abort_requested:
+                        self.dataloader = None
+                        del self.dataloader
+                        self.eval_dataloader = None
+                        del self.eval_dataloader
+                        model = None
+                        del model
+                        optimizer = None
+                        del optimizer
+                        criterionE = None
+                        del criterionE
+                        criterionW = None
+                        del criterionW
+                        torch.cuda.empty_cache()
 
                 eta = (
-                    (time.time() - startTime)
+                    (time.time() - self.start_time)
                     * (self.config.max_epochs / (epoch + 1) - 1)
                     / 60
                 )
@@ -830,12 +686,12 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     )
 
             self.log("Training finished")
-            if best_dice > -1:
-                self.log(f"Best dice metric : {best_dice}")
+            if self.best_dice > -1:
+                self.log(f"Best dice metric : {self.best_dice}")
             # if WANDB_INSTALLED and self.config.eval_volume_directory is not None:
             #     wandb.log(
             #         {
-            #             "best_dice_metric": best_dice,
+            #             "self.best_dice_metric": self.best_dice,
             #             "best_metric_epoch": best_dice_epoch,
             #         }
             #     )
@@ -859,11 +715,11 @@ class WNetTrainingWorker(TrainingWorkerBase):
             #     model_artifact.add_file(self.config.save_model_path)
             #     wandb.log_artifact(model_artifact)
 
-            # return ncuts_losses, rec_losses, model
+            # return self.ncuts_losses, self.rec_losses, model
             dataloader = None
             del dataloader
-            eval_dataloader = None
-            del eval_dataloader
+            self.eval_dataloader = None
+            del self.eval_dataloader
             model = None
             del model
             optimizer = None
@@ -879,6 +735,143 @@ class WNetTrainingWorker(TrainingWorkerBase):
             self.raise_error(e, msg)
             self.quit()
             raise e
+
+    def _eval(self, model, epoch) -> TrainingReport:
+        with torch.no_grad():
+            device = self.config.device
+            for _k, val_data in enumerate(self.eval_dataloader):
+                val_inputs, val_labels = (
+                    val_data["image"].to(device),
+                    val_data["label"].to(device),
+                )
+
+                # normalize val_inputs across channels
+                for i in range(val_inputs.shape[0]):
+                    for j in range(val_inputs.shape[1]):
+                        val_inputs[i][j] = self.normalize_function(
+                            val_inputs[i][j]
+                        )
+                logger.debug(f"Val inputs shape: {val_inputs.shape}")
+                val_outputs = sliding_window_inference(
+                    val_inputs,
+                    roi_size=[64, 64, 64],
+                    sw_batch_size=1,
+                    predictor=model.forward_encoder,
+                    overlap=0.1,
+                    mode="gaussian",
+                    sigma_scale=0.01,
+                    progress=True,
+                )
+                val_decoder_outputs = sliding_window_inference(
+                    val_outputs,
+                    roi_size=[64, 64, 64],
+                    sw_batch_size=1,
+                    predictor=model.forward_decoder,
+                    overlap=0.1,
+                    mode="gaussian",
+                    sigma_scale=0.01,
+                    progress=True,
+                )
+                val_outputs = AsDiscrete(threshold=0.5)(val_outputs)
+                logger.debug(f"Val outputs shape: {val_outputs.shape}")
+                logger.debug(f"Val labels shape: {val_labels.shape}")
+                logger.debug(
+                    f"Val decoder outputs shape: {val_decoder_outputs.shape}"
+                )
+
+                # dices = []
+                # Find in which channel the labels are (avoid background)
+                # for channel in range(val_outputs.shape[1]):
+                #     dices.append(
+                #         utils.dice_coeff(
+                #             y_pred=val_outputs[
+                #                 0, channel : (channel + 1), :, :, :
+                #             ],
+                #             y_true=val_labels[0],
+                #         )
+                #     )
+                # logger.debug(f"DICE COEFF: {dices}")
+                # max_dice_channel = torch.argmax(
+                #     torch.Tensor(dices)
+                # )
+                # logger.debug(
+                #     f"MAX DICE CHANNEL: {max_dice_channel}"
+                # )
+                self.dice_metric(
+                    y_pred=val_outputs,
+                    # [
+                    #     :,
+                    #     max_dice_channel : (max_dice_channel + 1),
+                    #     :,
+                    #     :,
+                    #     :,
+                    # ],
+                    y=val_labels,
+                )
+
+            # aggregate the final mean dice result
+            metric = self.dice_metric.aggregate().item()
+            self.dice_values.append(metric)
+            self.log(f"Validation Dice score: {metric:.3f}")
+            if self.best_dice < metric <= 1:
+                self.best_dice = metric
+                # save the best model
+                save_best_path = self.config.results_path_folder
+                # save_best_path.mkdir(parents=True, exist_ok=True)
+                save_best_name = "wnet"
+                save_path = (
+                    str(Path(save_best_path) / save_best_name)
+                    + "_best_metric.pth"
+                )
+                self.log(f"Saving new best model to {save_path}")
+                torch.save(model.state_dict(), save_path)
+
+            # if WANDB_INSTALLED:
+            # log validation dice score for each validation round
+            # wandb.log({"val/dice_metric": metric})
+            self.dice_metric.reset()
+            dec_out_val = val_decoder_outputs[0].detach().cpu().numpy().copy()
+            enc_out_val = val_outputs[0].detach().cpu().numpy().copy()
+            lab_out_val = val_labels[0].detach().cpu().numpy().copy()
+            val_in = val_inputs[0].detach().cpu().numpy().copy()
+
+            display_dict = {
+                "Reconstruction": {
+                    "data": np.squeeze(dec_out_val),
+                    "cmap": "gist_earth",
+                },
+                "Segmentation": {
+                    "data": np.squeeze(enc_out_val),
+                    "cmap": "turbo",
+                },
+                "Inputs": {
+                    "data": np.squeeze(val_in),
+                    "cmap": "inferno",
+                },
+                "Labels": {
+                    "data": np.squeeze(lab_out_val),
+                    "cmap": "bop blue",
+                },
+            }
+            val_decoder_outputs = None
+            del val_decoder_outputs
+            val_outputs = None
+            del val_outputs
+            val_labels = None
+            del val_labels
+            val_inputs = None
+            del val_inputs
+
+            return TrainingReport(
+                epoch=epoch,
+                loss_1_values={
+                    "SoftNCuts": self.ncuts_losses,
+                    "Dice metric": self.dice_values,
+                },
+                loss_2_values=self.rec_losses,
+                weights=model.state_dict(),
+                images_dict=display_dict,
+            )
 
 
 class SupervisedTrainingWorker(TrainingWorkerBase):
