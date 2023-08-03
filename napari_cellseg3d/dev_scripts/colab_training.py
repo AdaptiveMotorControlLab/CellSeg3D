@@ -86,6 +86,9 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
         self.eval_dataloader: DataLoader = None
         self.data_shape = None
 
+    def log(self, text):
+        logger.info(text)
+
     def get_patch_dataset(self, train_transforms):
         """Creates a Dataset from the original data using the tifffile library
 
@@ -728,13 +731,17 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
             del val_inputs
 
 
-def train_in_colab(worker_config: config.WNetTrainingWorkerConfig):
+def train_in_colab(
+    worker_config: config.WNetTrainingWorkerConfig,
+    wandb_config: config.WandBConfig,
+):
     """Train a WNet model in Google Colab.
 
     Args:
         worker_config (config.WNetTrainingWorkerConfig): config for the training worker
     """
     worker = WNetTrainingWorkerColab(worker_config)
+    worker.wandb_config = wandb_config
     worker.train()
 
 
