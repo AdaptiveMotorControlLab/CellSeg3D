@@ -762,7 +762,7 @@ def create_dataset_dict_no_labs(volume_directory):
     return [{"image": str(image_name)} for image_name in images_filepaths]
 
 
-def create_train_dataset_dict(image_directory, label_directory):
+def create_eval_dataset_dict(image_directory, label_directory):
     """Creates data dictionary for MONAI transforms and training.
 
     Returns:
@@ -774,6 +774,9 @@ def create_train_dataset_dict(image_directory, label_directory):
 
     images_filepaths = sorted(Path.glob(image_directory, "*.tif"))
     labels_filepaths = sorted(Path.glob(label_directory, "*.tif"))
+
+    logger.debug(f"Images filepaths: {images_filepaths}")
+    logger.debug(f"Labels filepaths: {labels_filepaths}")
 
     if len(images_filepaths) == 0 or len(labels_filepaths) == 0:
         raise ValueError("Data folders are empty")
