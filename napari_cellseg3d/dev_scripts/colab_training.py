@@ -736,3 +736,57 @@ def train_in_colab(worker_config: config.WNetTrainingWorkerConfig):
     """
     worker = WNetTrainingWorkerColab(worker_config)
     worker.train()
+
+
+def create_dataset_dict_no_labs(volume_directory):
+    """Creates unsupervised data dictionary for MONAI transforms and training."""
+    if not volume_directory.exists():
+        raise ValueError(f"Data folder {volume_directory} does not exist")
+    images_filepaths = sorted(Path.glob(volume_directory, "*.tif"))
+    if len(images_filepaths) == 0:
+        raise ValueError(f"Data folder {volume_directory} is empty")
+
+    logger.info("Images :")
+    for file in images_filepaths:
+        logger.info(Path(file).stem)
+    logger.info("*" * 10)
+
+    return [{"image": str(image_name)} for image_name in images_filepaths]
+
+
+def create_train_dataset_dict(image_directory, label_directory):
+    """Creates data dictionary for MONAI transforms and training.
+
+    Returns:
+        A dict with the following keys
+
+        * "image": image
+        * "label" : corresponding label
+    """
+
+    images_filepaths = sorted(Path.glob(image_directory, "*.tif"))
+    labels_filepaths = sorted(Path.glob(label_directory, "*.tif"))
+
+    if len(images_filepaths) == 0 or len(labels_filepaths) == 0:
+        raise ValueError("Data folders are empty")
+
+    if not Path(images_filepaths[0]).parent.exists():
+        raise ValueError("Images folder does not exist")
+    if not Path(labels_filepaths[0]).parent.exists():
+        raise ValueError("Labels folder does not exist")
+
+    logger.info("Images :\n")
+    for file in images_filepaths:
+        logger.info(Path(file).name)
+    logger.info("*" * 10)
+    logger.info("Labels :\n")
+    for file in labels_filepaths:
+        logger.info(Path(file).name)
+
+    data_dicts = [
+        {"image": image_name, "label": label_name}
+        for image_name, label_name in zip(images_filepaths, labels_filepaths)
+    ]
+    logger.debug(f"Training data dict : {data_dicts}")
+
+    return data_dicts
