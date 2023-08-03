@@ -491,6 +491,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
 
                     loss.backward(loss)
                     optimizer.step()
+                    yield epoch_loss
 
                 self.ncuts_losses.append(
                     epoch_ncuts_loss / len(self.dataloader)
