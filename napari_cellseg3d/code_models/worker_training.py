@@ -745,7 +745,6 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 model_artifact.add_file(save_weights_path)
                 wandb.log_artifact(model_artifact)
 
-            # return self.ncuts_losses, self.rec_losses, model
             dataloader = None
             del dataloader
             self.eval_dataloader = None
