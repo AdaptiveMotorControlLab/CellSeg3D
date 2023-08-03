@@ -28,9 +28,9 @@ from napari_cellseg3d.code_models.worker_training import (
 )
 from napari_cellseg3d.code_models.workers_utils import TrainingReport
 
+logger = utils.LOGGER
 NUMBER_TABS = 4  # how many tabs in the widget
 DEFAULT_PATCH_SIZE = 64  # default patch size for training
-logger = utils.LOGGER
 
 
 class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
@@ -315,10 +315,12 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ############################
         self._set_tooltips()
         self._build()
+
+        self.model_choice.setCurrentIndex(4)
         self.model_choice.currentTextChanged.connect(
             partial(self._toggle_unsupervised_mode, enabled=False)
         )
-        self._toggle_unsupervised_mode(enabled=False)
+        self._toggle_unsupervised_mode(enabled=True)
 
     def _set_tooltips(self):
         # tooltips

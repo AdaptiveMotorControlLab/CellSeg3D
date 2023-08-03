@@ -66,6 +66,8 @@ VERBOSE_SCHEDULER = True
 logger.debug(f"PRETRAINED WEIGHT DIR LOCATION : {PRETRAINED_WEIGHTS_DIR}")
 
 try:
+    import wandb
+
     WANDB_INSTALLED = True
 except ImportError:
     logger.warning(
@@ -88,6 +90,8 @@ a custom worker function was implemented.
 class TrainingWorkerBase(GeneratorWorker):
     """A basic worker abstract class, to run training jobs in.
     Contains the minimal common elements required for training models."""
+
+    wandb_config = config.WandBConfig()
 
     def __init__(self):
         super().__init__(self.train)
@@ -145,6 +149,8 @@ class WNetTrainingWorker(TrainingWorkerBase):
     """A custom worker to run WNet (unsupervised) training jobs in.
     Inherits from :py:class:`napari.qt.threading.GeneratorWorker` via :py:class:`TrainingWorkerBase`
     """
+
+    # TODO : add wandb parameters
 
     def __init__(
         self,
@@ -365,19 +371,20 @@ class WNetTrainingWorker(TrainingWorkerBase):
         )
         ##############
         self.log("-- Data --")
-        self.log("Training data :")
+        self.log("Training data :\n")
         [
             self.log(f"{v}")
             for d in self.config.train_data_dict
             for k, v in d.items()
         ]
         if self.config.eval_volume_dict is not None:
-            self.log("Validation data :")
+            self.log("\nValidation data :\n")
             [
                 self.log(f"{k}: {v}")
                 for d in self.config.eval_volume_dict
                 for k, v in d.items()
             ]
+        self.log("*" * 20)
 
     def train(
         self, provided_model=None, provided_optimizer=None, provided_loss=None
@@ -389,10 +396,14 @@ class WNetTrainingWorker(TrainingWorkerBase):
             # disable metadata tracking in MONAI
             set_track_meta(False)
             ##############
-            # if WANDB_INSTALLED:
-            # wandb.init(
-            #     config=WANDB_CONFIG, project="WNet-benchmark", mode=WANDB_MODE
-            # )
+            if WANDB_INSTALLED:
+                config_dict = self.config.__dict__
+                logger.debug(f"wandb config : {config_dict}")
+                wandb.init(
+                    config=config_dict,
+                    project="CellSeg3D WNet",
+                    mode=self.wandb_config.mode,
+                )
 
             set_determinism(seed=self.config.deterministic_config.seed)
             torch.use_deterministic_algorithms(True, warn_only=True)
@@ -432,8 +443,8 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         )
                     )
 
-            # if WANDB_INSTALLED:
-            #     wandb.watch(model, log_freq=100)
+            if WANDB_INSTALLED:
+                wandb.watch(model, log_freq=100)
 
             if self.config.weights_info.custom:
                 if self.config.weights_info.use_pretrained:
@@ -526,9 +537,10 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     enc, dec = model(image_batch)
                     # Compute the Ncuts loss
                     Ncuts = criterionE(enc, image_batch)
+
                     epoch_ncuts_loss += Ncuts.item()
-                    # if WANDB_INSTALLED:
-                    #     wandb.log({"Ncuts loss": Ncuts.item()})
+                    if WANDB_INSTALLED:
+                        wandb.log({"Train/Ncuts loss": Ncuts.item()})
 
                     # Compute the reconstruction loss
                     if isinstance(criterionW, nn.MSELoss):
@@ -540,10 +552,12 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         )
 
                     epoch_rec_loss += reconstruction_loss.item()
-                    # if WANDB_INSTALLED:
-                    #     wandb.log(
-                    #         {"Reconstruction loss": reconstruction_loss.item()}
-                    #     )
+                    if WANDB_INSTALLED:
+                        wandb.log(
+                            {
+                                "Train/Reconstruction loss": reconstruction_loss.item()
+                            }
+                        )
 
                     # Backward pass for the reconstruction loss
                     optimizer.zero_grad()
@@ -554,8 +568,12 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     if provided_loss is not None:
                         loss = provided_loss
                     epoch_loss += loss.item()
-                    # if WANDB_INSTALLED:
-                    #     wandb.log({"Weighted sum of losses": loss.item()})
+
+                    if WANDB_INSTALLED:
+                        wandb.log(
+                            {"Train/Weighted sum of losses": loss.item()}
+                        )
+
                     loss.backward(loss)
                     optimizer.step()
 
@@ -622,14 +640,21 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     except TypeError:
                         pass
 
-                # if WANDB_INSTALLED:
-                #     wandb.log({"Ncuts loss_epoch": self.ncuts_losses[-1]})
-                #     wandb.log({"Reconstruction loss_epoch": self.rec_losses[-1]})
-                #     wandb.log({"Sum of losses_epoch": self.total_losses[-1]})
-                # wandb.log({"epoch": epoch})
-                # wandb.log({"learning_rate model": optimizerW.param_groups[0]["lr"]})
-                # wandb.log({"learning_rate encoder": optimizerE.param_groups[0]["lr"]})
-                # wandb.log({"learning_rate model": optimizer.param_groups[0]["lr"]})
+                if WANDB_INSTALLED:
+                    wandb.log({"Ncuts loss for epoch": self.ncuts_losses[-1]})
+                    wandb.log(
+                        {"Reconstruction loss for epoch": self.rec_losses[-1]}
+                    )
+                    wandb.log(
+                        {"Sum of losses for epoch": self.total_losses[-1]}
+                    )
+                    wandb.log(
+                        {
+                            "LR/Model learning rate": optimizer.param_groups[
+                                0
+                            ]["lr"]
+                        }
+                    )
 
                 self.log(f"Ncuts loss: {self.ncuts_losses[-1]:.5f}")
                 self.log(f"Reconstruction loss: {self.rec_losses[-1]:.5f}")
@@ -687,33 +712,38 @@ class WNetTrainingWorker(TrainingWorkerBase):
 
             self.log("Training finished")
             if self.best_dice > -1:
-                self.log(f"Best dice metric : {self.best_dice}")
-            # if WANDB_INSTALLED and self.config.eval_volume_directory is not None:
-            #     wandb.log(
-            #         {
-            #             "self.best_dice_metric": self.best_dice,
-            #             "best_metric_epoch": best_dice_epoch,
-            #         }
-            #     )
+                best_dice_epoch = epoch
+                self.log(
+                    f"Best dice metric : {self.best_dice} at epoch {best_dice_epoch}"
+                )
+
+                if WANDB_INSTALLED:
+                    wandb.log(
+                        {
+                            "Validation/Best Dice": self.best_dice,
+                            "Validation/Best Dice epoch": best_dice_epoch,
+                        }
+                    )
 
             # Save the model
             self.log(
                 f"Saving the model to: {self.config.results_path_folder}/wnet.pth",
             )
+            save_weights_path = self.config.results_path_folder + "/wnet.pth"
             torch.save(
                 model.state_dict(),
-                self.config.results_path_folder + "/wnet.pth",
+                save_weights_path,
             )
 
-            # if WANDB_INSTALLED:
-            #     model_artifact = wandb.Artifact(
-            #         "WNet",
-            #         type="model",
-            #         description="WNet benchmark",
-            #         metadata=dict(WANDB_CONFIG),
-            #     )
-            #     model_artifact.add_file(self.config.save_model_path)
-            #     wandb.log_artifact(model_artifact)
+            if WANDB_INSTALLED and self.wandb_config.save_model_artifact:
+                model_artifact = wandb.Artifact(
+                    "WNet",
+                    type="model",
+                    description="CellSeg3D WNet",
+                    metadata=self.config.__dict__,
+                )
+                model_artifact.add_file(save_weights_path)
+                wandb.log_artifact(model_artifact)
 
             # return self.ncuts_losses, self.rec_losses, model
             dataloader = None
@@ -826,9 +856,10 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 self.log(f"Saving new best model to {save_path}")
                 torch.save(model.state_dict(), save_path)
 
-            # if WANDB_INSTALLED:
-            # log validation dice score for each validation round
-            # wandb.log({"val/dice_metric": metric})
+            if WANDB_INSTALLED:
+                # log validation dice score for each validation round
+                wandb.log({"Validation/Dice metric": metric})
+
             self.dice_metric.reset()
             dec_out_val = val_decoder_outputs[0].detach().cpu().numpy().copy()
             enc_out_val = val_outputs[0].detach().cpu().numpy().copy()

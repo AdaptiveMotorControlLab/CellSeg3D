@@ -308,6 +308,17 @@ class WNetTrainingWorkerConfig(TrainingWorkerConfig):
 
 
 ################
+# WandB config #
+################
+@dataclass
+class WandBConfig:
+    """Class to record parameters for WandB"""
+
+    mode: str = "online"  # disabled, online, enabled
+    save_model_artifact: bool = False
+
+
+################
 # CRF config for WNet
 ################
 

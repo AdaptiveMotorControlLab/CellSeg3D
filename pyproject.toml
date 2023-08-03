@@ -122,6 +122,17 @@ line_length = 79
 crf = [
     "pydensecrf@git+https://github.com/kodalli/pydensecrf.git#egg=master",
 ]
+onnx-cpu = [
+    "onnx",
+    "onnxruntime"
+]
+onnx-gpu = [
+    "onnx",
+    "onnxruntime-gpu"
+]
+wandb = [
+    "wandb"
+]
 dev = [
     "isort",
     "black",
@@ -143,12 +154,4 @@ test = [
     "tox",
     "twine",
     "pydensecrf@git+https://github.com/kodalli/pydensecrf.git#egg=master",
-]
-onnx-cpu = [
-    "onnx",
-    "onnxruntime"
-]
-onnx-gpu = [
-    "onnx",
-    "onnxruntime-gpu"
 ]
