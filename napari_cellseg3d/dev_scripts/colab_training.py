@@ -316,7 +316,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
                 logger.debug(f"wandb config : {config_dict}")
                 wandb.init(
                     config=config_dict,
-                    project="CellSeg3D WNet",
+                    project="CellSeg3D WNet (Colab)",
                     mode=self.wandb_config.mode,
                 )
 
@@ -539,21 +539,6 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
                     self.log("Validating...")
                     self.eval(model, epoch)  # validation
 
-                    if self._abort_requested:
-                        self.dataloader = None
-                        del self.dataloader
-                        self.eval_dataloader = None
-                        del self.eval_dataloader
-                        model = None
-                        del model
-                        optimizer = None
-                        del optimizer
-                        criterionE = None
-                        del criterionE
-                        criterionW = None
-                        del criterionW
-                        torch.cuda.empty_cache()
-
                 eta = (
                     (time.time() - self.start_time)
                     * (self.config.max_epochs / (epoch + 1) - 1)
@@ -603,21 +588,6 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
                 )
                 model_artifact.add_file(save_weights_path)
                 wandb.log_artifact(model_artifact)
-
-            yield model.state_dict()
-            dataloader = None
-            del dataloader
-            self.eval_dataloader = None
-            del self.eval_dataloader
-            model = None
-            del model
-            optimizer = None
-            del optimizer
-            criterionE = None
-            del criterionE
-            criterionW = None
-            del criterionW
-            torch.cuda.empty_cache()
 
         except Exception as e:
             msg = f"Training failed with exception: {e}"
@@ -758,7 +728,6 @@ def create_dataset_dict_no_labs(volume_directory):
     for file in images_filepaths:
         logger.info(Path(file).stem)
     logger.info("*" * 10)
-
     return [{"image": str(image_name)} for image_name in images_filepaths]
 
 
@@ -775,9 +744,6 @@ def create_eval_dataset_dict(image_directory, label_directory):
     images_filepaths = sorted(Path.glob(image_directory, "*.tif"))
     labels_filepaths = sorted(Path.glob(label_directory, "*.tif"))
 
-    logger.debug(f"Images filepaths: {images_filepaths}")
-    logger.debug(f"Labels filepaths: {labels_filepaths}")
-
     if len(images_filepaths) == 0 or len(labels_filepaths) == 0:
         raise ValueError("Data folders are empty")
 
@@ -793,11 +759,7 @@ def create_eval_dataset_dict(image_directory, label_directory):
     logger.info("Labels :\n")
     for file in labels_filepaths:
         logger.info(Path(file).name)
-
-    data_dicts = [
+    return [
         {"image": image_name, "label": label_name}
         for image_name, label_name in zip(images_filepaths, labels_filepaths)
     ]
-    logger.debug(f"Training data dict : {data_dicts}")
-
-    return data_dicts
