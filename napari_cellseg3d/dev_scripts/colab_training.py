@@ -731,7 +731,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
             del val_inputs
 
 
-def train_in_colab(
+def get_colab_worker(
     worker_config: config.WNetTrainingWorkerConfig,
     wandb_config: config.WandBConfig,
 ):
@@ -742,7 +742,7 @@ def train_in_colab(
     """
     worker = WNetTrainingWorkerColab(worker_config)
     worker.wandb_config = wandb_config
-    worker.train()
+    return worker
 
 
 def create_dataset_dict_no_labs(volume_directory):
