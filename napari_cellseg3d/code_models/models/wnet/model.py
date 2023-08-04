@@ -25,14 +25,15 @@ class WNet_encoder(nn.Module):
     def __init__(
         self,
         in_channels=1,
-        out_channels=2
-        # num_classes=2
+        out_channels=2,
+        # num_classes=2,
+        softmax=True,
     ):
         super().__init__()
         self.encoder = UNet(
             in_channels=in_channels,
             out_channels=out_channels,
-            softmax=False,
+            softmax=softmax,
         )
 
     def forward(self, x):
