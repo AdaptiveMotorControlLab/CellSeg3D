@@ -447,15 +447,19 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         if self.model_choice.currentText() == "WNet" or enabled:
             unsupervised = True
             self.start_btn = self.start_button_unsupervised
-            self.image_filewidget.text_field.setText("Validation images")
-            self.labels_filewidget.text_field.setText("Validation labels")
+            if self.image_filewidget.text_field.text() == "Images directory":
+                self.image_filewidget.text_field.setText("Validation images")
+            if self.labels_filewidget.text_field.text() == "Labels directory":
+                self.labels_filewidget.text_field.setText("Validation labels")
             self.learning_rate_choice.lr_value_choice.setValue(2)
             self.learning_rate_choice.lr_exponent_choice.setCurrentIndex(3)
         else:
             unsupervised = False
             self.start_btn = self.start_button_supervised
-            self.image_filewidget.text_field.setText("Images directory")
-            self.labels_filewidget.text_field.setText("Labels directory")
+            if self.image_filewidget.text_field.text() == "Validation images":
+                self.image_filewidget.text_field.setText("Images directory")
+            if self.labels_filewidget.text_field.text() == "Validation labels":
+                self.labels_filewidget.text_field.setText("Labels directory")
             self.learning_rate_choice.lr_value_choice.setValue(1)
             self.learning_rate_choice.lr_exponent_choice.setCurrentIndex(1)
 
