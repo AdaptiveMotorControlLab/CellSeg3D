@@ -39,7 +39,6 @@ from monai.transforms import (
     RandRotate90d,
     RandShiftIntensityd,
     RandSpatialCropSamplesd,
-    ScaleIntensityRanged,
     SpatialPadd,
 )
 from monai.utils import set_determinism
@@ -289,15 +288,15 @@ class WNetTrainingWorker(TrainingWorkerBase):
         if self.config.do_augmentation:
             train_transforms = Compose(
                 [
-                    ScaleIntensityRanged(
-                        keys=["image"],
-                        a_min=0,
-                        a_max=2000,
-                        b_min=0.0,
-                        b_max=1.0,
-                        clip=True,
-                    ),
-                    RandShiftIntensityd(keys=["image"], offsets=0.1, prob=0.5),
+                    # ScaleIntensityRanged(
+                    #     keys=["image"],
+                    #     a_min=0,
+                    #     a_max=2000,
+                    #     b_min=0.0,
+                    #     b_max=1.0,
+                    #     clip=True,
+                    # ),
+                    # RandShiftIntensityd(keys=["image"], offsets=0.1, prob=0.5),
                     RandFlipd(keys=["image"], spatial_axis=[1], prob=0.5),
                     RandFlipd(keys=["image"], spatial_axis=[2], prob=0.5),
                     RandRotate90d(keys=["image"], prob=0.1, max_k=3),
