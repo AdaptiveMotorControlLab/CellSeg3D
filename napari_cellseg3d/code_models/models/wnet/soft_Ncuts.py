@@ -5,6 +5,7 @@ This faster version was proposed on https://github.com/fkodom/wnet-unsupervised-
 """
 
 import math
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -135,92 +136,3 @@ class SoftNCutsLoss(nn.Module):
         return kernel.view(
             (1, 1, kernel.shape[0], kernel.shape[1], kernel.shape[2])
         )
-
-    # def get_distances(self):
-    #     """Precompute the spatial distance of the pixels for the weights calculation, to avoid recomputing it at each iteration.
-    #
-    #     Returns:
-    #         distances (dict): for each pixel index, we get the distances to the pixels in a radius around it.
-    #     """
-    #
-    #     distances = dict()
-    #     indexes = np.array(
-    #         [
-    #             (i, j, k)
-    #             for i in range(self.H)
-    #             for j in range(self.W)
-    #             for k in range(self.D)
-    #         ]
-    #     )
-    #
-    #     for i in indexes:
-    #         iTuple = (i[0], i[1], i[2])
-    #         distances[iTuple] = dict()
-    #
-    #         sliceD = indexes[
-    #             i[0] * self.H
-    #             + i[1] * self.W
-    #             + max(0, i[2] - self.radius) : i[0] * self.H
-    #             + i[1] * self.W
-    #             + min(self.D, i[2] + self.radius)
-    #         ]
-    #         sliceW = indexes[
-    #             i[0] * self.H
-    #             + max(0, i[1] - self.radius) * self.W
-    #             + i[2] : i[0] * self.H
-    #             + min(self.W, i[1] + self.radius) * self.W
-    #             + i[2] : self.D
-    #         ]
-    #         sliceH = indexes[
-    #             max(0, i[0] - self.radius) * self.H
-    #             + i[1] * self.W
-    #             + i[2] : min(self.H, i[0] + self.radius) * self.H
-    #             + i[1] * self.W
-    #             + i[2] : self.D * self.W
-    #         ]
-    #
-    #         for j in np.concatenate((sliceD, sliceW, sliceH)):
-    #             jTuple = (j[0], j[1], j[2])
-    #             distance = np.linalg.norm(i - j)
-    #             if distance > self.radius:
-    #                 continue
-    #             distance = math.exp(
-    #                 -(distance**2) / (self.spatial_sigma**2)
-    #             )
-    #
-    #             if jTuple not in distances:
-    #                 distances[iTuple][jTuple] = distance
-    #
-    #     return distances, indexes
-
-    # def get_weights(self, inputs):
-    #     """Computes the weights matrix for the Soft N-Cuts loss.
-    #
-    #     Args:
-    #         inputs (torch.Tensor): Tensor of shape (N, C, H, W, D) containing the input images.
-    #
-    #     Returns:
-    #         list: List of the weights dict for each image in the batch.
-    #     """
-    #
-    #     # Compute the brightness distance of the pixels
-    #     flatted_inputs = inputs.view(
-    #         inputs.shape[0], inputs.shape[1], -1
-    #     )  # (N, C, H*W*D)
-    #     I_diff = torch.subtract(
-    #         flatted_inputs.unsqueeze(3), flatted_inputs.unsqueeze(2)
-    #     )  # (N, C, H*W*D, H*W*D)
-    #     masked_I_diff = torch.mul(I_diff, self.mask)  # (N, C, H*W*D, H*W*D)
-    #     squared_I_diff = torch.pow(masked_I_diff, 2)  # (N, C, H*W*D, H*W*D)
-    #
-    #     W_I = torch.exp(
-    #         torch.neg(torch.div(squared_I_diff, self.intensity_sigma))
-    #     )  # (N, C, H*W*D, H*W*D)
-    #     W_I = torch.mul(W_I, self.mask)  # (N, C, H*W*D, H*W*D)
-    #
-    #     # Get the spatial distance of the pixels
-    #     unsqueezed_W_X = self.W_X.view(
-    #         1, 1, self.W_X.shape[0], self.W_X.shape[1]
-    #     )  # (1, 1, H*W*D, H*W*D)
-    #
-    #     return torch.mul(W_I, unsqueezed_W_X)  # (N, C, H*W*D, H*W*D)

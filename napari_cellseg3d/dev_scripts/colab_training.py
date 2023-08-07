@@ -54,6 +54,8 @@ except ImportError:
     )
     WANDB_INSTALLED = False
 
+# TODO subclass to reduce code duplication
+
 
 class WNetTrainingWorkerColab(TrainingWorkerBase):
     """A custom worker to run WNet (unsupervised) training jobs in.
