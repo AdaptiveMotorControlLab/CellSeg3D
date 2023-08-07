@@ -1353,7 +1353,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.df = pd.DataFrame(
                 {
                     "epoch": size_column,
-                    "loss": self.loss_1_values,
+                    "loss": self.loss_1_values["Loss"],
                     "validation": val,
                 }
             )
