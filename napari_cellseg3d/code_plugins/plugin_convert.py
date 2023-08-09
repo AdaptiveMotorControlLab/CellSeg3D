@@ -25,7 +25,7 @@ logger = utils.LOGGER
 class FragmentUtils(BasePluginUtils):
     """Class to crop large 3D volumes into smaller fragments"""
 
-    save_path = Path.home() / Path("cellseg3d/fragmented")
+    save_path = Path.home() / "cellseg3d" / "fragmented"
 
     def __init__(self, viewer: "napari.Viewer.viewer", parent=None):
         """Creates a FragmentUtils widget
@@ -214,7 +214,7 @@ class AnisoUtils(BasePluginUtils):
 
 
 class RemoveSmallUtils(BasePluginUtils):
-    save_path = Path.home() / Path("cellseg3d/small_removed")
+    save_path = Path.home() / "cellseg3d" / "small_removed"
     """
     Widget to remove small objects
     """
@@ -236,7 +236,6 @@ class RemoveSmallUtils(BasePluginUtils):
         self.data_panel = self._build_io_panel()
 
         self.label_layer_loader.layer_list.label.setText("Layer :")
-        # self.label_layer_loader.set_layer_type(napari.layers.Layer)
 
         self.start_btn = ui.Button("Start", self._start)
         self.size_for_removal_counter = ui.IntIncrementCounter(
@@ -317,7 +316,7 @@ class RemoveSmallUtils(BasePluginUtils):
 
 
 class ToSemanticUtils(BasePluginUtils):
-    save_path = Path.home() / Path("cellseg3d/semantic_labels")
+    save_path = Path.home() / "cellseg3d" / "semantic_labels"
     """
     Widget to create semantic labels from instance labels
     """
@@ -407,7 +406,7 @@ class ToSemanticUtils(BasePluginUtils):
 
 
 class ToInstanceUtils(BasePluginUtils):
-    save_path = Path.home() / Path("cellseg3d/instance_labels")
+    save_path = Path.home() / "cellseg3d" / "instance_labels"
     """
     Widget to convert semantic labels to instance labels
     """
@@ -497,7 +496,7 @@ class ToInstanceUtils(BasePluginUtils):
 
 
 class ThresholdUtils(BasePluginUtils):
-    save_path = Path.home() / Path("cellseg3d/threshold")
+    save_path = Path.home() / "cellseg3d" / "threshold"
     """
     Creates a ThresholdUtils widget
     Args:
@@ -591,23 +590,3 @@ class ThresholdUtils(BasePluginUtils):
                 images,
                 self.images_filepaths,
             )
-
-
-# class ConvertUtils(BasePluginFolder):
-#     """Utility widget that allows to convert labels from instance to semantic and the reverse."""
-#
-#     def __init__(self, viewer: "napari.viewer.Viewer", parent):
-#         """Builds a ConvertUtils widget with the following buttons:
-#
-#         * A button to convert a folder of labels to semantic labels
-#
-#         * A button to convert a folder of labels to instance labels
-#
-#         * A button to convert a currently selected layer to semantic labels
-#
-#         * A button to convert a currently selected layer to instance labels
-#         """
-#
-#         super().__init__(viewer, parent)
-#         self._viewer = viewer
-#         pass

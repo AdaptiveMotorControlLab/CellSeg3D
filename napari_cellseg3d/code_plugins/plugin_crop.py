@@ -22,7 +22,7 @@ class Cropping(
 ):  # not a BasePLuginUtils since it's not runnning on folders
     """A utility plugin for cropping 3D volumes."""
 
-    save_path = Path.home() / Path("cellseg3d/cropped")
+    save_path = Path.home() / "cellseg3d" / "cropped"
     utils_default_paths = []
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):

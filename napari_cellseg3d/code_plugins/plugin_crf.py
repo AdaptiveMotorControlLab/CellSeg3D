@@ -110,7 +110,7 @@ class CRFParamsWidget(ui.GroupedWidget):
 class CRFWidget(BasePluginUtils):
     """Widget to run CRF post-processing"""
 
-    save_path = Path.home() / Path("cellseg3d/crf")
+    save_path = Path.home() / "cellseg3d" / "crf"
 
     def __init__(self, viewer, parent=None):
         """

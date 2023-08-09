@@ -44,7 +44,7 @@ PRETRAINED_WEIGHTS_DIR = str(
 class ReviewConfig:
     image: np.array = None
     labels: np.array = None
-    csv_path: str = Path.home() / Path("cellseg3d/review")
+    csv_path: str = Path.home() / "cellseg3d" / "review"
     model_name: str = ""
     new_csv: bool = True
     filetype: str = ".tif"
@@ -206,7 +206,7 @@ class InferenceWorkerConfig:
     device: str = "cpu"
     model_info: ModelInfo = ModelInfo()
     weights_config: WeightsInfo = WeightsInfo()
-    results_path: str = str(Path.home() / Path("cellseg3d/inference"))
+    results_path: str = str(Path.home() / "cellseg3d" / "inference")
     filetype: str = ".tif"
     keep_on_cpu: bool = False
     compute_stats: bool = False
@@ -254,7 +254,7 @@ class TrainingWorkerConfig:
     scheduler_factor: float = 0.5
     validation_interval: int = 2
     batch_size: int = 1
-    results_path_folder: str = str(Path.home() / Path("cellseg3d/training"))
+    results_path_folder: str = str(Path.home() / "cellseg3d" / "training")
     sampling: bool = False
     num_samples: int = 2
     sample_size: List[int] = None
