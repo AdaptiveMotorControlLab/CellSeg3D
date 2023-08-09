@@ -138,7 +138,7 @@ class CRFWidget(BasePluginSingleImage):
         self.result_name = None
         self.crf_results = []
 
-        self.results_path = Path.home() / Path("cellseg3d/crf")
+        self.results_path = Path.home() / "cellseg3d" / "crf"
         self.results_filewidget.text_field.setText(str(self.results_path))
         self.results_filewidget.check_ready()
 
