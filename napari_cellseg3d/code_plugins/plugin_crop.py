@@ -38,7 +38,7 @@ class Cropping(BasePluginSingleImage):
 
         super().__init__(viewer)
         self.docked_widgets = []
-        self.results_path = Path.home() / Path("cellseg3d/cropped")
+        self.results_path = Path.home() / "cellseg3d" / "cropped"
 
         self.btn_start = ui.Button("Start", self._start)
 

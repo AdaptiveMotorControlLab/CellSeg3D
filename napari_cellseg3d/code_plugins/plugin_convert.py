@@ -46,7 +46,7 @@ class AnisoUtils(BasePluginFolder):
         self.aniso_widgets = ui.AnisotropyWidgets(self, always_visible=True)
         self.start_btn = ui.Button("Start", self._start)
 
-        self.results_path = str(Path.home() / Path("cellseg3d/anisotropy"))
+        self.results_path = str(Path.home() / "cellseg3d" / "anisotropy")
         self.results_filewidget.text_field.setText(str(self.results_path))
         self.results_filewidget.check_ready()
 
@@ -145,7 +145,7 @@ class RemoveSmallUtils(BasePluginFolder):
             text_label="Remove all smaller than (pxs):",
         )
 
-        self.results_path = Path.home() / Path("cellseg3d/small_removed")
+        self.results_path = Path.home() / "cellseg3d" / "small_removed"
         self.results_filewidget.text_field.setText(str(self.results_path))
         self.results_filewidget.check_ready()
 
@@ -233,9 +233,7 @@ class ToSemanticUtils(BasePluginFolder):
 
         self.start_btn = ui.Button("Start", self._start)
 
-        self.results_path = str(
-            Path.home() / Path("cellseg3d/instance_labels")
-        )
+        self.results_path = str(Path.home() / "cellseg3d" / "instance_labels")
         self.results_filewidget.text_field.setText(self.results_path)
         self.results_filewidget.check_ready()
 
@@ -326,7 +324,7 @@ class ToInstanceUtils(BasePluginFolder):
 
         self.start_btn = ui.Button("Start", self._start)
 
-        self.results_path = Path.home() / Path("cellseg3d/instance")
+        self.results_path = Path.home() / "cellseg3d" / "instance"
         self.results_filewidget.text_field.setText(str(self.results_path))
         self.results_filewidget.check_ready()
 
@@ -417,7 +415,7 @@ class ThresholdUtils(BasePluginFolder):
             text_label="Remove all smaller than (value):",
         )
 
-        self.results_path = str(Path.home() / Path("cellseg3d/threshold"))
+        self.results_path = str(Path.home() / "cellseg3d" / "threshold")
         self.results_filewidget.text_field.setText(self.results_path)
         self.results_filewidget.check_ready()
 
