@@ -117,7 +117,7 @@ class FragmentUtils(BasePluginUtils):
 class AnisoUtils(BasePluginUtils):
     """Class to correct anisotropy in images"""
 
-    save_path = Path.home() / Path("cellseg3d/anisotropy")
+    save_path = Path.home() / "cellseg3d" / "anisotropy"
 
     def __init__(self, viewer: "napari.Viewer.viewer", parent=None):
         """
