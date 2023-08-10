@@ -18,7 +18,7 @@ class WNet_(WNet_encoder):
             in_channels=in_channels,
             out_channels=out_channels,
             # num_classes=num_classes,
-            softmax=True,
+            softmax=False,
         )
 
     # def train(self: T, mode: bool = True) -> T:

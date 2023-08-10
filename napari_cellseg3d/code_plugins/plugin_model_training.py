@@ -176,7 +176,6 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.df = None
         self.loss_1_values = {}
         self.loss_2_values = []
-        self.supervised_job = False
 
         ###########
         # interface
@@ -1158,6 +1157,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         Returns:
             A worker config
         """
+        batch_size = self.batch_choice.slider_value
         self.worker_config = config.WNetTrainingWorkerConfig(
             device=self.check_device_choice(),
             weights_info=self.weights_config,
@@ -1165,7 +1165,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             max_epochs=self.epoch_choice.value(),
             learning_rate=self.learning_rate_choice.get_learning_rate(),
             validation_interval=self.val_interval_choice.value(),
-            batch_size=self.batch_choice.slider_value,
+            batch_size=batch_size,
             results_path_folder=str(results_path_folder),
             sampling=self.patch_choice.isChecked(),
             num_samples=self.sample_choice_slider.slider_value,
@@ -1179,14 +1179,16 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             n_cuts_weight=self.wnet_widgets.ncuts_weight_choice.value(),
             rec_loss_weight=self.wnet_widgets.get_reconstruction_weight(),
             eval_volume_dict=eval_volume_dict,
-            eval_batch_size=len(eval_volume_dict)
-            if eval_volume_dict is not None
-            else 1,
+            eval_batch_size=1
+            if len(eval_volume_dict) < batch_size
+            else batch_size,
         )
 
         return self.worker_config
 
-    def _is_current_job_supervised(self):
+    def _is_current_job_supervised(
+        self,
+    ):  # TODO(cyril) rework for better check and _make_csv
         if isinstance(self.worker, WNetTrainingWorker):
             return False
         return True
@@ -1299,8 +1301,6 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         if report == TrainingReport():
             return  # skip empty reports
 
-        self.supervised_job = report.supervised
-
         if report.show_plot:
             try:
                 self.log.print_and_log(len(report.images_dict))
@@ -1349,9 +1349,19 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             logger.warning("No loss values to add to csv !")
             return
 
-        if (
-            self._is_current_job_supervised() or self.supervised_job
-        ):  # extra check for when worker is None after aborting
+        try:
+            self.loss_1_values["Loss"]
+            supervised = True
+        except KeyError("Loss"):
+            try:
+                self.loss_1_values["SoftNCuts"]
+                supervised = False
+            except KeyError("SoftNCuts") as e:
+                raise KeyError(
+                    "Error when making csv. Check loss dict keys ?"
+                ) from e
+
+        if supervised:
             val = utils.fill_list_in_between(
                 self.loss_2_values,
                 self.worker_config.validation_interval - 1,

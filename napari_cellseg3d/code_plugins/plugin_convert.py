@@ -314,14 +314,16 @@ class ToInstanceUtils(BasePluginFolder):
         super().__init__(
             viewer,
             parent,
-            loads_images=False,
+            loads_labels=False,
         )
 
         self.data_panel = self._build_io_panel()
-        self.label_layer_loader.set_layer_type(napari.layers.Layer)
+        self._set_io_visibility()
+
+        self.image_layer_loader.layer_list.label.setText("Layer :")
+        self.image_layer_loader.set_layer_type(napari.layers.Layer)
 
         self.instance_widgets = InstanceWidgets(parent=self)
-
         self.start_btn = ui.Button("Start", self._start)
 
         self.results_path = Path.home() / "cellseg3d" / "instance"
@@ -352,11 +354,11 @@ class ToInstanceUtils(BasePluginFolder):
         )
 
     def _start(self):
-        utils.mkdir_from_str(self.results_path)
+        utils.mkdir_from_str(str(self.results_path))
 
         if self.layer_choice.isChecked():
-            if self.label_layer_loader.layer_data() is not None:
-                layer = self.label_layer_loader.layer()
+            if self.image_layer_loader.layer_data() is not None:
+                layer = self.image_layer_loader.layer()
 
                 data = np.array(layer.data)
                 instance = self.instance_widgets.run_method(data)
@@ -374,7 +376,7 @@ class ToInstanceUtils(BasePluginFolder):
             self.folder_choice.isChecked() and len(self.images_filepaths) != 0
         ):
             images = [
-                self.instance_widgets.run_method_on_channels(imread(file))
+                self.instance_widgets.run_method(imread(file))
                 for file in self.images_filepaths
             ]
             utils.save_folder(
