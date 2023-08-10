@@ -268,5 +268,6 @@ class TrainingReport:
     images_dict: t.Dict = (
         None  # output, discrete output, target, target labels
     )
+    supervised: bool = True
     # OR decoder output, encoder output, target, target labels
     # format : {"Layer name" : {"data" : np.array, "cmap" : "turbo"}}

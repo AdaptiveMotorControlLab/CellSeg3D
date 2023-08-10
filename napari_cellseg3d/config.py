@@ -305,6 +305,7 @@ class WNetTrainingWorkerConfig(TrainingWorkerConfig):
     # data params
     train_data_dict: dict = None
     eval_volume_dict: str = None
+    eval_batch_size: int = 1
 
 
 ################
@@ -314,7 +315,7 @@ class WNetTrainingWorkerConfig(TrainingWorkerConfig):
 class WandBConfig:
     """Class to record parameters for WandB"""
 
-    mode: str = "online"  # disabled, online, enabled
+    mode: str = "disabled"  # disabled, online, enabled
     save_model_artifact: bool = False
 
 

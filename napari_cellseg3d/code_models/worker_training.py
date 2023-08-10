@@ -326,10 +326,10 @@ class WNetTrainingWorker(TrainingWorkerBase):
 
         if self.config.eval_volume_dict is not None:
             eval_dataset = self.get_dataset_eval(self.config.eval_volume_dict)
-
+            logger.debug(f"Eval batch size : {self.config.eval_batch_size}")
             self.eval_dataloader = DataLoader(
                 eval_dataset,
-                batch_size=self.config.batch_size,
+                batch_size=self.config.eval_batch_size,
                 shuffle=False,
                 num_workers=self.config.num_workers,
                 collate_fn=pad_list_data_collate,
@@ -577,7 +577,9 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     optimizer.step()
 
                     yield TrainingReport(
-                        show_plot=False, weights=model.state_dict()
+                        show_plot=False,
+                        weights=model.state_dict(),
+                        supervised=False,
                     )
 
                     if self._abort_requested:
@@ -635,6 +637,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                             loss_2_values=self.rec_losses,
                             weights=model.state_dict(),
                             images_dict=images_dict,
+                            supervised=False,
                         )
                     except TypeError:
                         pass
@@ -900,6 +903,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 loss_2_values=self.rec_losses,
                 weights=model.state_dict(),
                 images_dict=display_dict,
+                supervised=False,
             )
 
 
@@ -1454,7 +1458,9 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                             torch.cuda.empty_cache()
 
                     yield TrainingReport(
-                        show_plot=False, weights=model.state_dict()
+                        show_plot=False,
+                        weights=model.state_dict(),
+                        supervised=True,
                     )
 
                 # return
@@ -1599,6 +1605,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                             loss_2_values=val_metric_values,
                             weights=model.state_dict(),
                             images_dict=images_dict,
+                            supervised=True,
                         )
                         self.log("Validation completed")
                         yield train_report
