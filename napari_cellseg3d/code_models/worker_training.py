@@ -1273,14 +1273,14 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 train_dataset,
                 batch_size=self.config.batch_size,
                 shuffle=True,
-                num_workers=2,
+                num_workers=self.config.num_workers,
                 collate_fn=pad_list_data_collate,
             )
 
             validation_loader = DataLoader(
                 validation_dataset,
                 batch_size=self.config.batch_size,
-                num_workers=2,
+                num_workers=self.config.num_workers,
             )
             logger.info("\nDone")
 

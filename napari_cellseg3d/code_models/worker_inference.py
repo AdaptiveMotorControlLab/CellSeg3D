@@ -181,7 +181,6 @@ class InferenceWorker(GeneratorWorker):
     def load_folder(self):
         images_dict = self.create_inference_dict(self.config.images_filepaths)
 
-        # TODO : better solution than loading first image always ?
         data_check = LoadImaged(keys=["image"])(images_dict[0])
         check = data_check["image"].shape
         pad = utils.get_padding_dim(check)
