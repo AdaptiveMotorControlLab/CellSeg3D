@@ -9,8 +9,11 @@ from qtpy.QtWidgets import QSizePolicy, QVBoxLayout, QWidget
 
 # local
 import napari_cellseg3d.interface as ui
+from napari_cellseg3d import utils
+from napari_cellseg3d.code_plugins.plugin_base import BasePluginUtils
 from napari_cellseg3d.code_plugins.plugin_convert import (
     AnisoUtils,
+    FragmentUtils,
     RemoveSmallUtils,
     ThresholdUtils,
     ToInstanceUtils,
@@ -18,9 +21,11 @@ from napari_cellseg3d.code_plugins.plugin_convert import (
 )
 from napari_cellseg3d.code_plugins.plugin_crf import CRFWidget
 from napari_cellseg3d.code_plugins.plugin_crop import Cropping
+from napari_cellseg3d.utils import LOGGER as logger
 
 UTILITIES_WIDGETS = {
     "Crop": Cropping,
+    "Fragment 3D volume": FragmentUtils,
     "Correct anisotropy": AnisoUtils,
     "Remove small objects": RemoveSmallUtils,
     "Convert to instance labels": ToInstanceUtils,
@@ -34,17 +39,19 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
         self._viewer = viewer
+        self.current_widget = None
 
-        attr_names = ["crop", "aniso", "small", "inst", "sem", "thresh", "crf"]
+        attr_names = [
+            "crop",
+            "frag",
+            "aniso",
+            "small",
+            "inst",
+            "sem",
+            "thresh",
+            "crf",
+        ]
         self._create_utils_widgets(attr_names)
-
-        # self.crop = Cropping(self._viewer)
-        # self.sem = ToSemanticUtils(self._viewer)
-        # self.aniso = AnisoUtils(self._viewer)
-        # self.inst = ToInstanceUtils(self._viewer)
-        # self.thresh = ThresholdUtils(self._viewer)
-        # self.small = RemoveSmallUtils(self._viewer)
-
         self.utils_choice = ui.DropdownMenu(
             UTILITIES_WIDGETS.keys(), text_label="Utilities"
         )
@@ -52,9 +59,20 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
         self._build()
 
         self.utils_choice.currentIndexChanged.connect(self._update_visibility)
+        self.utils_choice.currentIndexChanged.connect(
+            self._update_current_widget
+        )
         # self._dock_util()
         self._update_visibility()
         qInstallMessageHandler(ui.handle_adjust_errors_wrapper(self))
+
+    def _update_current_widget(self):
+        self.current_widget = self.utils_widgets[
+            self.utils_choice.currentIndex()
+        ]
+
+    def _update_results_path(self, widget):
+        self.results_filewidget.text_field.setText(str(widget.save_path))
 
     def _build(self):
         layout = QVBoxLayout()
@@ -72,11 +90,14 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
         # layout.setSizeConstraint(QLayout.SetFixedSize)
         self.setLayout(layout)
         # self.setMinimumHeight(2000)
-        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.MinimumExpanding)
+        self.setSizePolicy(
+            QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
+        )
         self._update_visibility()
 
     def _create_utils_widgets(self, names):
         for key, name in zip(UTILITIES_WIDGETS, names):
+            logger.debug(f"Creating {name} widget")
             setattr(self, name, UTILITIES_WIDGETS[key](self._viewer))
 
         self.utils_widgets = []
@@ -84,22 +105,82 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
             wid = getattr(self, n)
             self.utils_widgets.append(wid)
 
+        self.current_widget = self.utils_widgets[0]
         if len(self.utils_widgets) != len(UTILITIES_WIDGETS.keys()):
             raise RuntimeError(
                 "One or several utility widgets are missing/erroneous"
             )
+
+    def _update_layers(self, current_loader, new_loader):
+        current_layer = current_loader.layer()
+        if not isinstance(current_layer, new_loader.layer_type):
+            return
+        if (
+            current_layer is not None
+            and current_layer.name in new_loader.layer_list.get_items()
+        ):
+            index = new_loader.layer_list.get_items().index(current_layer.name)
+            logger.debug(
+                f"Index of layer {current_layer.name} in new loader : {index}"
+            )
+            new_loader.layer_list.setCurrentIndex(index)
+
+    def _update_fields(self, widget: BasePluginUtils):
+        try:
+            # checks all combinations to find if a layer could be recovered across widgets
+            # correctness is ensured by the types of the layer loaders
+            self._update_layers(
+                self.current_widget.image_layer_loader,
+                widget.image_layer_loader,
+            )
+            self._update_layers(
+                self.current_widget.image_layer_loader,
+                widget.label_layer_loader,
+            )
+            self._update_layers(
+                self.current_widget.label_layer_loader,
+                widget.image_layer_loader,
+            )
+            self._update_layers(
+                self.current_widget.label_layer_loader,
+                widget.label_layer_loader,
+            )
+        except KeyError:
+            pass
+
+        logger.debug(
+            f"Current widget save path : {self.current_widget.save_path}"
+        )
+        logger.debug(
+            f"Current widget text field : {self.current_widget.results_filewidget.text_field.text()}"
+        )
+        logger.debug(
+            f"Matching : {self.current_widget.results_filewidget.text_field.text() == self.current_widget.results_path}"
+        )
+        if len(self.current_widget.utils_default_paths) > 1:
+            try:
+                path = self.current_widget.utils_default_paths
+                default = utils.parse_default_path(path)
+                widget.results_filewidget.text_field.setText(default)
+                widget.utils_default_paths.append(default)
+            except AttributeError:
+                pass
 
     def _update_visibility(self):
         widget_class = UTILITIES_WIDGETS[self.utils_choice.currentText()]
         # print("vis. updated")
         # print(self.utils_widgets)
         self._hide_all()
+        widget = None
         for _i, w in enumerate(self.utils_widgets):
             if isinstance(w, widget_class):
                 w.setVisible(True)
                 w.adjustSize()
+                widget = w
             # else:
             #     self.utils_widgets[i].setVisible(False)
+        self._update_fields(widget)
+        self.current_widget = widget
 
     def _hide_all(self):
         for w in self.utils_widgets:

@@ -17,8 +17,13 @@ DEFAULT_CROP_SIZE = 64
 logger = utils.LOGGER
 
 
-class Cropping(BasePluginSingleImage):
+class Cropping(
+    BasePluginSingleImage
+):  # not a BasePLuginUtils since it's not runnning on folders
     """A utility plugin for cropping 3D volumes."""
+
+    save_path = Path.home() / "cellseg3d" / "cropped"
+    utils_default_paths = []
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
         """Creates a Cropping plugin with several buttons :
@@ -37,13 +42,21 @@ class Cropping(BasePluginSingleImage):
         """
 
         super().__init__(viewer)
+
+        if parent is not None:
+            self.setParent(parent)
+
         self.docked_widgets = []
-        self.results_path = Path.home() / Path("cellseg3d/cropped")
+        self.results_path = str(self.save_path)
 
         self.btn_start = ui.Button("Start", self._start)
 
         self.image_layer_loader.set_layer_type(napari.layers.Layer)
-        self.image_layer_loader.layer_list.label.setText("Image 1")
+        self.image_layer_loader.layer_list.label.setText("Image")
+        # self.image_layer_loader.layer_list.currentIndexChanged.connect(
+        #     self.auto_set_dims
+        # )
+
         self.image_layer_loader.layer_list.currentIndexChanged.connect(
             self.auto_set_dims
         )
@@ -73,14 +86,8 @@ class Cropping(BasePluginSingleImage):
         self.layer_choice.clicked.connect(
             self._toggle_second_image_io_visibility
         )
+        self.results_filewidget.text_field.setText(str(self.save_path))
 
-        # self.results_filewidget = ui.FilePathWidget(
-        #     "Results path",
-        #     self._load_results_path,
-        #     default=str(self.results_path),
-        # )
-        # self.results_filewidget.tooltips = str(self.results_path)
-        self.results_filewidget.text_field.setText(str(self.results_path))
         self.results_filewidget.check_ready()
 
         self.crop_size_widgets = ui.IntIncrementCounter.make_n(
