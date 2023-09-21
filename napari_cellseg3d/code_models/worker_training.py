@@ -779,33 +779,17 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     f"Val decoder outputs shape: {val_decoder_outputs.shape}"
                 )
 
-                # dices = []
-                # Find in which channel the labels are (avoid background)
-                # for channel in range(val_outputs.shape[1]):
-                #     dices.append(
-                #         utils.dice_coeff(
-                #             y_pred=val_outputs[
-                #                 0, channel : (channel + 1), :, :, :
-                #             ],
-                #             y_true=val_labels[0],
-                #         )
-                #     )
-                # logger.debug(f"DICE COEFF: {dices}")
-                # max_dice_channel = torch.argmax(
-                #     torch.Tensor(dices)
-                # )
-                # logger.debug(
-                #     f"MAX DICE CHANNEL: {max_dice_channel}"
-                # )
+                max_dice_channel = utils.seek_best_dice_coeff_channel(
+                    y_pred=val_outputs, y_true=val_labels
+                )
                 self.dice_metric(
-                    y_pred=val_outputs,
-                    # [
-                    #     :,
-                    #     max_dice_channel : (max_dice_channel + 1),
-                    #     :,
-                    #     :,
-                    #     :,
-                    # ],
+                    y_pred=val_outputs[
+                        :,
+                        max_dice_channel : (max_dice_channel + 1),
+                        :,
+                        :,
+                        :,
+                    ],
                     y=val_labels,
                 )
 
@@ -1282,7 +1266,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 batch_size=self.config.batch_size,
                 num_workers=self.config.num_workers,
             )
-            logger.info("\nDone")
+            logger.debug("\nDone")
 
             logger.debug("Optimizer")
             optimizer = (

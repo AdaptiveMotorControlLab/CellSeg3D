@@ -229,6 +229,29 @@ def dice_coeff(
     )
 
 
+def seek_best_dice_coeff_channel(y_pred, y_true) -> torch.Tensor:
+    """Compute Dice-Sorensen coefficient between unsupervised model output and ground truth labels;
+    returns the channel with the highest dice coefficient.
+    Args:
+        y_true: Ground truth label
+        y_pred: Prediction label
+    Returns: best Dice coefficient channel
+    """
+    dices = []
+    # Find in which channel the labels are (to avoid background)
+    for channel in range(y_pred.shape[1]):
+        dices.append(
+            dice_coeff(
+                y_pred=y_pred[0, channel : (channel + 1), :, :, :],
+                y_true=y_true[0],
+            )
+        )
+    LOGGER.debug(f"DICE COEFF: {dices}")
+    max_dice_channel = torch.argmax(torch.Tensor(dices))
+    LOGGER.debug(f"MAX DICE CHANNEL: {max_dice_channel}")
+    return max_dice_channel
+
+
 def correct_rotation(image):
     """Rotates the exes 0 and 2 in [DHW] section of image array"""
     extra_dims = len(image.shape) - 3
