@@ -1165,6 +1165,12 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             A worker config
         """
         batch_size = self.batch_choice.slider_value
+        if eval_volume_dict is None:
+            eval_batch_size = 1
+        else:
+            eval_batch_size = (
+                1 if len(eval_volume_dict) < batch_size else batch_size
+            )
         self.worker_config = config.WNetTrainingWorkerConfig(
             device=self.check_device_choice(),
             weights_info=self.weights_config,
@@ -1186,9 +1192,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             n_cuts_weight=self.wnet_widgets.ncuts_weight_choice.value(),
             rec_loss_weight=self.wnet_widgets.get_reconstruction_weight(),
             eval_volume_dict=eval_volume_dict,
-            eval_batch_size=1
-            if len(eval_volume_dict) < batch_size
-            else batch_size,
+            eval_batch_size=eval_batch_size,
         )
 
         return self.worker_config
