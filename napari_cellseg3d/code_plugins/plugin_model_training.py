@@ -1,4 +1,5 @@
 import shutil
+import warnings
 from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, List
@@ -431,13 +432,18 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             * False and displays a warning if not
 
         """
-        if (
-            self.images_filepaths == []
-            or self.labels_filepaths == []
-            or len(self.images_filepaths) != len(self.labels_filepaths)
-        ):
-            logger.warning("Image and label paths are not correctly set")
-            return False
+        if not self.unsupervised_mode:
+            if (
+                self.images_filepaths == []
+                or self.labels_filepaths == []
+                or len(self.images_filepaths) != len(self.labels_filepaths)
+            ):
+                logger.warning("Image and label paths are not correctly set")
+                return False
+        else:
+            if self.get_unsupervised_image_filepaths() == []:
+                logger.warning("Image paths are not correctly set")
+                return False
         return True
 
     def _toggle_unsupervised_mode(self, enabled=False):
@@ -940,8 +946,9 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         if not self.check_ready():  # issues a warning if not ready
             err = "Aborting, please set all required paths"
-            self.log.print_and_log(err)
+            # self.log.print_and_log(err)
             logger.warning(err)
+            warnings.warn(err, stacklevel=1)
             return
 
         if self.worker is not None:
