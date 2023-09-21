@@ -13,7 +13,7 @@ from napari_cellseg3d.code_models.crf import (
     CRFWorker,
     crf_with_config,
 )
-from napari_cellseg3d.code_plugins.plugin_base import BasePluginSingleImage
+from napari_cellseg3d.code_plugins.plugin_base import BasePluginUtils
 from napari_cellseg3d.utils import LOGGER as logger
 
 
@@ -107,7 +107,11 @@ class CRFParamsWidget(ui.GroupedWidget):
         )
 
 
-class CRFWidget(BasePluginSingleImage):
+class CRFWidget(BasePluginUtils):
+    """Widget to run CRF post-processing"""
+
+    save_path = Path.home() / "cellseg3d" / "crf"
+
     def __init__(self, viewer, parent=None):
         """
         Create a widget for CRF post-processing.
@@ -115,7 +119,7 @@ class CRFWidget(BasePluginSingleImage):
             viewer: napari viewer to display the widget
             parent: parent widget. Defaults to None.
         """
-        super().__init__(viewer, parent)
+        super().__init__(viewer, parent=parent)
         self._viewer = viewer
 
         self.start_button = ui.Button("Start", self._start, parent=self)
@@ -129,6 +133,8 @@ class CRFWidget(BasePluginSingleImage):
             napari.layers.Image
         )  # to load all crf-compatible inputs, not int only
         self.image_layer_loader.setVisible(True)
+        self.label_layer_loader.layer_list.label.setText("Model output :")
+
         if CRF_INSTALLED:
             self.start_button.setVisible(True)
         else:
@@ -138,8 +144,8 @@ class CRFWidget(BasePluginSingleImage):
         self.result_name = None
         self.crf_results = []
 
-        self.results_path = Path.home() / "cellseg3d" / "crf"
-        self.results_filewidget.text_field.setText(str(self.results_path))
+        self.results_path = str(self.save_path)
+        self.results_filewidget.text_field.setText(self.results_path)
         self.results_filewidget.check_ready()
 
         self._container = ui.ContainerWidget(parent=self, l=11, t=11, r=11)
@@ -149,6 +155,7 @@ class CRFWidget(BasePluginSingleImage):
 
         self.worker = None
         self.log = None
+        self.layer = None
 
     def _build(self):
         self.setMinimumWidth(100)
@@ -262,15 +269,18 @@ class CRFWidget(BasePluginSingleImage):
 
     def _on_yield(self, result):
         self.crf_results.append(result)
-
         utils.save_layer(
             self.results_filewidget.text_field.text(),
             str(self.result_name + "_crf.tif"),
             result,
         )
-        self._viewer.add_image(
+        self.layer = utils.show_result(
+            self._viewer,
+            self.result_layer,
             result,
             name="crf_" + self.result_name,
+            existing_layer=self.layer,
+            colormap="bop orange",
         )
 
     def _on_start(self):

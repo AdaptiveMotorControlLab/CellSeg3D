@@ -7,7 +7,7 @@ import napari
 # Qt
 # from qtpy.QtCore import QtWarningMsg
 from qtpy import QtCore
-from qtpy.QtCore import QObject, Qt, QUrl
+from qtpy.QtCore import QObject, Q
 from qtpy.QtGui import QCursor, QDesktopServices, QTextCursor
 from qtpy.QtWidgets import (
     QAbstractSpinBox,
@@ -107,25 +107,25 @@ class QWidgetSingleton(type(QObject)):
 def handle_adjust_errors(widget, warning_type, context, msg: str):
     """Qt message handler that attempts to react to errors when setting the window size
     and resizes the main window"""
-    pass
-    # head = msg.split(": ")[0]
-    # if warning_type == QtWarningMsg and head == "QWindowsWindow::setGeometry":
-    #     logger.warning(
-    #         f"Qt resize error : {msg}\nhas been handled by attempting to resize the window"
-    #     )
-    #     try:
-    #         if widget.parent() is not None:
-    #             state = int(widget.parent().parent().windowState())
-    #             if state == 0:  # normal state
-    #                 widget.parent().parent().adjustSize()
-    #                 logger.debug("Non-max. size adjust attempt")
-    #                 logger.debug(f"{widget.parent().parent()}")
-    #             elif state == 2:  # maximized state
-    #                 widget.parent().parent().showNormal()
-    #                 widget.parent().parent().showMaximized()
-    #                 logger.debug("Maximized size adjust attempt")
-    #     except RuntimeError:
-    #         pass
+    # pass
+    head = msg.split(": ")[0]
+    if warning_type == QtWarningMsg and head == "QWindowsWindow::setGeometry":
+        logger.warning(
+            f"Qt resize error : {msg}\nhas been handled by attempting to resize the window"
+        )
+        try:
+            if widget.parent() is not None:
+                state = int(widget.parent().parent().windowState())
+                if state == 0:  # normal state
+                    widget.parent().parent().adjustSize()
+                    logger.debug("Non-max. size adjust attempt")
+                    logger.debug(f"{widget.parent().parent()}")
+                elif state == 2:  # maximized state
+                    widget.parent().parent().showNormal()
+                    widget.parent().parent().showMaximized()
+                    logger.debug("Maximized size adjust attempt")
+        except RuntimeError:
+            pass
 
 
 def handle_adjust_errors_wrapper(widget):
@@ -427,6 +427,9 @@ class DropdownMenu(QComboBox):
         if fixed:
             self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
+    def get_items(self):
+        return [self.itemText(i) for i in range(self.count())]
+
 
 class CheckBox(QCheckBox):
     """Shortcut class for creating QCheckBox with a title and a function"""
@@ -637,6 +640,7 @@ class AnisotropyWidgets(QWidget):
         default_y: Optional[float] = 1.0,
         default_z: Optional[float] = 1.0,
         always_visible: Optional[bool] = False,
+        use_integer_counter: Optional[bool] = False,
     ):
         """Creates an instance of AnisotropyWidgets
         Args:
@@ -656,9 +660,14 @@ class AnisotropyWidgets(QWidget):
             "Anisotropic data", self._toggle_display_aniso, parent
         )
 
-        self.box_widgets = DoubleIncrementCounter.make_n(
-            n=3, lower=1.0, upper=1000.0, default=1.0, step=0.5
-        )
+        if use_integer_counter:
+            self.box_widgets = IntIncrementCounter.make_n(
+                n=3, lower=1, upper=9999, default=64, step=1
+            )
+        else:
+            self.box_widgets = DoubleIncrementCounter.make_n(
+                n=3, lower=1.0, upper=1000.0, default=1.0, step=0.5
+            )
         self.box_widgets[0].setValue(default_x)
         self.box_widgets[1].setValue(default_y)
         self.box_widgets[2].setValue(default_z)

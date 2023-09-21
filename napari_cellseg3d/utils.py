@@ -61,16 +61,21 @@ def save_layer(results_path, image_name, image):
         results_path: path to folder containing result
         image_name: image name for saving
         image: data array containing image
-
-    Returns:
-
     """
     path = str(results_path / Path(image_name))  # TODO flexible filetype
     LOGGER.info(f"Saved as : {path}")
-    imwrite(path, image)
+    image = image.astype(np.float32)
+    imwrite(path, image, dtype="float32")
 
 
-def show_result(viewer, layer, image, name):
+def show_result(
+    viewer,
+    layer,
+    image,
+    name,
+    existing_layer: napari.layers.Layer = None,
+    colormap="bop orange",
+) -> napari.layers.Layer:
     """
     Adds layers to a viewer to show result to user
 
@@ -81,18 +86,35 @@ def show_result(viewer, layer, image, name):
         name: name of the added layer
 
     Returns:
-
+        napari.layers.Layer: the layer added to the viewer
     """
-    if isinstance(layer, napari.layers.Image):
-        LOGGER.debug("Added resulting image layer")
-        viewer.add_image(image, name=name)
-    elif isinstance(layer, napari.layers.Labels):
-        LOGGER.debug("Added resulting label layer")
-        viewer.add_labels(image, name=name)
+    colormap = colormap if colormap is not None else "gray"
+    if existing_layer is None:
+        if isinstance(layer, napari.layers.Image):
+            LOGGER.info("Added resulting image layer")
+            results_layer = viewer.add_image(
+                image, name=name, colormap=colormap
+            )
+        elif isinstance(layer, napari.layers.Labels):
+            LOGGER.info("Added resulting label layer")
+            results_layer = viewer.add_labels(image, name=name)
+        else:
+            LOGGER.warning(
+                f"Results not shown, unsupported layer type {type(layer)}"
+            )
     else:
-        LOGGER.warning(
-            f"Results not shown, unsupported layer type {type(layer)}"
-        )
+        try:
+            viewer.layers[existing_layer.name].data = image
+            results_layer = viewer.layers[existing_layer.name]
+        except KeyError:
+            LOGGER.warning(
+                f"Results not shown, layer {existing_layer.name} not found"
+                "Showing new layer instead"
+            )
+            results_layer = show_result(
+                viewer, layer, image, name, existing_layer=None
+            )
+    return results_layer
 
 
 class Singleton(type):

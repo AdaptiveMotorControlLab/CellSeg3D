@@ -112,7 +112,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ######################
         # TODO : better way to handle SegResNet size reqs ?
         self.model_input_size = ui.IntIncrementCounter(
-            lower=1, upper=1024, default=128, text_label="\nModel input size"
+            lower=1, upper=1024, default=64, text_label="\nModel input size"
         )
         self.model_choice.currentIndexChanged.connect(
             self._toggle_display_model_input_size
@@ -155,16 +155,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         sizes_window = ["8", "16", "32", "64", "128", "256", "512"]
         self._default_window_size = sizes_window.index("64")
-        # (
-        #     self.window_size_choice,
-        #     self.window_size_choice.label,
-        # ) = ui.make_combobox(sizes_window, label="Window size and overlap")
-        # self.window_overlap = ui.make_n_spinboxes(
-        #     max=1,
-        #     default=0.7,
-        #     step=0.05,
-        #     double=True,
-        # )
+        self.wnet_enabled = False
 
         self.window_size_choice = ui.DropdownMenu(
             sizes_window, text_label="Window size"
@@ -310,16 +301,13 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
     def _restrict_window_size_for_model(self):
         """Sets the window size to a value that is compatible with the chosen model"""
+        self.wnet_enabled = False
         if self.model_choice.currentText() == "WNet":
             self.window_size_choice.setCurrentIndex(self._default_window_size)
-            self.window_size_choice.setDisabled(True)
-            self.window_infer_box.setChecked(True)
-            self.window_infer_box.setDisabled(True)
-        else:
-            self.window_size_choice.setDisabled(False)
-            self.window_infer_box.setDisabled(False)
-            self.window_infer_box.setChecked(True)
-            self.window_size_choice.setCurrentIndex(self._default_window_size)
+            self.wnet_enabled = True
+            self.window_infer_box.setChecked(self.wnet_enabled)
+        self.window_size_choice.setDisabled(self.wnet_enabled)
+        self.window_infer_box.setDisabled(self.wnet_enabled)
 
     def _toggle_display_model_input_size(self):
         if (
