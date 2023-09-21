@@ -7,7 +7,7 @@ import napari
 # Qt
 # from qtpy.QtCore import QtWarningMsg
 from qtpy import QtCore
-from qtpy.QtCore import QObject, Q
+from qtpy.QtCore import QObject, Qt, QtWarningMsg, QUrl
 from qtpy.QtGui import QCursor, QDesktopServices, QTextCursor
 from qtpy.QtWidgets import (
     QAbstractSpinBox,
