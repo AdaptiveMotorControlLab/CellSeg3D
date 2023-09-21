@@ -159,7 +159,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
         self.config = worker_config
 
         self.dice_metric = DiceMetric(
-            include_background=True, reduction="mean", get_not_nans=False
+            include_background=False, reduction="mean", get_not_nans=False
         )
         self.normalize_function = utils.remap_image
         self.start_time = time.time()
@@ -1342,7 +1342,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 else provided_scheduler
             )
             dice_metric = DiceMetric(
-                include_background=True, reduction="mean", ignore_empty=False
+                include_background=False, reduction="mean", ignore_empty=False
             )
 
             best_metric = -1
