@@ -577,6 +577,24 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             name=f"pred_{image_id}_{model_name}",
             opacity=0.8,
         )
+
+        if (
+            len(result.result.shape) == 4
+        ):  # seek channel that is most likely to be foreground
+            for i, channel in enumerate(result.result):
+                channel = channel.flatten()
+                above_thresh = np.where(channel > 0.5, 1, 0)
+                fraction = np.count_nonzero(above_thresh) / np.count_nonzero(
+                    channel
+                )
+                logger.debug(f"channel {i} fraction : {fraction}")
+                if fraction < 0.5:
+                    logger.debug("channel might be foreground")
+                    viewer.dims.set_point(
+                        0, i
+                    )  # TODO(cyril: check if this is always the right axis
+                    break
+
         if result.crf_results is not None:
             logger.debug(f"CRF results shape : {result.crf_results.shape}")
             viewer.add_image(
