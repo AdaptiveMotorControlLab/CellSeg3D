@@ -1258,7 +1258,7 @@ def open_folder_dialog(
 ):
     default_path = utils.parse_default_path(possible_paths)
 
-    logger.info(f"Default : {default_path}")
+    logger.debug(f"Default : {default_path}")
     return QFileDialog.getExistingDirectory(
         widget, "Open directory", default_path  # + "/.."
     )

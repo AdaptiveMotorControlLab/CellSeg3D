@@ -245,16 +245,22 @@ class ModelFramework(BasePluginFolder):
             self.custom_weights_choice, self.weights_filewidget
         )
 
-    def create_dataset_dict_no_labs(self):
-        """Creates unsupervised data dictionary for MONAI transforms and training."""
+    def get_unsupervised_image_filepaths(self):
         volume_directory = Path(
             self.unsupervised_images_filewidget.text_field.text()
         )
+
         if not volume_directory.exists():
             raise ValueError(f"Data folder {volume_directory} does not exist")
-        images_filepaths = sorted(Path.glob(volume_directory, "*.tif"))
+        return sorted(Path.glob(volume_directory, "*.tif"))
+
+    def create_dataset_dict_no_labs(self):
+        """Creates unsupervised data dictionary for MONAI transforms and training."""
+        images_filepaths = self.get_unsupervised_image_filepaths()
         if len(images_filepaths) == 0:
-            raise ValueError(f"Data folder {volume_directory} is empty")
+            raise ValueError(
+                f"Data folder {self.unsupervised_images_filewidget.text_field.text()} is empty"
+            )
 
         logger.info("Images :")
         for file in images_filepaths:
