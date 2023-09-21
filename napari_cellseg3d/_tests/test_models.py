@@ -27,7 +27,7 @@ def test_model_list():
     for model_name in MODEL_LIST:
         # if model_name=="test":
         #     continue
-        dims = 128
+        dims = 64
         test = MODEL_LIST[model_name](
             input_img_size=[dims, dims, dims],
             in_channels=1,

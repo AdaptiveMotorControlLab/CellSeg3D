@@ -210,7 +210,7 @@ class InferenceWorkerConfig:
     device: str = "cpu"
     model_info: ModelInfo = ModelInfo()
     weights_config: WeightsInfo = WeightsInfo()
-    results_path: str = str(Path.home() / "cellseg3d/inference")
+    results_path: str = str(Path.home() / "cellseg3d" / "inference")
     filetype: str = ".tif"
     keep_on_cpu: bool = False
     compute_stats: bool = False

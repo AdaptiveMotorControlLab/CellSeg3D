@@ -1,7 +1,6 @@
 import random
 from functools import partial
 from pathlib import Path
-
 import numpy as np
 import pytest
 import torch
@@ -206,22 +205,38 @@ def test_load_images():
 
 
 def test_parse_default_path():
-    user_path = Path().home()
+    user_path = Path.home()
     assert utils.parse_default_path([None]) == str(user_path)
 
-    test_path = "C:/test/test/test/test"
+    test_path = (Path.home() / "test" / "test" / "test" / "test").as_posix()
     path = [test_path, None, None]
-    assert utils.parse_default_path(path, check_existence=False) == test_path
+    assert utils.parse_default_path(path, check_existence=False) == str(
+        test_path
+    )
 
-    test_path = "C:/test/does/not/exist"
+    test_path = (Path.home() / "test" / "does" / "not" / "exist").as_posix()
     path = [test_path, None, None]
     assert utils.parse_default_path(path, check_existence=True) == str(
         Path.home()
     )
 
-    long_path = "D:/very/long/path/what/a/bore/ifonlytherewas/something/tohelpmenotsearchit/allthetime"
+    long_path = Path("D:/")
+    long_path = (
+        long_path
+        / "very"
+        / "long"
+        / "path"
+        / "what"
+        / "a"
+        / "bore"
+        / "ifonlytherewassomething"
+        / "tohelpmenotsearchit"
+        / "allthetime"
+    )
     path = [test_path, None, None, long_path, ""]
-    assert utils.parse_default_path(path, check_existence=False) == long_path
+    assert utils.parse_default_path(path, check_existence=False) == str(
+        long_path.as_posix()
+    )
 
 
 def test_thread_test(make_napari_viewer_proxy):

@@ -463,9 +463,10 @@ class BasePluginFolder(BasePluginSingleImage):
                 self.extract_dataset_paths(self.validation_filepaths),
                 self.results_path,
             ]
-            return
+            return utils.parse_default_path(self._default_path)
         if Path(path).is_dir():
             self._default_path.append(path)
+        return utils.parse_default_path(self._default_path)
 
     @staticmethod
     def extract_dataset_paths(paths):
@@ -476,8 +477,43 @@ class BasePluginFolder(BasePluginSingleImage):
             return None
         return str(Path(paths[0]).parent)
 
+
     def _check_all_filepaths(self):
         self.image_filewidget.check_ready()
         self.labels_filewidget.check_ready()
         self.results_filewidget.check_ready()
         self.unsupervised_images_filewidget.check_ready()
+
+class BasePluginUtils(BasePluginFolder):
+    """Small subclass used to have centralized widgets layer and result path selection in utilities"""
+
+    save_path = None
+    utils_default_paths = [Path.home() / "cellseg3d"]
+
+    def __init__(
+        self,
+        viewer: napari.viewer.Viewer,
+        parent=None,
+        loads_images=True,
+        loads_labels=True,
+    ):
+        super().__init__(
+            viewer=viewer,
+            loads_images=loads_images,
+            loads_labels=loads_labels,
+            parent=parent,
+        )
+        if parent is not None:
+            self.setParent(parent)
+        self.parent = parent
+
+        self.layer = None
+        """Should contain the layer associated with the results of the utility widget"""
+
+    def _update_default_paths(self, path=None):
+        """Override to also update utilities' pool of default paths"""
+        default_path = super()._update_default_paths(path)
+        logger.debug(f"Trying to update default with {default_path}")
+        if default_path is not None:
+            self.utils_default_paths.append(default_path)
+
