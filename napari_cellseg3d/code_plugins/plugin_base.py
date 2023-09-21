@@ -389,7 +389,7 @@ class BasePluginFolder(BasePluginSingleImage):
         # Validation images widget
         self.unsupervised_images_filewidget = ui.FilePathWidget(
             description="Training directory",
-            file_function=self.load_validation_images_dataset,
+            file_function=self.load_unsup_images_dataset,
             parent=self,
         )
         self.unsupervised_images_filewidget.setVisible(False)
@@ -421,19 +421,23 @@ class BasePluginFolder(BasePluginSingleImage):
     def load_image_dataset(self):
         """Show file dialog to set :py:attr:`~images_filepaths`"""
         filenames = self.load_dataset_paths()
-        logger.debug(f"image filenames : {filenames}")
         if filenames:
+            logger.info("Images loaded :")
+            for f in filenames:
+                logger.info(f"{str(Path(f).name)}")
             self.images_filepaths = [str(path) for path in sorted(filenames)]
             path = str(Path(filenames[0]).parent)
             self.image_filewidget.text_field.setText(path)
             self.image_filewidget.check_ready()
             self._update_default_paths(path)
 
-    def load_validation_images_dataset(self):
+    def load_unsup_images_dataset(self):
         """Show file dialog to set :py:attr:`~val_images_filepaths`"""
         filenames = self.load_dataset_paths()
-        logger.debug(f"val filenames : {filenames}")
         if filenames:
+            logger.info("Images loaded (unsupervised training) :")
+            for f in filenames:
+                logger.info(f"{str(Path(f).name)}")
             self.validation_filepaths = [
                 str(path) for path in sorted(filenames)
             ]
@@ -445,8 +449,10 @@ class BasePluginFolder(BasePluginSingleImage):
     def load_label_dataset(self):
         """Show file dialog to set :py:attr:`~labels_filepaths`"""
         filenames = self.load_dataset_paths()
-        logger.debug(f"labels filenames : {filenames}")
         if filenames:
+            logger.info("Labels loaded :")
+            for f in filenames:
+                logger.info(f"{str(Path(f).name)}")
             self.labels_filepaths = [str(path) for path in sorted(filenames)]
             path = str(Path(filenames[0]).parent)
             self.labels_filewidget.text_field.setText(path)
@@ -477,12 +483,12 @@ class BasePluginFolder(BasePluginSingleImage):
             return None
         return str(Path(paths[0]).parent)
 
-
     def _check_all_filepaths(self):
         self.image_filewidget.check_ready()
         self.labels_filewidget.check_ready()
         self.results_filewidget.check_ready()
         self.unsupervised_images_filewidget.check_ready()
+
 
 class BasePluginUtils(BasePluginFolder):
     """Small subclass used to have centralized widgets layer and result path selection in utilities"""
@@ -516,4 +522,3 @@ class BasePluginUtils(BasePluginFolder):
         logger.debug(f"Trying to update default with {default_path}")
         if default_path is not None:
             self.utils_default_paths.append(default_path)
-
