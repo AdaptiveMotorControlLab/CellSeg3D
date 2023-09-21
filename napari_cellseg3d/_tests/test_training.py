@@ -25,10 +25,12 @@ def test_supervised_training(make_napari_viewer_proxy):
     viewer = make_napari_viewer_proxy()
     widget = Trainer(viewer)
     widget.log = LogFixture()
+    widget.model_choice.setCurrentIndex(0)
 
     widget.images_filepath = []
     widget.labels_filepaths = []
 
+    assert not widget.unsupervised_mode
     assert not widget.check_ready()
 
     widget.images_filepaths = [im_path_str]
