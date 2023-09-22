@@ -18,14 +18,16 @@ from napari_cellseg3d.utils import fill_list_in_between, sphericity_axis
 
 # from skimage.measure import marching_cubes
 # from skimage.measure import mesh_surface_area
-
-
 # from napari_cellseg3d.utils import sphericity_volume_area
 
-# list of methods :
+################
+# LIST OF INSTANCE SEGMENTATION METHODS
 WATERSHED = "Watershed"
 CONNECTED_COMP = "Connected Components"
 VORONOI_OTSU = "Voronoi-Otsu"
+################
+
+USE_EXPERIMENTAL_VORONOI_OTSU_WITH_SLIDING_WINDOW = False
 
 
 class InstanceMethod:
@@ -178,6 +180,18 @@ def voronoi_otsu(
     Instance segmentation labels from Voronoi-Otsu method
 
     """
+    if USE_EXPERIMENTAL_VORONOI_OTSU_WITH_SLIDING_WINDOW:
+        from napari_cellseg3d.dev_scripts.sliding_window_voronoi import (
+            sliding_window_voronoi_otsu,
+        )
+
+        instance = sliding_window_voronoi_otsu(
+            volume,
+            spot_sigma=spot_sigma,
+            outline_sigma=outline_sigma,
+            patch_size=1024,
+        )
+        return np.array(instance)
     # remove_small_size (float): remove all objects smaller than the specified size in pixels
     # semantic = np.squeeze(volume)
     logger.debug(

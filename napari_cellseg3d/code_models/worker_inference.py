@@ -41,7 +41,7 @@ from napari_cellseg3d.code_models.workers_utils import (
 
 logger = utils.LOGGER
 # experimental code to auto-remove erroneously over-labeled empty regions from instance segmentation
-EXPERIMENTAL_AUTO_DISCARD_EMPTY_REGIONS = True
+EXPERIMENTAL_AUTO_DISCARD_EMPTY_REGIONS = False
 EXPERIMENTAL_AUTO_DISCARD_FRACTION_THRESHOLD = 0.9
 EXPERIMENTAL_AUTO_DISCARD_VALUE = 0.2
 
