@@ -42,8 +42,8 @@ from napari_cellseg3d.code_models.workers_utils import (
 logger = utils.LOGGER
 # experimental code to auto-remove erroneously over-labeled empty regions from instance segmentation
 EXPERIMENTAL_AUTO_DISCARD_EMPTY_REGIONS = True
-EXPERIMENTAL_AUTO_DISCARD_THRESHOLD = 0.01
-EXPERIMENTAL_AUTO_DISCARD_VALUE = 0.01
+EXPERIMENTAL_AUTO_DISCARD_FRACTION_THRESHOLD = 0.9
+EXPERIMENTAL_AUTO_DISCARD_VALUE = 0.2
 
 """
 Writing something to log messages from outside the main thread needs specific care,
@@ -321,6 +321,7 @@ class InferenceWorker(GeneratorWorker):
 
                     ####################### EXPERIMENTAL CODE
                     if EXPERIMENTAL_AUTO_DISCARD_EMPTY_REGIONS:
+                        result = post_process_transforms(result)
                         logger.debug("Checking for empty regions")
                         check_result = result.detach().cpu().numpy()
                         for i in range(check_result.shape[0]):
@@ -336,7 +337,7 @@ class InferenceWorker(GeneratorWorker):
                                 )
                                 if (
                                     fraction_labeled
-                                    > EXPERIMENTAL_AUTO_DISCARD_THRESHOLD
+                                    > EXPERIMENTAL_AUTO_DISCARD_FRACTION_THRESHOLD
                                 ):
                                     logger.debug(
                                         f"Discarding empty region with fraction {fraction_labeled}"
@@ -344,6 +345,7 @@ class InferenceWorker(GeneratorWorker):
                                     result[i, j] = torch.zeros_like(
                                         result[i, j]
                                     )
+                        return result
                     ##########################################
 
                     return post_process_transforms(result)
