@@ -557,3 +557,43 @@ def quantile_normalization(
     image = where(image > high_quantile_value, high_quantile_value, image)
     image = where(image < low_quantile_value, low_quantile_value, image)
     return image.reshape(shape)
+
+
+def channels_fraction_above_threshold(volume: np.array, threshold=0.5) -> list:
+    """Computes the fraction of pixels above a certain value in a 4D volume for each channel
+
+    Args:
+        volume (np.ndarray): Array of shape (C, H, W, D) containing the input volume
+        threshold (float): Threshold value to use for the computation
+
+    Returns:
+        list: List of length C containing the fraction of pixels above the threshold for each channel
+    """
+    if volume.shape != 4:
+        raise ValueError(
+            f"Volume shape {volume.shape} is not 4D. Expecting CxHxWxD."
+        )
+    fractions = []
+    for _i, channel in enumerate(volume):
+        fractions.append(
+            fraction_above_threshold(channel, threshold=threshold)
+        )
+    return fractions
+
+
+def fraction_above_threshold(volume: np.array, threshold=0.5) -> float:
+    """
+    Computes the fraction of pixels above a certain value in a volume
+    Args:
+        volume (np.ndarray): Array containing the input volume
+        threshold (float): Threshold value to use for the computation
+
+    Returns:
+        float: Fraction of pixels above the threshold
+    """
+    flattened = volume.flatten()
+    above_thresh = np.where(flattened > threshold, 1, 0)
+    LOGGER.debug(
+        f"non zero in above_thresh : {np.count_nonzero(above_thresh)}"
+    )
+    return np.count_nonzero(above_thresh) / np.size(flattened)

@@ -40,6 +40,10 @@ from napari_cellseg3d.code_models.workers_utils import (
 )
 
 logger = utils.LOGGER
+# experimental code to auto-remove erroneously over-labeled empty regions from instance segmentation
+EXPERIMENTAL_AUTO_DISCARD_EMPTY_REGIONS = True
+EXPERIMENTAL_AUTO_DISCARD_THRESHOLD = 0.01
+EXPERIMENTAL_AUTO_DISCARD_VALUE = 0.01
 
 """
 Writing something to log messages from outside the main thread needs specific care,
@@ -314,6 +318,34 @@ class InferenceWorker(GeneratorWorker):
                 def model_output_wrapper(inputs):
                     # inputs = normalization(inputs)
                     result = model(inputs)
+
+                    ####################### EXPERIMENTAL CODE
+                    if EXPERIMENTAL_AUTO_DISCARD_EMPTY_REGIONS:
+                        logger.debug("Checking for empty regions")
+                        check_result = result.detach().cpu().numpy()
+                        for i in range(check_result.shape[0]):
+                            for j in range(check_result.shape[1]):
+                                fraction_labeled = (
+                                    utils.fraction_above_threshold(
+                                        check_result[i, j],
+                                        EXPERIMENTAL_AUTO_DISCARD_VALUE,
+                                    )
+                                )
+                                logger.debug(
+                                    f"Fraction labeled: {fraction_labeled}"
+                                )
+                                if (
+                                    fraction_labeled
+                                    > EXPERIMENTAL_AUTO_DISCARD_THRESHOLD
+                                ):
+                                    logger.debug(
+                                        f"Discarding empty region with fraction {fraction_labeled}"
+                                    )
+                                    result[i, j] = torch.zeros_like(
+                                        result[i, j]
+                                    )
+                    ##########################################
+
                     return post_process_transforms(result)
 
                 model.eval()
