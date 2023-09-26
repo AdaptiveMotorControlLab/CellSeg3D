@@ -5,37 +5,43 @@ CellSeg3D is a toolbox for 3D segmentation of cells in light-sheet microscopy im
 
 This plugin will allow you to:
 
-* Review labeled cell volumes [#]_ from mice whole-brain samples imaged by mesoSPIM microscopy [#]_
+* Review labeled cell volumes from mice whole-brain samples imaged by mesoSPIM microscopy [#]_
 * Train and use segmentation models from the MONAI project [#]_ or custom 3D segmentation models written in PyTorch.
 
 Additionally, if you do not have labeled data, you can try our unsupervised model
 to help you obtain labels for your data automatically.
 
-The models provided should be adaptable to other tasks related to detection of 3D objects, outside of whole-brain light-sheet microscopy.
+The models provided should be adaptable to other tasks related to detection of 3D objects,
+outside of whole-brain light-sheet microscopy.
 
+.. image:: https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/0d16a71b-3ff2-477a-9d83-18d96cb1ce28/full_demo.gif?format=500w
+   :alt: CellSeg3D demo
+   :width: 500
+   :align: center
 
 Requirements
 --------------------------------------------
 
 .. important::
-    This package requires you have napari installed with **PyQt5** or **PySide2** first.
-    If you do not have a Qt backend instsalled you can use :
+    This package requires **PyQt5** or **PySide2** to be installed first for napari to run.
+    If you do not have a Qt backend installed you can use :
     ``pip install napari[all]``
     to install PyQt5 by default.
 
-The package depends on PyTorch and certain optional dependencies of MONAI. These come in the pip package as requirements, but if
+This package depends on PyTorch and certain optional dependencies of MONAI. These come as requirements, but if
 you need further assistance, please see below.
 
 .. note::
     A **CUDA-capable GPU** is not needed but **very strongly recommended**, especially for training and possibly inference.
 
 * For help with PyTorch, please see `PyTorch's website`_ for installation instructions, with or without CUDA according to your hardware.
-  Depending on your setup, you might wish to install torch first.
+  **Depending on your setup, you might wish to install torch first.**
 
 * If you get errors from MONAI regarding missing readers, please see `MONAI's optional dependencies`_ page for instructions on getting the readers required by your images.
 
 .. _MONAI's optional dependencies: https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies
 .. _PyTorch's website: https://pytorch.org/get-started/locally/
+
 
 Installation
 --------------------------------------------
@@ -147,7 +153,6 @@ This plugin mainly uses the following libraries and software:
 
 .. rubric:: References
 
-.. [#] Mapping mesoscale axonal projections in the mouse brain using a 3D convolutional network, Friedmann et al., 2020 ( https://pnas.org/cgi/doi/10.1073/pnas.1918465117 )
 .. [#] The mesoSPIM initiative: open-source light-sheet microscopes for imaging cleared tissue, Voigt et al., 2019 ( https://doi.org/10.1038/s41592-019-0554-0 )
 .. [#] MONAI Project website ( https://monai.io/ )
 .. [#] W-Net: A Deep Model for Fully Unsupervised Image Segmentation, Xia and Kulis, 2018 ( https://arxiv.org/abs/1711.08506 )
