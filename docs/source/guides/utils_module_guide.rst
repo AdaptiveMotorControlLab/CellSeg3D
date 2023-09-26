@@ -33,6 +33,9 @@ You can :
 * Threshold images :
     Remove all values below a threshold in an image.
 
+* Fragment image :
+    Break down a large image into cubes suitable for training.
+
 .. figure:: ../images/converted_labels.png
    :scale: 30 %
    :align: center
