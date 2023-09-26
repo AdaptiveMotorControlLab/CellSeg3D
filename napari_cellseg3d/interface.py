@@ -7,7 +7,7 @@ import napari
 # Qt
 # from qtpy.QtCore import QtWarningMsg
 from qtpy import QtCore
-from qtpy.QtCore import QObject, Qt, QtWarningMsg, QUrl
+from qtpy.QtCore import QObject, Qt, QUrl
 from qtpy.QtGui import QCursor, QDesktopServices, QTextCursor
 from qtpy.QtWidgets import (
     QAbstractSpinBox,
@@ -107,25 +107,25 @@ class QWidgetSingleton(type(QObject)):
 def handle_adjust_errors(widget, warning_type, context, msg: str):
     """Qt message handler that attempts to react to errors when setting the window size
     and resizes the main window"""
-    # pass
-    head = msg.split(": ")[0]
-    if warning_type == QtWarningMsg and head == "QWindowsWindow::setGeometry":
-        logger.warning(
-            f"Qt resize error : {msg}\nhas been handled by attempting to resize the window"
-        )
-        try:
-            if widget.parent() is not None:
-                state = int(widget.parent().parent().windowState())
-                if state == 0:  # normal state
-                    widget.parent().parent().adjustSize()
-                    logger.debug("Non-max. size adjust attempt")
-                    logger.debug(f"{widget.parent().parent()}")
-                elif state == 2:  # maximized state
-                    widget.parent().parent().showNormal()
-                    widget.parent().parent().showMaximized()
-                    logger.debug("Maximized size adjust attempt")
-        except RuntimeError:
-            pass
+    pass
+    # head = msg.split(": ")[0]
+    # if warning_type == QtWarningMsg and head == "QWindowsWindow::setGeometry":
+    #     logger.warning(
+    #         f"Qt resize error : {msg}\nhas been handled by attempting to resize the window"
+    #     )
+    #     try:
+    #         if widget.parent() is not None:
+    #             state = int(widget.parent().parent().windowState())
+    #             if state == 0:  # normal state
+    #                 widget.parent().parent().adjustSize()
+    #                 logger.debug("Non-max. size adjust attempt")
+    #                 logger.debug(f"{widget.parent().parent()}")
+    #             elif state == 2:  # maximized state
+    #                 widget.parent().parent().showNormal()
+    #                 widget.parent().parent().showMaximized()
+    #                 logger.debug("Maximized size adjust attempt")
+    #     except (RuntimeError, TypeError) as e:
+    #         pass
 
 
 def handle_adjust_errors_wrapper(widget):
