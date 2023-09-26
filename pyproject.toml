@@ -139,12 +139,10 @@ dev = [
     "ruff",
     "pre-commit",
     "tuna",
+    "twine",
 ]
 docs = [
-    "sphinx",
-    "sphinx_autodoc_typehints",
-    "sphinx_rtd_theme",
-    "twine",
+    "jupyter-book",
 ]
 test = [
     "pytest",
