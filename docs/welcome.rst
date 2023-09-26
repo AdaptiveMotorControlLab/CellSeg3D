@@ -5,7 +5,7 @@ CellSeg3D is a toolbox for 3D segmentation of cells in light-sheet microscopy im
 
 This plugin will allow you to:
 
-* Review of labeled cell volumes [#]_ from mice whole-brain samples imaged by mesoSPIM microscopy [#]_
+* Review labeled cell volumes [#]_ from mice whole-brain samples imaged by mesoSPIM microscopy [#]_
 * Train and use segmentation models from the MONAI project [#]_ or custom 3D segmentation models written in PyTorch.
 
 Additionally, if you do not have labeled data, you can try our unsupervised model
