@@ -90,7 +90,6 @@ class QWidgetSingleton(type(QObject)):
     def __call__(cls, *args, **kwargs):
         """
         Ensure only one instance of a QWidget with QWidgetSingleton as a metaclass exists at a time
-
         """
         if cls not in cls._instances:
             cls._instances[cls] = super(QWidgetSingleton, cls).__call__(
@@ -178,6 +177,7 @@ class UtilsDropdown(metaclass=utils.Singleton):
     def show_utils_menu(self, widget, event):
         """
         Shows the context menu for utilities. Use with dropdown_menu_call.
+
         Args:
             widget: widget to show context menu in
             event: mouse press event
@@ -229,6 +229,7 @@ class Log(QTextEdit):
     def write(self, message):
         """
         Write message to log in a thread-safe manner
+
         Args:
             message: string to be printed
         """
@@ -254,7 +255,11 @@ class Log(QTextEdit):
 
     @QtCore.Slot(str)
     def replace_last_line(self, text):
-        """Replace last line. For use in progress bar"""
+        """Replace last line. For use in progress bar
+
+        Args:
+            text: string to be printed
+        """
         self.lock.acquire()
         try:
             cursor = self.textCursor()
@@ -290,7 +295,11 @@ class Log(QTextEdit):
             self.lock.release()
 
     def warn(self, warning):
-        """Show logger.warning from another thread"""
+        """Show logger.warning from another thread
+
+        Args:
+            warning: warning to be printed
+        """
         self.lock.acquire()
         try:
             logger.warning(warning)
@@ -298,7 +307,13 @@ class Log(QTextEdit):
             self.lock.release()
 
     def error(self, error, msg=None):
-        """Show exception and message from another thread"""
+        """
+        Show exception and message from another thread
+
+        Args:
+            error: error to be printed
+            msg: message to be printed
+        """
         self.lock.acquire()
         try:
             logger.error(error, exc_info=True)
@@ -306,7 +321,7 @@ class Log(QTextEdit):
                 self.print_and_log(f"{msg} : {error}", printing=False)
             else:
                 self.print_and_log(
-                    f"Excepetion caught in another thread : {error}",
+                    f"Exception caught in another thread : {error}",
                     printing=False,
                 )
             raise error
@@ -330,6 +345,14 @@ def toggle_visibility(checkbox, widget):
 
 
 def add_label(widget, label, label_before=True, horizontal=True):
+    """Adds a label to a widget.
+
+    Args:
+        widget: The widget to add the label to
+        label: The label to add
+        label_before: If True, the label is added before the widget. If False, the label is added after the widget
+        horizontal: If True, the label and widget are added horizontally. If False, they are added vertically
+    """
     if label_before:
         return combine_blocks(widget, label, horizontal=horizontal)
     return combine_blocks(label, widget, horizontal=horizontal)
@@ -341,6 +364,7 @@ class ContainerWidget(QWidget):
     ):
         """
         Creates a container widget that can contain other widgets
+
         Args:
             l: left margin in pixels
             t: top margin in pixels
@@ -412,11 +436,14 @@ class DropdownMenu(QComboBox):
         text_label: Optional[str] = None,
         fixed: Optional[bool] = True,
     ):
-        """Args:
-        entries (array(str)): Entries to add to the dropdown menu. Defaults to None, no entries if None
-        parent (QWidget): parent QWidget to add dropdown menu to. Defaults to None, no parent is set if None
-        text_label (str) : if not None, creates a QLabel with the contents of 'label', and returns the label as well
-        fixed (bool): if True, will set the size policy of the dropdown menu to Fixed in h and w. Defaults to True.
+        """
+        Creates a dropdown menu with a title and adds specified entries to it
+
+        Args:
+            entries (array(str)): Entries to add to the dropdown menu. Defaults to None, no entries if None
+            parent (QWidget): parent QWidget to add dropdown menu to. Defaults to None, no parent is set if None
+            text_label (str) : if not None, creates a QLabel with the contents of 'label', and returns the label as well
+            fixed (bool): if True, will set the size policy of the dropdown menu to Fixed in h and w. Defaults to True.
         """
         super().__init__(parent)
         self.label = None
@@ -442,6 +469,8 @@ class CheckBox(QCheckBox):
         fixed: Optional[bool] = True,
     ):
         """
+        Creates a checkbox with a title and a function to execute when toggled
+
         Args:
             title (str-like): title of the checkbox. Defaults to None, if None no title is set
             func (callable): function to execute when checkbox is toggled. Defaults to None, no binding is made if None
@@ -643,11 +672,12 @@ class AnisotropyWidgets(QWidget):
         use_integer_counter: Optional[bool] = False,
     ):
         """Creates an instance of AnisotropyWidgets
+
         Args:
-            - parent: parent QWidget
-            - default_x: default resolution to use for x axis in microns
-            - default_y: default resolution to use for y axis in microns
-            - default_z: default resolution to use for z axis in microns
+            parent: parent QWidget
+            default_x: default resolution to use for x axis in microns
+            default_y: default resolution to use for y axis in microns
+            default_z: default resolution to use for z axis in microns
         """
         super().__init__(parent)
 
@@ -737,8 +767,8 @@ class AnisotropyWidgets(QWidget):
     def anisotropy_zoom_factor(aniso_res):
         """Computes a zoom factor to correct anisotropy, based on anisotropy resolutions
 
-            Args:
-                aniso_res: array for anisotropic resolution (float) in microns for each axis
+        Args:
+            aniso_res: array for anisotropic resolution (float) in microns for each axis
 
         Returns: an array with the corresponding zoom factors for each axis (all values divided by min)
 
@@ -843,8 +873,11 @@ class LayerSelecter(ContainerWidget):
 
 
 class FilePathWidget(QWidget):  # TODO include load as folder
-    """Widget to handle the choice of file paths for data throughout the plugin. Provides the following elements :
+    """
+    Widget to handle the choice of file paths for data throughout the plugin. Provides the following elements :
+
     - An "Open" button to show a file dialog (defined externally)
+
     - A QLineEdit in read only to display the chosen path/file"""
 
     def __init__(
@@ -856,6 +889,7 @@ class FilePathWidget(QWidget):  # TODO include load as folder
         default: Optional[str] = None,
     ):
         """Creates a FilePathWidget.
+
         Args:
             description (str): Initial text to add to the text box
             file_function (callable): Function to handle the file dialog
@@ -958,13 +992,14 @@ class ScrollArea(QScrollArea):
         base_wh: Optional[List[int]] = None,
         parent: Optional[QWidget] = None,
     ):
-        """
+        """Initializes a QScrollArea and sets it up, then adds the contained_layout to it.
+
         Args:
-              contained_layout (QLayout): the layout of widgets to be made scrollable
-              min_wh (Optional[List[int]]): array of two ints for respectively the minimum width and minimum height of the scrollable area. Defaults to None, lets Qt decide if None
-              max_wh (Optional[List[int]]): array of two ints for respectively the maximum width and maximum height of the scrollable area. Defaults to None, lets Qt decide if None
-              base_wh (Optional[List[int]]): array of two ints for respectively the initial width and initial height of the scrollable area. Defaults to None, lets Qt decide if None
-              parent (Optional[QWidget]): array of two ints for respectively the initial width and initial height of the scrollable area. Defaults to None, lets Qt decide if None
+          contained_layout (QLayout): the layout of widgets to be made scrollable
+          min_wh (Optional[List[int]]): array of two ints for respectively the minimum width and minimum height of the scrollable area. Defaults to None, lets Qt decide if None
+          max_wh (Optional[List[int]]): array of two ints for respectively the maximum width and maximum height of the scrollable area. Defaults to None, lets Qt decide if None
+          base_wh (Optional[List[int]]): array of two ints for respectively the initial width and initial height of the scrollable area. Defaults to None, lets Qt decide if None
+          parent (Optional[QWidget]): array of two ints for respectively the initial width and initial height of the scrollable area. Defaults to None, lets Qt decide if None
         """
         super().__init__(parent)
 
@@ -1004,13 +1039,14 @@ class ScrollArea(QScrollArea):
         max_wh: Optional[List[int]] = None,
         base_wh: Optional[List[int]] = None,
     ):
-        """Factory method to create a scroll area in a widget
+        """Factory method to create a scroll area in a widget.
+
         Args:
-                contained_layout (QLayout): the widget to be made scrollable
-                parent (QWidget): the parent widget to add the resulting scroll area in
-                min_wh (Optional[List[int]]): array of two ints for respectively the minimum width and minimum height of the scrollable area. Defaults to None, lets Qt decide if None
-                max_wh (Optional[List[int]]): array of two ints for respectively the maximum width and maximum height of the scrollable area. Defaults to None, lets Qt decide if None
-                base_wh (Optional[List[int]]): array of two ints for respectively the initial width and initial height of the scrollable area. Defaults to None, lets Qt decide if None
+            contained_layout (QLayout): the widget to be made scrollable
+            parent (QWidget): the parent widget to add the resulting scroll area in
+            min_wh (Optional[List[int]]): array of two ints for respectively the minimum width and minimum height of the scrollable area. Defaults to None, lets Qt decide if None
+            max_wh (Optional[List[int]]): array of two ints for respectively the maximum width and maximum height of the scrollable area. Defaults to None, lets Qt decide if None
+            base_wh (Optional[List[int]]): array of two ints for respectively the initial width and initial height of the scrollable area. Defaults to None, lets Qt decide if None
         """
 
         scroll = cls(contained_layout, min_wh, max_wh, base_wh)
@@ -1029,13 +1065,16 @@ def set_spinbox(
     step=1,
     fixed: Optional[bool] = True,
 ):
-    """Args:
-    box : QSpinBox or QDoubleSpinBox
-    min_value : minimum value, defaults to 0
-    max_value : maximum value, defaults to 10
-    default :  default value, defaults to 0
-    step : step value, defaults to 1
-    fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed"""
+    """Sets the parameters of a QSpinBox or QDoubleSpinBox.
+
+    Args:
+        box : QSpinBox or QDoubleSpinBox
+        min_value : minimum value, defaults to 0
+        max_value : maximum value, defaults to 10
+        default :  default value, defaults to 0
+        step : step value, defaults to 1
+        fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed
+    """
 
     box.setMinimum(min_value)
     box.setMaximum(max_value)
@@ -1091,14 +1130,16 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         fixed: Optional[bool] = True,
         text_label: Optional[str] = None,
     ):
-        """Args:
-        lower (Optional[float]): minimum value, defaults to 0
-        upper (Optional[float]): maximum value, defaults to 10
-        default (Optional[float]): default value, defaults to 0
-        step (Optional[float]): step value, defaults to 1
-        parent: parent widget, defaults to None
-        fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed
-        text_label (Optional[str]): if provided, creates a label with the chosen title to use with the counter
+        """Creates a DoubleIncrementCounter
+
+        Args:
+            lower (Optional[float]): minimum value, defaults to 0
+            upper (Optional[float]): maximum value, defaults to 10
+            default (Optional[float]): default value, defaults to 0
+            step (Optional[float]): step value, defaults to 1
+            parent: parent widget, defaults to None
+            fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed
+            text_label (Optional[str]): if provided, creates a label with the chosen title to use with the counter
         """
 
         super().__init__(parent)
@@ -1170,13 +1211,17 @@ class IntIncrementCounter(QSpinBox):
         fixed: Optional[bool] = True,
         text_label: Optional[str] = None,
     ):
-        """Args:
-        lower (Optional[int]): minimum value, defaults to 0
-        upper (Optional[int]): maximum value, defaults to 10
-        default (Optional[int]): default value, defaults to 0
-        step (Optional[int]): step value, defaults to 1
-        parent: parent widget, defaults to None
-        fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed"""
+        """Creates an IntIncrementCounter
+
+        Args:
+            lower (Optional[int]): minimum value, defaults to 0
+            upper (Optional[int]): maximum value, defaults to 10
+            default (Optional[int]): default value, defaults to 0
+            step (Optional[int]): step value, defaults to 1
+            parent: parent widget, defaults to None
+            fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed
+            text_label (Optional[str]): if provided, creates a label with the chosen title to use with the counter
+        """
 
         super().__init__(parent)
         set_spinbox(self, lower, upper, default, step, fixed)
@@ -1340,6 +1385,7 @@ class GroupedWidget(QGroupBox):
 def add_widgets(layout, widgets, alignment=LEFT_AL):
     """Adds all widgets in the list to layout, with the specified alignment.
     If alignment is None, no alignment is set.
+
     Args:
         layout: layout to add widgets in
         widgets: list of QWidgets to add to layout
