@@ -103,6 +103,7 @@ venv/
 /napari_cellseg3d/code_models/models/dataset/
 /napari_cellseg3d/code_models/models/saved_weights/
 /docs/res/logo/old_logo/
+/docs/source/code/_autosummary/
 /reqs/
 /loss_plots/
 notebooks/csv_cell_plot.html

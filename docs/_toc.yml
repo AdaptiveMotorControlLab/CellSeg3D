@@ -16,16 +16,17 @@ parts:
       - file: source/guides/custom_model_template.rst
   - caption : API reference
     chapters:
-      - file: source/code/interface.rst
-      - file: source/code/plugin_base.rst
-      - file: source/code/plugin_review.rst
-      - file: source/code/plugin_review_dock.rst
-      - file: source/code/plugin_crop.rst
-      - file: source/code/plugin_convert.rst
-      # - file: source/code/plugin_metrics.rst
-      - file: source/code/model_framework.rst
-      - file: source/code/workers.rst
-      - file: source/code/instance_segmentation.rst
-      - file: source/code/plugin_model_inference.rst
-      - file: source/code/plugin_model_training.rst
-      - file: source/code/utils.rst
+      - file: source/code/api.rst
+#      - file: source/code/interface.rst
+#      - file: source/code/plugin_base.rst
+#      - file: source/code/plugin_review.rst
+#      - file: source/code/plugin_review_dock.rst
+#      - file: source/code/plugin_crop.rst
+#      - file: source/code/plugin_convert.rst
+#      # - file: source/code/plugin_metrics.rst
+#      - file: source/code/model_framework.rst
+#      - file: source/code/workers.rst
+#      - file: source/code/instance_segmentation.rst
+#      - file: source/code/plugin_model_inference.rst
+#      - file: source/code/plugin_model_training.rst
+#      - file: source/code/utils.rst

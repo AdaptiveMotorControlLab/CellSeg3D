@@ -2,7 +2,7 @@
 # Learn more at https://jupyterbook.org/customize/config.html
 
 title: napari-cellseg3d Documentation
-author: Cyril Achard, Timokleia Kousi, Mackenzie Mathis
+author: Cyril Achard, Maxime Vidal, Timokleia Kousi, Mackenzie Mathis
 logo: source/logo/logo_alpha.png
 
 # Force re-execution of notebooks on each build.
@@ -35,3 +35,9 @@ html:
 sphinx:
   extra_extensions:
   - 'sphinx.ext.autodoc'
+  - 'sphinx.ext.napoleon'
+  - 'sphinx.ext.viewcode'
+  - 'sphinx.ext.autosummary'
+  config:
+    add_module_names: False
+    autosummary_generate: True
