@@ -1,3 +1,4 @@
+"""User interface functions and aliases."""
 import threading
 from functools import partial
 from typing import List, Optional
@@ -35,10 +36,6 @@ from qtpy.QtWidgets import (
 
 # Local
 from napari_cellseg3d import utils
-
-"""
-User interface functions and aliases"""
-
 
 ###############
 # show debug tooltips
@@ -79,18 +76,15 @@ logger = utils.LOGGER
 
 
 class QWidgetSingleton(type(QObject)):
-    """
-    To be used as a metaclass when making a singleton QWidget,
-     meaning only one instance exists at a time.
-     Avoids unnecessary memory overhead and keeps user parameters even when a widget is closed
+    """To be used as a metaclass when making a singleton QWidget, meaning only one instance exists at a time.
+
+    Avoids unnecessary memory overhead and keeps user parameters even when a widget is closed.
     """
 
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
-        """
-        Ensure only one instance of a QWidget with QWidgetSingleton as a metaclass exists at a time
-        """
+        """Ensure only one instance of a QWidget with QWidgetSingleton as a metaclass exists at a time."""
         if cls not in cls._instances:
             cls._instances[cls] = super(QWidgetSingleton, cls).__call__(
                 *args, **kwargs
@@ -104,8 +98,7 @@ class QWidgetSingleton(type(QObject)):
 
 
 def handle_adjust_errors(widget, warning_type, context, msg: str):
-    """Qt message handler that attempts to react to errors when setting the window size
-    and resizes the main window"""
+    """Qt message handler that attempts to react to errors when setting the window size and resizes the main window."""
     pass
     # head = msg.split(": ")[0]
     # if warning_type == QtWarningMsg and head == "QWindowsWindow::setGeometry":
@@ -128,7 +121,7 @@ def handle_adjust_errors(widget, warning_type, context, msg: str):
 
 
 def handle_adjust_errors_wrapper(widget):
-    """Returns a callable that can be used with qInstallMessageHandler directly"""
+    """Returns a callable that can be used with qInstallMessageHandler directly."""
     return partial(handle_adjust_errors, widget)
 
 
@@ -143,7 +136,7 @@ class UtilsDropdown(metaclass=utils.Singleton):
     caller_widget = None
 
     def dropdown_menu_call(self, widget, event):
-        """Calls the utility dropdown menu at the location of a CTRL+right-click"""
+        """Calls the utility dropdown menu at the location of a CTRL+right-click."""
         # ### DEBUG ### #
         # print(event.modifiers)
         # print("menu call")
@@ -175,8 +168,7 @@ class UtilsDropdown(metaclass=utils.Singleton):
                 # print(f"blocked widget {widget} from opening utils")
 
     def show_utils_menu(self, widget, event):
-        """
-        Shows the context menu for utilities. Use with dropdown_menu_call.
+        """Shows the context menu for utilities. Use with dropdown_menu_call.
 
         Args:
             widget: widget to show context menu in
@@ -212,7 +204,7 @@ class Log(QTextEdit):
     """Class to implement a log for important user info. Should be thread-safe."""
 
     def __init__(self, parent=None):
-        """Creates a log with a lock for multithreading
+        """Creates a log with a lock for multithreading.
 
         Args:
             parent (QWidget): parent widget to add Log instance to.
@@ -227,8 +219,7 @@ class Log(QTextEdit):
     # def receive_log(self, text):
     #     self.print_and_log(text)
     def write(self, message):
-        """
-        Write message to log in a thread-safe manner
+        """Write message to log in a thread-safe manner.
 
         Args:
             message: string to be printed
@@ -255,7 +246,7 @@ class Log(QTextEdit):
 
     @QtCore.Slot(str)
     def replace_last_line(self, text):
-        """Replace last line. For use in progress bar
+        """Replace last line. For use in progress bar.
 
         Args:
             text: string to be printed
@@ -273,8 +264,7 @@ class Log(QTextEdit):
             self.lock.release()
 
     def print_and_log(self, text, printing=True):
-        """Utility used to both print to terminal and log text to a QTextEdit
-         item in a thread-safe manner. Use only for important user info.
+        """Utility used to both print to terminal and log text to a QTextEdit item in a thread-safe manner. Use only for important user info.
 
         Args:
             text (str): Text to be printed and logged
@@ -295,7 +285,7 @@ class Log(QTextEdit):
             self.lock.release()
 
     def warn(self, warning):
-        """Show logger.warning from another thread
+        """Show logger.warning from another thread.
 
         Args:
             warning: warning to be printed
@@ -307,8 +297,7 @@ class Log(QTextEdit):
             self.lock.release()
 
     def error(self, error, msg=None):
-        """
-        Show exception and message from another thread
+        """Show exception and message from another thread.
 
         Args:
             error: error to be printed
@@ -359,11 +348,12 @@ def add_label(widget, label, label_before=True, horizontal=True):
 
 
 class ContainerWidget(QWidget):
+    """Class for a container widget that can contain other widgets."""
+
     def __init__(
         self, l=0, t=0, r=1, b=11, vertical=True, parent=None, fixed=True
     ):
-        """
-        Creates a container widget that can contain other widgets
+        """Creates a container widget that can contain other widgets.
 
         Args:
             l: left margin in pixels
@@ -374,7 +364,6 @@ class ContainerWidget(QWidget):
             parent: parent QWidget
             fixed: uses QLayout.SetFixedSize if True
         """
-
         super().__init__(parent)
         self.layout = None
 
@@ -389,7 +378,10 @@ class ContainerWidget(QWidget):
 
 
 class RadioButton(QRadioButton):
+    """Class for a radio button with a title and connected to a function when clicked. Inherits from QRadioButton."""
+
     def __init__(self, text: str = None, parent=None):
+        """Creates a radio button with a title and a function to execute when toggled."""
         super().__init__(text, parent)
 
 
@@ -411,6 +403,7 @@ class Button(QPushButton):
         parent: Optional[QWidget] = None,
         fixed: Optional[bool] = True,
     ):
+        """Creates a button with a title and a function to execute when clicked."""
         super().__init__(parent)
         if title is not None:
             self.setText(title)
@@ -422,12 +415,12 @@ class Button(QPushButton):
             self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
     def visibility_condition(self, checkbox):
-        """Provide a QCheckBox to use to determine whether to show the button or not"""
+        """Provide a QCheckBox to use to determine whether to show the button or not."""
         toggle_visibility(checkbox, self)
 
 
 class DropdownMenu(QComboBox):
-    """Creates a dropdown menu with a title and adds specified entries to it"""
+    """Creates a dropdown menu with a title and adds specified entries to it."""
 
     def __init__(
         self,
@@ -436,8 +429,7 @@ class DropdownMenu(QComboBox):
         text_label: Optional[str] = None,
         fixed: Optional[bool] = True,
     ):
-        """
-        Creates a dropdown menu with a title and adds specified entries to it
+        """Creates a dropdown menu with a title and adds specified entries to it.
 
         Args:
             entries (array(str)): Entries to add to the dropdown menu. Defaults to None, no entries if None
@@ -459,7 +451,7 @@ class DropdownMenu(QComboBox):
 
 
 class CheckBox(QCheckBox):
-    """Shortcut class for creating QCheckBox with a title and a function"""
+    """Shortcut class for creating QCheckBox with a title and a function."""
 
     def __init__(
         self,
@@ -468,8 +460,7 @@ class CheckBox(QCheckBox):
         parent: Optional[QWidget] = None,
         fixed: Optional[bool] = True,
     ):
-        """
-        Creates a checkbox with a title and a function to execute when toggled
+        """Creates a checkbox with a title and a function to execute when toggled.
 
         Args:
             title (str-like): title of the checkbox. Defaults to None, if None no title is set
@@ -485,7 +476,7 @@ class CheckBox(QCheckBox):
 
 
 class Slider(QSlider):
-    """Shortcut class to create a Slider widget"""
+    """Shortcut class to create a Slider widget."""
 
     def __init__(
         self,
@@ -498,6 +489,7 @@ class Slider(QSlider):
         orientation=Qt.Horizontal,
         text_label: str = None,
     ):
+        """Creates a slider to select a value between lower and upper, with a step."""
         super().__init__(orientation, parent)
 
         if upper <= lower:
@@ -581,7 +573,7 @@ class Slider(QSlider):
         )
 
     def _update_slider(self):
-        """Update slider when value is changed"""
+        """Update slider when value is changed."""
         try:
             if self._value_label.text() == "":
                 return
@@ -600,7 +592,7 @@ class Slider(QSlider):
             logger.error(e)
 
     def _update_value_label(self):
-        """Update label, to connect to when slider is dragged"""
+        """Update label, to connect to when slider is dragged."""
         try:
             self._value_label.setText(str(self.value_text))
         except Exception as e:
@@ -620,7 +612,7 @@ class Slider(QSlider):
 
     @property
     def slider_value(self):
-        """Get value of the slider divided by self._divide_factor to implement floats in Slider"""
+        """Get value of the slider divided by self._divide_factor to implement floats in Slider."""
         if self._divide_factor == 1.0:
             return self.value()
 
@@ -633,12 +625,12 @@ class Slider(QSlider):
 
     @property
     def value_text(self):
-        """Get value of the slide bar as string"""
+        """Get value of the slide bar as string."""
         return str(self.slider_value)
 
     @slider_value.setter
     def slider_value(self, value: int):
-        """Set a value (int) divided by self._divide_factor"""
+        """Set a value (int) divided by self._divide_factor."""
         if value < self.minimum() or value > self.maximum():
             logger.error(
                 ValueError(
@@ -658,9 +650,12 @@ class Slider(QSlider):
 
 
 class AnisotropyWidgets(QWidget):
-    """Class that creates widgets for anisotropy handling. Includes :
-    - A checkbox to hides or shows the controls
-    - Three spinboxes to enter resolution for each dimension"""
+    """Class that creates widgets for anisotropy handling.
+
+    Includes :
+        A checkbox to hides or shows the controls
+        Three spinboxes to enter resolution for each dimension.
+    """
 
     def __init__(
         self,
@@ -671,13 +666,15 @@ class AnisotropyWidgets(QWidget):
         always_visible: Optional[bool] = False,
         use_integer_counter: Optional[bool] = False,
     ):
-        """Creates an instance of AnisotropyWidgets
+        """Creates an instance of AnisotropyWidgets.
 
         Args:
             parent: parent QWidget
             default_x: default resolution to use for x axis in microns
             default_y: default resolution to use for y axis in microns
             default_z: default resolution to use for z axis in microns
+            always_visible: if True, the checkbox is hidden and the spinboxes are always visible
+            use_integer_counter: if True, the spinboxes are QSpinBoxes instead of QDoubleSpinBoxes
         """
         super().__init__(parent)
 
@@ -727,13 +724,11 @@ class AnisotropyWidgets(QWidget):
             self._toggle_permanent_visibility()
 
     def _toggle_display_aniso(self):
-        """Shows the choices for correcting anisotropy
-        when viewing results depending on whether :py:attr:`self.checkbox` is checked
-        """
+        """Shows the choices for correcting anisotropy when viewing results depending on whether :py:attr:`self.checkbox` is checked."""
         toggle_visibility(self.checkbox, self.container)
 
     def build(self):
-        """Builds the layout of the widget"""
+        """Builds the layout of the widget."""
         [
             self.container.layout.addWidget(widget, alignment=HCENTER_AL)
             for widgets in zip(self.box_widgets_lbl, self.box_widgets)
@@ -747,25 +742,25 @@ class AnisotropyWidgets(QWidget):
         self.setLayout(self._layout)
 
     def resolution_xyz(self):
-        """The resolution selected for each of the three dimensions. XYZ order (for MONAI)"""
+        """The resolution selected for each of the three dimensions. XYZ order (for MONAI)."""
         return [w.value() for w in self.box_widgets]
 
     def scaling_xyz(self):
-        """The scaling factors for each of the three dimensions. XYZ order (for MONAI)"""
+        """The scaling factors for each of the three dimensions. XYZ order (for MONAI)."""
         return self.anisotropy_zoom_factor(self.resolution_xyz())
 
     def resolution_zyx(self):
-        """The resolution selected for each of the three dimensions. ZYX order (for napari)"""
+        """The resolution selected for each of the three dimensions. ZYX order (for napari)."""
         res = self.resolution_xyz()
         return [res[2], res[1], res[0]]
 
     def scaling_zyx(self):
-        """The scaling factors for each of the three dimensions. ZYX order (for napari)"""
+        """The scaling factors for each of the three dimensions. ZYX order (for napari)."""
         return self.anisotropy_zoom_factor(self.resolution_zyx())
 
     @staticmethod
     def anisotropy_zoom_factor(aniso_res):
-        """Computes a zoom factor to correct anisotropy, based on anisotropy resolutions
+        """Computes a zoom factor to correct anisotropy, based on anisotropy resolutions.
 
         Args:
             aniso_res: array for anisotropic resolution (float) in microns for each axis
@@ -773,24 +768,26 @@ class AnisotropyWidgets(QWidget):
         Returns: an array with the corresponding zoom factors for each axis (all values divided by min)
 
         """
-
         base = min(aniso_res)
         return [base / res for res in aniso_res]
 
     def enabled(self):
-        """Returns : whether anisotropy correction has been enabled or not"""
+        """Returns : whether anisotropy correction has been enabled or not."""
         return self.checkbox.isChecked()
 
     def _toggle_permanent_visibility(self):
-        """Hides the checkbox and always display resolution spinboxes"""
+        """Hides the checkbox and always display resolution spinboxes."""
         self.checkbox.toggle()
         self.checkbox.setVisible(False)
 
 
 class LayerSelecter(ContainerWidget):
+    """Class that creates a dropdown menu to select a layer from a napari viewer."""
+
     def __init__(
         self, viewer, name="Layer", layer_type=napari.layers.Layer, parent=None
     ):
+        """Creates an instance of LayerSelecter."""
         super().__init__(parent=parent, fixed=False)
         self._viewer = viewer
         self.layer_type = layer_type
@@ -873,12 +870,12 @@ class LayerSelecter(ContainerWidget):
 
 
 class FilePathWidget(QWidget):  # TODO include load as folder
+    """Widget to handle the choice of file paths for data throughout the plugin.
+
+    Provides the following elements :
+        An "Open" button to show a file dialog (defined externally)
+        A QLineEdit in read only to display the chosen path/file
     """
-    Widget to handle the choice of file paths for data throughout the plugin. Provides the following elements :
-
-    - An "Open" button to show a file dialog (defined externally)
-
-    - A QLineEdit in read only to display the chosen path/file"""
 
     def __init__(
         self,
@@ -895,6 +892,7 @@ class FilePathWidget(QWidget):  # TODO include load as folder
             file_function (callable): Function to handle the file dialog
             parent (Optional[QWidget]): parent QWidget
             required (Optional[bool]): if True, field will be highlighted in red if empty. Defaults to False.
+            default (Optional[str]): default path to use. Defaults to None.
         """
         super().__init__(parent)
         self._layout = QHBoxLayout()
@@ -917,7 +915,7 @@ class FilePathWidget(QWidget):  # TODO include load as folder
         self.text_field.textChanged.connect(self.check_ready)
 
     def build(self):
-        """Builds the layout of the widget"""
+        """Builds the layout of the widget."""
         add_widgets(
             self._layout,
             [combine_blocks(self.button, self.text_field, min_spacing=5, b=0)],
@@ -936,23 +934,23 @@ class FilePathWidget(QWidget):  # TODO include load as folder
 
     @property
     def text_field(self):
-        """Get text field with file path"""
+        """Get text field with file path."""
         return self._text_field
 
     @text_field.setter
     def text_field(self, text: str):
-        """Sets the initial description in the text field, makes it the new default path"""
+        """Sets the initial description in the text field, makes it the new default path."""
         self._initial_desc = text
         self.tooltips = text
         self._text_field.setText(text)
 
     @property
     def button(self):
-        """Get "Open" button"""
+        """Get "Open" button."""
         return self._button
 
     def check_ready(self):
-        """Check if a path is correctly set"""
+        """Check if a path is correctly set."""
         if (
             self.text_field.text() in ["", self._initial_desc]
             and self.required
@@ -970,12 +968,12 @@ class FilePathWidget(QWidget):  # TODO include load as folder
 
     @required.setter
     def required(self, is_required):
-        """If set to True, will be colored red if incorrectly set"""
+        """If set to True, will be colored red if incorrectly set."""
         self.check_ready()
         self._required = is_required
 
     def update_field_color(self, color: str):
-        """Updates the background of the text field"""
+        """Updates the background of the text field."""
         self.text_field.setStyleSheet(f"background-color : {color}")
         self.text_field.style().unpolish(self.text_field)
         self.text_field.style().polish(self.text_field)
@@ -1048,7 +1046,6 @@ class ScrollArea(QScrollArea):
             max_wh (Optional[List[int]]): array of two ints for respectively the maximum width and maximum height of the scrollable area. Defaults to None, lets Qt decide if None
             base_wh (Optional[List[int]]): array of two ints for respectively the initial width and initial height of the scrollable area. Defaults to None, lets Qt decide if None
         """
-
         scroll = cls(contained_layout, min_wh, max_wh, base_wh)
         layout = QVBoxLayout(parent)
         # layout.setContentsMargins(0,0,1,1)
@@ -1075,7 +1072,6 @@ def set_spinbox(
         step : step value, defaults to 1
         fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed
     """
-
     box.setMinimum(min_value)
     box.setMaximum(max_value)
     box.setSingleStep(step)
@@ -1095,7 +1091,7 @@ def make_n_spinboxes(
     parent: Optional[QWidget] = None,
     fixed: Optional[bool] = True,
 ):
-    """Creates n increment counters with the specified parameters :
+    """Creates n increment counters with the specified parameters.
 
     Args:
         class_ : QSpinBox or QDoubleSpinbox
@@ -1130,7 +1126,7 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         fixed: Optional[bool] = True,
         text_label: Optional[str] = None,
     ):
-        """Creates a DoubleIncrementCounter
+        """Creates a DoubleIncrementCounter.
 
         Args:
             lower (Optional[float]): minimum value, defaults to 0
@@ -1141,7 +1137,6 @@ class DoubleIncrementCounter(QDoubleSpinBox):
             fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed
             text_label (Optional[str]): if provided, creates a label with the chosen title to use with the counter
         """
-
         super().__init__(parent)
         set_spinbox(self, lower, upper, default, step, fixed)
 
@@ -1164,7 +1159,7 @@ class DoubleIncrementCounter(QDoubleSpinBox):
 
     @tooltips.setter
     def tooltips(self, tooltip: str):
-        """Sets the tooltip of both the DoubleIncrementCounter and its label"""
+        """Sets the tooltip of both the DoubleIncrementCounter and its label."""
         self.setToolTip(tooltip)
         if self.label is not None:
             self.label.setToolTip(tooltip)
@@ -1175,7 +1170,7 @@ class DoubleIncrementCounter(QDoubleSpinBox):
 
     @precision.setter
     def precision(self, decimals: int):
-        """Sets the precision of the box to the specified number of decimals"""
+        """Sets the precision of the box to the specified number of decimals."""
         self.setDecimals(decimals)
 
     @classmethod
@@ -1211,7 +1206,7 @@ class IntIncrementCounter(QSpinBox):
         fixed: Optional[bool] = True,
         text_label: Optional[str] = None,
     ):
-        """Creates an IntIncrementCounter
+        """Creates an IntIncrementCounter.
 
         Args:
             lower (Optional[int]): minimum value, defaults to 0
@@ -1222,7 +1217,6 @@ class IntIncrementCounter(QSpinBox):
             fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed
             text_label (Optional[str]): if provided, creates a label with the chosen title to use with the counter
         """
-
         super().__init__(parent)
         set_spinbox(self, lower, upper, default, step, fixed)
 
@@ -1258,8 +1252,7 @@ class IntIncrementCounter(QSpinBox):
 
 
 def add_blank(widget, layout=None):
-    """
-    Adds a space between consecutive buttons/labels in a layout when building a widget
+    """Adds a space between consecutive buttons/labels in a layout when building a widget.
 
     Args:
         widget (QWidget): widget to add blank in
@@ -1289,7 +1282,6 @@ def open_file_dialog(
         file_extension (str): The description and file extension to load (format : ``"Description (*.example1 *.example2)"``). Default ``"Image file (*.tif *.tiff)"``
 
     """
-
     default_path = utils.parse_default_path(possible_paths)
 
     return QFileDialog.getOpenFileName(
@@ -1310,7 +1302,7 @@ def open_folder_dialog(
 
 
 def make_label(name, parent=None):  # TODO update to child class
-    """Creates a QLabel
+    """Creates a QLabel.
 
     Args:
         name: string with name
@@ -1331,7 +1323,8 @@ def make_label(name, parent=None):  # TODO update to child class
 
 
 def make_group(title, l=7, t=20, r=7, b=11, parent=None):
-    """Creates a group widget and layout, with a header (`title`) and content margins for top/left/right/bottom `L, T, R, B` (in pixels)
+    """Creates a group widget and layout, with a header (`title`) and content margins for top/left/right/bottom `L, T, R, B` (in pixels).
+
     Group widget and layout returned will have a Fixed size policy.
 
     Args:
@@ -1349,9 +1342,10 @@ def make_group(title, l=7, t=20, r=7, b=11, parent=None):
 
 
 class GroupedWidget(QGroupBox):
-    """Subclass of QGroupBox designed to easily group widgets belonging to a same category"""
+    """Subclass of QGroupBox designed to easily group widgets belonging to a same category."""
 
     def __init__(self, title, l=7, t=20, r=7, b=11, parent=None):
+        """Creates a GroupedWidget."""
         super().__init__(title, parent)
 
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -1383,8 +1377,7 @@ class GroupedWidget(QGroupBox):
 
 
 def add_widgets(layout, widgets, alignment=LEFT_AL):
-    """Adds all widgets in the list to layout, with the specified alignment.
-    If alignment is None, no alignment is set.
+    """Adds all widgets in the list to layout, with the specified alignment. If alignment is None, no alignment is set.
 
     Args:
         layout: layout to add widgets in
@@ -1409,14 +1402,15 @@ def combine_blocks(  # TODO FIXME PLEASE this is a horrible design
     r=11,
     b=11,
 ):
-    """Combines two QWidget objects and puts them side by side (first on the left/top and second on the right/bottom depending on "horizontal")
-       Weird argument names due the initial implementation of it.  # TODO maybe fix arg names or refactor
+    """Combines two QWidget objects and puts them side by side (first on the left/top and second on the right/bottom depending on "horizontal").
+
+       Weird argument names due the initial implementation of it.  # TODO maybe fix arg names or refactor.
 
     Args:
         left_or_above (QWidget): First widget, to be added on the left/above of "second"
         right_or_below (QWidget): Second widget, to be displayed right/below of "first"
         min_spacing (int): Minimum spacing between the two widgets (from the start of label to the start of button)
-                horizontal (bool): whether to stack widgets vertically (False) or horizontally (True)
+        horizontal (bool): whether to stack widgets vertically (False) or horizontally (True)
         l (int): left spacing in pixels
         t (int): top spacing in pixels
         r (int): right spacing in pixels

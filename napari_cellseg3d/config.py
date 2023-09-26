@@ -1,3 +1,4 @@
+"""Module to store configuration parameters for napari_cellseg3d."""
 import datetime
 from dataclasses import dataclass
 from pathlib import Path
@@ -43,6 +44,8 @@ PRETRAINED_WEIGHTS_DIR = str(
 
 @dataclass
 class ReviewConfig:
+    """Class to record params for Review plugin."""
+
     image: np.array = None
     labels: np.array = None
     csv_path: str = Path.home() / "cellseg3d" / "review"
@@ -54,6 +57,8 @@ class ReviewConfig:
 
 @dataclass  # TODO create custom reader for JSON to load project
 class ReviewSession:
+    """Class to record params for Review session."""
+
     project_name: str
     image_path: str
     labels_path: str
@@ -69,11 +74,12 @@ class ReviewSession:
 
 @dataclass
 class ModelInfo:
-    """Dataclass recording supervised models info
+    """Dataclass recording supervised models info.
+
     Args:
         name (str): name of the model
         model_input_size (Optional[List[int]]): input size of the model
-        num_classes (int): number of classes for the model
+        num_classes (int): number of classes for the model.
     """
 
     name: str = next(iter(MODEL_LIST))
@@ -99,6 +105,8 @@ class ModelInfo:
 
 @dataclass
 class WeightsInfo:
+    """Class to record params for weights."""
+
     path: str = PRETRAINED_WEIGHTS_DIR
     custom: bool = False
     use_pretrained: Optional[bool] = False
@@ -108,28 +116,37 @@ class WeightsInfo:
 # Post processing & instance segmentation   #
 #############################################
 
+# Utils
+
 
 @dataclass
 class Thresholding:
+    """Class to record params for thresholding."""
+
     enabled: bool = True
     threshold_value: float = 0.8
 
 
 @dataclass
 class Zoom:
+    """Class to record params for zoom."""
+
     enabled: bool = True
     zoom_values: List[float] = None
 
 
 @dataclass
 class InstanceSegConfig:
+    """Class to record params for instance segmentation."""
+
     enabled: bool = False
     method: InstanceMethod = None
 
 
+# Workers
 @dataclass
 class PostProcessConfig:
-    """Class to record params for post processing
+    """Class to record params for post processing.
 
     Args:
         zoom (Zoom): zoom config
@@ -144,9 +161,7 @@ class PostProcessConfig:
 
 @dataclass
 class CRFConfig:
-    """
-    Class to record params for CRF
-    """
+    """Class to record params for CRF."""
 
     sa: float = 10
     sb: float = 5
@@ -163,6 +178,8 @@ class CRFConfig:
 
 @dataclass
 class SlidingWindowConfig:
+    """Class to record params for sliding window inference."""
+
     window_size: int = None
     window_overlap: float = 0.25
 
@@ -172,7 +189,7 @@ class SlidingWindowConfig:
 
 @dataclass
 class InfererConfig:
-    """Class to record params for Inferer plugin
+    """Class to record params for Inferer plugin.
 
     Args:
         model_info (ModelInfo): model info
@@ -191,7 +208,7 @@ class InfererConfig:
 
 @dataclass
 class InferenceWorkerConfig:
-    """Class to record configuration for Inference job
+    """Class to record configuration for Inference job.
 
     Args:
         device (str): device to use for inference
@@ -230,7 +247,7 @@ class InferenceWorkerConfig:
 
 @dataclass
 class DeterministicConfig:
-    """Class to record deterministic config"""
+    """Class to record deterministic config."""
 
     enabled: bool = True
     seed: int = 34936339  # default seed from NP_MAX
@@ -238,14 +255,14 @@ class DeterministicConfig:
 
 @dataclass
 class TrainerConfig:
-    """Class to record trainer plugin config"""
+    """Class to record trainer plugin config."""
 
     save_as_zip: bool = False
 
 
 @dataclass
 class TrainingWorkerConfig:
-    """General class to record config for training"""
+    """General class to record config for training."""
 
     # model params
     device: str = "cpu"
@@ -269,7 +286,7 @@ class TrainingWorkerConfig:
 
 @dataclass
 class SupervisedTrainingWorkerConfig(TrainingWorkerConfig):
-    """Class to record config for Trainer plugin"""
+    """Class to record config for Trainer plugin."""
 
     model_info: ModelInfo = None
     loss_function: callable = None
@@ -278,7 +295,7 @@ class SupervisedTrainingWorkerConfig(TrainingWorkerConfig):
 
 @dataclass
 class WNetTrainingWorkerConfig(TrainingWorkerConfig):
-    """Class to record config for WNet worker"""
+    """Class to record config for WNet worker."""
 
     # model params
     in_channels: int = 1  # encoder input channels
@@ -313,7 +330,7 @@ class WNetTrainingWorkerConfig(TrainingWorkerConfig):
 ################
 @dataclass
 class WandBConfig:
-    """Class to record parameters for WandB"""
+    """Class to record parameters for WandB."""
 
     mode: str = "disabled"  # disabled, online, enabled
     save_model_artifact: bool = False
@@ -326,7 +343,7 @@ class WandBConfig:
 
 @dataclass
 class WNetCRFConfig:
-    """Class to store parameters of WNet CRF post-processing"""
+    """Class to store parameters of WNet CRF post-processing."""
 
     # CRF
     sa = 10  # 50
