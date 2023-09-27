@@ -86,10 +86,7 @@ select = [
 # Never enforce `E501` (line length violations) and 'E741' (ambiguous variable names)
 # and 'G004' (do not use f-strings in logging)
 # and 'A003' (Shadowing python builtins)
-# and 'D102' (Missing docstring in public method)
-# and 'D103' (Missing docstring in public function)
-# and 'D104' (Missing docstring in public package)
-ignore = ["E501", "E741", "G004", "A003", "D102", "D104", "D103"]
+ignore = ["E501", "E741", "G004", "A003"]
 exclude = [
     ".bzr",
     ".direnv",
