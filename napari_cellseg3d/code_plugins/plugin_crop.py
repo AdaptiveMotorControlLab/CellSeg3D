@@ -26,7 +26,7 @@ class Cropping(
     utils_default_paths = []
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
-        """Creates a Cropping plugin with several buttons :
+        """Creates a Cropping plugin with several buttons.
 
         * Open file prompt to select volumes directory
 
@@ -40,7 +40,6 @@ class Cropping(
 
         * A button to close the widget
         """
-
         super().__init__(viewer)
 
         if parent is not None:
@@ -159,8 +158,7 @@ class Cropping(
                     box.setValue(floor(data.shape[i] / 2))
 
     def _build(self):
-        """Build buttons in a layout and add them to the napari Viewer"""
-
+        """Build buttons in a layout and add them to the napari Viewer."""
         container = ui.ContainerWidget(0, 0, 1, 11)
         layout = container.layout
 
@@ -237,7 +235,6 @@ class Cropping(
 
         * If labels are present, saves the cropped version as a single file or 2D stacks folder depending on what was loaded.
         """
-
         viewer = self._viewer
 
         self._check_results_path(str(self.results_path))
@@ -270,9 +267,7 @@ class Cropping(
         return False
 
     def _start(self):
-        """Launches cropping process by loading the files from the chosen folders,
-        and adds control widgets to the napari Viewer for moving the cropped volume.
-        """
+        """Launches cropping process by loading the files from the chosen folders, and adds control widgets to the napari Viewer for moving the cropped volume."""
         if not self._check_ready():
             logger.warning("Please select at least one valid layer !")
             return
@@ -503,7 +498,7 @@ class Cropping(
             labels_crop_layer=None,
             crop_lbls=False,
         ):
-            """ "Update cropped volume position"""
+            """Update cropped volume position."""
             # self._check_for_empty_layer(highres_crop_layer, highres_crop_layer.data)
 
             # logger.debug(f"axis : {axis}")

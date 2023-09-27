@@ -21,13 +21,14 @@ DEFAULT_THRESHOLD = 0.5
 
 
 class MetricsUtils(BasePluginFolder):
-    """Plugin to evaluate metrics between two sets of labels, ground truth and prediction"""
+    """Plugin to evaluate metrics between two sets of labels, ground truth and prediction."""
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
         """Creates a MetricsUtils widget for computing and plotting dice metrics between labels.
+
         Args:
             viewer: viewer to display the widget in
-            parent : parent widget
+            parent : parent widget.
         """
         super().__init__(viewer, parent, has_results=False)
 
@@ -76,7 +77,6 @@ class MetricsUtils(BasePluginFolder):
 
     def _build(self):
         """Builds the layout of the widget."""
-
         # self.filetype_choice.label.setVisible(False)
 
         w = ui.ContainerWidget()
@@ -132,7 +132,7 @@ class MetricsUtils(BasePluginFolder):
         ui.ScrollArea.make_scrollable(self.layout, self)
 
     def plot_dice(self, dice_coeffs, threshold=DEFAULT_THRESHOLD):
-        """Plots the dice loss for each pair of labels on viewer"""
+        """Plots the dice loss for each pair of labels on viewer."""
         self.btn_reset_plot.setVisible(True)
         colors = []
 
@@ -171,7 +171,7 @@ class MetricsUtils(BasePluginFolder):
             self.canvas.draw_idle()
 
     def remove_plots(self):
-        """Clears plots from window view"""
+        """Clears plots from window view."""
         if len(self.plots) != 0:
             for p in self.plots:
                 p.setVisible(False)
@@ -180,7 +180,9 @@ class MetricsUtils(BasePluginFolder):
 
     def compute_dice(self):
         """Computes the dice metric between pairs of labels.
-        Rotates the prediction label to find matching orientation as well."""
+
+        Rotates the prediction label to find matching orientation as well.
+        """
         # u = 0
         # t = 0
 

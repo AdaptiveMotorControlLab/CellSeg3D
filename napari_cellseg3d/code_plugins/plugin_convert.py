@@ -23,12 +23,12 @@ logger = utils.LOGGER
 
 
 class FragmentUtils(BasePluginUtils):
-    """Class to crop large 3D volumes into smaller fragments"""
+    """Class to crop large 3D volumes into smaller fragments."""
 
     save_path = Path.home() / "cellseg3d" / "fragmented"
 
     def __init__(self, viewer: "napari.Viewer.viewer", parent=None):
-        """Creates a FragmentUtils widget
+        """Creates a FragmentUtils widget.
 
         Args:
             viewer: viewer in which to process data
@@ -115,13 +115,12 @@ class FragmentUtils(BasePluginUtils):
 
 
 class AnisoUtils(BasePluginUtils):
-    """Class to correct anisotropy in images"""
+    """Class to correct anisotropy in images."""
 
     save_path = Path.home() / "cellseg3d" / "anisotropy"
 
     def __init__(self, viewer: "napari.Viewer.viewer", parent=None):
-        """
-        Creates a AnisoUtils widget
+        """Creates a AnisoUtils widget.
 
         Args:
             viewer: viewer in which to process data
@@ -214,14 +213,12 @@ class AnisoUtils(BasePluginUtils):
 
 
 class RemoveSmallUtils(BasePluginUtils):
+    """Widget to remove small objects."""
+
     save_path = Path.home() / "cellseg3d" / "small_removed"
-    """
-    Widget to remove small objects
-    """
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
-        """
-        Creates a RemoveSmallUtils widget
+        """Creates a RemoveSmallUtils widget.
 
         Args:
             viewer: viewer in which to process data
@@ -316,14 +313,12 @@ class RemoveSmallUtils(BasePluginUtils):
 
 
 class ToSemanticUtils(BasePluginUtils):
+    """Widget to create semantic labels from instance labels."""
+
     save_path = Path.home() / "cellseg3d" / "semantic_labels"
-    """
-    Widget to create semantic labels from instance labels
-    """
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
-        """
-        Creates a ToSemanticUtils widget
+        """Creates a ToSemanticUtils widget.
 
         Args:
             viewer: viewer in which to process data
@@ -407,14 +402,12 @@ class ToSemanticUtils(BasePluginUtils):
 
 
 class ToInstanceUtils(BasePluginUtils):
+    """Widget to convert semantic labels to instance labels."""
+
     save_path = Path.home() / "cellseg3d" / "instance_labels"
-    """
-    Widget to convert semantic labels to instance labels
-    """
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
-        """
-        Creates a ToInstanceUtils widget
+        """Creates a ToInstanceUtils widget.
 
         Args:
             viewer: viewer in which to process data
@@ -501,15 +494,17 @@ class ToInstanceUtils(BasePluginUtils):
 
 
 class ThresholdUtils(BasePluginUtils):
-    save_path = Path.home() / "cellseg3d" / "threshold"
-    """
-    Creates a ThresholdUtils widget
+    """Creates a ThresholdUtils widget.
+
     Args:
         viewer: viewer in which to process data
-        parent: parent widget
+        parent: parent widget.
     """
 
+    save_path = Path.home() / "cellseg3d" / "threshold"
+
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
+        """Creates a ThresholdUtils widget."""
         super().__init__(
             viewer,
             parent=parent,

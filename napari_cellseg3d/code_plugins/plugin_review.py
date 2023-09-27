@@ -24,10 +24,12 @@ logger = utils.LOGGER
 
 class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
     """A plugin for selecting volumes and labels file and launching the review process.
-    Inherits from : :doc:`plugin_base`"""
+
+    Inherits from : :doc:`plugin_base`.
+    """
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
-        """Creates a Reviewer plugin with several buttons :
+        """Creates a Reviewer plugin with several buttons.
 
         * Open file prompt to select volumes directory
 
@@ -39,7 +41,6 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
 
         * A button to launch the review process
         """
-
         super().__init__(
             viewer,
             parent,
@@ -100,8 +101,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             self.results_filewidget.text_field.setText(str(Path(p).parent))
 
     def _build(self):
-        """Build buttons in a layout and add them to the napari Viewer"""
-
+        """Build buttons in a layout and add them to the napari Viewer."""
         self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.MinimumExpanding)
 
         tab = ui.ContainerWidget(0, 0, 1, 1)
@@ -168,8 +168,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         self.results_path = self.results_filewidget.text_field.text()
 
     def check_image_data(self):
-        """Checks that images are present and that sizes match"""
-
+        """Checks that images are present and that sizes match."""
         cfg = self.config
 
         if cfg.image is None:
@@ -208,13 +207,12 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         self.config.zoom_factor = zoom
 
     def run_review(self):
-        """Launches review process by loading the files from the chosen folders,
-        and adds several widgets to the napari Viewer.
+        """Launches review process by loading the files from the chosen folders, and adds several widgets to the napari Viewer.
+
         If the review process has been launched once before,
         closes the window entirely and launches the review process in a fresh window.
 
-        TODO:
-
+        Todo:
         * Save work done before leaving
 
         See launch_review
@@ -222,7 +220,6 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         Returns:
             napari.viewer.Viewer: self.viewer
         """
-
         print("New review session\n" + "*" * 20)
         previous_viewer = self._viewer
         try:
@@ -240,8 +237,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         self.remove_docked_widgets()
 
     def launch_review(self):
-        """Launch the review process, loading the original image, the labels & the raw labels (from prediction)
-        in the viewer.
+        """Launch the review process, loading the original image, the labels & the raw labels (from prediction) in the viewer.
 
         Adds several widgets to the viewer :
 
@@ -419,6 +415,13 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         viewer.dims.events.current_step.connect(update_button)
 
         def crop_volume_around_point(points, layer, zoom_factor):
+            """Crops a volume around a point.
+
+            Args:
+                points (list): list of 3 integers, the coordinates of the point to crop around
+                layer (napari.layers.Image): the layer to crop
+                zoom_factor (list): list of 3 floats, the zoom factor to apply to the layer before cropping
+            """
             if zoom_factor != [1, 1, 1]:
                 data = np.array(layer.data, dtype=np.int16)
                 volume = utils.resize(data, zoom_factor)

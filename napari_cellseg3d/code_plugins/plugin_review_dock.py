@@ -27,10 +27,7 @@ Definition of Datamanager widget, for saving labels status in csv file
 
 
 class Datamanager(QWidget):
-    """A widget with a single checkbox that allows to store the status of
-    a slice in csv file (checked/not checked)
-
-    """
+    """A widget with a single checkbox that allows to store the status of a slice in csv file (checked/not checked)."""
 
     def __init__(self, parent: "napari.viewer.Viewer"):
         """Creates the datamanager widget in the specified viewer window.
@@ -38,7 +35,6 @@ class Datamanager(QWidget):
         Args:
             parent (napari.viewer.Viewer): napari Viewer for the widget to be displayed in
         """
-
         super().__init__()
 
         layout = QVBoxLayout()
@@ -90,7 +86,7 @@ class Datamanager(QWidget):
         # self.pause_time = None
 
     def pause_timer(self):
-        """Pause the timer for the review time"""
+        """Pause the timer for the review time."""
         if self.pause_box.isChecked():
             self.time_label.setVisible(True)
 
@@ -120,17 +116,15 @@ class Datamanager(QWidget):
         self.df.to_csv(self.csv_path)
 
     def prepare(self, label_dir, filetype, model_type, checkbox):
-        """Initialize the Datamanager, which loads the csv file and updates it
-        with the index of the current slice.
+        """Initialize the Datamanager, which loads the csv file and updates it with the index of the current slice.
 
         Args:
-        label_dir (str): label path
-        filetype (str) : file extension
-        model_type (str): model type
-        checkbox (bool): create new dataset or not
-        as_folder (bool) : load as folder or as single file
+            label_dir (str): label path
+            filetype (str) : file extension
+            model_type (str): model type
+            checkbox (bool): create new dataset or not
+            as_folder (bool) : load as folder or as single file
         """
-
         # label_dir = os.path.dirname(label_dir)
         print("csv path try :")
         print(label_dir)
@@ -151,8 +145,7 @@ class Datamanager(QWidget):
         self.update_dm(self.viewer.dims.current_step[0])
 
     def load_csv(self, label_dir, model_type, checkbox):
-        """
-        Loads newest csv or create new csv
+        """Loads newest csv or create new csv.
 
         Args:
             label_dir (str): label path
@@ -195,16 +188,15 @@ class Datamanager(QWidget):
         # print(self.time_elapsed)
         return df, csv_path
 
-    def create_csv(self, label_dir, model_type, filename=None):
-        """
-        Create a new dataframe and save the csv
+    def create_csv(self, label_dir, model_type):
+        """Create a new dataframe and save the csv.
+
         Args:
           label_dir (str): label path
           model_type (str): model type
         Returns:
-         (pandas.DataFrame, str): dataframe, csv path
+         (pandas.DataFrame, str): dataframe, csv path.
         """
-
         if self.as_folder:
             labels = sorted(
                 list(
@@ -242,8 +234,9 @@ class Datamanager(QWidget):
             )  # puts  button values at value of 1st csv item
 
     def update_dm(self, slice_num):
-        """Updates the Datamanager with the index of the current slice, and updates
-        the text with the status contained in the csv (e.g. checked/not checked).
+        """Updates the Datamanager with the index of the current slice.
+
+        Also updates the text with the status contained in the csv (e.g. checked/not checked).
 
         Args:
             slice_num (int): index of the current slice

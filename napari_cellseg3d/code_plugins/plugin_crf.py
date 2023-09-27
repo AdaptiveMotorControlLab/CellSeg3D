@@ -19,9 +19,10 @@ from napari_cellseg3d.utils import LOGGER as logger
 
 # TODO add CRF on folder
 class CRFParamsWidget(ui.GroupedWidget):
-    """Use this widget when adding the crf as part of another widget (rather than a standalone widget)"""
+    """Use this widget when adding the crf as part of another widget (rather than a standalone widget)."""
 
     def __init__(self, parent=None):
+        """Create a widget to set CRF parameters."""
         super().__init__(title="CRF parameters", parent=parent)
         #######
         # CRF params #
@@ -108,13 +109,13 @@ class CRFParamsWidget(ui.GroupedWidget):
 
 
 class CRFWidget(BasePluginUtils):
-    """Widget to run CRF post-processing"""
+    """Widget to run CRF post-processing."""
 
     save_path = Path.home() / "cellseg3d" / "crf"
 
     def __init__(self, viewer, parent=None):
-        """
-        Create a widget for CRF post-processing.
+        """Create a widget for CRF post-processing.
+
         Args:
             viewer: napari viewer to display the widget
             parent: parent widget. Defaults to None.
