@@ -31,14 +31,14 @@ rand_gen = Generator(PCG64(12345))
 def save_folder(
     results_path, folder_name, images, image_paths, exist_ok=False
 ):
-    """
-    Saves a list of images in a folder
+    """Saves a list of images in a folder.
 
     Args:
         results_path: Path to the folder containing results
         folder_name: Name of the folder containing results
         images: List of images to save
         image_paths: list of filenames of images
+        exist_ok: whether to check for existing files. If False, will raise an error if the folder already exists.
     """
     results_folder = results_path / Path(folder_name)
     results_folder.mkdir(exist_ok=exist_ok, parents=True)
@@ -54,8 +54,7 @@ def save_folder(
 
 
 def save_layer(results_path, image_name, image):
-    """
-    Saves an image layer at the specified path
+    """Saves an image layer at the specified path.
 
     Args:
         results_path: path to folder containing result
@@ -76,14 +75,15 @@ def show_result(
     existing_layer: napari.layers.Layer = None,
     colormap="bop orange",
 ) -> napari.layers.Layer:
-    """
-    Adds layers to a viewer to show result to user
+    """Adds layers to a viewer to show result to user.
 
     Args:
         viewer: viewer to add layer in
         layer: original layer the operation was run on, to determine whether it should be an Image or Labels layer
         image: the data array containing the image
         name: name of the added layer
+        existing_layer: existing layer to update, if any
+        colormap: colormap to use for the layer
 
     Returns:
         napari.layers.Layer: the layer added to the viewer
@@ -118,10 +118,9 @@ def show_result(
 
 
 class Singleton(type):
-    """
-    Singleton class that can only be instantiated once at a time,
-    with said unique instance always being accessed on call.
-    Should be used as a metaclass for classes without inheritance (object type)
+    """Singleton class that can only be instantiated once at a time, with said unique instance always being accessed on call.
+
+    Should be used as a metaclass for classes without inheritance (object type).
     """
 
     _instances = {}
@@ -133,7 +132,7 @@ class Singleton(type):
 
 
 def normalize_x(image):
-    """Normalizes the values of an image array to be between [-1;1] rather than [0;255]
+    """Normalizes the values of an image array to be between [-1;1] rather than [0;255].
 
     Args:
         image (array): Image to process
@@ -149,7 +148,7 @@ def mkdir_from_str(path: str, exist_ok=True, parents=True):
 
 
 def normalize_y(image):
-    """Normalizes the values of an image array to be between [0;1] rather than [0;255]
+    """Normalizes the values of an image array to be between [0;1] rather than [0;255].
 
     Args:
         image (array): Image to process
@@ -161,7 +160,7 @@ def normalize_y(image):
 
 
 def sphericity_volume_area(volume, surface_area):
-    """Computes the sphericity from volume and area
+    r"""Computes the sphericity from volume and area.
 
     .. math::
        sphericity =\\frac {\\pi^\\frac{1}{3} (6 V_{p})^\\frac{2}{3}} {A_p}
@@ -171,7 +170,7 @@ def sphericity_volume_area(volume, surface_area):
 
 
 def sphericity_axis(semi_major, semi_minor):
-    """Computes the sphericity from volume semi major (a) and semi minor (b) axes.
+    r"""Computes the sphericity from volume semi major (a) and semi minor (b) axes.
 
     .. math::
         sphericity = \\frac {2 \\sqrt[3]{ab^2}} {a+ \\frac {b^2} {\\sqrt{a^2-b^2}}ln( \\frac {a+ \\sqrt{a^2-b^2}} {b} )}
@@ -206,11 +205,14 @@ def dice_coeff(
     y_pred: Union[torch.Tensor, np.ndarray],
     smooth: float = 1.0,
 ) -> Union[torch.Tensor, np.float64]:
-    """Compute Dice-Sorensen coefficient between two numpy arrays
+    """Compute Dice-Sorensen coefficient between two numpy arrays.
+
     Args:
         y_true: Ground truth label
         y_pred: Prediction label
-    Returns: dice coefficient
+        smooth: Smoothing factor to avoid division by zero
+
+    Returns: dice coefficient.
     """
     if isinstance(y_true, np.ndarray) and isinstance(y_pred, np.ndarray):
         sum_tensor = np.sum
@@ -230,12 +232,12 @@ def dice_coeff(
 
 
 def seek_best_dice_coeff_channel(y_pred, y_true) -> torch.Tensor:
-    """Compute Dice-Sorensen coefficient between unsupervised model output and ground truth labels;
-    returns the channel with the highest dice coefficient.
+    """Compute Dice-Sorensen coefficient between unsupervised model output and ground truth labels; returns the channel with the highest dice coefficient.
+
     Args:
         y_true: Ground truth label
         y_pred: Prediction label
-    Returns: best Dice coefficient channel
+    Returns: best Dice coefficient channel.
     """
     dices = []
     # Find in which channel the labels are (to avoid background)
@@ -253,13 +255,13 @@ def seek_best_dice_coeff_channel(y_pred, y_true) -> torch.Tensor:
 
 
 def correct_rotation(image):
-    """Rotates the exes 0 and 2 in [DHW] section of image array"""
+    """Rotates the exes 0 and 2 in [DHW] section of image array."""
     extra_dims = len(image.shape) - 3
     return np.swapaxes(image, 0 + extra_dims, 2 + extra_dims)
 
 
 def normalize_max(image):
-    """Normalizes an image using the max and min value"""
+    """Normalizes an image using the max and min value."""
     shape = image.shape
     image = image.flatten()
     image = (image - image.min()) / (image.max() - image.min())
@@ -274,7 +276,7 @@ def remap_image(
     prev_max=None,
     prev_min=None,
 ):
-    """Normalizes a numpy array or Tensor using the max and min value"""
+    """Normalizes a numpy array or Tensor using the max and min value."""
     shape = image.shape
     image = image.flatten()
     im_max = prev_max if prev_max is not None else image.max()
@@ -333,13 +335,13 @@ def align_array_sizes(array_shape, target_shape):
 
 
 def time_difference(time_start, time_finish, as_string=True):
-    """
-    Args:
-        time_start (datetime): time to subtract to time_finish
-        time_finish (datetime): time to add to subtract time_start to
-        as_string (bool): if True, returns a string with the full time diff. Otherwise, returns as a list [hours,minutes,seconds]
-    """
+    """Computes the time difference between two datetime objects.
 
+    Args:
+    time_start (datetime): time to subtract to time_finish
+    time_finish (datetime): time to add to subtract time_start to
+    as_string (bool): if True, returns a string with the full time diff. Otherwise, returns as a list [hours,minutes,seconds].
+    """
     time_taken = time_finish - time_start
     days = divmod(time_taken.total_seconds(), 86400)  # Get days (without [0]!)
     hours = divmod(days[1], 3600)  # Use remainder of days to calc hours
@@ -358,13 +360,14 @@ def time_difference(time_start, time_finish, as_string=True):
 
 
 def get_padding_dim(image_shape, anisotropy_factor=None):
-    """
-    Finds the nearest and superior power of two for each image dimension to zero-pad it for CNN processing,
-    accepts either 2D or 3D images shapes. E.g. an image size of 30x40x100 will result in a padding of 32x64x128.
+    """Finds the nearest and superior power of two for each image dimension to zero-pad it for CNN processing.
+
+    Accepts either 2D or 3D images shapes. E.g. an image size of 30x40x100 will result in a padding of 32x64x128.
     Shows a warning if the padding dimensions are very large.
 
     Args:
         image_shape (torch.size): an array of the dimensions of the image in D/H/W if 3D or H/W if 2D
+        anisotropy_factor (list): anisotropy factor for each dimension
 
     Returns:
         array(int): padding value for each dim
@@ -409,7 +412,7 @@ def get_padding_dim(image_shape, anisotropy_factor=None):
 
 
 def denormalize_y(image):
-    """De-normalizes the values of an image array to be between [0;255] rather than [0;1]
+    """De-normalizes the values of an image array to be between [0;255] rather than [0;1].
 
     Args:
         image (array): Image to process
@@ -422,7 +425,8 @@ def denormalize_y(image):
 
 def fill_list_in_between(lst, n, fill_value):
     """Fills a list with n * elem between each member of list.
-    Example with list = [1,2,3], n=2, elem='&' : returns [1, &, &,2,&,&,3,&,&]
+
+    Example with list = [1,2,3], n=2, elem='&' : returns [1, &, &,2,&,&,3,&,&].
 
     Args:
         lst: list to fill
@@ -452,6 +456,7 @@ def parse_default_path(possible_paths, check_existence=True):
 
     Args:
         possible_paths: array of paths
+        check_existence: whether to check if the path exists.
 
     Returns: the chosen default path
 
@@ -476,27 +481,25 @@ def parse_default_path(possible_paths, check_existence=True):
 
 
 def get_date_time():
-    """Get date and time in the following format : year_month_day_hour_minute_second"""
+    """Get date and time in the following format : year_month_day_hour_minute_second."""
     return f"{datetime.now():%Y_%m_%d_%H_%M_%S}"
 
 
 def get_time():
-    """Get time in the following format : hour:minute:second. NOT COMPATIBLE with file paths (saving with ":" is invalid)"""
+    """Get time in the following format : hour:minute:second. NOT COMPATIBLE with file paths (saving with ":" is invalid)."""
     return f"{datetime.now():%H:%M:%S}"
 
 
 def get_time_filepath():
-    """Get time in the following format : hour_minute_second. Compatible with saving"""
+    """Get time in the following format : hour_minute_second. Compatible with saving."""
     return f"{datetime.now():%H_%M_%S}"
 
 
 def load_images(dir_or_path, filetype="", as_folder: bool = False):
-    """Loads the images in ``directory``, with different behaviour depending on ``filetype`` and ``as_folder``
+    """Loads the images in ``directory``, with different behaviour depending on ``filetype`` and ``as_folder``.
 
     * If ``as_folder`` is **False**, will load the path as a single 3D **.tif** image.
-
     * If **True**, it will try to load a folder as stack of images. In this case ``filetype`` must be specified.
-
     If **True** :
 
         * For ``filetype == ".tif"`` : loads all tif files in the folder as a 3D dataset.
@@ -512,7 +515,6 @@ def load_images(dir_or_path, filetype="", as_folder: bool = False):
     Returns:
         np.array: array with loaded images
     """
-
     # if not as_folder:
     filename_pattern_original = Path(dir_or_path)
     return imread(str(filename_pattern_original))  # tifffile imread
@@ -535,7 +537,7 @@ def quantile_normalization(
     quantile_high=0.99,
     quantile_low=0.01,
 ):
-    """Normalizes an image using the quantiles"""
+    """Normalizes an image using the quantiles."""
     if quantile_high < quantile_low:
         raise ValueError(
             f"quantile_high must be greater than quantile_low, got {quantile_high} and {quantile_low}"
@@ -560,7 +562,7 @@ def quantile_normalization(
 
 
 def channels_fraction_above_threshold(volume: np.array, threshold=0.5) -> list:
-    """Computes the fraction of pixels above a certain value in a 4D volume for each channel
+    """Computes the fraction of pixels above a certain value in a 4D volume for each channel.
 
     Args:
         volume (np.ndarray): Array of shape (C, H, W, D) containing the input volume
@@ -582,11 +584,11 @@ def channels_fraction_above_threshold(volume: np.array, threshold=0.5) -> list:
 
 
 def fraction_above_threshold(volume: np.array, threshold=0.5) -> float:
-    """
-    Computes the fraction of pixels above a certain value in a volume
+    """Computes the fraction of pixels above a certain value in a volume.
+
     Args:
         volume (np.ndarray): Array containing the input volume
-        threshold (float): Threshold value to use for the computation
+        threshold (float): Threshold value to use for the computation.
 
     Returns:
         float: Fraction of pixels above the threshold
