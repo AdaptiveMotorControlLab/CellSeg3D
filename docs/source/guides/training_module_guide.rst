@@ -36,9 +36,9 @@ WNet             `WNet, A Deep Model for Fully Unsupervised Image Segmentation`_
 .. _WNet, A Deep Model for Fully Unsupervised Image Segmentation: https://arxiv.org/abs/1711.08506
 
 .. important::
-    | The machine learning models used by this program require all images of a dataset to be of the same size.
-    | Please ensure that all the images you are loading are of the **same size**, or to use the **"extract patches" (in augmentation tab)** with an appropriately small size to ensure all images being used by the model are of a workable size.
-    | If you need to fragment a large file into cubes, please use the Fragment utility in :ref:`utils_module_guide`.
+    The machine learning models used by this program require all images of a dataset to be of the same size.
+    Please ensure that all the images you are loading are of the **same size**, or to use the **"extract patches" (in augmentation tab)** with an appropriately small size to ensure all images being used by the model are of a workable size.
+    If you need to fragment a large file into cubes, please use the Fragment utility in :ref:`utils_module_guide`.
 
 The training module is comprised of several tabs :
 
@@ -67,8 +67,8 @@ ___________________
 * Whether to use images "as is" (**requires all images to be of the same size and cubic**) or extract patches
 
 .. important::
-    | **All image sizes used should be as close to a power of two as possible, or equal to a power of two.**
-    | Images are automatically padded; a 64 pixels cube will be used as is, but a 65 pixel cube will be padded up to 128 pixels, resulting in much higher memory use.
+    **All image sizes used should be as close to a power of two as possible, or equal to a power of two.**
+    Images are automatically padded; a 64 pixels cube will be used as is, but a 65 pixel cube will be padded up to 128 pixels, resulting in much higher memory use.
 
 * If you're extracting patches :
 

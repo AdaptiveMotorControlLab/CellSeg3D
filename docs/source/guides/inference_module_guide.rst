@@ -7,9 +7,9 @@ This module allows you to use pre-trained segmentation algorithms (written in Py
 to automatically label cells.
 
 .. important::
-    Currently, only inference on **3D volumes is supported**. If using folders, your images and labels folders
+    Currently, only inference on **3D volumes is supported**. If running on folders, your images and labels folders
     should both contain a set of **3D image files**, either **.tif** or **.tiff**.
-    Otherwise you may run inference on layers in napari.
+    Otherwise you may run inference on layers in napari. Stacks of 2D files can be loaded as 3D volumes in napari.
 
 Currently, the following pre-trained models are available :
 
