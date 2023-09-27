@@ -59,7 +59,8 @@ except ImportError:
 
 class WNetTrainingWorkerColab(TrainingWorkerBase):
     """A custom worker to run WNet (unsupervised) training jobs in.
-    Inherits from :py:class:`napari.qt.threading.GeneratorWorker` via :py:class:`TrainingWorkerBase`
+
+    Inherits from :py:class:`napari.qt.threading.GeneratorWorker` via :py:class:`TrainingWorkerBase`.
     """
 
     def __init__(
@@ -67,6 +68,12 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
         worker_config: config.WNetTrainingWorkerConfig,
         wandb_config: config.WandBConfig = None,
     ):
+        """Create a WNet training worker for Google Colab.
+
+        Args:
+            worker_config: worker configuration
+            wandb_config: optional wandb configuration
+        """
         super().__init__()
         self.config = worker_config
         self.wandb_config = (
@@ -92,15 +99,14 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
         logger.info(text)
 
     def get_patch_dataset(self, train_transforms):
-        """Creates a Dataset from the original data using the tifffile library
+        """Creates a Dataset from the original data using the tifffile library.
 
         Args:
-            train_data_dict (dict): dict with the Paths to the directory containing the data
+            train_transforms (Compose): The transforms to apply to the data
 
         Returns:
             (tuple): A tuple containing the shape of the data and the dataset
         """
-
         patch_func = Compose(
             [
                 LoadImaged(keys=["image"], image_only=True),
@@ -166,10 +172,10 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
         )
 
     def get_dataset(self, train_transforms):
-        """Creates a Dataset applying some transforms/augmentation on the data using the MONAI library
+        """Creates a Dataset applying some transforms/augmentation on the data using the MONAI library.
 
         Args:
-            config (WNetTrainingWorkerConfig): The configuration object
+            train_transforms (Compose): The transforms to apply to the data
 
         Returns:
             (tuple): A tuple containing the shape of the data and the dataset
@@ -712,6 +718,7 @@ def get_colab_worker(
 
     Args:
         worker_config (config.WNetTrainingWorkerConfig): config for the training worker
+        wandb_config (config.WandBConfig): config for wandb
     """
     worker = WNetTrainingWorkerColab(worker_config)
     worker.wandb_config = wandb_config
@@ -742,7 +749,6 @@ def create_eval_dataset_dict(image_directory, label_directory):
         * "image": image
         * "label" : corresponding label
     """
-
     images_filepaths = sorted(Path.glob(image_directory, "*.tif"))
     labels_filepaths = sorted(Path.glob(label_directory, "*.tif"))
 
