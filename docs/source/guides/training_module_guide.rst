@@ -45,11 +45,13 @@ ___________________
 
 * Select which model to use (see above table)
 * Whether to use pre-trained weights
+
 .. note::
     | The model will be initialized with our pre-trained weights,
     | possibly improving performance (via transfer learning).
     | Custom weights may also be loaded;
     | simply ensure they are compatible with the model.
+
 * Select the device to use for training (CPU or GPU if CUDA is available)
 
 2) **Data** tab
