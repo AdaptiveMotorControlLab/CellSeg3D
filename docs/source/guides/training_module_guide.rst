@@ -21,10 +21,11 @@ Currently, the following pre-defined models are available :
 ==============   ================================================================================================
 Model            Link to original paper
 ==============   ================================================================================================
-VNet             `Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation`_
 SegResNet        `3D MRI brain tumor segmentation using autoencoder regularization`_
-TRAILMAP_MS       An implementation of the `TRAILMAP project on GitHub`_ using `3DUNet for PyTorch`_
 SwinUNetR         `Swin UNETR, Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images`_
+TRAILMAP          An implementation of the `TRAILMAP project on GitHub`_ using `3DUNet for PyTorch`_
+VNet             `Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation`_
+WNet             `WNet, A Deep Model for Fully Unsupervised Image Segmentation`_
 ==============   ================================================================================================
 
 .. _Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation: https://arxiv.org/pdf/1606.04797.pdf
@@ -32,6 +33,7 @@ SwinUNetR         `Swin UNETR, Swin Transformers for Semantic Segmentation of Br
 .. _TRAILMAP project on GitHub: https://github.com/AlbertPun/TRAILMAP
 .. _3DUnet for Pytorch: https://github.com/wolny/pytorch-3dunet
 .. _Swin UNETR, Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images: https://arxiv.org/abs/2201.01266
+.. _WNet, A Deep Model for Fully Unsupervised Image Segmentation: https://arxiv.org/abs/1711.08506
 
 .. important::
     | The machine learning models used by this program require all images of a dataset to be of the same size.

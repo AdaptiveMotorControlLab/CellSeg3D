@@ -18,8 +18,7 @@ Model            Link to original paper
 ==============   ================================================================================================
 VNet             `Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation`_
 SegResNet        `3D MRI brain tumor segmentation using autoencoder regularization`_
-TRAILMAP_MS       A PyTorch implementation of the `TRAILMAP project on GitHub`_ pretrained with mesoSPIM data
-TRAILMAP          An implementation of the `TRAILMAP project on GitHub`_ using a `3DUNet for PyTorch`_
+TRAILMAP          An implementation of the `TRAILMAP project on GitHub`_ using `3DUNet for PyTorch`_
 SwinUNetR         `Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images`_
 WNet             `WNet, A Deep Model for Fully Unsupervised Image Segmentation`_
 ==============   ================================================================================================

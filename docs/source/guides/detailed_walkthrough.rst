@@ -120,7 +120,7 @@ Finally, the last tab lets you choose :
 
     * SegResNet is a lightweight model (low memory requirements) from MONAI originally designed for 3D fMRI data.
     * VNet is a larger (than SegResNet) CNN from MONAI designed for medical image segmentation.
-    * TRAILMAP_MS is our implementation in PyTorch additionally trained on mouse cortical neural nuclei from mesoSPIM data.
+    * TRAILMAP is our implementation in PyTorch additionally trained on mouse cortical neural nuclei from mesoSPIM data.
     * SwinUNetR is a MONAI implementation of the SwinUNetR model. It is costly in compute and memory, but can achieve high performance.
     * WNet is our reimplementation of an unsupervised model, which can be used to produce segmentation without labels.
 
