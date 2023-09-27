@@ -58,13 +58,17 @@ a custom worker function was implemented.
 
 class InferenceWorker(GeneratorWorker):
     """A custom worker to run inference jobs in.
-    Inherits from :py:class:`napari.qt.threading.GeneratorWorker`"""
+
+    Inherits from :py:class:`napari.qt.threading.GeneratorWorker`.
+    """
 
     def __init__(
         self,
         worker_config: config.InferenceWorkerConfig,
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~inference` function.
+
+        Note: See :py:func:`~self.inference` for more details on the arguments.
 
         The config contains the following attributes:
         * device: cuda or cpu device to use for torch
@@ -82,11 +86,10 @@ class InferenceWorker(GeneratorWorker):
         * layer: the layer to run inference on
 
         Args:
-            * worker_config (config.InferenceWorkerConfig): dataclass containing the proper configuration elements
+            worker_config (config.InferenceWorkerConfig): dataclass containing the proper configuration elements
 
-        Note: See :py:func:`~self.inference`
+
         """
-
         super().__init__(self.inference)
         self._signals = LogSignal()  # add custom signals
         self.log_signal = self._signals.log_signal
@@ -102,17 +105,19 @@ class InferenceWorker(GeneratorWorker):
 
     @staticmethod
     def create_inference_dict(images_filepaths):
-        """Create a dict for MONAI with "image" keys with all image paths in :py:attr:`~self.images_filepaths`
+        """Create a dict for MONAI with "image" keys with all image paths in :py:attr:`~self.images_filepaths`.
 
         Returns:
-            dict: list of image paths from loaded folder"""
+            dict: list of image paths from loaded folder
+        """
         return [{"image": image_name} for image_name in images_filepaths]
 
     def set_download_log(self, widget):
+        """Sets the log widget for the downloader."""
         self.downloader.log_widget = widget
 
     def log(self, text):
-        """Sends a signal that ``text`` should be logged
+        """Sends a signal that ``text`` should be logged.
 
         Args:
             text (str): text to logged
@@ -120,11 +125,11 @@ class InferenceWorker(GeneratorWorker):
         self.log_signal.emit(text)
 
     def warn(self, warning):
-        """Sends a warning to main thread"""
+        """Sends a warning to main thread."""
         self.warn_signal.emit(warning)
 
     def _raise_error(self, exception, msg):
-        """Raises an error in main thread"""
+        """Raises an error in main thread."""
         logger.error(msg, exc_info=True)
         logger.error(exception, exc_info=True)
 
@@ -139,6 +144,7 @@ class InferenceWorker(GeneratorWorker):
         yield exception
 
     def log_parameters(self):
+        """Logs the parameters of the inference."""
         config = self.config
 
         self.log("-" * 20)
@@ -183,6 +189,7 @@ class InferenceWorker(GeneratorWorker):
         self.log("-" * 20)
 
     def load_folder(self):
+        """Loads the folder specified in :py:attr:`~self.images_filepaths` and returns a MONAI DataLoader."""
         images_dict = self.create_inference_dict(self.config.images_filepaths)
 
         data_check = LoadImaged(keys=["image"])(images_dict[0])
@@ -224,6 +231,7 @@ class InferenceWorker(GeneratorWorker):
         return inference_loader
 
     def load_layer(self):
+        """Loads the layer specified in :py:attr:`~self.layer` and returns a MONAI DataLoader."""
         self.log("Loading layer")
         image = np.squeeze(self.config.layer.data)
         volume = image.astype(np.float32)
@@ -295,6 +303,14 @@ class InferenceWorker(GeneratorWorker):
         post_process_transforms,
         aniso_transform=None,
     ):
+        """Runs the model on the inputs and returns the output.
+
+        Args:
+            inputs (torch.Tensor): the input tensor to run the model on
+            model (torch.nn.Module): the model to run
+            post_process_transforms (monai.transforms.Compose): the transforms to apply to the output
+            aniso_transform (monai.transforms.Zoom): the anisotropic transform to apply to the output
+        """
         inputs = inputs.to("cpu")
         dataset_device = (
             "cpu" if self.config.keep_on_cpu else self.config.device
@@ -395,6 +411,23 @@ class InferenceWorker(GeneratorWorker):
         stats=None,
         i=0,
     ) -> InferenceResult:
+        """Creates an :py:class:`~InferenceResult` object from the inference results.
+
+        Args:
+            semantic_labels (np.ndarray): the semantic labels
+            instance_labels (np.ndarray): the instance labels
+            crf_results (np.ndarray): the CRF results
+            from_layer (bool, optional): whether the inference was run on a layer or not. Defaults to False.
+            original (np.ndarray, optional): the original image. Defaults to None.
+            stats (list, optional): the stats of the instance labels. Defaults to None.
+            i (int, optional): the index of the image. Defaults to 0.
+
+        Raises:
+            ValueError: if the image is not from a layer and no original is provided
+
+        Returns:
+            InferenceResult: the inference result. See :py:class:`~InferenceResult` for more details.
+        """
         if not from_layer and original is None:
             raise ValueError(
                 "If the image is not from a layer, an original should always be available"
@@ -424,9 +457,25 @@ class InferenceWorker(GeneratorWorker):
         )
 
     def get_original_filename(self, i):
+        """Gets the original filename from the :py:attr:`~self.images_filepaths` attribute."""
         return Path(self.config.images_filepaths[i]).stem
 
     def get_instance_result(self, semantic_labels, from_layer=False, i=-1):
+        """Gets the instance segmentation result.
+
+        Args:
+            semantic_labels (np.ndarray): the semantic labels
+            from_layer (bool, optional): whether the inference was run on a layer or not. Defaults to False.
+            i (int, optional): the index of the image. Defaults to -1.
+
+        Raises:
+            ValueError: if the image is not from a layer and no ID is provided
+
+        Returns:
+            tuple: a tuple containing:
+                * the instance labels
+                * the stats of the instance labels
+        """
         if not from_layer and i == -1:
             raise ValueError(
                 "An ID should be provided when running from a file"
@@ -450,6 +499,14 @@ class InferenceWorker(GeneratorWorker):
         i=0,
         additional_info="",
     ):
+        """Save the image to the :py:attr:`~self.results_path` folder.
+
+        Args:
+            image (np.ndarray): the image to save
+            from_layer (bool, optional): whether the inference was run on a layer or not. Defaults to False.
+            i (int, optional): the index of the image. Defaults to 0.
+            additional_info (str, optional): additional info to add to the filename. Defaults to "".
+        """
         if not from_layer:
             original_filename = "_" + self.get_original_filename(i) + "_"
             filetype = self.config.filetype
@@ -483,6 +540,7 @@ class InferenceWorker(GeneratorWorker):
             self.log(f"File n°{i+1} saved as : {filename}")
 
     def aniso_transform(self, image):
+        """Applies an anisotropic transform to the image."""
         if self.config.post_process_config.zoom.enabled:
             zoom = self.config.post_process_config.zoom.zoom_values
             anisotropic_transform = Zoom(
@@ -496,6 +554,13 @@ class InferenceWorker(GeneratorWorker):
     def instance_seg(
         self, semantic_labels, image_id=0, original_filename="layer"
     ):
+        """Runs the instance segmentation on the semantic labels.
+
+        Args:
+            semantic_labels (np.ndarray): the semantic labels
+            image_id (int, optional): the index of the image. Defaults to 0.
+            original_filename (str, optional): the original filename. Defaults to "layer".
+        """
         if image_id is not None:
             self.log(f"Running instance segmentation for image n°{image_id}")
 
@@ -528,6 +593,7 @@ class InferenceWorker(GeneratorWorker):
         return instance_labels
 
     def inference_on_folder(self, inf_data, i, model, post_process_transforms):
+        """Runs inference on a folder."""
         self.log("-" * 10)
         self.log(f"Inference started on image n°{i + 1}...")
 
@@ -572,6 +638,7 @@ class InferenceWorker(GeneratorWorker):
         )
 
     def run_crf(self, image, labels, aniso_transform, image_id=0):
+        """Runs CRF on the image and labels."""
         try:
             if aniso_transform is not None:
                 image = aniso_transform(image)
@@ -604,6 +671,7 @@ class InferenceWorker(GeneratorWorker):
             return None
 
     def inference_on_layer(self, image, model, post_process_transforms):
+        """Runs inference on a layer."""
         self.log("-" * 10)
         self.log("Inference started on layer...")
 
@@ -634,9 +702,10 @@ class InferenceWorker(GeneratorWorker):
 
     # @thread_worker(connect={"errored": self._raise_error})
     def inference(self):
-        """
+        """Main inference function.
+
         Requires:
-            * device: cuda or cpu device to use for torch
+            * device: cuda or cpu device to use for torch.
 
             * model_dict: the :py:attr:`~self.models_dict` dictionary to obtain the model name, class and instance
 

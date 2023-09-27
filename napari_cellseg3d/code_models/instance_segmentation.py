@@ -31,6 +31,8 @@ USE_EXPERIMENTAL_VORONOI_OTSU_WITH_SLIDING_WINDOW = False
 
 
 class InstanceMethod:
+    """Base class for instance segmentation methods. Contains the method name, the function to use, and the corresponding UI elements."""
+
     def __init__(
         self,
         name: str,
@@ -39,8 +41,7 @@ class InstanceMethod:
         num_counters: int,
         widget_parent: QWidget = None,
     ):
-        """
-        Methods for instance segmentation
+        """Methods for instance segmentation.
 
         Args:
             name: Name of the instance segmentation method (for UI)
@@ -59,12 +60,12 @@ class InstanceMethod:
         )
 
     def _setup_widgets(self, num_counters, num_sliders, widget_parent=None):
-        """Initializes the needed widgets for the instance segmentation method, adding sliders and counters to the
-        instance segmentation widget.
+        """Initializes the needed widgets for the instance segmentation method, adding sliders and counters to the instance segmentation widget.
+
         Args:
             num_counters: Number of DoubleIncrementCounter UI elements needed to set the parameters of the function
             num_sliders: Number of Slider UI elements needed to set the parameters of the function
-            widget_parent: parent for the declared widgets
+            widget_parent: parent for the declared widgets.
         """
         if num_sliders > 0:
             for i in range(num_sliders):
@@ -97,6 +98,7 @@ class InstanceMethod:
 
     @abc.abstractmethod
     def run_method(self, image):
+        """Runs the method on the image with the parameters set in the widget."""
         raise NotImplementedError()
 
     def _make_list_from_channels(
@@ -124,6 +126,8 @@ class InstanceMethod:
 
 @dataclass
 class ImageStats:
+    """Dataclass containing various statistics from instance labels."""
+
     volume: List[float]
     centroid_x: List[float]
     centroid_y: List[float]
@@ -152,7 +156,7 @@ class ImageStats:
 
 
 def threshold(volume, thresh):
-    """Remove all values smaller than the specified threshold in the volume"""
+    """Remove all values smaller than the specified threshold in the volume."""
     im = np.squeeze(volume)
     binary = im > thresh
     return np.where(binary, im, np.zeros_like(im))
@@ -164,12 +168,12 @@ def voronoi_otsu(
     outline_sigma: float,
     # remove_small_size: float,
 ):
-    """
-    Voronoi-Otsu labeling from pyclesperanto.
+    """Voronoi-Otsu labeling from pyclesperanto.
+
     BASED ON CODE FROM : napari_pyclesperanto_assistant by Robert Haase
     https://github.com/clEsperanto/napari_pyclesperanto_assistant
     Original code at :
-    https://github.com/clEsperanto/pyclesperanto_prototype/blob/master/pyclesperanto_prototype/_tier9/_voronoi_otsu_labeling.py
+    https://github.com/clEsperanto/pyclesperanto_prototype/blob/master/pyclesperanto_prototype/_tier9/_voronoi_otsu_labeling.py.
 
     Args:
         volume (np.ndarray): volume to segment
@@ -209,8 +213,7 @@ def binary_connected(
     thres=0.5,
     thres_small=3,
 ):
-    r"""Convert binary foreground probability maps to instance masks via
-    connected-component labeling.
+    r"""Convert binary foreground probability maps to instance masks via connected-component labeling.
 
     Args:
         volume (numpy.ndarray): foreground probability of shape :math:`(C, Z, Y, X)`.
@@ -250,8 +253,7 @@ def binary_watershed(
     thres_small=10,
     rem_seed_thres=3,
 ):
-    r"""Convert binary foreground probability maps to instance masks via
-    watershed segmentation algorithm.
+    r"""Convert binary foreground probability maps to instance masks via watershed segmentation algorithm.
 
     Note:
         This function uses the `skimage.segmentation.watershed <https://github.com/scikit-image/scikit-image/blob/master/skimage/segmentation/_watershed.py#L89>`_
@@ -305,7 +307,6 @@ def clear_small_objects(image, threshold, is_file_path=False):
     Returns:
         array: The image with small objects removed
     """
-
     if is_file_path:
         image = imread(image)
 
@@ -366,6 +367,7 @@ def to_semantic(image, is_file_path=False):
 
 def volume_stats(volume_image):
     """Computes various statistics from instance labels and returns them in a dict.
+
     Currently provided :
 
         * "Volume": volume of each object
@@ -383,7 +385,6 @@ def volume_stats(volume_image):
     Returns:
         dict: Statistics described above
     """
-
     properties = regionprops(volume_image)
 
     # sphericity_va = []
@@ -435,9 +436,10 @@ def volume_stats(volume_image):
 
 
 class Watershed(InstanceMethod):
-    """Widget class for Watershed segmentation. Requires 4 parameters, see binary_watershed"""
+    """Widget class for Watershed segmentation. Requires 4 parameters, see binary_watershed."""
 
     def __init__(self, widget_parent=None):
+        """Creates a Watershed widget."""
         super().__init__(
             name=WATERSHED,
             function=binary_watershed,
@@ -471,6 +473,7 @@ class Watershed(InstanceMethod):
         self.counters[1].setValue(3)
 
     def run_method(self, image):
+        """Runs the method on the image with the parameters set in the widget."""
         return self.function(
             image,
             self.sliders[0].slider_value,
@@ -484,6 +487,7 @@ class ConnectedComponents(InstanceMethod):
     """Widget class for Connected Components instance segmentation. Requires 2 parameters, see binary_connected."""
 
     def __init__(self, widget_parent=None):
+        """Creates a ConnectedComponents widget."""
         super().__init__(
             name=CONNECTED_COMP,
             function=binary_connected,
@@ -506,15 +510,17 @@ class ConnectedComponents(InstanceMethod):
         self.counters[0].setValue(3)
 
     def run_method(self, image):
+        """Runs the method on the image with the parameters set in the widget."""
         return self.function(
             image, self.sliders[0].slider_value, self.counters[0].value()
         )
 
 
 class VoronoiOtsu(InstanceMethod):
-    """Widget class for Voronoi-Otsu labeling from pyclesperanto. Requires 2 parameter, see voronoi_otsu"""
+    """Widget class for Voronoi-Otsu labeling from pyclesperanto. Requires 2 parameter, see voronoi_otsu."""
 
     def __init__(self, widget_parent=None):
+        """Creates a VoronoiOtsu widget."""
         super().__init__(
             name=VORONOI_OTSU,
             function=voronoi_otsu,
@@ -561,13 +567,10 @@ class VoronoiOtsu(InstanceMethod):
 
 
 class InstanceWidgets(QWidget):
-    """
-    Base widget with several sliders, for use in instance segmentation parameters
-    """
+    """Base widget with several sliders, for use in instance segmentation parameters."""
 
     def __init__(self, parent=None):
-        """
-        Creates an InstanceWidgets widget
+        """Creates an InstanceWidgets widget.
 
         Args:
             parent: parent widget
@@ -622,8 +625,7 @@ class InstanceWidgets(QWidget):
                     widget.set_visibility(True)
 
     def run_method(self, volume):
-        """
-        Calls instance function with chosen parameters
+        """Calls instance function with chosen parameters.
 
         Args:
             volume: image data to run method on

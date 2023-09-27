@@ -1,5 +1,5 @@
-"""
-Implementation of a 3D Soft N-Cuts loss based on https://arxiv.org/abs/1711.08506 and https://ieeexplore.ieee.org/document/868688.
+"""Implementation of a 3D Soft N-Cuts loss based on https://arxiv.org/abs/1711.08506 and https://ieeexplore.ieee.org/document/868688.
+
 The implementation was adapted and approximated to reduce computational and memory cost.
 This faster version was proposed on https://github.com/fkodom/wnet-unsupervised-image-segmentation.
 """
@@ -40,6 +40,15 @@ class SoftNCutsLoss(nn.Module):
     def __init__(
         self, data_shape, device, intensity_sigma, spatial_sigma, radius=None
     ):
+        """Initialize the Soft N-Cuts loss.
+
+        Args:
+            data_shape (H, W, D): shape of the images as a tuple.
+            device (torch.device): device on which the loss is computed.
+            intensity_sigma (scalar): scale of the gaussian kernel of pixels brightness.
+            spatial_sigma (scalar): scale of the gaussian kernel of pixels spacial distance.
+            radius (scalar): radius of pixels for which we compute the weights
+        """
         super(SoftNCutsLoss, self).__init__()
         self.intensity_sigma = intensity_sigma
         self.spatial_sigma = spatial_sigma

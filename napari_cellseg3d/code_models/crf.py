@@ -1,7 +1,6 @@
-"""
-Implements the CRF post-processing step for the W-Net.
-Inspired by https://arxiv.org/abs/1606.00915 and https://arxiv.org/abs/1711.08506.
+"""Implements the CRF post-processing step for the W-Net.
 
+Inspired by https://arxiv.org/abs/1606.00915 and https://arxiv.org/abs/1711.08506.
 Also uses research from:
 Efficient Inference in Fully Connected CRFs with Gaussian Edge Potentials
 Philipp Krähenbühl and Vladlen Koltun
@@ -55,6 +54,7 @@ __credits__ = [
 
 
 def correct_shape_for_crf(image, desired_dims=4):
+    """Corrects the shape of the image to be compatible with the CRF post-processing step."""
     logger.debug(f"Correcting shape for CRF, desired_dims={desired_dims}")
     logger.debug(f"Image shape: {image.shape}")
     if len(image.shape) > desired_dims:
@@ -78,6 +78,9 @@ def crf_batch(images, probs, sa, sb, sg, w1, w2, n_iter=5):
         sa (float): alpha standard deviation, the scale of the spatial part of the appearance/bilateral kernel.
         sb (float): beta standard deviation, the scale of the color part of the appearance/bilateral kernel.
         sg (float): gamma standard deviation, the scale of the smoothness/gaussian kernel.
+        w1 (float): weight of the appearance/bilateral kernel.
+        w2 (float): weight of the smoothness/gaussian kernel.
+        n_iter (int, optional): Number of iterations for the CRF post-processing step. Defaults to 5.
 
     Returns:
         np.ndarray: Array of shape (N, K, H, W, D) containing the refined class probabilities for each pixel.
@@ -96,6 +99,7 @@ def crf_batch(images, probs, sa, sb, sg, w1, w2, n_iter=5):
 
 def crf(image, prob, sa, sb, sg, w1, w2, n_iter=5):
     """Implements the CRF post-processing step for the W-Net.
+
     Inspired by https://arxiv.org/abs/1210.5644, https://arxiv.org/abs/1606.00915 and https://arxiv.org/abs/1711.08506.
     Implemented using the pydensecrf library.
 
@@ -107,11 +111,11 @@ def crf(image, prob, sa, sb, sg, w1, w2, n_iter=5):
         sg (float): gamma standard deviation, the scale of the smoothness/gaussian kernel.
         w1 (float): weight of the appearance/bilateral kernel.
         w2 (float): weight of the smoothness/gaussian kernel.
+        n_iter (int, optional): Number of iterations for the CRF post-processing step. Defaults to 5.
 
     Returns:
         np.ndarray: Array of shape (K, H, W, D) containing the refined class probabilities for each pixel.
     """
-
     if not CRF_INSTALLED:
         return None
 
@@ -154,6 +158,14 @@ def crf(image, prob, sa, sb, sg, w1, w2, n_iter=5):
 
 
 def crf_with_config(image, prob, config: CRFConfig = None, log=logger.info):
+    """Implements the CRF post-processing step for the W-Net.
+
+    Args:
+        image (np.ndarray): Array of shape (C, H, W, D) containing the input image.
+        prob (np.ndarray): Array of shape (K, H, W, D) containing the predicted class probabilities for each pixel.
+        config (CRFConfig, optional): Configuration for the CRF post-processing step. Defaults to None.
+        log (function, optional): Logging function. Defaults to logger.info.
+    """
     if config is None:
         config = CRFConfig()
     if image.shape[-3:] != prob.shape[-3:]:
@@ -192,6 +204,14 @@ class CRFWorker(GeneratorWorker):
         config: CRFConfig = None,
         log=None,
     ):
+        """Initializes the CRFWorker.
+
+        Args:
+            images_list (list): List of images to process.
+            labels_list (list): List of labels to process.
+            config (CRFConfig, optional): Configuration for the CRF post-processing step. Defaults to None.
+            log (function, optional): Logging function. Defaults to None.
+        """
         super().__init__(self._run_crf_job)
 
         self.images = images_list

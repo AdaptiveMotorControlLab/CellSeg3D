@@ -88,11 +88,14 @@ a custom worker function was implemented.
 
 class TrainingWorkerBase(GeneratorWorker):
     """A basic worker abstract class, to run training jobs in.
-    Contains the minimal common elements required for training models."""
+
+    Contains the minimal common elements required for training models.
+    """
 
     wandb_config = config.WandBConfig()
 
     def __init__(self):
+        """Initializes the worker."""
         super().__init__(self.train)
         self._signals = LogSignal()
         self.log_signal = self._signals.log_signal
@@ -107,11 +110,12 @@ class TrainingWorkerBase(GeneratorWorker):
         ################################
 
     def set_download_log(self, widget):
-        """Sets the log widget for the downloader to output to"""
+        """Sets the log widget for the downloader to output to."""
         self.downloader.log_widget = widget
 
     def log(self, text):
-        """Sends a Qt signal that the provided text should be logged
+        """Sends a Qt signal that the provided text should be logged.
+
         Goes in a Log object, defined in :py:mod:`napari_cellseg3d.interface
         Sends a signal to the main thread to log the text.
         Signal is defined in napari_cellseg3d.workers_utils.LogSignal.
@@ -122,11 +126,11 @@ class TrainingWorkerBase(GeneratorWorker):
         self.log_signal.emit(text)
 
     def warn(self, warning):
-        """Sends a warning to main thread"""
+        """Sends a warning to main thread."""
         self.warn_signal.emit(warning)
 
     def raise_error(self, exception, msg):
-        """Sends an error to main thread"""
+        """Sends an error to main thread."""
         logger.error(msg, exc_info=True)
         logger.error(exception, exc_info=True)
         self.error_signal.emit(exception, msg)
@@ -135,18 +139,19 @@ class TrainingWorkerBase(GeneratorWorker):
 
     @abstractmethod
     def log_parameters(self):
-        """Logs the parameters of the training"""
+        """Logs the parameters of the training."""
         raise NotImplementedError
 
     @abstractmethod
     def train(self):
-        """Starts a training job"""
+        """Starts a training job."""
         raise NotImplementedError
 
 
 class WNetTrainingWorker(TrainingWorkerBase):
     """A custom worker to run WNet (unsupervised) training jobs in.
-    Inherits from :py:class:`napari.qt.threading.GeneratorWorker` via :py:class:`TrainingWorkerBase`
+
+    Inherits from :py:class:`napari.qt.threading.GeneratorWorker` via :py:class:`TrainingWorkerBase`.
     """
 
     # TODO : add wandb parameters
@@ -155,6 +160,11 @@ class WNetTrainingWorker(TrainingWorkerBase):
         self,
         worker_config: config.WNetTrainingWorkerConfig,
     ):
+        """Initializes the worker.
+
+        Args:
+            worker_config (config.WNetTrainingWorkerConfig): The configuration object
+        """
         super().__init__()
         self.config = worker_config
 
@@ -174,15 +184,14 @@ class WNetTrainingWorker(TrainingWorkerBase):
         self.data_shape = None
 
     def get_patch_dataset(self, train_transforms):
-        """Creates a Dataset from the original data using the tifffile library
+        """Creates a Dataset from the original data using the tifffile library.
 
         Args:
-            train_data_dict (dict): dict with the Paths to the directory containing the data
+            train_transforms (monai.transforms.Compose): The transforms to apply to the data
 
         Returns:
             (tuple): A tuple containing the shape of the data and the dataset
         """
-
         patch_func = Compose(
             [
                 LoadImaged(keys=["image"], image_only=True),
@@ -216,6 +225,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
         return self.config.sample_size, dataset
 
     def get_dataset_eval(self, eval_dataset_dict):
+        """Creates a Dataset applying some transforms/augmentation on the data using the MONAI library."""
         eval_transforms = Compose(
             [
                 LoadImaged(keys=["image", "label"]),
@@ -248,10 +258,10 @@ class WNetTrainingWorker(TrainingWorkerBase):
         )
 
     def get_dataset(self, train_transforms):
-        """Creates a Dataset applying some transforms/augmentation on the data using the MONAI library
+        """Creates a Dataset applying some transforms/augmentation on the data using the MONAI library.
 
         Args:
-            config (WNetTrainingWorkerConfig): The configuration object
+            train_transforms (monai.transforms.Compose): The transforms to apply to the data
 
         Returns:
             (tuple): A tuple containing the shape of the data and the dataset
@@ -339,6 +349,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
         return self.dataloader, self.eval_dataloader, self.data_shape
 
     def log_parameters(self):
+        """Logs the parameters of the training."""
         self.log("*" * 20)
         self.log("-- Parameters --")
         self.log(f"Device: {self.config.device}")
@@ -388,6 +399,15 @@ class WNetTrainingWorker(TrainingWorkerBase):
     def train(
         self, provided_model=None, provided_optimizer=None, provided_loss=None
     ):
+        """Main training function.
+
+        Note : args are mainly used for testing purposes. Model is otherwise initialized in the function.
+
+        Args:
+            provided_model (WNet, optional): A model to use for training. Defaults to None.
+            provided_optimizer (torch.optim.Optimizer, optional): An optimizer to use for training. Defaults to None.
+            provided_loss (torch.nn.Module, optional): A loss function to use for training. Defaults to None.
+        """
         try:
             if self.config is None:
                 self.config = config.WNetTrainingWorkerConfig()
@@ -768,6 +788,15 @@ class WNetTrainingWorker(TrainingWorkerBase):
             raise e
 
     def eval(self, model, epoch) -> TrainingReport:
+        """Evaluates the model on the validation set.
+
+        Args:
+            model (WNet): The model to evaluate
+            epoch (int): The current epoch
+
+        Returns:
+            TrainingReport: A training report containing the results of the evaluation. See :py:class:`napari_cellseg3d.workers_utils.TrainingReport`
+        """
         with torch.no_grad():
             device = self.config.device
             for _k, val_data in enumerate(self.eval_dataloader):
@@ -893,16 +922,17 @@ class WNetTrainingWorker(TrainingWorkerBase):
 
 class SupervisedTrainingWorker(TrainingWorkerBase):
     """A custom worker to run supervised training jobs in.
-    Inherits from :py:class:`napari.qt.threading.GeneratorWorker` via :py:class:`TrainingWorkerBase`
+
+    Inherits from :py:class:`napari.qt.threading.GeneratorWorker` via :py:class:`TrainingWorkerBase`.
     """
 
     def __init__(
         self,
         worker_config: config.SupervisedTrainingWorkerConfig,
     ):
-        """Initializes a worker for inference with the arguments needed by the :py:func:`~train` function. Note: See :py:func:`~train`
+        """Initializes a worker for inference with the arguments needed by the :py:func:`~train` function. Note: See :py:func:`~train`.
 
-        Args:
+        Config provides the following attributes:
             * device : device to train on, cuda or cpu
 
             * model_dict : dict containing the model's "name" and "class"
@@ -934,7 +964,6 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             * do_augmentation : whether to perform data augmentation or not
 
             * deterministic : dict with "use deterministic" : bool, whether to use deterministic training, "seed": seed for RNG
-
 
         """
         super().__init__()  # worker function is self.train in parent class
@@ -1023,9 +1052,10 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
         provided_loss=None,
         provided_scheduler=None,
     ):
-        """Trains the PyTorch model for the given number of epochs, with the selected model and data,
-        using the chosen batch size, validation interval, loss function, and number of samples.
-        Will perform validation once every :py:obj:`val_interval` and save results if the mean dice is better
+        """Trains the PyTorch model for the given number of epochs.
+
+        Uses the selected model and data, using the chosen batch size, validation interval, loss function, and number of samples.
+        Will perform validation once every :py:obj:`val_interval` and save results if the mean dice is better.
 
         Requires:
 
@@ -1061,7 +1091,6 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
 
         * deterministic : dict with "use deterministic" : bool, whether to use deterministic training, "seed": seed for RNG
         """
-
         #########################
         # error_log = open(results_path +"/error_log.log" % multiprocessing.current_process().name, 'x')
         # faulthandler.enable(file=error_log, all_threads=True)
@@ -1177,6 +1206,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             )
 
             def get_patch_loader_func(num_samples):
+                """Returns a function that will be used to extract patches from the images."""
                 return Compose(
                     [
                         LoadImaged(keys=["image", "label"]),
