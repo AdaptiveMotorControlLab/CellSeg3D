@@ -1,9 +1,19 @@
+"""Wrapper for the W-Net model, with the decoder weights removed.
+
+..important:: Used for inference only. For training the base class is used.
+"""
+
 # local
 from napari_cellseg3d.code_models.models.wnet.model import WNet_encoder
 from napari_cellseg3d.utils import remap_image
 
 
 class WNet_(WNet_encoder):
+    """W-Net wrapper for napari_cellseg3d.
+
+    ..important:: Used for inference only, therefore only the encoder is used. For training the base class is used.
+    """
+
     use_default_training = False
     weights_file = "wnet_latest.pth"
 
@@ -14,6 +24,13 @@ class WNet_(WNet_encoder):
         # num_classes=2,
         **kwargs,
     ):
+        """Create a W-Net model.
+
+        Args:
+            in_channels (int): number of input channels
+            out_channels (int): number of output channels.
+            **kwargs: additional arguments to WNet_encoder.
+        """
         super().__init__(
             in_channels=in_channels,
             out_channels=out_channels,

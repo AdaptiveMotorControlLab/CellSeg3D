@@ -1,3 +1,4 @@
+"""Tiny plugin showing link to documentation and about page."""
 import pathlib
 from typing import TYPE_CHECKING
 
@@ -14,7 +15,10 @@ from napari_cellseg3d import interface as ui
 
 
 class Helper(QWidget, metaclass=ui.QWidgetSingleton):
+    """Tiny plugin showing link to documentation and about page."""
+
     def __init__(self, viewer: "napari.viewer.Viewer"):
+        """Creates a widget with links to documentation and about page."""
         super().__init__()
 
         self.help_url = "https://adaptivemotorcontrollab.github.io/CellSeg3d/"

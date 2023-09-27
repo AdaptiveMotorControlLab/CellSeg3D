@@ -1,3 +1,4 @@
+"""Contains the workers used to train the models."""
 import platform
 import time
 from abc import abstractmethod

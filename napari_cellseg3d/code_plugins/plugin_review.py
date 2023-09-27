@@ -1,3 +1,4 @@
+"""Review plugin for 3D labeling of volumes."""
 from pathlib import Path
 
 import matplotlib.pyplot as plt

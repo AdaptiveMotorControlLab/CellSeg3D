@@ -1,3 +1,4 @@
+"""CRF plugin for napari_cellseg3d."""
 import contextlib
 from functools import partial
 from pathlib import Path

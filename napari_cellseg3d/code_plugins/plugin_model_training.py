@@ -1,3 +1,5 @@
+"""Training plugin for napari_cellseg3d."""
+
 import shutil
 import warnings
 from functools import partial

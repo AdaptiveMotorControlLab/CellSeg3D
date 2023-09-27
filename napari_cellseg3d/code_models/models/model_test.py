@@ -1,12 +1,16 @@
+"""Model for testing purposes."""
 import torch
 from torch import nn
 
 
 class TestModel(nn.Module):
+    """For tests only."""
+
     use_default_training = True
     weights_file = "test.pth"
 
     def __init__(self, **kwargs):
+        """Create a TestModel model."""
         super().__init__()
         self.linear = nn.Linear(8, 8)
 

@@ -1,3 +1,4 @@
+"""Basic napari plugin framework for inference and training."""
 from pathlib import Path
 from typing import TYPE_CHECKING
 

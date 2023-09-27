@@ -1,3 +1,4 @@
+"""Several worker-related utilities for inference and training."""
 import typing as t
 from dataclasses import dataclass
 from pathlib import Path

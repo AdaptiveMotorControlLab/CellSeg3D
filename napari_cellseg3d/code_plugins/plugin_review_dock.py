@@ -1,3 +1,4 @@
+"""Widget opened when a new Review session is started."""
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING

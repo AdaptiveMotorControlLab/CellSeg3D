@@ -1,7 +1,13 @@
+"""This is a template for a model class. It is not used in the plugin, but is here to show how to implement a model class.
+
+Please note that custom model implementations are not fully supported out of the box yet, but might be in the future.
+"""
 from abc import ABC, abstractmethod
 
 
 class ModelTemplate_(ABC):
+    """Template for a model class. This is not used in the plugin, but is here to show how to implement a model class."""
+
     use_default_training = True  # not needed for now, will serve for WNet training if added to the plugin
     weights_file = (
         "model_template.pth"  # specify the file name of the weights file only

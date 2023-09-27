@@ -1,3 +1,4 @@
+"""SwinUNetR wrapper for napari_cellseg3d."""
 from monai.networks.nets import SwinUNETR
 
 from napari_cellseg3d.utils import LOGGER
@@ -6,6 +7,8 @@ logger = LOGGER
 
 
 class SwinUNETR_(SwinUNETR):
+    """SwinUNETR wrapper for napari_cellseg3d."""
+
     use_default_training = True
     weights_file = "SwinUNetR_latest.pth"
 
@@ -17,6 +20,15 @@ class SwinUNETR_(SwinUNETR):
         use_checkpoint=True,
         **kwargs,
     ):
+        """Create a SwinUNetR model.
+
+        Args:
+        in_channels (int): number of input channels
+        out_channels (int): number of output channels
+        input_img_size (tuple): input image size
+        use_checkpoint (bool): whether to use checkpointing during training.
+        **kwargs: additional arguments to SwinUNETR.
+        """
         try:
             super().__init__(
                 input_img_size,

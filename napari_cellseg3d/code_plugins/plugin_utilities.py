@@ -1,3 +1,4 @@
+"""Central plugin for all utilities."""
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -36,7 +37,10 @@ UTILITIES_WIDGETS = {
 
 
 class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
+    """Central plugin for all utilities."""
+
     def __init__(self, viewer: "napari.viewer.Viewer"):
+        """Creates a widget with all utilities."""
         super().__init__()
         self._viewer = viewer
         self.current_widget = None

@@ -1,3 +1,4 @@
+"""Contains the :py:class:`~InferenceWorker` class, which is a custom worker to run inference jobs in."""
 import platform
 from pathlib import Path
 

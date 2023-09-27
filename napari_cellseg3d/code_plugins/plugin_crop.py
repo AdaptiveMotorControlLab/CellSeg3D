@@ -1,3 +1,4 @@
+"""Crop utility plugin for napari_cellseg3d."""
 from math import floor
 from pathlib import Path
 

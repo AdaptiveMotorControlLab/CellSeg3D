@@ -1,3 +1,4 @@
+"""Instance segmentation methods for 3D images."""
 import abc
 from dataclasses import dataclass
 from functools import partial

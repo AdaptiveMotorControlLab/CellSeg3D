@@ -1,3 +1,4 @@
+"""Several image processing utilities."""
 from pathlib import Path
 
 import napari

@@ -1,13 +1,24 @@
+"""SegResNet wrapper for napari_cellseg3d."""
 from monai.networks.nets import SegResNetVAE
 
 
 class SegResNet_(SegResNetVAE):
+    """SegResNet_ wrapper for napari_cellseg3d."""
+
     use_default_training = True
     weights_file = "SegResNet_latest.pth"
 
     def __init__(
         self, input_img_size, out_channels=1, dropout_prob=0.3, **kwargs
     ):
+        """Create a SegResNet model.
+
+        Args:
+        input_img_size (tuple): input image size
+        out_channels (int): number of output channels
+        dropout_prob (float): dropout probability.
+        **kwargs: additional arguments to SegResNetVAE.
+        """
         super().__init__(
             input_img_size,
             out_channels=out_channels,

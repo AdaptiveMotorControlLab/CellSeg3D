@@ -1,3 +1,4 @@
+"""Base classes for napari_cellseg3d plugins."""
 from functools import partial
 from pathlib import Path
 

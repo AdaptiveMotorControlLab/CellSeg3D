@@ -1,3 +1,4 @@
+"""Inference plugin for napari_cellseg3d."""
 from functools import partial
 from typing import TYPE_CHECKING
 
