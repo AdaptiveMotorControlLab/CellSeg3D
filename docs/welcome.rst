@@ -91,8 +91,8 @@ To use the plugin, please run:
 Then go into **Plugins > napari-cellseg3d**, and choose the tool to use:
 
 - **Review**: Review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring
-- **Inference**: Use pre-trained segmentation algorithms on volumes to automatically label cells
 - **Training**:  Train segmentation algorithms from labeled volumes
+- **Inference**: Use pre-trained segmentation algorithms on volumes to automatically label cells
 - **Utilities**: Use several utilities, e.g. to crop your volumes and labels, convert semantic labels to instance, and more
 - **Help/About...** : Quick access to version info, Github pages and documentation
 
@@ -107,9 +107,9 @@ Documentation contents
 From this page you can access the guides on the several modules available for your tasks, such as :
 
 * Main modules :
+    * :ref:`review_module_guide`
     * :ref:`training_module_guide`
     * :ref:`inference_module_guide`
-    * :ref:`loader_module_guide`
 * Utilities :
     * :ref:`cropping_module_guide`
     * :ref:`utils_module_guide`

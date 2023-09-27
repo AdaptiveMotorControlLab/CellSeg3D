@@ -1,4 +1,4 @@
-.. _loader_module_guide:
+.. _review_module_guide:
 
 Review
 =================================
