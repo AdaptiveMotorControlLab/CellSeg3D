@@ -158,11 +158,13 @@ The training module can be used with the `Weights and Biases <https://wandb.ai/s
 To use wandb, you will need to create an account on their website and install the wandb python package.
 
 * Install :
+
 .. code-block::
 
     pip install wandb
 
 * Alternatively, you can install it as an optional requirement with the following command :
+
 .. code-block::
 
     pip install napari-cellseg3d[wandb]
