@@ -73,12 +73,13 @@ Interface and functionalities
 
 * **Instance segmentation** :
 
-  | You can convert the semantic segmentation into instance labels by using either the Voronoi-Otsu, `Watershed`_ or `Connected Components`_ method, as detailed in :ref:`utils_module_guide`.
+  | You can convert the semantic segmentation into instance labels by using either the `Voronoi-Otsu`_, `Watershed`_ or `Connected Components`_ method, as detailed in :ref:`utils_module_guide`.
   | Instance labels will be saved (and shown if applicable) separately from other results.
 
 
 .. _watershed: https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_watershed.html
 .. _connected components: https://scikit-image.org/docs/dev/api/skimage.measure.html#skimage.measure.label
+.. _Voronoi-Otsu: https://haesleinhuepf.github.io/BioImageAnalysisNotebooks/20_image_segmentation/11_voronoi_otsu_labeling.html
 
 
 * **Computing objects statistics** :
