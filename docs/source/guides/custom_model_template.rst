@@ -1,6 +1,6 @@
 .. _custom_model_guide:
 
-Advanced : Declaring a custom model
+Advanced : Custom models
 =============================================
 
 .. warning::

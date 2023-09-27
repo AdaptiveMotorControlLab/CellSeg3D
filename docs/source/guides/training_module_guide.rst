@@ -1,6 +1,6 @@
 .. _training_module_guide:
 
-Training module guide
+Training
 ----------------------------------------------
 
 

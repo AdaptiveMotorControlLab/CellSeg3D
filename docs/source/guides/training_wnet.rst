@@ -1,6 +1,6 @@
 .. _training_wnet:
 
-Advanced : WNet model training
+Advanced : WNet training
 ===============================
 
 This plugin provides a reimplemented, custom version of the WNet model from `WNet, A Deep Model for Fully Unsupervised Image Segmentation`_.

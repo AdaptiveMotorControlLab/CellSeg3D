@@ -1,6 +1,6 @@
 .. _loader_module_guide:
 
-Review module guide
+Review
 =================================
 
 This module allows you to review your labels, from predictions or manual labeling,
@@ -35,9 +35,10 @@ Launching the review process
 * Start :
     Once you are ready, you can press **Start reviewing** to start the review process.
 
-.. note::
-    You can find the csv file containing the annotation status **in the same folder as the labels**
-
+.. warning::
+    Starting a review session opens a new window and closes the current one.
+    Make sure you have saved your work before starting a review session.
+    This behaviour may change in the future.
 
 Interface & functionalities
 ---------------------------------------------------------------
@@ -46,14 +47,17 @@ Interface & functionalities
 
 Once you have launched the review process, you will have access to the following functionalities:
 
-* A dialog to choose the folder in which you want to save the verified and/or corrected annotations, and a button to save the labels. They will be saved based on the file format you provided.
+.. hlist::
+   :columns: 1
 
-* A button to update the status of the slice in the csv file (in this case : checked/not checked)
-
-* A plot with three projections in the x-y, y-z and x-z planes, to allow the reviewer to better see the surroundings of the label and properly establish whether the image should be labeled or not. You can **shift-click** anywhere on the image or label layer to update the plot to the location being reviewed.
+   * A dialog to choose the folder in which you want to save the verified and/or corrected annotations, and a button to save the labels. They will be saved based on the file format you provided.
+   * A button to update the status of the slice in the csv file (in this case : checked/not checked)
+   * A plot with three projections in the x-y, y-z and x-z planes, to allow the reviewer to better see the surroundings of the label and properly establish whether the image should be labeled or not. You can **shift-click** anywhere on the image or label layer to update the plot to the location being reviewed.
 
 Using these, you can check your labels, correct them, save them and keep track of which slices have been checked or not.
 
+.. note::
+    You can find the csv file containing the annotation status **in the same folder as the labels**
 
 Source code
 -------------------------------------------------

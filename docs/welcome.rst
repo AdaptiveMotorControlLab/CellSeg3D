@@ -96,6 +96,10 @@ Then go into **Plugins > napari-cellseg3d**, and choose the tool to use:
 - **Utilities**: Use several utilities, e.g. to crop your volumes and labels, convert semantic labels to instance, and more
 - **Help/About...** : Quick access to version info, Github pages and documentation
 
+.. hint::
+    Many buttons have tooltips to help you understand what they do.
+    Simply Hover over them to see the tooltip.
+
 See below for links to detailed guides regarding the usage of the modules.
 
 Documentation contents

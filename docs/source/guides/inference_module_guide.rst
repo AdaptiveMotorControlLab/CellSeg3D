@@ -1,6 +1,6 @@
 .. _inference_module_guide:
 
-Inference module guide
+Inference
 =================================
 
 This module allows you to use pre-trained segmentation algorithms (written in Pytorch) on 3D volumes

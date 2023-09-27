@@ -1,6 +1,6 @@
 .. _utils_module_guide:
 
-Label conversion utility guide
+Other utilities
 ==================================
 
 This utility will let you convert labels to various different formats.
