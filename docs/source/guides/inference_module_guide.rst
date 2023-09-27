@@ -83,16 +83,16 @@ Interface and functionalities
 
 * **Computing objects statistics** :
 
-    You can choose to compute various stats from the labels and save them to a .csv for later use.
+You can choose to compute various stats from the labels and save them to a .csv for later use.
 
-    This includes, for each object :
+This includes, for each object :
 
     * Object volume (pixels)
     * :math:`X,Y,Z` coordinates of the centroid
     * Sphericity
 
 
-    And more general statistics :
+And more general statistics :
 
     * Image size
     * Total image volume (pixels)
@@ -101,7 +101,8 @@ Interface and functionalities
     * The number of labeled objects
 
 
-    In the ``notebooks`` folder you can find an example of plotting cell statistics using the result csv.
+In the ``notebooks`` folder you will find an example of plotting cell statistics using the volume statistics computed by the inference module.
+Simply load the .csv file in a notebook and use the provided functions to plot the statistics you want.
 
 When you are done choosing your parameters, you can press the **Start** button to begin the inference process.
 Once it has finished, results will be saved then displayed in napari; each output will be paired with its original.
@@ -117,7 +118,6 @@ On the left side, a progress bar and a log will keep you informed on the process
 
 
 .. hint::
-    | **Results** will be displayed using the **twilight shifted** colormap if raw or **turbo** if thresholding has been applied, whereas the **original** image will be shown in the **inferno** colormap.
     | Feel free to change the **colormap** or **contrast** when viewing results to ensure you can properly see the labels.
     | You'll most likely want to use **3D view** and **grid mode** in napari when checking results more broadly.
 
@@ -131,13 +131,15 @@ WNet
 
 The WNet model, from the paper `WNet, A Deep Model for Fully Unsupervised Image Segmentation`_, is a fully unsupervised model that can be used to segment images without any labels.
 It clusters pixels based on brightness, and can be used to segment cells in a variety of modalities.
-Its use and available options are similar to the above models, with a few differences :
+Its use and available options are similar to the above models, with a few differences.
 
-.. note::
-    | Our provided, pre-trained model should use an input size of 64x64x64. As such, window inference is always enabled
-    | and set to 64. If you want to use a different size, you will have to train your own model using the provided notebook.
+.. important::
+    Our provided, pre-trained model should use an input size of 64x64x64. As such, window inference is always enabled
+    and set to 64. If you want to use a different size, you will have to train your own model using the provided notebook.
 
-All it requires are 3D .tif images (you can also load a 2D stack as 3D via napari).
+All it requires are 3D .tif images, as before (you can also load a 2D stack as 3D via napari).
+For the best inference performance, the model should be retrained on images of the same modality as the ones you want to segment.
+Please see :ref:`training_wnet` for more details on how to train your own model.
 
 Source code
 --------------------------------

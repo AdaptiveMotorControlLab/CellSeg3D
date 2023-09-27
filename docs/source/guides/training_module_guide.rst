@@ -3,6 +3,7 @@
 Training module guide
 ----------------------------------------------
 
+
 Supervised models
 ==============================================
 
@@ -123,7 +124,7 @@ Once you are ready, press the Start button to begin training. The module will au
 
 .. note::
     You can stop the training at any time by clicking on the start button again.
-    **The training will stop after the next batch has been processed, and will try to save the model. Please note that results might be incomplete if you fstop the training this way.**
+    **The training will stop after the next batch has been processed, and will try to save the model. Please note that results might be incomplete if you stop the training this way.**
 
 After a minimum of two validations steps have been performed (which depends on the interval you set),
 the training loss values and validation metrics will be plotted
@@ -145,6 +146,36 @@ Unsupervised model
 The training of our custom WNet implementation is now available as part of the Training module.
 
 Please see the :ref:`training_wnet` section for more information.
+
+WandB integration (optional)
+==============================================
+
+.. important::
+    The WandB integration is currently only available for WNet training.
+    Other models may be supported in the future.
+
+The training module can be used with the `Weights and Biases <https://wandb.ai/site>`_ platform to track your training metrics and results.
+To use wandb, you will need to create an account on their website and install the wandb python package.
+
+* Install :
+.. code-block::
+
+    pip install wandb
+
+* Alternatively, you can install it as an optional requirement with the following command :
+.. code-block::
+
+    pip install napari-cellseg3d[wandb]
+
+* Connect your account :
+
+.. code-block::
+
+    wandb login
+
+Your API key will be asked. You can find it on your account page on the website.
+Once this is done, your WNet runs will be automatically logged to WandB.
+You can find them under **CellSeg3D WNet** on your project page.
 
 Source code
 ==============================================
