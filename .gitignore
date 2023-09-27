@@ -102,7 +102,7 @@ venv/
 #dataset, weights, old logos, requirements
 /napari_cellseg3d/code_models/models/dataset/
 /napari_cellseg3d/code_models/models/saved_weights/
-/docs/res/logo/old_logo/
+/docs/source/logo/old_logo/
 /docs/source/code/_autosummary/
 /reqs/
 /loss_plots/
@@ -121,3 +121,7 @@ notebooks/instance_test.ipynb
 !napari_cellseg3d/_tests/res/wnet_test/lab/*.tif
 !napari_cellseg3d/_tests/res/wnet_test/vol/*.tif
 cov.syspath.txt
+
+#include docs images
+!docs/source/logo/*
+!docs/source/images/*
