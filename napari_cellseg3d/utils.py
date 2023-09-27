@@ -126,6 +126,10 @@ class Singleton(type):
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
+        """Call method for Singleton class.
+
+        Ensures that only one instance of the class is created at a time, and that it is always the same instance that is returned.
+        """
         if cls not in cls._instances:
             cls._instances[cls] = super().__call__(*args, **kwargs)
         return cls._instances[cls]
@@ -144,6 +148,7 @@ def normalize_x(image):
 
 
 def mkdir_from_str(path: str, exist_ok=True, parents=True):
+    """Creates a directory from a string path."""
     Path(path).resolve().mkdir(exist_ok=exist_ok, parents=parents)
 
 
@@ -288,6 +293,7 @@ def remap_image(
 
 
 def resize(image, zoom_factors):
+    """Resizes an image using the zoom_factors."""
     isotropic_image = Zoom(
         zoom_factors,
         keep_size=False,
@@ -298,6 +304,7 @@ def resize(image, zoom_factors):
 
 
 def align_array_sizes(array_shape, target_shape):
+    """Aligns the sizes of two arrays by adding zeros to the smaller one."""
     index_differences = []
     for i in range(len(target_shape)):
         if target_shape[i] != array_shape[i]:
@@ -500,6 +507,7 @@ def load_images(dir_or_path, filetype="", as_folder: bool = False):
 
     * If ``as_folder`` is **False**, will load the path as a single 3D **.tif** image.
     * If **True**, it will try to load a folder as stack of images. In this case ``filetype`` must be specified.
+
     If **True** :
 
         * For ``filetype == ".tif"`` : loads all tif files in the folder as a 3D dataset.

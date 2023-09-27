@@ -116,7 +116,7 @@ class TrainingWorkerBase(GeneratorWorker):
     def log(self, text):
         """Sends a Qt signal that the provided text should be logged.
 
-        Goes in a Log object, defined in :py:mod:`napari_cellseg3d.interface
+        Goes in a Log object, defined in :py:mod:`napari_cellseg3d.interface`.
         Sends a signal to the main thread to log the text.
         Signal is defined in napari_cellseg3d.workers_utils.LogSignal.
 
@@ -981,7 +981,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
         }
         self.loss_function = None
 
-    def set_loss_from_config(self):
+    def _set_loss_from_config(self):
         try:
             self.loss_function = self.loss_dict[self.config.loss_function]
         except KeyError as e:
@@ -989,6 +989,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
         return self.loss_function
 
     def log_parameters(self):
+        """Logs the parameters of the training."""
         self.log("-" * 20)
         self.log("Parameters summary :\n")
 
@@ -1403,7 +1404,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             self.log_parameters()
 
             # device = torch.device(self.config.device)
-            self.set_loss_from_config()
+            self._set_loss_from_config()
             if provided_loss is not None:
                 self.loss_function = provided_loss
 
