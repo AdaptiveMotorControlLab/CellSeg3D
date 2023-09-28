@@ -1,6 +1,6 @@
 """Wrapper for the W-Net model, with the decoder weights removed.
 
-..important:: Used for inference only. For training the base class is used.
+.. important:: Used for inference only. For training the base class is used.
 """
 
 # local

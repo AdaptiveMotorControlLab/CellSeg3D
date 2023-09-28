@@ -43,15 +43,18 @@ from napari_cellseg3d.code_models.workers_utils import (
 logger = utils.LOGGER
 # experimental code to auto-remove erroneously over-labeled empty regions from instance segmentation
 EXPERIMENTAL_AUTO_DISCARD_EMPTY_REGIONS = False
+"""Whether to automatically discard erroneously over-labeled empty regions from semantic segmentation or not."""
 EXPERIMENTAL_AUTO_DISCARD_FRACTION_THRESHOLD = 0.9
-EXPERIMENTAL_AUTO_DISCARD_VALUE = 0.2
+"""The fraction of pixels above which a region is considered wrongly labeled."""
+EXPERIMENTAL_AUTO_DISCARD_VALUE = 0.35
+"""The value above which a pixel is considered to contribute to over-labeling."""
 
-"""
-Writing something to log messages from outside the main thread needs specific care,
-Following the instructions in the guides below to have a worker with custom signals,
-a custom worker function was implemented.
-"""
 
+# Writing something to log messages from outside the main thread needs specific care,
+# Following the instructions in the guides below to have a worker with custom signals,
+# a custom worker function was implemented.
+
+# References:
 # https://python-forum.io/thread-31349.html
 # https://www.pythoncentral.io/pysidepyqt-tutorial-creating-your-own-signals-and-slots/
 # https://napari-staging-site.github.io/guides/stable/threading.html
@@ -658,6 +661,7 @@ class InferenceWorker(GeneratorWorker):
             return None
 
     def stats_csv(self, instance_labels):
+        """Computes the stats of the instance labels."""
         try:
             if self.config.compute_stats:
                 if len(instance_labels.shape) == 4:

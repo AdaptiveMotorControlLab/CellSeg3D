@@ -447,6 +447,7 @@ class DropdownMenu(QComboBox):
             self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
     def get_items(self):
+        """Returns the items in the dropdown menu."""
         return [self.itemText(i) for i in range(self.count())]
 
 
@@ -548,6 +549,7 @@ class Slider(QSlider):
         self._build_container()
 
     def set_visibility(self, visible: bool):
+        """Sets the visibility of the slider and its label."""
         self.container.setVisible(visible)
         self.setVisible(visible)
         self.label.setVisible(visible)
@@ -600,10 +602,12 @@ class Slider(QSlider):
 
     @property
     def tooltips(self):
+        """Get the tooltip of the slider."""
         return self.toolTip()
 
     @tooltips.setter
     def tooltips(self, tooltip: str):
+        """Set the tooltip of the slider and label."""
         self.setToolTip(tooltip)
         self._value_label.setToolTip(tooltip)
 
@@ -619,9 +623,8 @@ class Slider(QSlider):
         try:
             return self.value() / self._divide_factor
         except ZeroDivisionError as e:
-            raise ZeroDivisionError from (
-                f"Divide factor cannot be 0 for Slider : {e}"
-            )
+            logger.error(f"Divide factor cannot be 0 for Slider : {e}")
+            raise ZeroDivisionError from (e)
 
     @property
     def value_text(self):
@@ -848,22 +851,26 @@ class LayerSelecter(ContainerWidget):
             self.layer_list.removeItem(index)
 
     def set_layer_type(self, layer_type):  # no @property due to Qt constraint
+        """Sets the layer type to be selected in the dropdown menu."""
         self.layer_type = layer_type
         [self.layer_list.removeItem(i) for i in range(self.layer_list.count())]
         self._check_for_layers()
 
     def layer(self):
+        """Returns the layer selected in the dropdown menu."""
         try:
             return self._viewer.layers[self.layer_name()]
         except ValueError:
             return None
 
     def layer_name(self):
+        """Returns the name of the layer selected in the dropdown menu."""
         return self.layer_list.currentText()
 
     def layer_data(self):
+        """Returns the data of the layer selected in the dropdown menu."""
         if self.layer_list.count() < 1:
-            logger.warning("Please select a valid layer !")
+            logger.debug("Layer list is empty")
             return None
 
         return self.layer().data
@@ -925,10 +932,12 @@ class FilePathWidget(QWidget):  # TODO include load as folder
 
     @property
     def tooltips(self):
+        """Get the tooltip of the text field and button."""
         return self._text_field.toolTip()
 
     @tooltips.setter
     def tooltips(self, tooltip: str):
+        """Set the tooltip of the text field and button."""
         self._text_field.setToolTip(tooltip)
         self._button.setToolTip(tooltip)
 
@@ -964,6 +973,7 @@ class FilePathWidget(QWidget):  # TODO include load as folder
 
     @property
     def required(self):
+        """Get whether the field is required or not."""
         return self._required
 
     @required.setter
@@ -1155,6 +1165,7 @@ class DoubleIncrementCounter(QDoubleSpinBox):
 
     @property
     def tooltips(self):
+        """Gets the tooltip of both the DoubleIncrementCounter and its label."""
         return self.toolTip()
 
     @tooltips.setter
@@ -1166,6 +1177,7 @@ class DoubleIncrementCounter(QDoubleSpinBox):
 
     @property
     def precision(self):
+        """Get current precision of the box."""
         return self.decimals()
 
     @precision.setter
@@ -1184,11 +1196,13 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         parent: Optional[QWidget] = None,
         fixed: Optional[bool] = True,
     ):
+        """Creates n increment counters with the specified parameters."""
         return make_n_spinboxes(
             cls, n, lower, upper, default, step, parent, fixed
         )
 
     def set_visibility(self, visible: bool):
+        """Sets the visibility of the counter and its label."""
         self.setVisible(visible)
         self.label.setVisible(visible)
 
@@ -1228,10 +1242,12 @@ class IntIncrementCounter(QSpinBox):
 
     @property
     def tooltips(self):
+        """Gets the tooltip of both the IntIncrementCounter and its label."""
         return self.toolTip()
 
     @tooltips.setter
     def tooltips(self, tooltip):
+        """Sets the tooltip of both the IntIncrementCounter and its label."""
         self.setToolTip(tooltip)
         self.label.setToolTip(tooltip)
 
@@ -1246,6 +1262,7 @@ class IntIncrementCounter(QSpinBox):
         parent: Optional[QWidget] = None,
         fixed: Optional[bool] = True,
     ):
+        """Creates n increment counters with the specified parameters."""
         return make_n_spinboxes(
             cls, n, lower, upper, default, step, parent, fixed
         )
@@ -1281,6 +1298,8 @@ def open_file_dialog(
         load_as_folder (bool): Whether to open a folder or a single file. If True, will allow opening folder as a single file (2D stack interpreted as 3D)
         file_extension (str): The description and file extension to load (format : ``"Description (*.example1 *.example2)"``). Default ``"Image file (*.tif *.tiff)"``
 
+    Returns:
+        str : chosen file path
     """
     default_path = utils.parse_default_path(possible_paths)
 
@@ -1293,6 +1312,16 @@ def open_folder_dialog(
     widget,
     possible_paths: list = (),
 ):
+    """Opens a window to choose a directory using QFileDialog.
+
+    Args:
+        widget (QWidget): Widget to display file dialog in
+        possible_paths (str): Paths that may have been chosen before, can be a string
+        or an array of strings containing the paths
+
+    Returns:
+        str : chosen directory path
+    """
     default_path = utils.parse_default_path(possible_paths)
 
     logger.debug(f"Default : {default_path}")
@@ -1354,7 +1383,8 @@ class GroupedWidget(QGroupBox):
         self.layout.setContentsMargins(l, t, r, b)
         self.layout.setSizeConstraint(QLayout.SetFixedSize)
 
-    def set_layout(self):
+    def _set_layout(self):
+        """Sets the layout of the widget."""
         self.setLayout(self.layout)
 
     @classmethod
@@ -1369,6 +1399,7 @@ class GroupedWidget(QGroupBox):
         b=11,
         alignment=LEFT_AL,
     ):
+        """Creates a group with a single widget in it."""
         group = cls(title, l, t, r, b)
         group.layout.addWidget(widget, alignment=alignment)
         group.setLayout(group.layout)
@@ -1377,7 +1408,9 @@ class GroupedWidget(QGroupBox):
 
 
 def add_widgets(layout, widgets, alignment=LEFT_AL):
-    """Adds all widgets in the list to layout, with the specified alignment. If alignment is None, no alignment is set.
+    """Adds all widgets in the list to layout, with the specified alignment.
+
+    If alignment is None, no alignment is set.
 
     Args:
         layout: layout to add widgets in

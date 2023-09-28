@@ -99,6 +99,7 @@ class CRFParamsWidget(ui.GroupedWidget):
         self.n_iter_choice.setToolTip("Number of iterations of the CRF.")
 
     def make_config(self):
+        """Make a CRF config from the widget values."""
         return config.CRFConfig(
             sa=self.sa_choice.value(),
             sb=self.sb_choice.value(),
@@ -187,9 +188,11 @@ class CRFWidget(BasePluginUtils):
         return self._container
 
     def make_config(self):
+        """Make a CRF config from the widget values."""
         return self.crf_params_widget.make_config()
 
     def print_config(self):
+        """Print the CRF config to the logger."""
         logger.info("CRF config:")
         for item in self.make_config().__dict__.items():
             logger.info(f"{item[0]}: {item[1]}")
@@ -218,6 +221,7 @@ class CRFWidget(BasePluginUtils):
         return True
 
     def run_crf_on_batch(self, images_list: list, labels_list: list, log=None):
+        """Run CRF on a batch of images and labels."""
         self.crf_results = []
         for image, label in zip(images_list, labels_list):
             tqdm(
@@ -231,6 +235,7 @@ class CRFWidget(BasePluginUtils):
         return self.crf_results
 
     def _prepare_worker(self, images_list: list, labels_list: list):
+        """Prepare the CRF worker."""
         self.worker = CRFWorker(
             images_list=images_list,
             labels_list=labels_list,
