@@ -34,10 +34,16 @@ html:
 # Add auto-generated API docs
 sphinx:
   extra_extensions:
-  - 'sphinx.ext.autodoc'
   - 'sphinx.ext.napoleon'
-  - 'sphinx.ext.viewcode'
+  - 'sphinx.ext.autodoc'
   - 'sphinx.ext.autosummary'
+  - 'sphinx.ext.viewcode'
   config:
     add_module_names: False
     autosummary_generate: True
+    autoclass_content: "both"
+    # templates_path: ['_templates']
+    exclude_patterns:
+      - '_build'
+      - '_templates'
+    #   - 'napari_cellseg3d/__pycache__'
