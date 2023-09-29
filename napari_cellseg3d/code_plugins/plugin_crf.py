@@ -59,7 +59,7 @@ class CRFParamsWidget(ui.GroupedWidget):
                     ),
                 ],
             )
-            self.set_layout()
+            self._set_layout()
             return
         ui.add_widgets(
             self.layout,
@@ -78,7 +78,7 @@ class CRFParamsWidget(ui.GroupedWidget):
                 self.n_iter_choice,
             ],
         )
-        self.set_layout()
+        self._set_layout()
 
     def _set_tooltips(self):
         self.sa_choice.setToolTip(
