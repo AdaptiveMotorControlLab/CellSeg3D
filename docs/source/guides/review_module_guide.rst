@@ -62,6 +62,6 @@ Using these, you can check your labels, correct them, save them and keep track o
 Source code
 -------------------------------------------------
 
-* :doc:`../code/plugin_review`
-* :doc:`../code/plugin_review_dock`
-* :doc:`../code/plugin_base`
+* :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_review`
+* :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_review_dock`
+* :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_base`

@@ -183,6 +183,6 @@ You can find them under **CellSeg3D WNet** on your project page.
 
 Source code
 ==============================================
-* :doc:`../code/plugin_model_training`
-* :doc:`../code/model_framework`
-* :doc:`../code/workers`
+* :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_model_training`
+* :doc:`../code/_autosummary/napari_cellseg3d.code_models.worker_training`
+* :doc:`../code/_autosummary/napari_cellseg3d.code_models.models`

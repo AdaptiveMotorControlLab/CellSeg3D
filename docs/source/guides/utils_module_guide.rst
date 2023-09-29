@@ -22,6 +22,12 @@ You can :
 * Convert to semantic labels :
     This will convert instance labels with unique IDs per object into 0/1 semantic labels, for example for training.
 
+.. figure:: ../images/converted_labels.png
+   :scale: 30 %
+   :align: center
+
+   Example of instance labels (left) converted to semantic labels (right)
+
 * Remove small objects :
     You can specify a size threshold in pixels; all objects smaller than this size will be removed in the image.
 
@@ -36,14 +42,13 @@ You can :
 * Fragment image :
     Break down a large image into cubes suitable for training.
 
-.. figure:: ../images/converted_labels.png
-   :scale: 30 %
-   :align: center
+* Conditional Random Field (CRF):
+    Attempts to refine semantic predictions by pairing it with the original image.
+    For a list of parameters, see the :doc:`CRF API page<../code/_autosummary/napari_cellseg3d.code_models.crf>`.
 
-   Example of instance labels (left) converted to semantic labels (right)
 
 Source code
 -------------------------------------------------
 
-* :doc:`../code/plugin_base`
-* :doc:`../code/plugin_convert`
+* :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_convert`
+* :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_crf`

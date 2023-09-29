@@ -64,8 +64,9 @@ you **change the position** of the cropped volumes and labels in the x,y and z p
     or simply **CTRL+S** once you have selected the correct layer.
 
 
-    Source code
-    -------------------------------------------------
 
-    * :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_crop`
-    * :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_base`
+Source code
+-------------------------------------------------
+
+* :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_crop`
+* :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_base`

@@ -1,5 +1,15 @@
 """Implements the CRF post-processing step for the W-Net.
 
+The CRF requires the following parameters:
+
+* images : Array of shape (N, C, H, W, D) containing the input images.
+* predictions: Array of shape (N, K, H, W, D) containing the predicted class probabilities for each pixel.
+* sa: alpha standard deviation, the scale of the spatial part of the appearance/bilateral kernel.
+* sb: beta standard deviation, the scale of the color part of the appearance/bilateral kernel.
+* sg: gamma standard deviation, the scale of the smoothness/gaussian kernel.
+* w1: weight of the appearance/bilateral kernel.
+* w2: weight of the smoothness/gaussian kernel.
+
 Inspired by https://arxiv.org/abs/1606.00915 and https://arxiv.org/abs/1711.08506.
 Also uses research from:
 Efficient Inference in Fully Connected CRFs with Gaussian Edge Potentials
