@@ -43,7 +43,10 @@ Launching the review process
 Interface & functionalities
 ---------------------------------------------------------------
 
-.. image:: ../images/review_process_example.png
+.. figure:: ../images/review_process_example.png
+    :align: center
+
+    Interface of the review process.
 
 Once you have launched the review process, you will have access to the following functionalities:
 

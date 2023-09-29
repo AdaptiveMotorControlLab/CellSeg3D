@@ -30,6 +30,6 @@ To add a custom model, you will need a **.py** file with the following structure
 
 
 .. note::
-    **WIP** : Currently you must modify :ref:`model_framework.py` as well : import your model class and add it to the ``model_dict`` attribute
+    **WIP** : Currently you must modify :doc:`model_framework.py <../code/_autosummary/napari_cellseg3d.code_models.model_framework>` as well : import your model class and add it to the ``model_dict`` attribute
 
 .. _file an issue: https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues

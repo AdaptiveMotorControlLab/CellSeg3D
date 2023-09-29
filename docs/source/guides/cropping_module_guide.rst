@@ -44,7 +44,10 @@ and define a smaller crop size in order to further crop within your region of in
 Interface & functionalities
 ---------------------------------------------------------------
 
-.. image:: ../images/cropping_process_example.png
+.. figure:: ../images/cropping_process_example.png
+    :align: center
+
+    Example of the cropping process interface.
 
 Once you have launched the review process, you will have access to three sliders that will let
 you **change the position** of the cropped volumes and labels in the x,y and z positions.

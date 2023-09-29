@@ -86,8 +86,8 @@ Interface and functionalities
   | Instance labels will be saved (and shown if applicable) separately from other results.
 
 
-.. _watershed: https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_watershed.html
-.. _connected components: https://scikit-image.org/docs/dev/api/skimage.measure.html#skimage.measure.label
+.. _Watershed: https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_watershed.html
+.. _Connected Components: https://scikit-image.org/docs/dev/api/skimage.measure.html#skimage.measure.label
 .. _Voronoi-Otsu: https://haesleinhuepf.github.io/BioImageAnalysisNotebooks/20_image_segmentation/11_voronoi_otsu_labeling.html
 
 
