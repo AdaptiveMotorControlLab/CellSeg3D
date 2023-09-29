@@ -3,21 +3,20 @@
 Review
 =================================
 
-This module allows you to review your labels, from predictions or manual labeling,
-and correct them if needed. It then saves the status of each file in a csv, as well as the time taken per slice review, for easier monitoring.
-
-
+This module allows you to review your labels, from predictions or manual labeling, and correct them if needed.
+It then saves the status of each file in a csv, as well as the time taken per slice review, for easier monitoring.
 
 Launching the review process
 ---------------------------------
 
 * Data paths :
-    First, you will be asked to load your images and labels; you can use the checkbox above the Open buttons to
-    choose whether you want to load a single 3D **.tif** image or a folder of 2D images as a 3D stack.
-    Folders can be stacks of either **.png** or **.tif** files, ideally numbered with the index of the slice at the end.
+    First, you will be asked to load your images and labels.
+    If you want to start a new review, check the **New review** button, then select the corresponding layers in napari.
+    If you want to continue a review, check the **Existing review** button, then select the folder containing the image, labels and the csv file.
 
 .. note::
-    Only single 3D **.tif** files or 2D stacks of several **.png** or **.tif** in a folder are currently supported.
+    Only single 3D **.tif** files in a folder are currently supported.
+    If you have a stack, open it as folder in napari, then save it as a single **.tif** file.
 
 * Anisotropic data :
     This will scale the images to visually remove the anisotropy, so as to make review easier.
@@ -26,8 +25,7 @@ Launching the review process
     Results will still be saved as anisotropic images. If you wish to resize your images, see the :doc:`utils_module_guide`
 
 * CSV file name :
-    You can then provide a model name, which will be used to name the csv file recording the status of each slice.
-
+    You can then provide a review name, which will be used to name the csv file recording the status of each slice.
     If a corresponding csv file exists already, it will be used. If not, a new one will be created.
     If you choose to create a new dataset, a new csv will always be created,
     with a trailing number if several copies of it already exists.
@@ -60,7 +58,8 @@ Once you have launched the review process, you will have access to the following
 Using these, you can check your labels, correct them, save them and keep track of which slices have been checked or not.
 
 .. note::
-    You can find the csv file containing the annotation status **in the same folder as the labels**
+    You can find the csv file containing the annotation status **in the same folder as the labels**.
+    It will also keep track of the time taken to review each slice, which can be useful to monitor the progress of the review.
 
 Source code
 -------------------------------------------------

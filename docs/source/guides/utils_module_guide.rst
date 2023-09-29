@@ -44,8 +44,6 @@ Resize anisotropic images
 ----------------------------------
 Specify the resolution of your microscope to remove anisotropy from images.
 
-.. important:: Does not work for instance labels currently.
-
 Threshold images
 ----------------------------------
 Remove all values below a threshold in an image.

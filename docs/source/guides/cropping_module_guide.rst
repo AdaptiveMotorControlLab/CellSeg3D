@@ -1,10 +1,15 @@
 .. _cropping_module_guide:
 
-Cropping utility
+Cropping
 =================================
 
 This module allows you to crop your volumes and labels dynamically,
 by selecting a fixed size volume and moving it around the image.
+
+To access it, open **Plugins -> Utilities** and select **Crop** in the bottom menu.
+
+.. hint::
+    For other utilities, see :doc:`utils_module_guide`
 
 You can then save the cropped volume and labels directly using napari,
 by using the **Quicksave** button,
