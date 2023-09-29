@@ -15,27 +15,31 @@ or simply **CTRL+S** once you have selected the correct layer.
 Launching the cropping process
 ---------------------------------
 
-First, simply pick your images using the layer selection dropdown menu.
-If you'd like to crop a second image, e.g. labels, at the same time,
-simply check the *"Crop another image simultaneously"* checkbox and
-pick the corresponding layer.
+First, pick your image in the layer selection dropdown menu.
+If you'd like to crop a second image with the same shape, e.g. labels,
+simply check *"Crop another image simultaneously"* and pick the corresponding layer.
 
-You can then choose the size of the cropped volume, which will be constant throughout the process; make sure it is correct beforehand.
+You can then choose the size of the cropped volume, which will be constant throughout the process.
+If you need to update the size, simply start again with the new size.
 
 You can also opt to correct the anisotropy if your image is anisotropic :
-simply set the resolution to the one of your microscope.
+to do so set the resolution to the one of your microscope in microns.
 
 .. important::
     This will simply scale the image in the viewer, but saved images will **still be anisotropic.** To resize your image, see :doc:`utils_module_guide`
 
-Once you are ready, you can press **Start** to start the review process.
+Once you are ready, you can press **Start** to start the cropping process.
 If you'd like to change the size of the volume, change the parameters as previously to your desired size and hit start again.
 
 Creating new layers
 ---------------------------------
-To "zoom in" your volume, you can use the "Create new layers" checkbox to make a new cropping layer controlled by the sliders
-next time you hit Start. This way, you can first select your region of interest by using the tool as described above,
-then enable the option, select the cropped region produced before as the input layer, and define a smaller crop size in order to crop within your region of interest.
+
+To "zoom in" your volume, you can use the "Create new layers" checkbox to make an additional cropping layer controlled by the sliders
+next time you hit Start, instead of replacing the current one.
+
+This way, you can first select your region of interest by using the tool as described above,
+then enable the option, select the cropped region produced before as the input layer,
+and define a smaller crop size in order to further crop within your region of interest.
 
 Interface & functionalities
 ---------------------------------------------------------------
@@ -46,21 +50,22 @@ Once you have launched the review process, you will have access to three sliders
 you **change the position** of the cropped volumes and labels in the x,y and z positions.
 
 .. hint::
-    If you **cannot see your cropped volume well**, feel free to change the **colormap** of the image and the cropped
-    volume to better see them.
-    You may want to change the **opacity** and **contrast thresholds** depending on your image, too.
+    * If you **cannot see your cropped volume well**, feel free to change the **colormap** of the image and the cropped
+      volume to better see them.
+    * You may want to change the **opacity** and **contrast thresholds** depending on your image.
+    * If the image appears empty, right-click on the contrast limits sliders and select **Full Range**, then **Reset**.
 
 
 .. note::
-    When you are done you can save the cropped volume and labels directly with the
-    **Quicksave** button on the lower left, which will save in the folder you picked the image from, or as
-    a separate folder if you loaded a folder as a stack.
+    When you are done, you can save the cropped volume and labels directly with the
+    **Quicksave** button on the lower left, which will save in the folder you picked the image from.
     If you want more options (name, format) you can save by selecting the layer and then
-    using **File -> Save selected layer**, or simply **CTRL+S** once you have selected the correct layer.
+    selecting in the napari menu **File -> Save selected layer**,
+    or simply **CTRL+S** once you have selected the correct layer.
 
-..
+
     Source code
     -------------------------------------------------
 
-    * :doc:`../code/plugin_crop`
-    * :doc:`../code/plugin_base`
+    * :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_crop`
+    * :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_base`
