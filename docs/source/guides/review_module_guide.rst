@@ -10,9 +10,9 @@ Launching the review process
 ---------------------------------
 
 * Data paths :
-    First, you will be asked to load your images and labels.
-    If you want to start a new review, check the **New review** button, then select the corresponding layers in napari.
-    If you want to continue a review, check the **Existing review** button, then select the folder containing the image, labels and the csv file.
+    | First, you will be asked to load your images and labels.
+    | If you want to start a new review, check the **New review** button, then select the corresponding layers in napari.
+    | If you want to continue a review, check the **Existing review** button, then select the folder containing the image, labels and the csv file.
 
 .. note::
     Only single 3D **.tif** files in a folder are currently supported.

@@ -43,7 +43,9 @@ class Datamanager(QWidget):
         """napari.viewer.Viewer: viewer in which the widget is displayed"""
 
         # add some buttons
-        self.button = ui.Button("1", self.button_func, parent=self, fixed=True)
+        self.button = ui.Button(
+            "1", self._button_func, parent=self, fixed=True
+        )
         self.time_label = ui.make_label("", self)
         self.time_label.setVisible(False)
 
@@ -105,14 +107,14 @@ class Datamanager(QWidget):
             # self.pause_time = datetime.now() - self.pause_start
             self.start_time = datetime.now()
             self.is_paused = False
-        self.update_time_csv()
+        self._update_time_csv()
 
-    def update_time_csv(self):
+    def _update_time_csv(self):
         if not self.is_paused:
             self.time_elapsed += datetime.now() - self.start_time
             self.start_time = datetime.now()
         str_time = utils.time_difference(timedelta(), self.time_elapsed)
-        print(f"Time elapsed : {str_time}")
+        logger.info(f"Time elapsed : {str_time}")
         self.df.at[0, "time"] = str_time
         self.df.to_csv(self.csv_path)
 
@@ -127,22 +129,22 @@ class Datamanager(QWidget):
             as_folder (bool) : load as folder or as single file
         """
         # label_dir = os.path.dirname(label_dir)
-        print("csv path try :")
-        print(label_dir)
+        logger.debug("csv path try :")
+        logger.debug(label_dir)
         self.filetype = filetype
 
         if not self.as_folder:
             p = Path(label_dir)
             self.filename = p.name
-            label_dir = p.parent
-            print("Loading single image")
-            print(self.filename)
-            print(label_dir)
+            label_dir = str(p)
+            logger.info("Loading single image")
+            logger.info(self.filename)
+            logger.info(label_dir)
 
         self.df, self.csv_path = self.load_csv(label_dir, model_type, checkbox)
 
-        print(self.csv_path, checkbox)
-        # print(self.viewer.dims.current_step[0])
+        logger.debug(self.csv_path, checkbox)
+        # logger.debug(self.viewer.dims.current_step[0])
         self.update_dm(self.viewer.dims.current_step[0])
 
     def load_csv(self, label_dir, model_type, checkbox):
@@ -158,8 +160,8 @@ class Datamanager(QWidget):
         """
         # if not self.as_folder :
         #     label_dir = os.path.dirname(label_dir)
-        print("label dir")
-        print(label_dir)
+        logger.debug("label dir")
+        logger.debug(label_dir)
         csvs = sorted(list(Path(str(label_dir)).glob(f"{model_type}*.csv")))
         if len(csvs) == 0:
             df, csv_path = self.create_csv(
@@ -180,13 +182,13 @@ class Datamanager(QWidget):
                 pass
 
         recorded_time = df.at[0, "time"]
-        # print("csv load time")
-        # print(recorded_time)
+        # logger.debug("csv load time")
+        # logger.debug(recorded_time)
         t = datetime.strptime(recorded_time, TIMER_FORMAT)
         self.time_elapsed = timedelta(
             hours=t.hour, minutes=t.minute, seconds=t.second
         )
-        # print(self.time_elapsed)
+        # logger.debug(self.time_elapsed)
         return df, csv_path
 
     def create_csv(self, label_dir, model_type):
@@ -208,7 +210,7 @@ class Datamanager(QWidget):
                 )
             )
         else:
-            # print(self.image_dims[0])
+            # logger.debug(self.image_dims[0])
             filename = self.filename if self.filename is not None else "image"
             labels = [str(filename) for i in range(self.image_dims[0])]
 
@@ -222,13 +224,13 @@ class Datamanager(QWidget):
         df.at[0, "time"] = "00:00:00"
 
         csv_path = str(Path(label_dir) / Path(f"{model_type}_train0.csv"))
-        print("csv path for create")
-        print(csv_path)
+        logger.debug("csv path for create")
+        logger.debug(csv_path)
         df.to_csv(csv_path)
 
         return df, csv_path
 
-    def update_button(self):
+    def _update_button(self):
         if len(self.df) > 1:
             self.button.setText(
                 self.df.at[self.df.index[self.slice_num], "train"]
@@ -243,24 +245,24 @@ class Datamanager(QWidget):
             slice_num (int): index of the current slice
         """
         self.slice_num = slice_num
-        self.update_time_csv()
+        self._update_time_csv()
 
-        print(f"New slice review started at {utils.get_time()}")
-        # print(self.df)
+        logger.info(f"New slice review started at {utils.get_time()}")
+        # logger.debug(self.df)
 
         try:
-            self.update_button()
+            self._update_button()
         except IndexError:
             self.slice_num -= 1
-            self.update_button()
+            self._update_button()
 
-    def button_func(self):  # updates csv every time you press button...
+    def _button_func(self):  # updates csv every time you press button...
         if self.viewer.dims.ndisplay != 2:
             # TODO test if undefined behaviour or if okay
             logger.warning("Please switch back to 2D mode !")
             return
 
-        self.update_time_csv()
+        self._update_time_csv()
 
         if self.button.text() == "Not checked":
             self.button.setText("Checked")
