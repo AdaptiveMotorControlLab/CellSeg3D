@@ -11,6 +11,7 @@ from skimage.measure import label, regionprops
 from skimage.morphology import remove_small_objects
 from skimage.segmentation import watershed
 from tifffile import imread
+from tqdm import tqdm
 
 # local
 from napari_cellseg3d import interface as ui
@@ -28,7 +29,8 @@ CONNECTED_COMP = "Connected Components"
 VORONOI_OTSU = "Voronoi-Otsu"
 ################
 
-USE_EXPERIMENTAL_VORONOI_OTSU_WITH_SLIDING_WINDOW = False
+USE_SLIDING_WINDOW = True
+"""If True, uses a sliding window to perform instance segmentation to avoid memory issues."""
 
 
 class InstanceMethod:
@@ -189,6 +191,44 @@ class InstanceMethod:
         )
         return result.squeeze()
 
+    @staticmethod
+    def sliding_window(volume, function, patch_size=512):
+        """Given a volume of dimensions HxWxD, runs the provided function segmentation on the volume using a sliding window of size patch_size.
+
+        If the edge has been reached, the patch size is reduced to fit the remaining space.
+        The result is a segmentation of the same size as the input volume.
+
+        Args:
+            volume (np.array): The volume to segment
+            function (callable): Function to use for instance segmentation. Should be a partial function with the parameters already set.
+            patch_size (int): The size of the sliding window.
+
+        Returns:
+            np.array: Instance segmentation labels from
+        """
+        result = np.zeros(volume.shape, dtype=np.uint32)
+        max_label_id = 0
+        x, y, z = volume.shape
+        for i in tqdm(range(0, x, patch_size)):
+            for j in range(0, y, patch_size):
+                for k in range(0, z, patch_size):
+                    patch = volume[
+                        i : min(i + patch_size, x),
+                        j : min(j + patch_size, y),
+                        k : min(k + patch_size, z),
+                    ]
+                    patch_result = function(patch)
+                    patch_result = np.array(patch_result)
+                    # make sure labels are unique, only where result is not 0
+                    patch_result[patch_result > 0] += max_label_id
+                    result[
+                        i : min(i + patch_size, x),
+                        j : min(j + patch_size, y),
+                        k : min(k + patch_size, z),
+                    ] = patch_result
+                    max_label_id = np.max(patch_result)
+        return result
+
 
 @dataclass
 class ImageStats:
@@ -251,18 +291,6 @@ def voronoi_otsu(
     Instance segmentation labels from Voronoi-Otsu method
 
     """
-    if USE_EXPERIMENTAL_VORONOI_OTSU_WITH_SLIDING_WINDOW:
-        from napari_cellseg3d.dev_scripts.sliding_window_voronoi import (
-            sliding_window_voronoi_otsu,
-        )
-
-        instance = sliding_window_voronoi_otsu(
-            volume,
-            spot_sigma=spot_sigma,
-            outline_sigma=outline_sigma,
-            patch_size=1024,
-        )
-        return np.array(instance)
     # remove_small_size (float): remove all objects smaller than the specified size in pixels
     # semantic = np.squeeze(volume)
     logger.debug(
@@ -580,7 +608,20 @@ class Watershed(InstanceMethod):
         self.counters[1].setValue(value)
 
     def run_method(self, image):
-        """Runs the method on the image with the parameters set in the widget."""
+        """Runs the method on the image with the parameters set in the widget.
+
+        If USE_SLIDING_WINDOW is True, uses a sliding window to perform instance segmentation to avoid memory issues.
+        """
+        if USE_SLIDING_WINDOW:
+            func = partial(
+                self.function,
+                thres_objects=self.sliders[0].slider_value,
+                thres_seeding=self.sliders[1].slider_value,
+                thres_small=self.counters[0].value(),
+                rem_seed_thres=self.counters[1].value(),
+            )
+            return self.sliding_window(image, func)
+
         return self.function(
             image,
             self.sliders[0].slider_value,
@@ -637,7 +678,18 @@ class ConnectedComponents(InstanceMethod):
         self.counters[0].setValue(value)
 
     def run_method(self, image):
-        """Runs the method on the image with the parameters set in the widget."""
+        """Runs the method on the image with the parameters set in the widget.
+
+        If USE_SLIDING_WINDOW is True, uses a sliding window to perform instance segmentation to avoid memory issues.
+        """
+        if USE_SLIDING_WINDOW:
+            func = partial(
+                self.function,
+                thres=self.sliders[0].slider_value,
+                thres_small=self.counters[0].value(),
+            )
+            return self.sliding_window(image, func)
+
         return self.function(
             image, self.sliders[0].slider_value, self.counters[0].value()
         )
@@ -697,7 +749,18 @@ class VoronoiOtsu(InstanceMethod):
         self.counters[1].setValue(value)
 
     def run_method(self, image):
-        """Runs the method on the image with the parameters set in the widget."""
+        """Runs the method on the image with the parameters set in the widget.
+
+        If USE_SLIDING_WINDOW is True, uses a sliding window to perform instance segmentation to avoid memory issues.
+        """
+        if USE_SLIDING_WINDOW:
+            func = partial(
+                self.function,
+                spot_sigma=self.counters[0].value(),
+                outline_sigma=self.counters[1].value(),
+            )
+            return self.sliding_window(image, func)
+
         return self.function(
             image,
             self.counters[0].value(),
