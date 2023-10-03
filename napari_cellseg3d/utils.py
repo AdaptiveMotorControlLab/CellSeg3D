@@ -193,14 +193,16 @@ def sphericity_axis(semi_major, semi_minor):
             / (a + (b**2) / root * np.log((a + root) / b))
         )
     except ZeroDivisionError:
-        print("Zero division in sphericity calculation was replaced by 0")
+        LOGGER.warning(
+            "Zero division in sphericity calculation was replaced by 0"
+        )
         result = 0
     except ValueError as e:
-        print(f"Error encountered in calculation : {e}")
+        LOGGER.warning(f"Error encountered in calculation : {e}")
         result = "Error in calculation"
 
     if math.isnan(result):
-        print("NaN in sphericity calculation was replaced by 0")
+        LOGGER.warning("NaN in sphericity calculation was replaced by 0")
         result = 0
 
     return result
@@ -313,7 +315,7 @@ def align_array_sizes(array_shape, target_shape):
                 if array_shape[i] == target_shape[j] and j != i:
                     index_differences.append({"origin": i, "target": j})
 
-    # print(index_differences)
+    # LOGGER.debug(index_differences)
     if len(index_differences) == 0:
         return [0, 1, 2], [-3, -2, -1]
 
@@ -329,7 +331,7 @@ def align_array_sizes(array_shape, target_shape):
         targets[i] = reverse_mapping[targets[i]]
     infos = np.unique(origins, return_index=True, return_counts=True)
     {"origins": infos[0], "index": infos[1], "counts": infos[2]}
-    # print(info_dict)
+    # LOGGER.debug(info_dict)
 
     final_orig = []
     final_targ = []
@@ -337,7 +339,7 @@ def align_array_sizes(array_shape, target_shape):
         if infos[2][i] == 1:
             final_orig.append(infos[0][i])
             final_targ.append(targets[infos[1][i]])
-    # print(final_orig, final_targ)
+    # LOGGER.debug(final_orig, final_targ)
 
     return final_orig, final_targ
 
@@ -527,18 +529,6 @@ def load_images(dir_or_path, filetype="", as_folder: bool = False):
     # if not as_folder:
     filename_pattern_original = Path(dir_or_path)
     return imread(str(filename_pattern_original))  # tifffile imread
-    # print(filename_pattern_original)
-    # elif as_folder and filetype != "":
-    # filename_pattern_original = Path(dir_or_path + "/*" + filetype)
-    # print(filename_pattern_original)
-    # else:
-    #     raise ValueError("If loading as a folder, filetype must be specified")
-
-    # if as_folder:
-    #     raise NotImplementedError(
-    #         "Loading as folder not implemented yet. Use napari to load as folder"
-    # images_original = dask_imread(filename_pattern_original)
-    #     )
 
 
 def quantile_normalization(
