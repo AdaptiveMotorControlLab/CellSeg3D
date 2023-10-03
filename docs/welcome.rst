@@ -6,7 +6,7 @@ Welcome to CellSeg3D!
 
 
 
-.. figure:: ./source/images/new/plugin_welcome.png
+.. figure:: ./source/images/plugin_welcome.png
     :align: center
 
 
