@@ -42,9 +42,10 @@ VNet             `Fully Convolutional Neural Networks for Volumetric Medical Ima
 Interface and functionalities
 --------------------------------
 
-.. image:: ../images/inference_plugin_layout.png
+.. figure:: ../images/inference_plugin_layout.png
     :align: right
-    :scale: 40%
+
+    Inference parameters
 
 * **Loading data** :
 
@@ -64,12 +65,13 @@ Interface and functionalities
 
 * **Inference parameters** :
 
-  | You can choose to use inference on the whole image at once, which can yield better performance at the cost of more memory.
-  | For larger images this is not possible, due to memory limitations.
-  | For this reason, you can use a specific window size to run inference on smaller chunks one by one, for lower memory usage.
-  | You can also choose to keep the dataset in the RAM rather than the VRAM to avoid running out of VRAM if you have several images.
-  | You may specify the amount of overlap between windows; this overlap helps improve performance by reducing border effects.
-  | Recommended values are 0.1-0. for 3D inference.
+  * Window inference: You can choose to use inference on the whole image at once, which can yield better performance at the cost of more memory.
+    For larger images this is not possible, due to memory limitations.
+    For this reason, you can use a specific window size to run inference on smaller chunks one by one, for lower memory usage.
+  * Window overlap: You may specify the amount of overlap between windows; this overlap helps improve performance by reducing border effects.
+    Recommended values are 0.1-0. for 3D inference.
+  * Keep on CPU: You can also choose to keep the dataset in the RAM rather than the VRAM to avoid running out of VRAM if you have several images.
+  * Device: You can choose to run inference on the CPU or GPU. If you have a GPU, it is recommended to use it for faster inference.
 
 * **Anisotropy** :
 
@@ -98,27 +100,25 @@ Interface and functionalities
 
 * **Computing objects statistics** :
 
-You can choose to compute various stats from the labels and save them to a .csv for later use.
+  You can choose to compute various stats from the labels and save them to a .csv for later use.
+  This includes, for each object :
 
-This includes, for each object :
+  * Object volume (pixels)
+  * :math:`X,Y,Z` coordinates of the centroid
+  * Sphericity
 
-* Object volume (pixels)
-* :math:`X,Y,Z` coordinates of the centroid
-* Sphericity
+  And more general statistics :
 
-
-And more general statistics :
-
-* Image size
-* Total image volume (pixels)
-* Total object (labeled) volume (pixels)
-* Filling ratio (fraction of the volume that is labeled)
-* The number of labeled objects
+  * Image size
+  * Total image volume (pixels)
+  * Total object (labeled) volume (pixels)
+  * Filling ratio (fraction of the volume that is labeled)
+  * The number of labeled objects
 
 * **Display options** :
 
-If running on a folder, you can choose to display the results in napari.
-If selected, you may choose how many results to display at once, and whether to display the original image alongside the results.
+  If running on a folder, you can choose to display the results in napari.
+  If selected, you may choose how many results to display at once, and whether to display the original image alongside the results.
 
 Once you are ready, hit the Start button to begin inference.
 The log will dislay relevant information on the process.
@@ -156,9 +156,6 @@ Plotting results
 
 In the ``notebooks`` folder you will find an example of plotting cell statistics using the volume statistics computed by the inference module.
 Simply load the .csv file in a notebook and use the provided functions to plot the desired statistics.
-
-
-.. image:: ../images/inference_results_example.png
 
 
 Unsupervised model - WNet
