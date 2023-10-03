@@ -764,6 +764,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.instance_widgets.method_choice.currentText()
             ],
         )
+        self.instance_config.method.record_parameters()  # keep parameters set when Start is clicked
 
         self.post_process_config = config.PostProcessConfig(
             zoom=zoom_config,

@@ -571,7 +571,9 @@ class InferenceWorker(GeneratorWorker):
             self.log(f"Running instance segmentation for image n°{image_id}")
 
         method = self.config.post_process_config.instance.method
-        instance_labels = method.run_method_on_channels(semantic_labels)
+        instance_labels = method.run_method_on_channels_from_params(
+            semantic_labels
+        )
         logger.debug(f"DEBUG instance results shape : {instance_labels.shape}")
 
         filetype = (

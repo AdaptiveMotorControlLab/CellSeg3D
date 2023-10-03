@@ -60,6 +60,9 @@ class InstanceMethod:
             num_counters, num_sliders, widget_parent=widget_parent
         )
 
+        self.recorded_parameters = {}
+        """Stores the parameters when calling self.record_parameters()"""
+
     def _setup_widgets(self, num_counters, num_sliders, widget_parent=None):
         """Initializes the needed widgets for the instance segmentation method, adding sliders and counters to the instance segmentation widget.
 
@@ -119,9 +122,58 @@ class InstanceMethod:
                 return [im for im in image]
         return [image]
 
+    def record_parameters(self):
+        """Records all the parameters of the instance segmentation method from the current values of the widgets."""
+        if len(self.sliders) > 0:
+            for slider in self.sliders:
+                self.recorded_parameters[
+                    slider.label.text()
+                ] = slider.slider_value
+        if len(self.counters) > 0:
+            for counter in self.counters:
+                self.recorded_parameters[
+                    counter.label.text()
+                ] = counter.value()
+
+    def run_method_from_params(self, image):
+        """Runs the method on the image with the RECORDED parameters set in the widget.
+
+        See self.record_parameters() and self.run_method()
+
+        Args:
+            image: image data to run method on
+
+        Returns: processed image from self._method
+        """
+        parameters = [
+            self.recorded_parameters[key] for key in self.recorded_parameters
+        ]
+        return self.function(image, *parameters)
+
     def run_method_on_channels(self, image):
+        """Runs the method on each channel of the image with the parameters set in the widget.
+
+        Args:
+            image: image data to run method on
+
+        Returns: processed image from self._method
+        """
         image_list = self._make_list_from_channels(image)
         result = np.array([self.run_method(im) for im in image_list])
+        return result.squeeze()
+
+    def run_method_on_channels_from_params(self, image):
+        """Runs the method on each channel of the image with the RECORDED parameters set in the widget.
+
+        Args:
+            image: image data to run method on
+
+        Returns: processed image from self._method
+        """
+        image_list = self._make_list_from_channels(image)
+        result = np.array(
+            [self.run_method_from_params(im) for im in image_list]
+        )
         return result.squeeze()
 
 
@@ -141,6 +193,7 @@ class ImageStats:
     number_objects: int
 
     def get_dict(self):
+        """Returns a dict containing the statistics."""
         return {
             "Volume": self.volume,
             "Centroid x": self.centroid_x,
@@ -551,19 +604,11 @@ class VoronoiOtsu(InstanceMethod):
         # self.counters[2].setValue(30)
 
     def run_method(self, image):
-        ################
-        # For debugging
-        # import napari
-        # view = napari.Viewer()
-        # view.add_image(image)
-        # napari.run()
-        ################
-
+        """Runs the method on the image with the parameters set in the widget."""
         return self.function(
             image,
             self.counters[0].value(),
             self.counters[1].value(),
-            # self.counters[2].value(),
         )
 
 
