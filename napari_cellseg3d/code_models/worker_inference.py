@@ -101,7 +101,6 @@ class InferenceWorker(GeneratorWorker):
         self.error_signal = self._signals.error_signal
 
         self.config = worker_config
-        self._use_thread_logging = True
 
         """These attributes are all arguments of :py:func:~inference, please see that for reference"""
 
@@ -127,10 +126,7 @@ class InferenceWorker(GeneratorWorker):
         Args:
             text (str): text to logged
         """
-        if self._use_thread_logging:
-            self.log_signal.emit(text)
-            return
-        logger.info(text)
+        self.log_signal.emit(text)
 
     def warn(self, warning):
         """Sends a warning to main thread."""
