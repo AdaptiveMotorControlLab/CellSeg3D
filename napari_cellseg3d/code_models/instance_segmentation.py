@@ -192,7 +192,7 @@ class InstanceMethod:
         return result.squeeze()
 
     @staticmethod
-    def sliding_window(volume, function, patch_size=512):
+    def sliding_window(volume, func, patch_size=512):
         """Given a volume of dimensions HxWxD, runs the provided function segmentation on the volume using a sliding window of size patch_size.
 
         If the edge has been reached, the patch size is reduced to fit the remaining space.
@@ -200,7 +200,7 @@ class InstanceMethod:
 
         Args:
             volume (np.array): The volume to segment
-            function (callable): Function to use for instance segmentation. Should be a partial function with the parameters already set.
+            func (callable): Function to use for instance segmentation. Should be a partial function with the parameters already set.
             patch_size (int): The size of the sliding window.
 
         Returns:
@@ -217,7 +217,7 @@ class InstanceMethod:
                         j : min(j + patch_size, y),
                         k : min(k + patch_size, z),
                     ]
-                    patch_result = function(patch)
+                    patch_result = func(patch)
                     patch_result = np.array(patch_result)
                     # make sure labels are unique, only where result is not 0
                     patch_result[patch_result > 0] += max_label_id
