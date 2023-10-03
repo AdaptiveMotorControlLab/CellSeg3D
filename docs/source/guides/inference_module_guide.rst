@@ -3,6 +3,11 @@
 Inference
 =================================
 
+.. figure:: ../images/plugin_inference.png
+    :align: center
+
+    Layout of the inference module
+
 This module allows you to use pre-trained segmentation algorithms (written in Pytorch) on 3D volumes
 to automatically label cells.
 

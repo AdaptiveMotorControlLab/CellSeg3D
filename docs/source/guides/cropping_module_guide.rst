@@ -3,6 +3,11 @@
 Cropping
 =================================
 
+.. figure:: ../images/plugin_crop.png
+    :align: center
+
+    Layout of the cropping module
+
 This module allows you to crop your volumes and labels dynamically,
 by selecting a fixed size volume and moving it around the image.
 

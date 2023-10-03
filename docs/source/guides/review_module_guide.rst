@@ -3,6 +3,11 @@
 Review
 =================================
 
+.. figure:: ../images/plugin_review.png
+    :align: center
+
+    Layout of the review module
+
 This module allows you to review your labels, from predictions or manual labeling, and correct them if needed.
 It then saves the status of each file in a csv, as well as the time taken per slice review, for easier monitoring.
 

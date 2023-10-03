@@ -30,6 +30,12 @@ Finally, for good performance, one should wait for the SoftNCut to reach a plate
 Parameters
 -------------------------------
 
+.. figure:: ../images/training_tab_4.png
+    :scale: 100 %
+    :align: right
+
+    Advanced tab
+
 _`When using the WNet training module`, additional options will be provided in the **Advanced** tab of the training module:
 
 - **Number of classes** : number of classes to segment (default 2). Additional classes will result in a more progressive segmentation according to brightness; can be useful if you have "halos" around your objects or artifacts with a significantly different brightness.

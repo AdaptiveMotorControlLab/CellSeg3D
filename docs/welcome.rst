@@ -1,7 +1,15 @@
 Welcome to CellSeg3D!
 =============================================
 
-CellSeg3D is a toolbox for 3D segmentation of cells in light-sheet microscopy images, using napari.
+
+**CellSeg3D is a toolbox for 3D segmentation of cells in light-sheet microscopy images, using napari**
+
+
+
+.. figure:: ./source/images/new/plugin_welcome.png
+    :align: center
+
+
 
 This plugin will allow you to:
 
@@ -14,10 +22,12 @@ to help you obtain labels for your data automatically.
 The models provided should be adaptable to other tasks related to detection of 3D objects,
 outside of whole-brain light-sheet microscopy.
 
-.. image:: https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/0d16a71b-3ff2-477a-9d83-18d96cb1ce28/full_demo.gif?format=500w
+.. figure:: https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/0d16a71b-3ff2-477a-9d83-18d96cb1ce28/full_demo.gif?format=500w
    :alt: CellSeg3D demo
    :width: 500
    :align: center
+
+   Demo of the plugin
 
 Requirements
 --------------------------------------------
@@ -47,11 +57,13 @@ Installation
 --------------------------------------------
 
 You can install `napari-cellseg3d` via pip:
+
 .. code-block::
 
   pip install napari-cellseg3d
 
 For local installation after cloning from GitHub, please run the following in the CellSeg3D folder:
+
 .. code-block::
 
   pip install -e .
@@ -63,6 +75,8 @@ ________________________
 To avoid issues when installing on the ARM64 architecture, please follow these steps.
 
 1) Create a new conda env using the provided conda/napari_cellseg3d_m1.yml file :
+
+
 .. code-block::
 
     git clone https://github.com/AdaptiveMotorControlLab/CellSeg3d.git
@@ -71,11 +85,13 @@ To avoid issues when installing on the ARM64 architecture, please follow these s
     conda activate napari_cellseg3d_m1
 
 2) Then install PyQt5 from conda separately :
+
 .. code-block::
 
     conda install -c anaconda pyqt
 
 3) And install the plugin :
+
 .. code-block::
 
     pip install napari-cellseg3d
@@ -84,6 +100,7 @@ Usage
 --------------------------------------------
 
 To use the plugin, please run:
+
 .. code-block::
 
     napari

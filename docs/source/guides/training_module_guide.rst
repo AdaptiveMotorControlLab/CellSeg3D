@@ -3,6 +3,10 @@
 Training
 ----------------------------------------------
 
+.. figure:: ../images/plugin_train.png
+    :align: center
+
+    Layout of the training module
 
 Supervised models
 ==============================================
@@ -46,6 +50,11 @@ The training module is comprised of several tabs :
 1) **Model** tab
 ___________________
 
+.. figure:: ../images/training_tab_1.png
+   :align: right
+
+   Model tab
+
 * Select which model to use (see above table)
 * Whether to use pre-trained weights
 
@@ -59,6 +68,14 @@ ___________________
 
 2) **Data** tab
 ___________________
+
+.. figure:: ../images/training_tab_2.png
+   :align: right
+
+   Data tab
+
+Supervised model
+*****************
 
 * The path to the images folder (3D image files)
 * The path to the labels folder (3D image files)
@@ -80,9 +97,25 @@ ___________________
 * Whether to perform data augmentation or not (elastic deforms, intensity shifts. random flipping,etc)
 * The **training versus validation proportion**; you may change this depending on your dataset
 
+Unsupervised model
+*******************
+
+* The path to the training images folder (3D image files)
+* The path to the validation images folder (3D image files, **OPTIONAL**)
+* The path to the validation labels folder (3D image files, **OPTIONAL**)
+* The path to the results folder
+* Whether to save a copy of results as a zip file
+* Whether to use images "as is" (**requires all images to be of the same size and cubic**) or extract patches
+* Whether to perform data augmentation or not (elastic deforms, intensity shifts. random flipping,etc)
+
 
 3) **Training** tab
 ____________________
+
+.. figure:: ../images/training_tab_3.png
+   :align: right
+
+   Training tab
 
 * The **loss function** used for training (see table below)
 * The **batch size** : set to larger values for quicker training and possibly better performance but increased memory usage
