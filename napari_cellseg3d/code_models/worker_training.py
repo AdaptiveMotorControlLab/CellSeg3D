@@ -1034,7 +1034,10 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
         if self.config.do_augmentation:
             self.log("Data augmentation is enabled")
 
-        if not self.config.weights_info.use_pretrained:
+        if (
+            not self.config.weights_info.use_pretrained
+            and self.config.weights_info.path != PRETRAINED_WEIGHTS_DIR
+        ):
             self.log(f"Using weights from : {self.config.weights_info.path}")
             if self._weight_error:
                 self.log(
