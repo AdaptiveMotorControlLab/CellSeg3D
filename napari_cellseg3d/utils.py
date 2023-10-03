@@ -570,7 +570,7 @@ def channels_fraction_above_threshold(volume: np.array, threshold=0.5) -> list:
     Returns:
         list: List of length C containing the fraction of pixels above the threshold for each channel
     """
-    if volume.shape != 4:
+    if len(volume.shape) != 4:
         raise ValueError(
             f"Volume shape {volume.shape} is not 4D. Expecting CxHxWxD."
         )
