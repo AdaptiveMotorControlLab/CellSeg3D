@@ -101,6 +101,7 @@ class InferenceWorker(GeneratorWorker):
         self.error_signal = self._signals.error_signal
 
         self.config = worker_config
+        self._use_thread_logging = True
 
         """These attributes are all arguments of :py:func:~inference, please see that for reference"""
 
@@ -126,7 +127,10 @@ class InferenceWorker(GeneratorWorker):
         Args:
             text (str): text to logged
         """
-        self.log_signal.emit(text)
+        if self._use_thread_logging:
+            self.log_signal.emit(text)
+            return
+        logger.info(text)
 
     def warn(self, warning):
         """Sends a warning to main thread."""
@@ -570,7 +574,7 @@ class InferenceWorker(GeneratorWorker):
 
         method = self.config.post_process_config.instance.method
         instance_labels = method.run_method_on_channels(semantic_labels)
-        self.log(f"DEBUG instance results shape : {instance_labels.shape}")
+        logger.debug(f"DEBUG instance results shape : {instance_labels.shape}")
 
         filetype = (
             ".tif"

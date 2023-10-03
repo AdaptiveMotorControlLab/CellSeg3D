@@ -87,6 +87,7 @@ class ModelInfo:
     num_classes: int = 2
 
     def get_model(self):
+        """Return model from model list."""
         try:
             return MODEL_LIST[self.name]
         except KeyError as e:
@@ -97,6 +98,7 @@ class ModelInfo:
 
     @staticmethod
     def get_model_name_list():
+        """Return list of model names."""
         logger.info("Model list :")
         for model_name in MODEL_LIST:
             logger.info(f" * {model_name}")
@@ -184,6 +186,7 @@ class SlidingWindowConfig:
     window_overlap: float = 0.25
 
     def is_enabled(self):
+        """Return True if sliding window is enabled."""
         return self.window_size is not None
 
 
@@ -236,7 +239,7 @@ class InferenceWorkerConfig:
     use_crf: bool = False
     crf_config: CRFConfig = CRFConfig()
 
-    images_filepaths: str = None
+    images_filepaths: List[str] = None
     layer: napari.layers.Layer = None
 
 
