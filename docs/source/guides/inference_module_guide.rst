@@ -115,6 +115,7 @@ Interface and functionalities
   * Filling ratio (fraction of the volume that is labeled)
   * The number of labeled objects
 
+
 * **Display options** :
 
   If running on a folder, you can choose to display the results in napari.
