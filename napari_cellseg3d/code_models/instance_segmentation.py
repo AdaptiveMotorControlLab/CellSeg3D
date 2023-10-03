@@ -145,9 +145,22 @@ class InstanceMethod:
 
         Returns: processed image from self._method
         """
+        if len(self.recorded_parameters) == 0:
+            logger.warning(
+                "No parameters recorded, running with values from widgets"
+            )
+            self.record_parameters()
+
         parameters = [
             self.recorded_parameters[key] for key in self.recorded_parameters
         ]
+
+        assert len(parameters) == len(self.sliders) + len(self.counters), (
+            f"Number of parameters recorded ({len(parameters)}) "
+            f"does not match number of sliders ({len(self.sliders)}) "
+            f"and counters ({len(self.counters)})"
+        )
+
         return self.function(image, *parameters)
 
     def run_method_on_channels(self, image):
@@ -526,6 +539,46 @@ class Watershed(InstanceMethod):
         )
         self.counters[1].setValue(3)
 
+    @property
+    def foreground_threshold(self):
+        """Returns the value of the foreground threshold slider."""
+        return self.sliders[0].slider_value
+
+    @foreground_threshold.setter
+    def foreground_threshold(self, value):
+        """Sets the value of the foreground threshold slider."""
+        self.sliders[0].setValue(value)
+
+    @property
+    def seed_threshold(self):
+        """Returns the value of the seed threshold slider."""
+        return self.sliders[1].slider_value
+
+    @seed_threshold.setter
+    def seed_threshold(self, value):
+        """Sets the value of the seed threshold slider."""
+        self.sliders[1].setValue(value)
+
+    @property
+    def small_object_removal(self):
+        """Returns the value of the small object removal counter."""
+        return self.counters[0].value()
+
+    @small_object_removal.setter
+    def small_object_removal(self, value):
+        """Sets the value of the small object removal counter."""
+        self.counters[0].setValue(value)
+
+    @property
+    def small_seed_removal(self):
+        """Returns the value of the small seed removal counter."""
+        return self.counters[1].value()
+
+    @small_seed_removal.setter
+    def small_seed_removal(self, value):
+        """Sets the value of the small seed removal counter."""
+        self.counters[1].setValue(value)
+
     def run_method(self, image):
         """Runs the method on the image with the parameters set in the widget."""
         return self.function(
@@ -562,6 +615,26 @@ class ConnectedComponents(InstanceMethod):
             "\nAll objects with a volume/size below this value will be removed."
         )
         self.counters[0].setValue(3)
+
+    @property
+    def foreground_threshold(self):
+        """Returns the value of the foreground threshold slider."""
+        return self.sliders[0].slider_value
+
+    @foreground_threshold.setter
+    def foreground_threshold(self, value):
+        """Sets the value of the foreground threshold slider."""
+        self.sliders[0].setValue(value)
+
+    @property
+    def small_object_removal(self):
+        """Returns the value of the small object removal counter."""
+        return self.counters[0].value()
+
+    @small_object_removal.setter
+    def small_object_removal(self, value):
+        """Sets the value of the small object removal counter."""
+        self.counters[0].setValue(value)
 
     def run_method(self, image):
         """Runs the method on the image with the parameters set in the widget."""
@@ -602,6 +675,26 @@ class VoronoiOtsu(InstanceMethod):
         #     "\nAll objects with a volume/size below this value will be removed."
         # )
         # self.counters[2].setValue(30)
+
+    @property
+    def spot_sigma(self):
+        """Returns the value of the spot sigma counter."""
+        return self.counters[0].value()
+
+    @spot_sigma.setter
+    def spot_sigma(self, value):
+        """Sets the value of the spot sigma counter."""
+        self.counters[0].setValue(value)
+
+    @property
+    def outline_sigma(self):
+        """Returns the value of the outline sigma counter."""
+        return self.counters[1].value()
+
+    @outline_sigma.setter
+    def outline_sigma(self, value):
+        """Sets the value of the outline sigma counter."""
+        self.counters[1].setValue(value)
 
     def run_method(self, image):
         """Runs the method on the image with the parameters set in the widget."""
