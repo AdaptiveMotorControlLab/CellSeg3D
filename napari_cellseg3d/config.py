@@ -125,7 +125,7 @@ class WeightsInfo:
 class Thresholding:
     """Class to record params for thresholding."""
 
-    enabled: bool = True
+    enabled: bool = False
     threshold_value: float = 0.8
 
 
@@ -133,7 +133,7 @@ class Thresholding:
 class Zoom:
     """Class to record params for zoom."""
 
-    enabled: bool = True
+    enabled: bool = False
     zoom_values: List[float] = None
 
 

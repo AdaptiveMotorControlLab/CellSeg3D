@@ -200,14 +200,16 @@ class InferenceWorker(GeneratorWorker):
         """Loads the folder specified in :py:attr:`~self.images_filepaths` and returns a MONAI DataLoader."""
         images_dict = self.create_inference_dict(self.config.images_filepaths)
 
-        data_check = LoadImaged(keys=["image"])(images_dict[0])
+        data_check = LoadImaged(keys=["image"], image_only=True)(
+            images_dict[0]
+        )
         check = data_check["image"].shape
         pad = utils.get_padding_dim(check)
 
         if self.config.sliding_window_config.is_enabled():
             load_transforms = Compose(
                 [
-                    LoadImaged(keys=["image"]),
+                    LoadImaged(keys=["image"], image_only=True),
                     # AddChanneld(keys=["image"]), #already done
                     EnsureChannelFirstd(keys=["image"]),
                     # Orientationd(keys=["image"], axcodes="PLI"),
@@ -219,7 +221,7 @@ class InferenceWorker(GeneratorWorker):
         else:
             load_transforms = Compose(
                 [
-                    LoadImaged(keys=["image"]),
+                    LoadImaged(keys=["image"], image_only=True),
                     # AddChanneld(keys=["image"]), #already done
                     EnsureChannelFirstd(keys=["image"]),
                     QuantileNormalizationd(keys=["image"]),
