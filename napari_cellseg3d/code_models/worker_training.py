@@ -995,7 +995,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
         self.log("Parameters summary :\n")
 
         self.log(
-            f"Percentage of dataset used for validation : {self.config.validation_percent * 100}%"
+            f"Percentage of dataset used for training : {self.config.training_percent * 100}%"
         )
 
         # self.log("-" * 10)
@@ -1145,13 +1145,13 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                     self.config.train_data_dict[
                         0 : int(
                             len(self.config.train_data_dict)
-                            * self.config.validation_percent
+                            * self.config.training_percent
                         )
                     ],
                     self.config.train_data_dict[
                         int(
                             len(self.config.train_data_dict)
-                            * self.config.validation_percent
+                            * self.config.training_percent
                         ) :
                     ],
                 )
@@ -1239,12 +1239,11 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 # TODO(cyril) : maybe implement something in user config to toggle this behavior
                 if len(self.config.train_data_dict) < 2:
                     num_train_samples = ceil(
-                        self.config.num_samples
-                        * self.config.validation_percent
+                        self.config.num_samples * self.config.training_percent
                     )
                     num_val_samples = ceil(
                         self.config.num_samples
-                        * (1 - self.config.validation_percent)
+                        * (1 - self.config.training_percent)
                     )
                     if num_train_samples < 2:
                         self.log(

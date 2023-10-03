@@ -293,7 +293,7 @@ class SupervisedTrainingWorkerConfig(TrainingWorkerConfig):
 
     model_info: ModelInfo = None
     loss_function: callable = None
-    validation_percent: float = 0.8
+    training_percent: float = 0.8
 
 
 @dataclass

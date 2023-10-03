@@ -189,7 +189,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.validation_percent_choice = ui.Slider(
             lower=10,
             upper=90,
-            default=self.default_config.validation_percent * 100,
+            default=self.default_config.training_percent * 100,
             step=5,
             parent=self,
         )
@@ -682,7 +682,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ui.add_blank(data_tab_w, data_tab_l)
         #######################
         self.validation_group = ui.GroupedWidget.create_single_widget_group(
-            "Validation (%)",
+            "Training split (%)",
             self.validation_percent_choice.container,
             data_tab_l,
         )
@@ -1130,7 +1130,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             model_info=model_config,
             weights_info=self.weights_config,
             train_data_dict=self.data,
-            validation_percent=validation_percent,
+            training_percent=validation_percent,
             max_epochs=self.epoch_choice.value(),
             loss_function=self.loss_choice.currentText(),
             learning_rate=self.learning_rate_choice.get_learning_rate(),
@@ -1262,6 +1262,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.worker = None
 
     def on_stop(self):
+        """Catches stop signal from worker."""
         self._remove_result_layers()
         self.worker = None
         self._stop_requested = False
@@ -1310,6 +1311,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                     self.result_layers[i].reset_contrast_limits()
 
     def on_yield(self, report: TrainingReport):
+        """Catches yielded signal from worker and plots the loss."""
         if report == TrainingReport():
             return  # skip empty reports
 
@@ -1599,6 +1601,7 @@ class LearningRateWidget(ui.ContainerWidget):
         )
 
     def get_learning_rate(self) -> float:
+        """Return the learning rate as a float."""
         return float(
             self.lr_value_choice.value()
             * self.lr_exponent_dict[self.lr_exponent_choice.currentText()]
@@ -1693,6 +1696,7 @@ class WNetWidgets:
         )
 
     def get_reconstruction_weight(self):
+        """Returns the reconstruction weight as a float."""
         return float(
             self.reconstruction_weight_choice.value()
             / self.reconstruction_weight_divide_factor_choice.value()
