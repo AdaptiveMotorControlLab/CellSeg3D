@@ -947,6 +947,8 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         if self._stop_requested:
             self.log.print_and_log("Worker is already stopping !")
+            if self.worker is None:
+                self._stop_requested = False
             return
 
         if not self.check_ready():  # issues a warning if not ready
