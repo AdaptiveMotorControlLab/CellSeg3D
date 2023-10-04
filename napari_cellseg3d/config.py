@@ -44,7 +44,17 @@ PRETRAINED_WEIGHTS_DIR = str(
 
 @dataclass
 class ReviewConfig:
-    """Class to record params for Review plugin."""
+    """Class to record params for Review plugin.
+
+    Args:
+        image (np.array): image to review
+        labels (np.array): labels to review
+        csv_path (str): path to csv to save results
+        model_name (str): name of the model (added to csv name)
+        new_csv (bool): whether to create a new csv
+        filetype (str): filetype to read & write review images
+        zoom_factor (List[int]): zoom factor to apply to image & labels, if selected
+    """
 
     image: np.array = None
     labels: np.array = None
@@ -57,7 +67,16 @@ class ReviewConfig:
 
 @dataclass  # TODO create custom reader for JSON to load project
 class ReviewSession:
-    """Class to record params for Review session."""
+    """Class to record params for Review session.
+
+    Args:
+        project_name (str): name of the project
+        image_path (str): path to images
+        labels_path (str): path to labels
+        csv_path (str): path to csv
+        aniso_zoom (List[int]): anisotropy zoom
+        time_taken (datetime.timedelta): time taken to review
+    """
 
     project_name: str
     image_path: str
@@ -107,7 +126,13 @@ class ModelInfo:
 
 @dataclass
 class WeightsInfo:
-    """Class to record params for weights."""
+    """Class to record params for weights.
+
+    Args:
+        path (str): path to weights
+        custom (bool): whether weights are custom
+        use_pretrained (Optional[bool]): whether to use pretrained weights
+    """
 
     path: str = PRETRAINED_WEIGHTS_DIR
     custom: bool = False
@@ -163,7 +188,16 @@ class PostProcessConfig:
 
 @dataclass
 class CRFConfig:
-    """Class to record params for CRF."""
+    """Class to record params for CRF.
+
+    Args:
+        sa (float): alpha standard deviation, the scale of the spatial part of the appearance/bilateral kernel.
+        sb (float): beta standard deviation, the scale of the color part of the appearance/bilateral kernel.
+        sg (float): gamma standard deviation, the scale of the smoothness/gaussian kernel.
+        w1 (float): weight of the appearance/bilateral kernel.
+        w2 (float): weight of the smoothness/gaussian kernel.
+        n_iter (int, optional): Number of iterations for the CRF post-processing step. Defaults to 5.
+    """
 
     sa: float = 10
     sb: float = 5
@@ -265,7 +299,26 @@ class TrainerConfig:
 
 @dataclass
 class TrainingWorkerConfig:
-    """General class to record config for training."""
+    """General class to record config for training.
+
+    Args:
+        device (str): device to use for training
+        max_epochs (int): max number of epochs
+        learning_rate (np.float64): learning rate
+        validation_interval (int): validation interval
+        batch_size (int): batch size
+        deterministic_config (DeterministicConfig): deterministic config
+        scheduler_factor (float): scheduler factor
+        scheduler_patience (int): scheduler patience
+        weights_info (WeightsInfo): weights info
+        results_path_folder (str): path to save results
+        sampling (bool): whether to sample data into patches
+        num_samples (int): number of patches
+        sample_size (List[int]): patch size
+        do_augmentation (bool): whether to do augmentation
+        num_workers (int): number of workers
+        train_data_dict (dict): dict of train data as {"image": np.array, "labels": np.array}
+    """
 
     # model params
     device: str = "cpu"
@@ -289,7 +342,13 @@ class TrainingWorkerConfig:
 
 @dataclass
 class SupervisedTrainingWorkerConfig(TrainingWorkerConfig):
-    """Class to record config for Trainer plugin."""
+    """Class to record config for Trainer plugin.
+
+    Args:
+        model_info (ModelInfo): model info
+        loss_function (callable): loss function
+        validation_percent (float): validation percent
+    """
 
     model_info: ModelInfo = None
     loss_function: callable = None
@@ -298,28 +357,46 @@ class SupervisedTrainingWorkerConfig(TrainingWorkerConfig):
 
 @dataclass
 class WNetTrainingWorkerConfig(TrainingWorkerConfig):
-    """Class to record config for WNet worker."""
+    """Class to record config for WNet worker.
+
+    Args:
+        in_channels (int): encoder input channels
+        out_channels (int): decoder (reconstruction) output channels
+        num_classes (int): encoder output channels
+        dropout (float): dropout
+        learning_rate (np.float64): learning rate
+        use_clipping (bool): use gradient clipping
+        clipping (float): clipping value
+        weight_decay (float): weight decay
+        intensity_sigma (float): intensity sigma
+        spatial_sigma (float): spatial sigma
+        radius (int): pixel radius for loss computation; might be overriden depending on data shape
+        reconstruction_loss (str): reconstruction loss (MSE or BCE)
+        n_cuts_weight (float): weight for NCuts loss
+        rec_loss_weight (float): weight for reconstruction loss. Must be adjusted depending on images; compare to NCuts loss value
+        train_data_dict (dict): dict of train data as {"image": np.array, "labels": np.array}
+        eval_volume_dict (str): dict of eval volume (optional)
+        eval_batch_size (int): eval batch size (optional)
+    """
 
     # model params
-    in_channels: int = 1  # encoder input channels
-    out_channels: int = 1  # decoder (reconstruction) output channels
-    num_classes: int = 2  # encoder output channels
+    in_channels: int = 1
+    out_channels: int = 1
+    num_classes: int = 2
     dropout: float = 0.65
     learning_rate: np.float64 = 2e-5
-    use_clipping: bool = False  # use gradient clipping
-    clipping: float = 1.0  # clipping value
-    weight_decay: float = 0.01  # 1e-5  # weight decay (used 0.01 historically)
+    use_clipping: bool = False
+    clipping: float = 1.0
+    weight_decay: float = 0.01  # 1e-5
     # NCuts loss params
     intensity_sigma: float = 1.0
     spatial_sigma: float = 4.0
-    radius: int = 2  # pixel radius for loss computation; might be overriden depending on data shape
+    radius: int = 2
     # reconstruction loss params
     reconstruction_loss: str = "MSE"  # or "BCE"
     # summed losses weights
     n_cuts_weight: float = 0.5
-    rec_loss_weight: float = (
-        0.5 / 100
-    )  # must be adjusted depending on images; compare to NCuts loss value
+    rec_loss_weight: float = 0.5 / 100
     # normalization params
     # normalizing_function: callable = remap_image # FIXME: call directly in worker, not a param
     # data params
@@ -337,21 +414,3 @@ class WandBConfig:
 
     mode: str = "disabled"  # disabled, online, enabled
     save_model_artifact: bool = False
-
-
-################
-# CRF config for WNet
-################
-
-
-@dataclass
-class WNetCRFConfig:
-    """Class to store parameters of WNet CRF post-processing."""
-
-    # CRF
-    sa = 10  # 50
-    sb = 10
-    sg = 1
-    w1 = 10  # 50
-    w2 = 10
-    n_iter = 5
