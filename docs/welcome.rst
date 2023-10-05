@@ -13,8 +13,8 @@ Welcome to CellSeg3D!
 
 This plugin will allow you to:
 
-* Review labeled cell volumes from mice whole-brain samples imaged by mesoSPIM microscopy [#]_
-* Train and use segmentation models from the MONAI project [#]_ or custom 3D segmentation models written in PyTorch.
+* Review labeled cell volumes from mice whole-brain samples imaged by mesoSPIM microscopy [1]_
+* Train and use segmentation models from the MONAI project [2]_ or custom 3D segmentation models written in PyTorch.
 
 Additionally, if you do not have labeled data, you can try our unsupervised model
 to help you obtain labels for your data automatically.
@@ -96,6 +96,59 @@ To avoid issues when installing on the ARM64 architecture, please follow these s
 
     pip install napari-cellseg3d
 
+
+Optional requirements
+________________________
+
+In order to reduce install size, we provide some functionalities as optional requirements.
+These are not installed by default and include :abbreviation:
+
+* Optional modules:
+
+  * CRF : Conditional Random Fields for post-processing of predictions from WNet, as suggested by Xia and Kulis [3_]
+
+    .. code-block::
+
+      pip install napari-cellseg3d[crf]
+
+  * **WIP** WandB : WandB support for WNet training. This allows you to monitor your training on the WandB platform.
+    See :ref:`WandB integration in Training <wandb_integration>` for more details.
+
+    .. code-block::
+
+      pip install napari-cellseg3d[wandb]
+      wandb login
+
+  * **WIP** ONNX model support, with or without GPU support. This allows you to run any ONNX model.
+
+
+    To use this feature, select WNet during inference and load your ONNX in the custom weights field.
+    This will run your ONNX model instead of the WNet.
+
+    .. code-block::
+
+      pip install napari-cellseg3d[onnx-cpu]
+
+* Dev requirements (see *pyproject.toml* for details):
+
+  * For local testing:
+
+    .. code-block::
+
+       pip install napari-cellseg3d[test]
+
+  * For building the documentation locally:
+
+    .. code-block::
+
+       pip install napari-cellseg3d[docs]
+
+  * Useful tools:
+
+    .. code-block::
+
+       pip install napari-cellseg3d[dev]
+
 Usage
 --------------------------------------------
 
@@ -140,6 +193,20 @@ From this page you can access the guides on the several modules available for yo
     * :ref:`training_wnet`
     * :ref:`custom_model_guide` **(WIP)**
 
+Other useful napari plugins
+---------------------------------------------
+
+.. important::
+    | Please note that these plugins are not developed by us, and we cannot guarantee their compatibility, functionality or support.
+    | Installing napari plugins in separated environments is recommended.
+
+* `brainreg-napari`_ : Whole-brain registration in napari
+* `napari-brightness-contrast`_ : Adjust brightness and contrast of your images, visualize histograms and more
+* `napari-pyclesperanto-assistant`_ : Image processing workflows using pyclEsperanto
+
+.. _napari-pyclesperanto-assistant: https://www.napari-hub.org/plugins/napari-pyclesperanto-assistant
+.. _napari-brightness-contrast: https://www.napari-hub.org/plugins/napari-brightness-contrast
+.. _brainreg-napari: https://www.napari-hub.org/plugins/brainreg-napari
 
 Acknowledgments & References
 ---------------------------------------------
@@ -147,7 +214,7 @@ This plugin has been developed by Cyril Achard and Maxime Vidal, supervised by M
 
 We also greatly thank Timokleia Kousi for her contributions to this project and the `Wyss Center`_ for project funding.
 
-The TRAILMAP models and original weights used here were ported to PyTorch but originate from the `TRAILMAP project on GitHub`_ [1]_.
+The TRAILMAP models and original weights used here were ported to PyTorch but originate from the `TRAILMAP project on GitHub`_.
 We also provide a model that was trained in-house on mesoSPIM nuclei data in collaboration with Dr. Stephane Pages and Timokleia Kousi.
 
 This plugin mainly uses the following libraries and software:
@@ -160,7 +227,7 @@ This plugin mainly uses the following libraries and software:
 
 * `pyclEsperanto`_ (for the Voronoi Otsu labeling) by Robert Haase
 
-* A custom re-implementation of the `WNet model`_ by Xia and Kulis [#]_
+* A custom re-implementation of the `WNet model`_ by Xia and Kulis [3]_
 
 .. _Mathis Laboratory of Adaptive Motor Control: http://www.mackenziemathislab.org/
 .. _Wyss Center: https://wysscenter.ch/
@@ -174,6 +241,6 @@ This plugin mainly uses the following libraries and software:
 
 .. rubric:: References
 
-.. [#] The mesoSPIM initiative: open-source light-sheet microscopes for imaging cleared tissue, Voigt et al., 2019 ( https://doi.org/10.1038/s41592-019-0554-0 )
-.. [#] MONAI Project website ( https://monai.io/ )
-.. [#] W-Net: A Deep Model for Fully Unsupervised Image Segmentation, Xia and Kulis, 2018 ( https://arxiv.org/abs/1711.08506 )
+.. [1] The mesoSPIM initiative: open-source light-sheet microscopes for imaging cleared tissue, Voigt et al., 2019 ( https://doi.org/10.1038/s41592-019-0554-0 )
+.. [2] MONAI Project website ( https://monai.io/ )
+.. [3] W-Net: A Deep Model for Fully Unsupervised Image Segmentation, Xia and Kulis, 2018 ( https://arxiv.org/abs/1711.08506 )

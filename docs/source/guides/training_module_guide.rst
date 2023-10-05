@@ -185,6 +185,8 @@ Please see the :ref:`training_wnet` section for more information.
 WandB integration (optional)
 ==============================================
 
+.. _wandb_integration:
+
 .. important::
     The WandB integration is currently only available for WNet training.
     Other models may be supported in the future.
