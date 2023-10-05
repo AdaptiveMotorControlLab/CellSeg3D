@@ -89,8 +89,8 @@ Supervised model
 
 * If you're extracting patches :
 
-    * The size of patches to be extracted (ideally, please use a value **close or equal to a power of two**, such as 120 or 60 to ensure correct size. See above note.)
-    * The number of samples to extract from each of your images. A larger number will likely mean better performances, but longer training and larger memory usage
+  * The size of patches to be extracted (ideally, please use a value **close or equal to a power of two**, such as 120 or 60 to ensure correct size. See above note.)
+  * The number of samples to extract from each of your images. A larger number will likely mean better performances, but longer training and larger memory usage
 
 .. note:: If you're using a single image (preferably large) it is recommended to enable patch extraction
 

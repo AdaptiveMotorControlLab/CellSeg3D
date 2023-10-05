@@ -101,7 +101,7 @@ Optional requirements
 ________________________
 
 In order to reduce install size, we provide some functionalities as optional requirements.
-These are not installed by default and include :abbreviation:
+These are not installed by default and include:
 
 * Optional modules:
 
