@@ -111,7 +111,7 @@ These are not installed by default and include:
 
       pip install napari-cellseg3d[crf]
 
-  * **WIP** WandB : WandB support for WNet training. This allows you to monitor your training on the WandB platform.
+  * WandB : WandB support for WNet training. This allows you to monitor your training on the WandB platform.
     See :ref:`WandB integration in Training <wandb_integration>` for more details.
 
     .. code-block::
@@ -120,7 +120,6 @@ These are not installed by default and include:
       wandb login
 
   * **WIP** ONNX model support, with or without GPU support. This allows you to run any ONNX model.
-
 
     To use this feature, select WNet during inference and load your ONNX in the custom weights field.
     This will run your ONNX model instead of the WNet.

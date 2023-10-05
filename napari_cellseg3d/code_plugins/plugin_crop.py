@@ -58,7 +58,7 @@ class Cropping(
         # )
 
         self.image_layer_loader.layer_list.currentIndexChanged.connect(
-            self.auto_set_dims
+            self._auto_set_dims
         )
         # ui.LayerSelecter(self._viewer, "Image 1")
         # self.layer_selection2 = ui.LayerSelecter(self._viewer, "Image 2")
@@ -125,7 +125,7 @@ class Cropping(
         self._build()
         self._toggle_second_image_io_visibility()
         self._check_image_list()
-        self.auto_set_dims()
+        self._auto_set_dims()
 
     def _toggle_second_image_io_visibility(self):
         crop_2nd = self.crop_second_image_choice.isChecked()
@@ -146,7 +146,7 @@ class Cropping(
             except IndexError:
                 return
 
-    def auto_set_dims(self):
+    def _auto_set_dims(self):
         logger.debug(self.image_layer_loader.layer_name())
         data = self.image_layer_loader.layer_data()
         if data is not None:
@@ -320,10 +320,10 @@ class Cropping(
                 layer.visible = False
                 # hide other layers, because of anisotropy
 
-            self.image_layer1 = self.add_isotropic_layer(self.image_layer1)
+            self.image_layer1 = self._add_isotropic_layer(self.image_layer1)
 
             if self.crop_second_image:
-                self.image_layer2 = self.add_isotropic_layer(
+                self.image_layer2 = self._add_isotropic_layer(
                     self.image_layer2, visible=False
                 )
         else:
@@ -351,7 +351,7 @@ class Cropping(
 
         self._add_crop_sliders()
 
-    def add_isotropic_layer(
+    def _add_isotropic_layer(
         self,
         layer,
         colormap="inferno",
@@ -535,6 +535,7 @@ class Cropping(
                 i : i + cropx, j : j + cropy, k : k + cropz
             ]
             highres_crop_layer.translate = scale * izyx
+            highres_crop_layer.reset_contrast_limits()
             highres_crop_layer.refresh()
 
             # self._check_for_empty_layer(
@@ -546,6 +547,7 @@ class Cropping(
                     i : i + cropx, j : j + cropy, k : k + cropz
                 ]
                 labels_crop_layer.translate = scale * izyx
+                highres_crop_layer.reset_contrast_limits()
                 labels_crop_layer.refresh()
 
             self._x = i
