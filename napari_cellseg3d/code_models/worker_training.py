@@ -358,7 +358,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
         self.log(f"Epochs: {self.config.max_epochs}")
         self.log(f"Learning rate: {self.config.learning_rate}")
         self.log(f"Validation interval: {self.config.validation_interval}")
-        if self.config.weights_info.custom:
+        if self.config.weights_info.use_custom:
             self.log(f"Custom weights: {self.config.weights_info.path}")
         elif self.config.weights_info.use_pretrained:
             self.log(f"Pretrained weights: {self.config.weights_info.path}")
@@ -466,7 +466,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
             if WANDB_INSTALLED:
                 wandb.watch(model, log_freq=100)
 
-            if self.config.weights_info.custom:
+            if self.config.weights_info.use_custom:
                 if self.config.weights_info.use_pretrained:
                     weights_file = "wnet.pth"
                     self.downloader.download_weights("WNet", weights_file)
@@ -1034,10 +1034,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
         if self.config.do_augmentation:
             self.log("Data augmentation is enabled")
 
-        if (
-            not self.config.weights_info.use_pretrained
-            and self.config.weights_info.path != PRETRAINED_WEIGHTS_DIR
-        ):
+        if self.config.weights_info.use_custom:
             self.log(f"Using weights from : {self.config.weights_info.path}")
             if self._weight_error:
                 self.log(
@@ -1107,6 +1104,15 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
         start_time = time.time()
 
         try:
+            if WANDB_INSTALLED:
+                config_dict = self.config.__dict__
+                logger.debug(f"wandb config : {config_dict}")
+                wandb.init(
+                    config=config_dict,
+                    project=f"CellSeg3D {self.config.model_info.name}",
+                    mode=self.wandb_config.mode,
+                )
+
             if deterministic_config.enabled:
                 set_determinism(
                     seed=deterministic_config.seed
@@ -1139,6 +1145,9 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
 
             device = torch.device(self.config.device)
             model = model.to(device)
+
+            if WANDB_INSTALLED:
+                wandb.watch(model, log_freq=100)
 
             epoch_loss_values = []
             val_metric_values = []
@@ -1369,7 +1378,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             # time = utils.get_date_time()
             logger.debug("Weights")
 
-            if weights_config.custom:
+            if weights_config.use_custom:
                 if weights_config.use_pretrained:
                     weights_file = model_class.weights_file
                     self.downloader.download_weights(model_name, weights_file)
@@ -1452,6 +1461,10 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                             outputs = outputs.unsqueeze(0)
                     # logger.debug(f"Outputs shape : {outputs.shape}")
                     loss = self.loss_function(outputs, labels)
+
+                    if WANDB_INSTALLED:
+                        wandb.log({"Training/Loss": loss.item()})
+
                     loss.backward()
                     optimizer.step()
                     epoch_loss += loss.detach().item()
@@ -1481,7 +1494,15 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                         supervised=True,
                     )
 
-                # return
+                if WANDB_INSTALLED:
+                    wandb.log({"Training/Epoch loss": epoch_loss / step})
+                    wandb.log(
+                        {
+                            "LR/Model learning rate": optimizer.param_groups[
+                                0
+                            ]["lr"]
+                        }
+                    )
 
                 epoch_loss /= step
                 epoch_loss_values.append(epoch_loss)
@@ -1594,6 +1615,10 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                         )
 
                         metric = dice_metric.aggregate().detach().item()
+
+                        if WANDB_INSTALLED:
+                            wandb.log({"Validation/Dice metric": metric})
+
                         dice_metric.reset()
                         val_metric_values.append(metric)
 
@@ -1656,6 +1681,11 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 f"Train completed, best_metric: {best_metric:.4f} "
                 f"at epoch: {best_metric_epoch}"
             )
+
+            if WANDB_INSTALLED:
+                wandb.log({"Validation/Best metric": best_metric})
+                wandb.log({"Validation/Best metric epoch": best_metric_epoch})
+
             # Save last checkpoint
             weights_filename = f"{model_name}_latest.pth"
             self.log("Saving last model")

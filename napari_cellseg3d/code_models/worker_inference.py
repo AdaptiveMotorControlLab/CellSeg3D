@@ -783,7 +783,7 @@ class InferenceWorker(GeneratorWorker):
                     raise ValueError("Model is None")
                 # try:
                 self.log("Loading weights...")
-                if weights_config.custom:
+                if weights_config.use_custom:
                     weights = weights_config.path
                 else:
                     self.downloader.download_weights(

@@ -19,7 +19,6 @@ from napari_cellseg3d.utils import LOGGER
 
 logger = LOGGER
 
-# TODO(cyril) DOCUMENT !!! and add default values
 # TODO(cyril) add JSON load/save
 
 MODEL_LIST = {
@@ -129,14 +128,14 @@ class WeightsInfo:
     """Class to record params for weights.
 
     Args:
-        path (str): path to weights
-        custom (bool): whether weights are custom
+        path (Optional[str]): path to weights
+        use_custom (Optional[bool]): whether to use custom weights
         use_pretrained (Optional[bool]): whether to use pretrained weights
     """
 
-    path: str = PRETRAINED_WEIGHTS_DIR
-    custom: bool = False
+    path: Optional[str] = PRETRAINED_WEIGHTS_DIR
     use_pretrained: Optional[bool] = False
+    use_custom: Optional[bool] = False
 
 
 #############################################
@@ -412,5 +411,5 @@ class WNetTrainingWorkerConfig(TrainingWorkerConfig):
 class WandBConfig:
     """Class to record parameters for WandB."""
 
-    mode: str = "disabled"  # disabled, online, enabled
+    mode: str = "online"  # disabled, online, offline
     save_model_artifact: bool = False

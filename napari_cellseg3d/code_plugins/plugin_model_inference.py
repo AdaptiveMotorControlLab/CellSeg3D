@@ -738,7 +738,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             model_input_size=self.model_input_size.value(),
         )
 
-        self.weights_config.custom = self.custom_weights_choice.isChecked()
+        self.weights_config.use_custom = self.custom_weights_choice.isChecked()
 
         save_path = self.results_filewidget.text_field.text()
         if not self._check_results_path(save_path):

@@ -1,3 +1,4 @@
+"""Script to run WNet training in Google Colab."""
 import time
 from pathlib import Path
 
@@ -96,6 +97,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
         self.data_shape = None
 
     def log(self, text):
+        """Log a message to the logger and to wandb if installed."""
         logger.info(text)
 
     def get_patch_dataset(self, train_transforms):
@@ -140,6 +142,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
         return self.config.sample_size, dataset
 
     def get_dataset_eval(self, eval_dataset_dict):
+        """Creates a Dataset applying some transforms/augmentation on the data using the MONAI library."""
         eval_transforms = Compose(
             [
                 LoadImaged(keys=["image", "label"]),
@@ -263,6 +266,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
         return self.dataloader, self.eval_dataloader, self.data_shape
 
     def log_parameters(self):
+        """Log the parameters of the training."""
         self.log("*" * 20)
         self.log("-- Parameters --")
         self.log(f"Device: {self.config.device}")
@@ -270,7 +274,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
         self.log(f"Epochs: {self.config.max_epochs}")
         self.log(f"Learning rate: {self.config.learning_rate}")
         self.log(f"Validation interval: {self.config.validation_interval}")
-        if self.config.weights_info.custom:
+        if self.config.weights_info.use_custom:
             self.log(f"Custom weights: {self.config.weights_info.path}")
         elif self.config.weights_info.use_pretrained:
             self.log(f"Pretrained weights: {self.config.weights_info.path}")
@@ -312,6 +316,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
     def train(
         self, provided_model=None, provided_optimizer=None, provided_loss=None
     ):
+        """Train the model."""
         try:
             if self.config is None:
                 self.config = config.WNetTrainingWorkerConfig()
@@ -369,7 +374,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
             if WANDB_INSTALLED:
                 wandb.watch(model, log_freq=100)
 
-            if self.config.weights_info.custom:
+            if self.config.weights_info.use_custom:
                 if self.config.weights_info.use_pretrained:
                     weights_file = "wnet.pth"
                     self.downloader.download_weights("WNet", weights_file)
@@ -605,6 +610,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
             raise e
 
     def eval(self, model, _):
+        """Evaluate the model on the validation set."""
         with torch.no_grad():
             device = self.config.device
             for _k, val_data in enumerate(self.eval_dataloader):

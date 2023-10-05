@@ -186,7 +186,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ###########
 
         self.zip_choice = ui.CheckBox("Compress results")
-        self.validation_percent_choice = ui.Slider(
+        self.train_split_percent_choice = ui.Slider(
             lower=10,
             upper=90,
             default=self.default_config.training_percent * 100,
@@ -331,7 +331,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.zip_choice.setToolTip(
             "Save a copy of the results as a zip folder"
         )
-        self.validation_percent_choice.tooltips = "The percentage of images to retain for training.\nThe remaining images will be used for validation"
+        self.train_split_percent_choice.tooltips = "The percentage of images to retain for training.\nThe remaining images will be used for validation"
         self.epoch_choice.tooltips = "The number of epochs to train for.\nThe more you train, the better the model will fit the training data"
         self.loss_choice.setToolTip(
             "The loss function to use for training.\nSee the list in the training guide for more info"
@@ -683,7 +683,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         #######################
         self.validation_group = ui.GroupedWidget.create_single_widget_group(
             "Training split (%)",
-            self.validation_percent_choice.container,
+            self.train_split_percent_choice.container,
             data_tab_l,
         )
         #######################
@@ -1055,11 +1055,14 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         model_config = config.ModelInfo(name=self.model_choice.currentText())
 
         self.weights_config.path = self.weights_config.path
-        self.weights_config.custom = self.custom_weights_choice.isChecked()
+        self.weights_config.use_custom = self.custom_weights_choice.isChecked()
+
         self.weights_config.use_pretrained = (
             self.use_transfer_choice.isChecked()
             and not self.custom_weights_choice.isChecked()
         )
+        self.weights_config.use_custom = self.custom_weights_choice.isChecked()
+
         deterministic_config = config.DeterministicConfig(
             enabled=self.use_deterministic_choice.isChecked(),
             seed=self.box_seed.value(),
@@ -1126,7 +1129,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         Returns:
             A worker config
         """
-        validation_percent = self.validation_percent_choice.slider_value / 100
+        validation_percent = self.train_split_percent_choice.slider_value / 100
         self.worker_config = config.SupervisedTrainingWorkerConfig(
             device=self.check_device_choice(),
             model_info=model_config,
