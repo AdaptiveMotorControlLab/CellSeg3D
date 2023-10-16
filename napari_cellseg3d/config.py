@@ -101,8 +101,10 @@ class ModelInfo:
     """
 
     name: str = next(iter(MODEL_LIST))
-    model_input_size: Optional[List[int]] = None
-    num_classes: int = 2
+    model_input_size: Optional[
+        List[int]
+    ] = None  # only used by SegResNet and SwinUNETR
+    num_classes: int = 2  # only used by WNets
 
     def get_model(self):
         """Return model from model list."""

@@ -927,6 +927,8 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
     Inherits from :py:class:`napari.qt.threading.GeneratorWorker` via :py:class:`TrainingWorkerBase`.
     """
 
+    labels_not_semantic = False
+
     def __init__(
         self,
         worker_config: config.SupervisedTrainingWorkerConfig,
@@ -1127,6 +1129,17 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             self.log(f"config model : {self.config.model_info.name}")
             model_name = model_config.name
             model_class = model_config.get_model()
+
+            ######## Check that labels are semantic, not instance
+            check_labels = LoadImaged(keys=["label"])(
+                self.config.train_data_dict[0]
+            )
+            if check_labels["label"].max() > 1:
+                self.warn(
+                    "Labels are not semantic, but instance. Converting to semantic, this might cause errors."
+                )
+                self.labels_not_semantic = True
+            ########
 
             if not self.config.sampling:
                 data_check = LoadImaged(keys=["image"])(
@@ -1450,9 +1463,12 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                     )
                     # logger.debug(f"Inputs shape : {inputs.shape}")
                     # logger.debug(f"Labels shape : {labels.shape}")
+                    if self.labels_not_semantic:
+                        labels = labels.clamp(0, 1)
+
                     optimizer.zero_grad()
                     outputs = model(inputs)
-                    # self.log(f"Output dimensions : {outputs.shape}")
+                    # logger.debug(f"Output dimensions : {outputs.shape}")
                     if outputs.shape[1] > 1:
                         outputs = outputs[
                             :, 1:, :, :
