@@ -8,14 +8,14 @@ from napari_cellseg3d.code_models.worker_training import (
 )
 from napari_cellseg3d.utils import LOGGER as logger
 
-RESULTS_PATH = Path("data/cyril") / "CELLSEG_BENCHMARK/cellseg3d_train"
-TRAINING_SPLIT = 0.2  # 0.4, 0.2
 MODEL_NAME = "SwinUNetR"  # SegResNet
+TRAINING_SPLIT = 0.2  # 0.4, 0.2
+SPLIT_FOLDER = "1_c15"  # "2_c1_c4_visual"  "3_c1245_visual"
+DEVICE = "cuda:3"
+
 BATCH_SIZE = 10 if MODEL_NAME == "SegResNet" else 5
 # BATCH_SIZE = 1
-
-SPLIT_FOLDER = "1_c15"  # "2_c1_c4_visual"  "3_c1245_visual"
-
+RESULTS_PATH = Path("data/cyril") / "CELLSEG_BENCHMARK/cellseg3d_train"
 IMAGES = (
     Path("data/cyril")
     / f"CELLSEG_BENCHMARK/TPH2_mesospim/SPLITS/{SPLIT_FOLDER}"
@@ -92,7 +92,7 @@ def remote_training():
     )
 
     worker_config = cfg.SupervisedTrainingWorkerConfig(
-        device="cuda:0",
+        device=DEVICE,
         max_epochs=50,
         learning_rate=0.001,  # 1e-3
         validation_interval=2,
