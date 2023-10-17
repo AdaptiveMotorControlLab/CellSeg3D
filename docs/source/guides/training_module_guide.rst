@@ -1,7 +1,7 @@
 .. _training_module_guide:
 
 Training
-----------------------------------------------
+--------
 
 .. figure:: ../images/plugin_train.png
     :align: center
@@ -9,18 +9,17 @@ Training
     Layout of the training module
 
 Supervised models
-==============================================
+=================
 
-This module allows you to train models for cell segmentation.
-Pre-trained weights are automatically downloaded when needed.
+**Training** allows you to train models for cell segmentation.
+Whenever necessary, pre-trained weights will be automatically downloaded and integrated.
 
 .. important::
-    Currently, only inference on **3D volumes is supported**. Your image and label folders should both contain a set of
-    **3D image files**, currently either **.tif** or **.tiff**. Loading a folder of 2D images as a stack is supported only if
+    At present, only inference on **3D volumes is supported**. Ensure that both your image and label folders contain a set of
+    **3D image files**, in either **`.tif`** or **`.tiff`** format. Loading a folder of 2D images as a stack is supported only if
     you use napari to load the stack as a 3D image, and save it as a 3D image file.
 
-
-Currently, the following pre-defined models are available :
+Currently, the systems offers the following pre-defined models:
 
 ==============   ================================================================================================
 Model            Link to original paper
@@ -39,13 +38,10 @@ VNet             `Fully Convolutional Neural Networks for Volumetric Medical Ima
 .. _Swin UNETR, Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images: https://arxiv.org/abs/2201.01266
 .. _WNet, A Deep Model for Fully Unsupervised Image Segmentation: https://arxiv.org/abs/1711.08506
 
-.. important::
-    The machine learning models used by this program require all images of a dataset to be of the same size.
-    Please ensure that all the images you are loading are of the **same size**, or to use the **"extract patches" (in augmentation tab)** with an appropriately small size to ensure all images being used by the model are of a workable size.
-    If you need to fragment a large file into cubes, please use the Fragment utility in :ref:`utils_module_guide`.
+.. important:: 
+    For the optimal performance of the machine learning models within this program, it is crucial that all images in a dataset have the same dimensions. Before starting loading, please ensure that all images are of the **same size**. If there is a size variance, you can use the **`extract patches`"** option located under the augmentation tab. This will let you define a redused, consistent size for all the images. If you need to fragment a large file into cubes, please refer to the Fragment utility in :ref:`utils_module_guide`.
 
 The training module is comprised of several tabs :
-
 
 1) **Model** tab
 ___________________
@@ -55,16 +51,16 @@ ___________________
 
    Model tab
 
-* Select which model to use (see above table)
-* Whether to use pre-trained weights
+* Select which model to use (see table above).
+* Decide on using pre-trained weights.
 
 .. note::
     The model will be initialized with our pre-trained weights,
-    possibly improving performance (via transfer learning).
+    possibly improving performance via transfer learning.
     Custom weights may also be loaded;
-    simply ensure they are compatible with the model.
+    simply ensure they are compatible with the chosen model.
 
-* Select the device to use for training (CPU or GPU if CUDA is available)
+* Select between CPU and GPU (if CUDA is available).
 
 2) **Data** tab
 ___________________
@@ -74,40 +70,42 @@ ___________________
 
    Data tab
 
-Supervised model
-*****************
+For Supervised Models:
+**********************
+1. **Paths**:
+    - Image Folder (3D image files)
+    - Labels Folder (3D image files)
+    - Results Folder
 
-* The path to the images folder (3D image files)
-* The path to the labels folder (3D image files)
-* The path to the results folder
-* Whether to save a copy of results as a zip file
-* Whether to use images "as is" (**requires all images to be of the same size and cubic**) or extract patches
+2. **Options**: 
+    - Save a copy of results as a **`zip`** file
+    - Either use images "as is" (requires uniform size and cubic volume) or extract patches.
 
-.. important::
-    **All image sizes used should be as close to a power of two as possible, or equal to a power of two.**
-    Images are automatically padded; a 64 pixels cube will be used as is, but a 65 pixel cube will be padded up to 128 pixels, resulting in much higher memory use.
+.. note::
+    Preferably, the image dimensions should be equal to a power of two. Images are automatically padded; a 64 pixels cube will be used as is, while a 65 pixel cube will be padded up to 128 pixels, resulting in much higher memory consumption.
 
-* If you're extracting patches :
+3. If you're extracting patches:
+    - Define patches (ideally, please use a value close or equal to a power of two. See above note.)
+    - Decide on the number of samples to extract from each image. A larger number will likely improve performances, but will also extend training time and increase memory usage.
 
-  * The size of patches to be extracted (ideally, please use a value **close or equal to a power of two**, such as 120 or 60 to ensure correct size. See above note.)
-  * The number of samples to extract from each of your images. A larger number will likely mean better performances, but longer training and larger memory usage
+If you're using a single image (preferably large) it is recommended to enable patch extraction.
 
-.. note:: If you're using a single image (preferably large) it is recommended to enable patch extraction
+4. Decide on executing data augmentation (elastic deforms, intensity shifts. random flipping,etc).
+5. Define the training versus validation proportion according to your dataset.
 
-* Whether to perform data augmentation or not (elastic deforms, intensity shifts. random flipping,etc)
-* The **training versus validation proportion**; you may change this depending on your dataset
+For Unsupervised models
+***********************
+1. **Paths**:
+    - Training Images Folder (3D image files)
+    - Validation Images Folder (3D image files - **OPTIONAL**)
+    - Validation Labels Folder (3D image files - **OPTIONAL**)
+    - Results Folder
 
-Unsupervised model
-*******************
+2. **Options**: 
+    - Save a copy of results as a **`zip`** file
+    - Either use images "as is" (requires uniform size and cubic volume) or extract patches.
 
-* The path to the training images folder (3D image files)
-* The path to the validation images folder (3D image files, **OPTIONAL**)
-* The path to the validation labels folder (3D image files, **OPTIONAL**)
-* The path to the results folder
-* Whether to save a copy of results as a zip file
-* Whether to use images "as is" (**requires all images to be of the same size and cubic**) or extract patches
-* Whether to perform data augmentation or not (elastic deforms, intensity shifts. random flipping,etc)
-
+3. Decide on executing data augmentation (elastic deforms, intensity shifts. random flipping,etc).
 
 3) **Training** tab
 ____________________
@@ -116,52 +114,50 @@ ____________________
    :align: right
 
    Training tab
+**TIP:** Here are all the parameters you can adjust:
 
-* The **loss function** used for training (see table below)
-* The **batch size** : set to larger values for quicker training and possibly better performance but increased memory usage
-* The **learning rate** of the optimizer. Setting it to a lower value if you're using pre-trained weights can improve performance
-* The **number of epochs** (a possibility is to start with 100 epochs, and decrease or increase depending on convergence speed)
-* The **validation epoch interval** (if set to two, the module will use the validation dataset to evaluate the model with the dice metric every two epochs)
-* The **scheduler patience**, which is the number of epochs at a plateau that is waited for before the learning rate is reduced
-* The **scheduler factor**, which is the factor by which to reduce the learning rate once a plateau is reached
-* Whether to use **deterministic training**, and which seed to use.
+* **loss function** : there are four available loss functions you can choose from for your training
+    - [Dice loss](https://docs.monai.io/en/stable/losses.html#diceloss)
+    - [Generalised Dice loss](https://docs.monai.io/en/stable/losses.html#generalizeddiceloss)
+    - [Dice-CE loss](https://docs.monai.io/en/stable/losses.html#diceceloss)
+    - [Tversky loss](https://docs.monai.io/en/stable/losses.html#tverskyloss)
+
+* **batch size** : The batch size determines the number of samples that will be propagated through the network simultaneously. 
+    Larger values can lead to quicker training and potentially better performance, but they will also require more memory. Adjust based on your system's capabilities.
+
+* **learning rate of the optimizer** : This parameter controls the step size during the optimization process. 
+    When using pre-trained weights, setting a lower learning rate can enhance performance.
+
+* **number of epochs** : Refers to the number of times the algorithm will work through the entire training dataset. 
+    A starting suggestion could be 100 epochs, but this might need to be adjusted based on the speed of convergence.
+
+* **validation epoch interval** : Determines how frequently the model is evaluated on the validation dataset. 
+    For instance, if set to two, the module will assess the model's performance using the dice metric every two epochs.
+
+* **scheduler patience** : It defines how many epochs at a plateau the algorithm should wait before reducing the learning rate.
+
+* **scheduler factor** : Once a plateau in model performance is detected, the learning rate is reduced by this factor.
+
+* **deterministic training** :  If enabled, the training process becomes reproducible. You can also specify a seed value.
 
 .. note::
     If the dice metric is better on a given validation interval, the model weights will be saved in the results folder.
 
-The available loss functions are :
-
-========================  ================================================================================================
-Function                  Reference
-========================  ================================================================================================
-Dice loss                 `Dice Loss from MONAI`_ with ``sigmoid=true``
-Generalized Dice loss     `Generalized dice Loss from MONAI`_ with ``sigmoid=true``
-Dice-CE loss              `Dice-CrossEntropy Loss from MONAI`_ with ``sigmoid=true``
-Tversky loss              `Tversky Loss from MONAI`_ with ``sigmoid=true``
-========================  ================================================================================================
-
-.. _Dice Loss from MONAI: https://docs.monai.io/en/stable/losses.html#diceloss
-.. _Focal Loss from MONAI: https://docs.monai.io/en/stable/losses.html#focalloss
-.. _Dice-focal Loss from MONAI: https://docs.monai.io/en/stable/losses.html#dicefocalloss
-.. _Generalized dice Loss from MONAI: https://docs.monai.io/en/stable/losses.html#generalizeddiceloss
-.. _Dice-CrossEntropy Loss from MONAI: https://docs.monai.io/en/stable/losses.html#diceceloss
-.. _Tversky Loss from MONAI: https://docs.monai.io/en/stable/losses.html#tverskyloss
-
 4) **Advanced** tab
 ___________________
 
-This tab is only available with WNet training. Please see the :ref:`WNet parameters list <When using the WNet training module>` section for more information.
+This tab is only available with WNet training. For more information please see the :ref:`WNet parameters list <When using the WNet training module>` section.
 
 Running the training
-_____________________
+____________________
 
-Once you are ready, press the Start button to begin training. The module will automatically train the model.
+Once you are ready, press the **`Start`** button to begin training. The module will automatically train the model.
 
 .. note::
-    You can stop the training at any time by clicking on the start button again.
-    **The training will stop after the next batch has been processed, and will try to save the model. Please note that results might be incomplete if you stop the training this way.**
+    You can stop the training process at any moment by clicking on the **`Start`** button again.
+    **The training will stop after the processing the upcoming batch, and will try to save the model. However, be aware that interrupting can result in partial results.**
 
-After a minimum of two validations steps have been performed (which depends on the interval you set),
+After conducting at least two validation steps (which depends on the interval you set),
 the training loss values and validation metrics will be plotted
 and shown on napari every time a validation step completes.
 This plot is automatically saved each time validation is performed and the final version is stored separately in the results folder.
@@ -187,12 +183,12 @@ WandB integration (optional)
 
 .. _wandb_integration:
 
-.. important::
-    The WandB integration is currently only available for WNet training.
-    Other models may be supported in the future.
+You can use the `Weights and Biases <https://wandb.ai/site>`_ platform to track your training metrics and results.
 
-The training module can be used with the `Weights and Biases <https://wandb.ai/site>`_ platform to track your training metrics and results.
-To use wandb, you will need to create an account on their website and install the wandb python package.
+.. important::
+    The WandB integration is available for WNet training.
+
+To use wandb, you will need to create an account [HERE](https://wandb.ai/site) and install the wandb python package.
 
 * Install :
 
