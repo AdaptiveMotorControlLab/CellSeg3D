@@ -1,7 +1,7 @@
 .. _cropping_module_guide:
 
-Cropping
-========
+Cropping✂️
+==========
 
 .. figure:: ../images/plugin_crop.png
     :align: center
