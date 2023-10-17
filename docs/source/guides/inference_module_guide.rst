@@ -1,23 +1,22 @@
 .. _inference_module_guide:
 
 Inference
-=================================
+=========
 
 .. figure:: ../images/plugin_inference.png
     :align: center
 
     Layout of the inference module
 
-This module allows you to use pre-trained segmentation algorithms (written in Pytorch) on 3D volumes
-to automatically label cells.
+**Inference** allows you to use pre-trained segmentation algorithms, written in Pytorch,
+to automatically label cells in 3D volumes.
 
 .. important::
-    Currently, only inference on **3D volumes is supported**. If running on folders, your image folder
-    should only contain a set of **3D image files** as **.tif**.
-    Otherwise you may run inference on layers in napari. Stacks of 2D files can be loaded as 3D volumes in napari.
+    Currently, the module supports inference on **3D volumes**. When running on folders, make sure that your image folder
+    only contains a set of **3D image files** saved with the **`.tif`** extension.
+    Otherwise you can run inference directly on layers within napari. Stacks of 2D files can be loaded as 3D volumes in napari.
 
-Currently, the following pre-trained models are available :
-
+At present, the following pre-trained models are available :
 ==============   ================================================================================================
 Model            Link to original paper
 ==============   ================================================================================================
@@ -36,11 +35,11 @@ VNet             `Fully Convolutional Neural Networks for Volumetric Medical Ima
 .. _WNet, A Deep Model for Fully Unsupervised Image Segmentation: https://arxiv.org/abs/1711.08506
 
 .. note::
-    For WNet-specific instruction please refer to  the appropriate section below.
+    For WNet-specific instruction please refer to the appropriate section below.
 
 
 Interface and functionalities
---------------------------------
+-----------------------------
 
 .. figure:: ../images/inference_plugin_layout.png
     :align: right
@@ -49,15 +48,15 @@ Interface and functionalities
 
 * **Loading data** :
 
-  | When launching the module, you will be asked to provide an **image layer** or an **image folder** with the 3D volumes you'd like to be labeled.
-  | If loading from folder : All images with the chosen extension (**.tif** currently supported) in this folder will be labeled.
-  | You can then choose an **output folder**, where all the results will be saved.
+  | When launching the module, select either an **image layer** or an **image folder** containing the 3D volumes you wish to label.
+  | When loading from folder : All images with the chosen extension ( currently **.tif**) will be labeled.
+  | Specify an **output folder**, where the labelled results will be saved.
 
-* **Model choice** :
+* **Model selection** :
 
-  | You can then choose one of the provided **models** above, which will be used for inference.
-  | You may also choose to **load custom weights** rather than the pre-trained ones, simply ensure they are **compatible** (e.g. produced from the training module for the same model)
-  | If you choose to use SegResNet or SwinUNetR with custom weights, you will have to provide the size of images it was trained on to ensure compatibility. (See note below)
+  | You can then choose from the listed **models** for inference.
+  | You may also **load custom weights** rather than the pre-trained ones. Make sure these weights are **compatible** (e.g. produced from the training module for the same model).
+  | For SegResNet or SwinUNetR with custom weights, you will have to provide the size of images it was trained on to ensure compatibility. (See note below)
 
 .. note::
     Currently the SegResNet and SwinUNetR models require you to provide the size of the images the model was trained with.
@@ -65,23 +64,20 @@ Interface and functionalities
 
 * **Inference parameters** :
 
-  * Window inference: You can choose to use inference on the whole image at once, which can yield better performance at the cost of more memory.
-    For larger images this is not possible, due to memory limitations.
-    For this reason, you can use a specific window size to run inference on smaller chunks one by one, for lower memory usage.
-  * Window overlap: You may specify the amount of overlap between windows; this overlap helps improve performance by reducing border effects.
+  * **Window inference**: You can choose to use inference on the entire image at once (can yield better performance) or divide the image on smaller chunks, based on your memory constraints.
+  * **Window overlap**: Define the overlap between windows to reduce border effects; 
     Recommended values are 0.1-0. for 3D inference.
-  * Keep on CPU: You can also choose to keep the dataset in the RAM rather than the VRAM to avoid running out of VRAM if you have several images.
-  * Device: You can choose to run inference on the CPU or GPU. If you have a GPU, it is recommended to use it for faster inference.
+  * **Keep on CPU**: You can choose to keep the dataset in RAM rather than VRAM to avoid running out of VRAM if you have several images.
+  * **Device Selection**: You can choose to run inference on either CPU or GPU. A GPU is recommended for faster inference.
 
 * **Anisotropy** :
 
-  | If you want to see your results without **anisotropy** when you have anisotropic images,
-  | you may specify that you have anisotropic data and set the **resolution of your volume in micron**, this will save and show the results without anisotropy.
+ For **anisotropic images** you may set the **resolution of your volume in micron**, to view and save the results without anisotropy.
 
 * **Thresholding** :
 
   You can perform thresholding to **binarize your labels**.
-  All values beneath the chosen **confidence threshold** will be set to 0.
+  All values below the **confidence threshold** will be set to 0.
 
 .. hint::
   It is recommended to first run without thresholding. You can then use the napari contrast limits to find a good threshold value,
@@ -100,14 +96,15 @@ Interface and functionalities
 
 * **Computing objects statistics** :
 
-  You can choose to compute various stats from the labels and save them to a .csv for later use.
-  This includes, for each object :
+  You can choose to compute various stats from the labels and save them to a **`.csv`** file for later use.
+  Statistics include individual object details and general metrics.
+  For each object :
 
   * Object volume (pixels)
   * :math:`X,Y,Z` coordinates of the centroid
   * Sphericity
 
-  And more general statistics :
+  Metrics :
 
   * Image size
   * Total image volume (pixels)
@@ -118,66 +115,48 @@ Interface and functionalities
 
 * **Display options** :
 
-  If running on a folder, you can choose to display the results in napari.
-  If selected, you may choose how many results to display at once, and whether to display the original image alongside the results.
+  For folder-based running, you can choose to display the results in napari.
+  If selected, you may choose the display quantity, and whether to display the original image alongside the results.
 
-Once you are ready, hit the Start button to begin inference.
-The log will dislay relevant information on the process.
-
-.. hint::
-    You can save the log after the worker is finished to easily remember which parameters you ran inference with.
-
-A progress bar will also keep you informed on progress, mainly when running jobs on a folder.
+Once you are ready, hit the **`Start`** button to begin inference.
+The log will keep you updated on the progress.
 
 .. note::
-    Please note that for technical reasons, the log cannot currently display window inference progress.
-    The progress bar for window inference will be displayed in the terminal, however.
-    We will work on improving this in the future.
-
+    - You can save the log to keep track of the parameters you ran inference with.
 
 Once the job has finished, the semantic segmentation will be saved in the output folder.
 
 | The files will be saved using the following format :
 | ``{original_name}_{model}_{date & time}_pred{id}.file_ext``
-|
-| For example, using a VNet on the third image of a folder, called "somatomotor.tif" :
-| *somatomotor_VNet_2022_04_06_15_49_42_pred3.tif*
-|
-| Instance labels will have the "Instance_seg" prefix appended to the name.
 
-The output will also be shown in napari. If you ran on a folder, only your previously selected amount of results will be shown.
-
-.. hint::
-    | Feel free to change the **colormap** or **contrast** when viewing results to ensure you can properly see the labels.
-    | You may want to use **3D view** and **grid mode** in napari when checking results more broadly.
-
+.. note::
+    | Adjust **colormap** or **contrast** to enhance the visibility of labels.
+    | Experiment with **3D view** and **grid mode** in napari when checking your results.
 
 Plotting results
---------------------------------
+----------------
 
-In the ``notebooks`` folder you will find an example of plotting cell statistics using the volume statistics computed by the inference module.
-Simply load the .csv file in a notebook and use the provided functions to plot the desired statistics.
+In the **``notebooks``** folder you will find a plotting guide for cell statistics derived from the inference module.
+Simply load the **`.csv`** file in a notebook and use the provided functions to plot the desired statistics.
 
 
 Unsupervised model - WNet
---------------------------------
+-------------------------
 
-| The WNet model, from the paper `WNet, A Deep Model for Fully Unsupervised Image Segmentation`_, is a fully unsupervised model that can be used to segment images without any labels.
-| It clusters pixels based on brightness, and can be used to segment cells in a variety of modalities.
-| Its use and available options are similar to the above models, with a few notable differences.
+| [WNet model](https://arxiv.org/abs/1711.08506) is a fully unsupervised model used to segment images without any labels.
+| It functions similarly to the above models, with a few notable differences.
 
-.. important::
-    Our provided, pre-trained model should use an input size of 64x64x64. As such, window inference is always enabled
+.. note::
+    Our provided, pre-trained model is optimized for an input size of 64x64x64. As such, window inference is always enabled
     and set to 64. If you want to use a different size, you will have to train your own model using the options listed in :ref:`training_wnet`.
 
-As previously, it requires 3D .tif images (you can also load a 2D stack as 3D via napari).
 For the best inference performance, the model should be retrained on images of the same modality as the ones you want to segment.
 Please see :ref:`training_wnet` for more details on how to train your own model.
 
 .. hint::
-  The WNet always outputs a background class, which due to the unsupervised nature of the model, may be displayed first, showing a very "full" volume.
-  THe plugin will automatically try to show the foreground class, but this might not always succeed.
-  Should this occur, **change the currently shown class by using the slider at the bottom of the napari window.**
+  WNet, due to it's unsupervised nature, outputs a background class. This might make the volume appear densely populated.
+  The plugin will automatically attempt to show the foreground class, but this might not always succeed.
+  If the displayed output seems dominated by the background, you can manually adjust the visible class. To do this, **use the slider positioned at the bottom of the napari window**. 
 
 Source code
 --------------------------------
