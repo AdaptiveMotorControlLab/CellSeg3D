@@ -1,3 +1,4 @@
+# original file by Steffen Schneider https://github.com/stes/docker/tree/main
 FROM nvidia/cuda:11.7.0-runtime-ubuntu20.04
 ENV DEBIAN_FRONTEND=noninteractive
 

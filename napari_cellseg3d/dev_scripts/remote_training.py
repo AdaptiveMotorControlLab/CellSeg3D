@@ -20,7 +20,7 @@ IMAGES = (
 )
 LABELS = (
     Path.home()
-    / "Desktop/Code/CELLSEG_BENCHMARK/TPH2_mesospim/SPLITS/1_c15/labels"
+    / "Desktop/Code/CELLSEG_BENCHMARK/TPH2_mesospim/SPLITS/1_c15/labels/semantic"
 )
 
 
