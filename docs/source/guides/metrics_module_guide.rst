@@ -1,7 +1,7 @@
 .. _metrics_module_guide:
 
-Metrics utility guide
-=====================
+Metrics utility guide 📈
+========================
 
 .. figure:: ../images/plot_example_metrics.png
    :scale: 35 %
