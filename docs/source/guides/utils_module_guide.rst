@@ -1,9 +1,9 @@
 .. _utils_module_guide:
 
 Utilities
-==================================
+=========
 
-Here you will find various utilities for image processing and analysis.
+Here you will find a range of tools for image processing and analysis.
 
 .. note::
     The utility selection menu is found at the bottom of the plugin window.
@@ -13,47 +13,46 @@ You may specify the results directory for saving; afterwards you can run each ac
 Available actions
 __________________
 
-Crop 3D volumes
-----------------------------------
+1. Crop 3D volumes
+------------------
 Please refer to :ref:`cropping_module_guide` for a guide on using the cropping utility.
 
-Convert to instance labels
-----------------------------------
+2. Convert to instance labels
+-----------------------------
 This will convert semantic (binary) labels to instance labels (with a unique ID for each object).
-The available methods for this are :
+The available methods for this are:
 
 * `Connected Components`_ : simple method that will assign a unique ID to each connected component. Does not work well for touching objects (objects will often be fused).
 * `Watershed`_ : method based on topographic maps. Works well for clumped objects and anisotropic volumes depending on the quality of topography; clumed objects may be fused if this is not true.
 * `Voronoi-Otsu`_ : method based on Voronoi diagrams and Otsu thresholding. Works well for clumped objects but only for "round" objects.
 
-Convert to semantic labels
-----------------------------------
-This will convert instance labels with unique IDs per object into 0/1 semantic labels, for example for training.
+3. Convert to semantic labels
+-----------------------------
+Transforms instance labels into 0/1 semantic labels, useful for training purposes.
 
-Remove small objects
-----------------------------------
-You can specify a size threshold in pixels; all objects smaller than this size will be removed in the image.
+4. Remove small objects
+-----------------------
+Input a size threshold (in pixels) to eliminate objects below this size.
 
-Resize anisotropic images
-----------------------------------
-Specify the resolution of your microscope to remove anisotropy from images.
+5. Resize anisotropic images
+----------------------------
+Input your microscope's resolution to remove anisotropy in images.
 
-Threshold images
-----------------------------------
-Remove all values below a threshold in an image.
+6. Threshold images
+-------------------
+Removes values beneath a certain threshold.
 
-Fragment image
-----------------------------------
-Break down a large image into cubes suitable for training.
+7. Fragment image
+-----------------
+Break down large images into smaller cubes, optimal for training.
 
-Conditional Random Field (CRF)
-----------------------------------
-| Attempts to refine semantic predictions by pairing it with the original image.
+8. Conditional Random Field (CRF)
+---------------------------------
+| Refines semantic predictions by pairing them with the original image.
 | For a list of parameters, see the :doc:`CRF API page<../code/_autosummary/napari_cellseg3d.code_models.crf>`.
 
-
 Source code
-__________________
+___________
 
 * :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_convert`
 * :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_crf`
