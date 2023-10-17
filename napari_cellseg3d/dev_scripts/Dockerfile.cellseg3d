@@ -1,0 +1,37 @@
+FROM nvidia/cuda:11.7.0-runtime-ubuntu20.04
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -yy
+RUN apt-get install -yy --no-install-recommends \
+  git curl wget build-essential libhdf5-dev \
+  libgl1-mesa-glx libglib2.0-0 software-properties-common
+
+ENV PYTHON_VERSION 3.8
+RUN add-apt-repository ppa:deadsnakes/ppa
+RUN apt-cache policy python$${PYTHON_VERSION}
+RUN apt-get install -yy --no-install-recommends \
+  python${PYTHON_VERSION} \
+  python3-pip \
+  python${PYTHON_VERSION}-dev
+
+RUN apt-get clean
+RUN rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir  torch==2.0.0 --extra-index-url https://download.pytorch.org/whl/cu117
+
+RUN apt-get update -yy \
+    && apt-get install -yy git \
+    && apt-get install -yy vim
+
+RUN git clone git+https://github.com/AdaptiveMotorControlLab/CellSeg3d@cy/jupyter-books-docs \
+    && cd CellSeg3d \
+    && pip3 install -e .[wandb]
+
+# create user session
+RUN useradd -ms /bin/bash cyril
+USER cyril
+WORKDIR /home/cellseg3d
+
+
+# docker build -f Dockerfile.cellseg3d -t cyril/cellseg3d .
+# docker run -it --rm --gpus device=3 --shm-size=4gb -v "$(pwd)":/workspace/cellseg3d_results --name CellSeg3D-GPU3
