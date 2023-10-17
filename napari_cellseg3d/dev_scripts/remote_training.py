@@ -8,13 +8,17 @@ from napari_cellseg3d.code_models.worker_training import (
 )
 from napari_cellseg3d.utils import LOGGER as logger
 
-RESULTS_PATH = Path("/data/cyril") / "CELLSEG_BENCHMARK/cellseg3d_train"
 TRAINING_SPLIT = 0.2  # 0.4, 0.8
-MODEL_NAME = "SwinUNetR"  # SegResNet
+MODEL_NAME = "SegResNet"  # "SwinUNetR"
 BATCH_SIZE = 10 if MODEL_NAME == "SegResNet" else 5
 # BATCH_SIZE = 1
 
 SPLIT_FOLDER = "1_c15"  # "2_c1_c4_visual"  "3_c1245_visual"
+RESULTS_PATH = (
+    Path("/data/cyril")
+    / "CELLSEG_BENCHMARK/cellseg3d_train"
+    / f"{MODEL_NAME}_{SPLIT_FOLDER}_{int(TRAINING_SPLIT*100)}"
+)
 
 IMAGES = (
     Path("/data/cyril")
