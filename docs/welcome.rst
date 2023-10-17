@@ -1,23 +1,17 @@
 Welcome to CellSeg3D!
-=============================================
-
-
-**CellSeg3D is a toolbox for 3D segmentation of cells in light-sheet microscopy images, using napari**
-
+=====================
 
 
 .. figure:: ./source/images/plugin_welcome.png
     :align: center
 
+**CellSeg3D** is a toolbox for 3D segmentation of cells in light-sheet microscopy images, using napari.
+Use CellSeg3D to:
 
+* Review labeled cell volumes from whole-brain samples of mice imaged by mesoSPIM microscopy [#]_
+* Train and use segmentation models from the MONAI project [#]_ or implement your own custom 3D segmentation models using PyTorch.
 
-This plugin will allow you to:
-
-* Review labeled cell volumes from mice whole-brain samples imaged by mesoSPIM microscopy [1]_
-* Train and use segmentation models from the MONAI project [2]_ or custom 3D segmentation models written in PyTorch.
-
-Additionally, if you do not have labeled data, you can try our unsupervised model
-to help you obtain labels for your data automatically.
+No labeled data? Try our unsupervised model to automate your data labelling.
 
 The models provided should be adaptable to other tasks related to detection of 3D objects,
 outside of whole-brain light-sheet microscopy.
@@ -28,6 +22,90 @@ outside of whole-brain light-sheet microscopy.
    :align: center
 
    Demo of the plugin
+
+Installation
+--------------------------------------------
+CellSeg3D can be run on Windows, Linux, or MacOS. MacOS users please refer to **:ref:`_Mac_installation`**.
+
+You can install `napari-cellseg3d` via pip:
+
+.. code-block::
+
+  pip install napari-cellseg3d
+
+For local installation after cloning from GitHub, please run the following in the CellSeg3D folder:
+
+.. code-block::
+
+  pip install -e .
+
+If the installation was successful, you will find the napari-cellseg3D plugin in the Plugins section of napari.
+
+.. _Mac_installation:
+M1 Mac installation
+________________________
+To avoid issues when installing on the ARM64 architecture, we recommend to use our supplied CONDA environment.
+If you use M1 or M2 chip in your MacBook, you should install miniconda3, which operates on the same principles as anaconda.
+Click for more information about [miniconda3](https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html).
+
+First, decide and navigate to the folder you wish to save the plugin (any folder will work). Next, git clone this [repository](https://github.com/AdaptiveMotorControlLab/CellSeg3d).
+Simply run:
+
+.. code-block::
+
+    git clone https://github.com/AdaptiveMotorControlLab/CellSeg3d.git
+
+
+Now, in terminal go to CellSeg3D folder and create a new conda environment:
+.. code-block::
+
+    conda env create -f conda/napari_cellseg3d_m1.yml
+
+You can use this environment from anywhere in your computer. Simply activate it:
+.. code-block::
+
+    conda activate napari_cellseg3d_m1
+
+Then install PyQt5 from conda separately :
+
+.. code-block::
+
+    conda install -c anaconda pyqt
+
+Lastly, install the plugin :
+
+.. code-block::
+
+    pip install napari-cellseg3d
+
+
+Usage
+--------------------------------------------
+
+To use the plugin, please run:
+
+.. code-block::
+
+    napari
+
+Then go into **Plugins > napari-cellseg3d**
+
+.. figure:: ./source/images/plugin_menu.png
+    :align: center
+
+
+and choose the correct tool to use:
+
+- **:ref:`review_module_guide`**: Examine and refine your labels, whether manually annotated or predicted by a pre-trained model. 
+- **:ref:`training_module_guide`**:  Train segmentation algorithms on your own data.
+- **:ref:`inference_module_guide`**: Use pre-trained segmentation algorithms on volumes to automate cell labelling.
+- **:ref:`utils_module_guide`**: Leverage various utilities, including cropping your volumes and labels, converting semantic to instance labels, and more.
+- **Help/About...** : Quick access to version info, Github pages and documentation.
+
+.. hint::
+    Many buttons have tooltips to help you understand what they do.
+    Simply hover over them to see the tooltip.
+
 
 Requirements
 --------------------------------------------
@@ -52,124 +130,6 @@ you need further assistance, please see below.
 .. _MONAI's optional dependencies: https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies
 .. _PyTorch's website: https://pytorch.org/get-started/locally/
 
-
-Installation
---------------------------------------------
-
-You can install `napari-cellseg3d` via pip:
-
-.. code-block::
-
-  pip install napari-cellseg3d
-
-For local installation after cloning from GitHub, please run the following in the CellSeg3D folder:
-
-.. code-block::
-
-  pip install -e .
-
-If the installation was successful, you will find the napari-cellseg3D plugin in the Plugins section of napari.
-
-M1 Mac installation
-________________________
-To avoid issues when installing on the ARM64 architecture, please follow these steps.
-
-1) Create a new conda env using the provided conda/napari_cellseg3d_m1.yml file :
-
-
-.. code-block::
-
-    git clone https://github.com/AdaptiveMotorControlLab/CellSeg3d.git
-    cd CellSeg3d
-    conda env create -f conda/napari_cellseg3d_m1.yml
-    conda activate napari_cellseg3d_m1
-
-2) Then install PyQt5 from conda separately :
-
-.. code-block::
-
-    conda install -c anaconda pyqt
-
-3) And install the plugin :
-
-.. code-block::
-
-    pip install napari-cellseg3d
-
-
-Optional requirements
-________________________
-
-In order to reduce install size, we provide some functionalities as optional requirements.
-These are not installed by default and include:
-
-* Optional modules:
-
-  * CRF : Conditional Random Fields for post-processing of predictions from WNet, as suggested by Xia and Kulis [3_]
-
-    .. code-block::
-
-      pip install napari-cellseg3d[crf]
-
-  * WandB : WandB support for WNet training. This allows you to monitor your training on the WandB platform.
-    See :ref:`WandB integration in Training <wandb_integration>` for more details.
-
-    .. code-block::
-
-      pip install napari-cellseg3d[wandb]
-      wandb login
-
-  * **WIP** ONNX model support, with or without GPU support. This allows you to run any ONNX model.
-
-    To use this feature, select WNet during inference and load your ONNX in the custom weights field.
-    This will run your ONNX model instead of the WNet.
-
-    .. code-block::
-
-      pip install napari-cellseg3d[onnx-cpu]
-
-* Dev requirements (see *pyproject.toml* for details):
-
-  * For local testing:
-
-    .. code-block::
-
-       pip install napari-cellseg3d[test]
-
-  * For building the documentation locally:
-
-    .. code-block::
-
-       pip install napari-cellseg3d[docs]
-
-  * Useful tools:
-
-    .. code-block::
-
-       pip install napari-cellseg3d[dev]
-
-Usage
---------------------------------------------
-
-To use the plugin, please run:
-
-.. code-block::
-
-    napari
-
-Then go into **Plugins > napari-cellseg3d**, and choose the tool to use:
-
-- **Review**: Review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring
-- **Training**:  Train segmentation algorithms from labeled volumes
-- **Inference**: Use pre-trained segmentation algorithms on volumes to automatically label cells
-- **Utilities**: Use several utilities, e.g. to crop your volumes and labels, convert semantic labels to instance, and more
-- **Help/About...** : Quick access to version info, Github pages and documentation
-
-.. hint::
-    Many buttons have tooltips to help you understand what they do.
-    Simply Hover over them to see the tooltip.
-
-See below for links to detailed guides regarding the usage of the modules.
 
 Documentation contents
 --------------------------------------------
