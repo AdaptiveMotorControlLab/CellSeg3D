@@ -8,20 +8,20 @@ from napari_cellseg3d.code_models.worker_training import (
 )
 from napari_cellseg3d.utils import LOGGER as logger
 
+RESULTS_PATH = Path("/data/cyril") / "CELLSEG_BENCHMARK/cellseg3d_train"
+TRAINING_SPLIT = 0.2  # 0.4, 0.8
 MODEL_NAME = "SwinUNetR"  # SegResNet
-TRAINING_SPLIT = 0.2  # 0.4, 0.2
-SPLIT_FOLDER = "1_c15"  # "2_c1_c4_visual"  "3_c1245_visual"
-DEVICE = "cuda:3"
-
 BATCH_SIZE = 10 if MODEL_NAME == "SegResNet" else 5
 # BATCH_SIZE = 1
-RESULTS_PATH = Path("data/cyril") / "CELLSEG_BENCHMARK/cellseg3d_train"
+
+SPLIT_FOLDER = "1_c15"  # "2_c1_c4_visual"  "3_c1245_visual"
+
 IMAGES = (
-    Path("data/cyril")
+    Path("/data/cyril")
     / f"CELLSEG_BENCHMARK/TPH2_mesospim/SPLITS/{SPLIT_FOLDER}"
 )
 LABELS = (
-    Path("data/cyril")
+    Path("/data/cyril")
     / f"CELLSEG_BENCHMARK/TPH2_mesospim/SPLITS/{SPLIT_FOLDER}/labels/semantic"
 )
 
@@ -53,6 +53,8 @@ def prepare_data(images_path, labels_path):
     """Prepares data for training."""
     assert images_path.exists(), f"Images path does not exist: {images_path}"
     assert labels_path.exists(), f"Labels path does not exist: {labels_path}"
+    if not RESULTS_PATH.exists():
+        RESULTS_PATH.mkdir(parents=True, exist_ok=True)
 
     images = sorted(Path.glob(images_path, "*.tif"))
     labels = sorted(Path.glob(labels_path, "*.tif"))
@@ -83,7 +85,7 @@ def remote_training():
     # print(f"Results path: {RESULTS_PATH.resolve()}")
 
     wandb_config = cfg.WandBConfig(
-        mode="online",  # "online",
+        mode="online",
         save_model_artifact=True,
     )
 
@@ -92,7 +94,7 @@ def remote_training():
     )
 
     worker_config = cfg.SupervisedTrainingWorkerConfig(
-        device=DEVICE,
+        device="cuda:0",
         max_epochs=50,
         learning_rate=0.001,  # 1e-3
         validation_interval=2,
@@ -101,7 +103,7 @@ def remote_training():
         scheduler_factor=0.5,
         scheduler_patience=10,  # use default scheduler
         weights_info=cfg.WeightsInfo(),  # no pretrained weights
-        # results_path_folder=str(RESULTS_PATH),
+        results_path_folder=str(RESULTS_PATH),
         sampling=False,
         do_augmentation=True,
         train_data_dict=prepare_data(IMAGES, LABELS),
