@@ -1,7 +1,7 @@
 .. _utils_module_guide:
 
-Utilities
-=========
+Utilities 🛠
+============
 
 Here you will find a range of tools for image processing and analysis.
 
