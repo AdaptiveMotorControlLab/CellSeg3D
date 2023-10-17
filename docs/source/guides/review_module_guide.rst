@@ -13,31 +13,12 @@ At the end, the sytsem saves the updated status of each file in a csv file. Addi
 
 Launching the review process
 ---------------------------------
-.. raw:: html
+.. figure:: ../images/Review_Parameters.png
+ :align: right
+ :width: 300px
 
-    <style>
-    .custom-container {
-        display: flex;
-    }
-    .custom-container img {
-        width: 400px;  
-        height: 1300px; 
-        margin-right: 20px;
-    }
-    .custom-container .content {
-        max-width: calc(100% - 320px);
-    }
-    </style>
-
-
-.. container:: custom-container
-
-    .. image:: ../images/Review_Parameters.png
-
-    .. container:: content
-
-
- 1. **Data paths:**
+ 
+1. **Data paths:**
          - *Starting a new review:* Choose the **`New review`** option, and select the corresponding layers within Napari.
          - *Continuing an existing review:* Select the **`Existing review`** option, and choose the folder that contains the image, labels, and CSV file.
 
