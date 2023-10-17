@@ -74,7 +74,7 @@ Saving your cropped volume
 - If you want more options (name, format) when saving:
     - Select the desired layer.
     - Navigate in the napari menu to **`File -> Save selected layer`**.
-    - Press **CTRL+S** once you have selected the correct layer.
+    - Press **`CTRL+S`** once you have selected the correct layer.
 
 
 Source code
