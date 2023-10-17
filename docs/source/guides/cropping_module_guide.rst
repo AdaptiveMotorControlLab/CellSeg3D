@@ -12,16 +12,16 @@ Cropping✂️
 by selecting a fixed size volume and moving it around the image.
 
 To access it:
-- Navigate to **`Plugins -> Utilities`**.
-- Choose **`Crop`** from the bottom menu.
+    - Navigate to **`Plugins -> Utilities`**.
+    - Choose **`Crop`** from the bottom menu.
 
 Once cropped, you have multiple options to save the volumes and labels:
-- Use the **`Quicksave`** button in Napari.
-- Select the layer and then go to **`File` -> `Save selected layers`**. 
-- With the correct layer highlighted, simply press **`CTRL + S`**.
+    - Use the **`Quicksave`** button in Napari.
+    - Select the layer and then go to **`File` -> `Save selected layers`**. 
+    - With the correct layer highlighted, simply press **`CTRL + S`**.
 
 .. Note::
-    For more on utility tools, see :doc:`utils_module_guide`
+    For more on utility tools, see :doc:`utils_module_guide`.
 
 Launching the cropping process
 ------------------------------
@@ -36,17 +36,16 @@ To update the size, you will need to restart the process.
 .. important::
     This will scale the image in the viewer, but saved images will **still be anisotropic.** To resize your image, see :doc:`utils_module_guide`.
 
-4. Press **Start** to start the cropping process.
+4. Press **`Start`** to start the cropping process.
 If you'd like to modify the volume size, change the parameters as described and hit **`Start`** again.
 
 Creating new layers
 -------------------
 To "zoom in" on a specific portion of your volume:
 
-1. Use the `Create new layers` checkbox next time you hit `Start`. This option lets you make an additional cropping layer instead of replacing the current one.
+- Use the `Create new layers` checkbox next time you hit `Start`. This option lets you make an additional cropping layer instead of replacing the current one.
 
-2. This way, you can first select your region of interest, enable the option, choose the previously cropped area as the input layer,
-and define a reduced crop size for more refined cropping within your region of interest.
+- This way, you can first select your region of interest by using the tool as described above, then enable the option, select the cropped region produced before as the input layer, and define a smaller crop size in order to further crop within your region of interest.
 
 Interface & functionalities
 ---------------------------
