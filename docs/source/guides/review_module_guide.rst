@@ -1,6 +1,6 @@
 .. _review_module_guide:
 
-Review
+Review🔍
 =================================
 
 .. figure:: ../images/plugin_review.png
@@ -8,8 +8,9 @@ Review
 
     Layout of the review module
 
-**Review** allows you to inspect your labels, which may be manually created or predicted from a pe-trained model, and make necessary corrections.
-At the end, the sytsem saves the updated status of each file in a csv file. Additionally, the time taken per slice review is logged, enabling efficient monitoring.
+**Review** allows you to inspect your labels, which may be manually created or predicted by a model, and make necessary corrections.
+The system will save the updated status of each file in a csv file.
+Additionally, the time taken per slice review is logged, enabling efficient monitoring.
 
 Launching the review process
 ---------------------------------
@@ -17,7 +18,7 @@ Launching the review process
  :align: right
  :width: 300px
 
- 
+
 1. **Data paths:**
          - *Starting a new review:* Choose the **`New review`** option, and select the corresponding layers within Napari.
          - *Continuing an existing review:* Select the **`Existing review`** option, and choose the folder that contains the image, labels, and CSV file.
@@ -40,7 +41,7 @@ Launching the review process
 4. **Beginning the Review:**
     Press **`Start reviewing`** once you are ready to start the review process.
 
- .. warning::
+.. warning::
     Starting a review session opens a new window and closes the current one.
     Make sure you have saved your work before starting the review session.
 
@@ -57,11 +58,11 @@ Once you have launched the review process, you will have access to the following
 .. hlist::
    :columns: 1
 
-       * A dialog to choose where to save the verified and/or corrected annotations, and a button to save the labels. They will be saved on the file format you provided.
-       * A button to update the status of the slice in the csv file (in this case : checked/not checked)
-       * A graph with projections in the x-y, y-z and x-z planes, to allow the reviewer to better understand the context of the label and decide whether the image should be labeled or not. Use **shift-click** anywhere on the image or label layer to update the plot to the location being reviewed.
+   * A dialog to choose where to save the verified and/or corrected annotations, and a button to save the labels. They will be using the provided file format.
+   * A button to update the status of the slice in the csv file (in this case : checked/not checked)
+   * A graph with projections in the x-y, y-z and x-z planes, to allow the reviewer to better understand the context of the volume and decide whether the image should be labeled or not. Use **shift-click** anywhere on the image or label layer to update the plot to the location being reviewed.
 
-To recap, these, you can check your labels, correct them, save them and keep track of which slices have been checked or not.
+To recap, you can check your labels, correct them, save them and keep track of which slices have been checked or not.
 
 .. note::
     You can find the csv file containing the annotation status **in the same folder as the labels**.

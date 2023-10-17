@@ -1,6 +1,6 @@
 .. _inference_module_guide:
 
-Inference
+Inference📊
 =========
 
 .. figure:: ../images/plugin_inference.png
@@ -65,7 +65,7 @@ Interface and functionalities
 * **Inference parameters** :
 
   * **Window inference**: You can choose to use inference on the entire image at once (can yield better performance) or divide the image on smaller chunks, based on your memory constraints.
-  * **Window overlap**: Define the overlap between windows to reduce border effects; 
+  * **Window overlap**: Define the overlap between windows to reduce border effects;
     Recommended values are 0.1-0. for 3D inference.
   * **Keep on CPU**: You can choose to keep the dataset in RAM rather than VRAM to avoid running out of VRAM if you have several images.
   * **Device Selection**: You can choose to run inference on either CPU or GPU. A GPU is recommended for faster inference.
@@ -156,7 +156,7 @@ Please see :ref:`training_wnet` for more details on how to train your own model.
 .. hint::
   WNet, due to it's unsupervised nature, outputs a background class. This might make the volume appear densely populated.
   The plugin will automatically attempt to show the foreground class, but this might not always succeed.
-  If the displayed output seems dominated by the background, you can manually adjust the visible class. To do this, **use the slider positioned at the bottom of the napari window**. 
+  If the displayed output seems dominated by the background, you can manually adjust the visible class. To do this, **use the slider positioned at the bottom of the napari window**.
 
 Source code
 --------------------------------

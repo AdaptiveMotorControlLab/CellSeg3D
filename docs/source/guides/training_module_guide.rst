@@ -1,7 +1,7 @@
 .. _training_module_guide:
 
-Training 🏋️‍♂️
------------
+Training📉
+----------------
 
 .. figure:: ../images/plugin_train.png
     :align: center
@@ -9,7 +9,7 @@ Training 🏋️‍♂️
     Layout of the training module
 
 Supervised models
-=================
+===================
 
 **Training** allows you to train models for cell segmentation.
 Whenever necessary, pre-trained weights will be automatically downloaded and integrated.
@@ -38,8 +38,10 @@ VNet             `Fully Convolutional Neural Networks for Volumetric Medical Ima
 .. _Swin UNETR, Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images: https://arxiv.org/abs/2201.01266
 .. _WNet, A Deep Model for Fully Unsupervised Image Segmentation: https://arxiv.org/abs/1711.08506
 
-.. important:: 
-    For the optimal performance of the machine learning models within this program, it is crucial that all images in a dataset have the same dimensions. Before starting loading, please ensure that all images are of the **same size**. If there is a size variance, you can use the **`extract patches`"** option located under the augmentation tab. This will let you define a redused, consistent size for all the images. If you need to fragment a large file into cubes, please refer to the Fragment utility in :ref:`utils_module_guide`.
+.. important::
+    For the optimal performance of the machine learning models within this program, it is crucial that all images in a dataset have the same dimensions. Before starting loading, please ensure that all images are of the **same size**.
+    If there is a size variance, you can use the **`extract patches`"** option located under the augmentation tab. This will let you define a reduced, consistent size for all the images.
+    If you need to fragment a large file into cubes, please refer to the Fragment utility in :ref:`utils_module_guide`.
 
 The training module is comprised of several tabs :
 
@@ -77,7 +79,7 @@ For Supervised Models:
     - Labels Folder (3D image files)
     - Results Folder
 
-2. **Options**: 
+2. **Options**:
     - Save a copy of results as a **`zip`** file
     - Either use images "as is" (requires uniform size and cubic volume) or extract patches.
 
@@ -101,7 +103,7 @@ For Unsupervised models
     - Validation Labels Folder (3D image files - **OPTIONAL**)
     - Results Folder
 
-2. **Options**: 
+2. **Options**:
     - Save a copy of results as a **`zip`** file
     - Either use images "as is" (requires uniform size and cubic volume) or extract patches.
 
@@ -114,36 +116,50 @@ ____________________
    :align: right
 
    Training tab
-**TIP:** Here are all the parameters you can adjust:
 
-* **loss function** : there are four available loss functions you can choose from for your training
-    - [Dice loss](https://docs.monai.io/en/stable/losses.html#diceloss)
-    - [Generalised Dice loss](https://docs.monai.io/en/stable/losses.html#generalizeddiceloss)
-    - [Dice-CE loss](https://docs.monai.io/en/stable/losses.html#diceceloss)
-    - [Tversky loss](https://docs.monai.io/en/stable/losses.html#tverskyloss)
 
-* **batch size** : The batch size determines the number of samples that will be propagated through the network simultaneously. 
+* **Loss function** :
+     - `Dice Loss from MONAI`_
+     - `Generalized dice Loss from MONAI`_
+     - `Dice-CrossEntropy Loss from MONAI`_
+     - `Tversky Loss from MONAI`_
+
+.. _Dice Loss from MONAI: https://docs.monai.io/en/stable/losses.html#diceloss
+.. _Focal Loss from MONAI: https://docs.monai.io/en/stable/losses.html#focalloss
+.. _Dice-focal Loss from MONAI: https://docs.monai.io/en/stable/losses.html#dicefocalloss
+.. _Generalized dice Loss from MONAI: https://docs.monai.io/en/stable/losses.html#generalizeddiceloss
+.. _Dice-CrossEntropy Loss from MONAI: https://docs.monai.io/en/stable/losses.html#diceceloss
+.. _Tversky Loss from MONAI: https://docs.monai.io/en/stable/losses.html#tverskyloss
+
+* **Batch size** :
+    The batch size determines the number of samples that will be propagated through the network simultaneously.
     Larger values can lead to quicker training and potentially better performance, but they will also require more memory. Adjust based on your system's capabilities.
 
-* **learning rate of the optimizer** : This parameter controls the step size during the optimization process. 
+* **Learning rate of the optimizer** :
+    This parameter controls the step size during the optimization process.
     When using pre-trained weights, setting a lower learning rate can enhance performance.
 
-* **number of epochs** : Refers to the number of times the algorithm will work through the entire training dataset. 
+* **Number of epochs** :
+    Refers to the number of times the algorithm will work through the entire training dataset.
     A starting suggestion could be 100 epochs, but this might need to be adjusted based on the speed of convergence.
 
-* **validation epoch interval** : Determines how frequently the model is evaluated on the validation dataset. 
+* **Validation epoch interval** :
+    Determines how frequently the model is evaluated on the validation dataset.
     For instance, if set to two, the module will assess the model's performance using the dice metric every two epochs.
 
-* **scheduler patience** : It defines how many epochs at a plateau the algorithm should wait before reducing the learning rate.
+* **Scheduler patience** :
+    It defines how many epochs at a plateau the algorithm should wait before reducing the learning rate.
 
-* **scheduler factor** : Once a plateau in model performance is detected, the learning rate is reduced by this factor.
+* **Scheduler factor** :
+    Once a plateau in model performance is detected, the learning rate is reduced by this factor.
 
-* **deterministic training** :  If enabled, the training process becomes reproducible. You can also specify a seed value.
+* **Deterministic training** :
+    If enabled, the training process becomes reproducible. You can also specify a seed value.
 
 .. note::
     If the dice metric is better on a given validation interval, the model weights will be saved in the results folder.
 
-4) **Advanced** tab
+1) **Advanced** tab
 ___________________
 
 This tab is only available with WNet training. For more information please see the :ref:`WNet parameters list <When using the WNet training module>` section.
@@ -155,7 +171,7 @@ Once you are ready, press the **`Start`** button to begin training. The module w
 
 .. note::
     You can stop the training process at any moment by clicking on the **`Start`** button again.
-    **The training will stop after the processing the upcoming batch, and will try to save the model. However, be aware that interrupting can result in partial results.**
+    **The training will stop after processing the upcoming batch, and will try to save the model. However, be aware that interrupting will result in partial results.**
 
 After conducting at least two validation steps (which depends on the interval you set),
 the training loss values and validation metrics will be plotted
