@@ -1,7 +1,7 @@
 .. _training_module_guide:
 
-Training
---------
+Training 🏋️‍♂️
+-----------
 
 .. figure:: ../images/plugin_train.png
     :align: center
