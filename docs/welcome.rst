@@ -136,7 +136,8 @@ and choose the correct tool to use:
 
 Documentation contents
 --------------------------------------------
-From this page you can access the guides on the several modules available for your tasks, such as :
+_`From this page you can access the guides on the several modules available for your tasks`, such as :
+
 
 * Main modules :
     * :ref:`review_module_guide`

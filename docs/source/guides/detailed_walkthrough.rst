@@ -5,6 +5,10 @@ Detailed walkthrough - Supervised learning
 
 The following guide will show you how to use the plugin's workflow, starting from human-labeled annotation volume, to running inference on novel volumes.
 
+.. important::
+  This walkthrough is meant to be a gentle introduction to the plugin's usage.
+  For complete documentation of all options, please see the :ref:`User guides <From this page you can access the guides on the several modules available for your tasks>`.
+
 Preparing images and labels
 -------------------------------
 
@@ -91,15 +95,12 @@ There are a few more options on this tab:
   imaged by a mesoSPIM (or other lightsheet). If you have your own weights for the provided models, you can also choose to load them by
   checking the related option; simply make sure they are compatible with the model you selected.
 
-  To import your own model, see : :ref:`custom_model_guide`, please note this is still a WIP.
+  To import your own custom model, see : :ref:`custom_model_guide`, please note this is still a WIP.
 
 * Validation proportion : the percentage is listed is how many images will be used for training versus validation.
   Validation can work with as little as one image, however performance will greatly improve the more images there are.
   Use 90% only if you have a very small dataset (less than 5 images).
 
-* Save as zip : simply copies the results in a zip archive for easier transfer.
-
-Now, we can switch to the next tab : data augmentation.
 
 If you have cropped cubic images with a power of two as the edge length, you do not need to extract patches,
 your images are usable as is.
@@ -109,20 +110,20 @@ of two no matter the size you choose. For optimal performance, make sure to use 
 a power of two still, such as 64 or 120.
 
 .. important::
-    Using a too large value for the size will cause memory issues. If this happens, restart the worker with smaller volumes.
+    Using too large a value for the size will cause memory issues. If this happens, restart the worker with smaller volumes.
 
 You also have the option to use data augmentation, which can improve performance and generalization.
 In most cases this should left enabled.
 
 Finally, the last tab lets you choose :
 
-* The models
+* The model:
 
-    * SegResNet is a lightweight model (low memory requirements) from MONAI originally designed for 3D fMRI data.
-    * VNet is a larger (than SegResNet) CNN from MONAI designed for medical image segmentation.
-    * TRAILMAP is our implementation in PyTorch additionally trained on mouse cortical neural nuclei from mesoSPIM data.
-    * SwinUNetR is a MONAI implementation of the SwinUNetR model. It is costly in compute and memory, but can achieve high performance.
-    * WNet is our reimplementation of an unsupervised model, which can be used to produce segmentation without labels.
+  * SegResNet is a lightweight model (low memory requirements) from MONAI originally designed for 3D fMRI data.
+  * VNet is a more resource-intensive CNN from MONAI designed for medical image segmentation.
+  * TRAILMAP is our implementation in PyTorch of the model by Pun et al.
+  * SwinUNetR is a MONAI implementation of the SwinUNetR model. It is costly in compute and memory, but can achieve high performance.
+  * WNet is our reimplementation of an unsupervised model, which can be used to produce segmentation without labels.
 
 
 * The loss : for object detection in 3D volumes you'll likely want to use the Dice or Dice-focal Loss.
@@ -195,8 +196,9 @@ If instead you'd prefer to have instance labels, you can enable instance segment
 
 * The method
 
-    * Connected components : all separated items with a value above the threshold will be labeled as an instance
-    * Watershed : objects will be assigned an ID by using the gradient probability at the center of each (set the threshold to a decently high probability for best results).
+  * Voronoi-Otsu : objects will be assigned an ID by using the Voronoi diagram of the centroids of each object, then using Otsu's thresholding to separate them. The sigmas should roughly match cell diameter.
+  * Connected components : all separated items with a value above the threshold will be labeled as an instance
+  * Watershed : objects will be assigned an ID by using the gradient probability at the center of each (set the threshold to a decently high probability for best results).
 
 * The threshold : Objects above this threshold will be retained as single instances.
 
@@ -224,16 +226,6 @@ If you wish to see some of the results, you can leave the *View results in napar
 
 
 You can then launch inference and the results will be saved to your specified folder.
-
-.. figure:::: ../image/inference_results_example.png
-
-   Example of results from inference with original volumes, as well as semantic and instance predictions.
-
-.. figure:: ../images/plot_example_metrics.png
-   :scale: 30 %
-   :align: right
-
-   Dice metric score plot
 
 Scoring, review, analysis
 ----------------------------

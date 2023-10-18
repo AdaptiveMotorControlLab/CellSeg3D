@@ -14,6 +14,9 @@ parts:
     chapters:
       - file: source/guides/training_wnet.rst
       - file: source/guides/custom_model_template.rst
+  - caption : Walkthroughs
+    chapters:
+      - file: source/guides/detailed_walkthrough.rst
   - caption : Code
     chapters:
       - file: source/code/api.rst
