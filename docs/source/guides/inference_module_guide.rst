@@ -1,7 +1,7 @@
 .. _inference_module_guide:
 
 Inference📊
-=========
+==============
 
 .. figure:: ../images/plugin_inference.png
     :align: center
@@ -158,9 +158,10 @@ For the best inference performance, the model should be retrained on images of t
 Please see :ref:`training_wnet` for more details on how to train your own model.
 
 .. hint::
-  WNet, due to it's unsupervised nature, outputs a background class. This might make the volume appear densely populated.
-  The plugin will automatically attempt to show the foreground class, but this might not always succeed.
-  If the displayed output seems dominated by the background, you can manually adjust the visible class. To do this, **use the slider positioned at the bottom of the napari window**.
+  | WNet, as an unsupervised model, may not always output the background class in the same dimension.
+  | This might cause the volume from inference to appear densely populated.
+  | The plugin will automatically attempt to show the foreground class, but this might not always succeed.
+  | If the displayed output seems dominated by the background, you can manually adjust the visible class. To do this, **use the slider positioned at the bottom of the napari window**.
 
 Source code
 --------------------------------

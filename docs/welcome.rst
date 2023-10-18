@@ -68,6 +68,7 @@ For local installation after cloning from GitHub, please run the following in th
 If the installation was successful, you will find the napari-cellseg3D plugin in the Plugins section of napari.
 
 .. _Mac_installation:
+
 M1 Mac installation
 ________________________
 To avoid issues when installing on the ARM64 architecture, we recommend to use our supplied CONDA environment.
