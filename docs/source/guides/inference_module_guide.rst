@@ -17,10 +17,11 @@ to automatically label cells in 3D volumes.
     Otherwise you can run inference directly on layers within napari. Stacks of 2D files can be loaded as 3D volumes in napari.
 
 At present, the following pre-trained models are available :
+
 ==============   ================================================================================================
 Model            Link to original paper
 ==============   ================================================================================================
-SwinUNetR         `Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images`_
+SwinUNetR        `Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images`_
 SegResNet        `3D MRI brain tumor segmentation using autoencoder regularization`_
 WNet             `WNet, A Deep Model for Fully Unsupervised Image Segmentation`_
 TRAILMAP_MS       An implementation of the `TRAILMAP project on GitHub`_ using `3DUNet for PyTorch`_
@@ -64,9 +65,9 @@ Interface and functionalities
 
 * **Inference parameters** :
 
-  * **Window inference**: You can choose to use inference on the entire image at once (can yield better performance) or divide the image on smaller chunks, based on your memory constraints.
+  * **Window inference**: You can choose to use inference on the entire image at once (disabled) or divide the image (enabled) on smaller chunks, based on your memory constraints.
   * **Window overlap**: Define the overlap between windows to reduce border effects;
-    Recommended values are 0.1-0. for 3D inference.
+    recommended values are 0.1-0.3 for 3D inference.
   * **Keep on CPU**: You can choose to keep the dataset in RAM rather than VRAM to avoid running out of VRAM if you have several images.
   * **Device Selection**: You can choose to run inference on either CPU or GPU. A GPU is recommended for faster inference.
 
@@ -104,7 +105,8 @@ Interface and functionalities
   * :math:`X,Y,Z` coordinates of the centroid
   * Sphericity
 
-  Metrics :
+
+  Global metrics :
 
   * Image size
   * Total image volume (pixels)
@@ -115,39 +117,41 @@ Interface and functionalities
 
 * **Display options** :
 
-  For folder-based running, you can choose to display the results in napari.
+  When running inference on a folder, you can choose to display the results in napari.
   If selected, you may choose the display quantity, and whether to display the original image alongside the results.
 
 Once you are ready, hit the **`Start`** button to begin inference.
 The log will keep you updated on the progress.
 
 .. note::
-    - You can save the log to keep track of the parameters you ran inference with.
+   You can save the log to keep track of the parameters you ran inference with.
 
 Once the job has finished, the semantic segmentation will be saved in the output folder.
 
 | The files will be saved using the following format :
 | ``{original_name}_{model}_{date & time}_pred{id}.file_ext``
 
-.. note::
+.. hint::
     | Adjust **colormap** or **contrast** to enhance the visibility of labels.
     | Experiment with **3D view** and **grid mode** in napari when checking your results.
 
 Plotting results
 ----------------
 
-In the **``notebooks``** folder you will find a plotting guide for cell statistics derived from the inference module.
-Simply load the **`.csv`** file in a notebook and use the provided functions to plot the desired statistics.
+In the ``notebooks`` folder you will find a plotting guide for cell statistics derived from the inference module.
+Simply load the csv file in the notebook and use the provided functions to plot the desired statistics.
 
 
 Unsupervised model - WNet
 -------------------------
 
-| [WNet model](https://arxiv.org/abs/1711.08506) is a fully unsupervised model used to segment images without any labels.
+| The `WNet model` is a fully unsupervised model used to segment images without any labels.
 | It functions similarly to the above models, with a few notable differences.
 
+.. _WNet model: https://arxiv.org/abs/1711.08506
+
 .. note::
-    Our provided, pre-trained model is optimized for an input size of 64x64x64. As such, window inference is always enabled
+    Our provided, pre-trained model uses an input size of 64x64x64. As such, window inference is always enabled
     and set to 64. If you want to use a different size, you will have to train your own model using the options listed in :ref:`training_wnet`.
 
 For the best inference performance, the model should be retrained on images of the same modality as the ones you want to segment.

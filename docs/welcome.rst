@@ -8,8 +8,8 @@ Welcome to CellSeg3D!
 **CellSeg3D** is a toolbox for 3D segmentation of cells in light-sheet microscopy images, using napari.
 Use CellSeg3D to:
 
-* Review labeled cell volumes from whole-brain samples of mice imaged by mesoSPIM microscopy [#]_
-* Train and use segmentation models from the MONAI project [#]_ or implement your own custom 3D segmentation models using PyTorch.
+* Review labeled cell volumes from whole-brain samples of mice imaged by mesoSPIM microscopy [1]_
+* Train and use segmentation models from the MONAI project [2]_ or implement your own custom 3D segmentation models using PyTorch.
 
 No labeled data? Try our unsupervised model to automate your data labelling.
 
@@ -22,6 +22,32 @@ outside of whole-brain light-sheet microscopy.
    :align: center
 
    Demo of the plugin
+
+
+Requirements
+--------------------------------------------
+
+.. important::
+    This package requires **PyQt5** or **PySide2** to be installed first for napari to run.
+    If you do not have a Qt backend installed you can use :
+    ``pip install napari[all]``
+    to install PyQt5 by default.
+
+This package depends on PyTorch and certain optional dependencies of MONAI. These come as requirements, but if
+you need further assistance, please see below.
+
+.. note::
+    A **CUDA-capable GPU** is not needed but **very strongly recommended**, especially for training and possibly inference.
+
+* For help with PyTorch, please see `PyTorch's website`_ for installation instructions, with or without CUDA according to your hardware.
+  **Depending on your setup, you might wish to install torch first.**
+
+* If you get errors from MONAI regarding missing readers, please see `MONAI's optional dependencies`_ page for instructions on getting the readers required by your images.
+
+.. _MONAI's optional dependencies: https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies
+.. _PyTorch's website: https://pytorch.org/get-started/locally/
+
+
 
 Installation
 --------------------------------------------
@@ -96,39 +122,15 @@ Then go into **Plugins > napari-cellseg3d**
 
 and choose the correct tool to use:
 
-- **:ref:`review_module_guide`**: Examine and refine your labels, whether manually annotated or predicted by a pre-trained model. 
-- **:ref:`training_module_guide`**:  Train segmentation algorithms on your own data.
-- **:ref:`inference_module_guide`**: Use pre-trained segmentation algorithms on volumes to automate cell labelling.
-- **:ref:`utils_module_guide`**: Leverage various utilities, including cropping your volumes and labels, converting semantic to instance labels, and more.
+- :ref:`review_module_guide`: Examine and refine your labels, whether manually annotated or predicted by a pre-trained model.
+- :ref:`training_module_guide`:  Train segmentation algorithms on your own data.
+- :ref:`inference_module_guide`: Use pre-trained segmentation algorithms on volumes to automate cell labelling.
+- :ref:`utils_module_guide`: Leverage various utilities, including cropping your volumes and labels, converting semantic to instance labels, and more.
 - **Help/About...** : Quick access to version info, Github pages and documentation.
 
 .. hint::
     Many buttons have tooltips to help you understand what they do.
     Simply hover over them to see the tooltip.
-
-
-Requirements
---------------------------------------------
-
-.. important::
-    This package requires **PyQt5** or **PySide2** to be installed first for napari to run.
-    If you do not have a Qt backend installed you can use :
-    ``pip install napari[all]``
-    to install PyQt5 by default.
-
-This package depends on PyTorch and certain optional dependencies of MONAI. These come as requirements, but if
-you need further assistance, please see below.
-
-.. note::
-    A **CUDA-capable GPU** is not needed but **very strongly recommended**, especially for training and possibly inference.
-
-* For help with PyTorch, please see `PyTorch's website`_ for installation instructions, with or without CUDA according to your hardware.
-  **Depending on your setup, you might wish to install torch first.**
-
-* If you get errors from MONAI regarding missing readers, please see `MONAI's optional dependencies`_ page for instructions on getting the readers required by your images.
-
-.. _MONAI's optional dependencies: https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies
-.. _PyTorch's website: https://pytorch.org/get-started/locally/
 
 
 Documentation contents
