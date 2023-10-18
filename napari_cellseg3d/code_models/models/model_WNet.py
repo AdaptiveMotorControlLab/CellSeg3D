@@ -14,7 +14,6 @@ class WNet_(WNet_encoder):
     ..important:: Used for inference only, therefore only the encoder is used. For training the base class is used.
     """
 
-    use_default_training = False
     weights_file = "wnet_latest.pth"
 
     def __init__(

@@ -5,7 +5,6 @@ from monai.networks.nets import SegResNetVAE
 class SegResNet_(SegResNetVAE):
     """SegResNet_ wrapper for napari_cellseg3d."""
 
-    use_default_training = True
     weights_file = "SegResNet_latest.pth"
 
     def __init__(
@@ -26,6 +25,7 @@ class SegResNet_(SegResNetVAE):
         )
 
     def forward(self, x):
+        """Forward pass of the SegResNet model."""
         res = SegResNetVAE.forward(self, x)
         # logger.debug(f"SegResNetVAE.forward: {res[0].shape}")
         return res[0]

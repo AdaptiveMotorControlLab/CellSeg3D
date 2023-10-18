@@ -9,7 +9,6 @@ logger = LOGGER
 class SwinUNETR_(SwinUNETR):
     """SwinUNETR wrapper for napari_cellseg3d."""
 
-    use_default_training = True
     weights_file = "SwinUNetR_latest.pth"
 
     def __init__(

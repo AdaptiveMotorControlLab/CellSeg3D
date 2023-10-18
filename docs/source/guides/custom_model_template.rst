@@ -11,7 +11,6 @@ Advanced : Custom models
 To add a custom model, you will need a **.py** file with the following structure to be placed in the *napari_cellseg3d/models* folder::
 
     class ModelTemplate_(ABC): # replace ABC with your PyTorch model class name
-        use_default_training = True  # not needed for now, will serve for WNet training if added to the plugin
         weights_file = (
             "model_template.pth"  # specify the file name of the weights file only
         ) # download URL goes in pretrained_models.json
