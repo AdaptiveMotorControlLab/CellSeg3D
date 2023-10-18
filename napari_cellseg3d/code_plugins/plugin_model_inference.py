@@ -302,11 +302,15 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         """Sets the window size to a value that is compatible with the chosen model."""
         self.wnet_enabled = False
         if self.model_choice.currentText() == "WNet":
-            self.window_size_choice.setCurrentIndex(self._default_window_size)
             self.wnet_enabled = True
+            self.window_size_choice.setCurrentIndex(self._default_window_size)
             self.window_infer_box.setChecked(self.wnet_enabled)
-        self.window_size_choice.setDisabled(self.wnet_enabled)
-        self.window_infer_box.setDisabled(self.wnet_enabled)
+        self.window_size_choice.setDisabled(
+            self.wnet_enabled and not self.custom_weights_choice.isChecked()
+        )
+        self.window_infer_box.setDisabled(
+            self.wnet_enabled and not self.custom_weights_choice.isChecked()
+        )
 
     def _toggle_display_model_input_size(self):
         if (

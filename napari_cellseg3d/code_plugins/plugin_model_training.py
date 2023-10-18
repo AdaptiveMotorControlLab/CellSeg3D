@@ -1473,11 +1473,11 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             # update plot 2
             if self._is_current_job_supervised():
                 x = [
-                    self.worker_config.validation_interval * (i + 1)
+                    int(self.worker_config.validation_interval * (i + 1))
                     for i in range(len(loss_values_2))
                 ]
             else:
-                x = [i + 1 for i in range(len(loss_values_2))]
+                x = [int(i + 1) for i in range(len(loss_values_2))]
             y = loss_values_2
 
             self.plot_2.plot(x, y, zorder=1)
