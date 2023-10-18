@@ -159,7 +159,7 @@ Please see :ref:`training_wnet` for more details on how to train your own model.
 
 .. hint::
   | WNet, as an unsupervised model, may not always output the background class in the same dimension.
-  | This might cause the volume from inference to appear densely populated.
+  | This might cause the result from inference to appear densely populated.
   | The plugin will automatically attempt to show the foreground class, but this might not always succeed.
   | If the displayed output seems dominated by the background, you can manually adjust the visible class. To do this, **use the slider positioned at the bottom of the napari window**.
 

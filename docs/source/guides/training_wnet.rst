@@ -15,7 +15,7 @@ the model was trained on; you can retrain from our pretrained model to your imag
 
 .. note::
         - The WNet relies on brightness to distinguish objects from the background. For better results, use image regions with minimal artifacts. If you notice many artifacts, consider training on one of the supervised models.
-        - The model has two losses, the **`SoftNCut loss`**, which clusters pixels according to brightness, and a reconstruction loss, either **`Mean Square Error (MSE)`** or **`Binary Cross Entropy (BCE)`**. Unlike the method described in the original paper, these losses are added in a weighted sum and the backward pass is performed for the whole model at once. The SoftNcuts and BCE are bounded between 0 and 1; the MSE may take large positive values. It is recommended to watch for the weighted sum of losses to be **close to one on the first epoch**, for training stability. 
+        - The model has two losses, the **`SoftNCut loss`**, which clusters pixels according to brightness, and a reconstruction loss, either **`Mean Square Error (MSE)`** or **`Binary Cross Entropy (BCE)`**. Unlike the method described in the original paper, these losses are added in a weighted sum and the backward pass is performed for the whole model at once. The SoftNcuts and BCE are bounded between 0 and 1; the MSE may take large positive values. It is recommended to watch for the weighted sum of losses to be **close to one on the first epoch**, for training stability.
         - For good performance, you should wait for the SoftNCut to reach a plateau; the reconstruction loss must also decrease but is generally less critical.
 
 Parameters
@@ -29,21 +29,21 @@ Parameters
 
 _`When using the WNet training module`, the **Advanced** tab contains a set of additional options:
 
-- **`Number of classes`** : Dictates the segmentation classes (default is 2). Increasing the number of classes will result in a more progressive segmentation according to brightness; can be useful if you have "halos" around your objects or artifacts with a significantly different brightness.
-- **`Reconstruction loss`** : Choose between MSE or BCE (default is MSE). MSE is more precise but also sensitive to outliers; BCE is more robust against outliers at the cost of precision.
+- **Number of classes** : Dictates the segmentation classes (default is 2). Increasing the number of classes will result in a more progressive segmentation according to brightness; can be useful if you have "halos" around your objects or artifacts with a significantly different brightness.
+- **Reconstruction loss** : Choose between MSE or BCE (default is MSE). MSE is more precise but also sensitive to outliers; BCE is more robust against outliers at the cost of precision.
 
 - NCuts parameters:
-    - **`Intensity sigma`** : Standard deviation of the feature similarity term, focusing on brightness (default is 1).
-    - **`Spatial sigma`** : Standard deviation for the spatial proximity term (default is 4).
-    - **`Radius`** : Pixel radius for the loss computation (default is 2).
+    - **Intensity sigma** : Standard deviation of the feature similarity term, focusing on brightness (default is 1).
+    - **Spatial sigma** : Standard deviation for the spatial proximity term (default is 4).
+    - **Radius** : Pixel radius for the loss computation (default is 2).
 
 .. note::
-    - The **`Intensity Sigma`** depends on image pixel values. The default of 1 is optimised for images being mapped between 0 and 100, which is done automatically by the plugin.
-    - Raising the **`Radius`** might improve performance in certain cases, but will also greatly increase computation time.
+    - The **Intensity Sigma** depends on image pixel values. The default of 1 is optimised for images being mapped between 0 and 100, which is done automatically by the plugin.
+    - Raising the **Radius** might improve performance in certain cases, but will also greatly increase computation time.
 
 - Weights for the sum of losses :
-    - **`NCuts weight`** : Sets the weight of the NCuts loss (default is 0.5).
-    - **`Reconstruction weight`** : Sets the weight for the reconstruction loss (default is 0.5*1e-2).
+    - **NCuts weight** : Sets the weight of the NCuts loss (default is 0.5).
+    - **Reconstruction weight** : Sets the weight for the reconstruction loss (default is 0.5*1e-2).
 
 .. note::
     The weight of the reconstruction loss should be adjusted to ensure the weighted sum is around one during the first epoch;
@@ -58,7 +58,7 @@ If you do not find a satisfactory answer here, please do not hesitate to `open a
 - **The NCuts loss does not converge and is unstable** :
   The normalization step might not be adapted to your images. Disable normalization and change intensity_sigma according to the distribution of values in your image. For reference, by default images are remapped to values between 0 and 100, and intensity_sigma=1.
 
-- **Reconstruction (decoder) performance is poor** : switch to BCE and set the scaling factor of the reconstruction loss ot 0.5, OR adjust the weight of the MSE loss to make it closer to 1 in the weighted sum.
+- **Reconstruction (decoder) performance is poor** : switch to BCE and set the scaling factor of the reconstruction loss to 0.5, OR adjust the weight of the MSE loss to make it closer to 1 in the weighted sum.
 
 
 .. _WNet, A Deep Model for Fully Unsupervised Image Segmentation: https://arxiv.org/abs/1711.08506
