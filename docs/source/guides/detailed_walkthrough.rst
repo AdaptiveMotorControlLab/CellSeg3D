@@ -20,7 +20,7 @@ weights and also perform transfer learning by fine-tuning the model(s) on your d
 To get started with the entire workflow (i.e., fine-tuning on your data), you'll need at least one pair of image and corresponding labels;
 let's assume you have part of a cleared brain from mesoSPIM imaging as a large .tif file.
 
-If you want to test the models "as is", please see "Inference" sections in our docs.
+If you want to test the models "as is", please see the :ref:`Inference <walkthrough_inference>` section.
 
 
 .. figure:: ../images/init_image_labels.png
@@ -33,11 +33,12 @@ If you want to test the models "as is", please see "Inference" sections in our d
 .. note::
     The approach here will be human-in-the-loop review of labels.
     If you need to label your volumes from scratch,
-    or initially correct labels, please read the Review section right after Cropping.
+    or initially correct labels, please read the :ref:` Review <walkthrough_reviewing>` section right after :ref:`Cropping <walkthrough_cropping>`.
 
 
 Cropping
 *****************
+.. _walkthrough_cropping:
 
 To reduce memory requirements and build a dataset from a single, large volume,
 you can use the **cropping** tool to extract multiple smaller images from a large volume for training.
@@ -85,6 +86,7 @@ Models for object detection
 
 Training
 *****************
+.. _walkthrough_training:
 
 If you have a dataset of reasonably sized images (see cropping above) with semantic labels, you're all set to proceed!
 First, load your data by inputting the paths to images and labels, as well as where you want the results to be saved.
@@ -166,6 +168,7 @@ which you can then use in inference.
 
 Inference
 *************
+.. _walkthrough_inference:
 
 To start, simply choose which folder of images you'd like to run inference on, then the folder in which you'd like the results to be.
 
@@ -241,6 +244,7 @@ Scoring, review, analysis
 
 Labels review
 ************************
+.. _walkthrough_reviewing:
 
 Using the review module, you can correct the predictions from the model.
 Simply load your images and labels, enter the name of the CSV (to keep track of the review process, it will
