@@ -8,13 +8,14 @@ This guide will show you step-by-step how to use the plugin's workflow, beginnin
 Setting up images and labels
 ----------------------------
 
-CellSeg3D is designed for cleared-brain tissue data (collected using mesoSPIM ligthsheet systems). 
+CellSeg3D is designed for cleared-brain tissue data (collected using mesoSPIM ligthsheet systems).
 Here's what we offer:
-  - **Ready-to-use deep learning models**: Optimised for whole-neuron imaging in the cortex.
-  - **MONAI models support**
-  - **Trailmap in Pytorch**: We've integrated TRAILMAP into PyTorch, harnessing mesoSPIM data.
 
-Ready to get started? Ensure you have part of a cleared brain from mesoSPIM imaging as a big **`.tif`** file and its label at hand.
+- **Ready-to-use deep learning models**: Optimised for whole-neuron imaging in the cortex.
+- **MONAI models support**
+- **Trailmap in Pytorch**: We've integrated TRAILMAP into PyTorch, harnessing mesoSPIM data.
+
+Ready to get started? Ensure you have part of a cleared brain from mesoSPIM imaging as a big **.tif** file and its label at hand.
 
 For quick model checks, check the "Inference" sections in our docs.
 
@@ -27,11 +28,13 @@ For quick model checks, check the "Inference" sections in our docs.
 
 
 .. note::
-    This guide emphasizes a human-in-the-loop review of labels. If you need to start labeling volumes from scratch or correct initial labels, we recommend consulting the sections on :ref:` Review <walkthrough_reviewing>` section right after :ref:`Cropping <walkthrough_cropping>`.
+  This guide emphasizes a human-in-the-loop review of labels.
+  If you need to start labeling volumes from scratch or correct initial labels, we recommend consulting the sections on :ref:`Review<walkthrough_reviewing>` section right after :ref:`Cropping <walkthrough_cropping>`.
 
 
 Cropping
 *********
+.. _walkthrough_cropping:
 
 To reduce memory requirements and build a dataset from a single, large volume,
 you can use the **cropping** tool to extract multiple smaller images from a large volume for training.
@@ -40,15 +43,16 @@ you can use the **cropping** tool to extract multiple smaller images from a larg
 2. Choose your desired volume size for extraction.
 
 .. note::
-    For optimal training, opt for cubic images set to powers of two : the default :math:`64^3` should be a good start if you're unsure.
-    Stick to this size across your dataset.
-    However, if specific regions need varied sizes, you can compensate for it during training.
-    When running inference on multiple images in a folder, try to maintain size uniformity.
+   For optimal training, opt for cubic images set to powers of two : a default of :math:`64^3` should be a good start if you're unsure.
+   Stick to this size across your dataset.
+   However, if specific regions need varied sizes, you can compensate for it during training.
+   When running inference on multiple images in a folder, try to maintain size uniformity.
 
-1.Use the slider to choose the exact areas you want to extract.
+
+1. Use the slider to choose the exact areas you want to extract.
 2. Options for saving:
-    - Use the **quicksave** feature
-    - Or, select the intended layer and press **`CTRL+S`**
+   - Use the **quicksave** feature
+   - Or, select the intended layer and press **`CTRL+S`**
 
 .. figure:: ../images/cropping_process_example.png
    :align: center
@@ -60,9 +64,12 @@ Label conversion utility
 
 Assuming you have instance labels, you'll need to convert them to semantic labels before using them for training.
 
+.. note::
+   Instance labels used in training will be converted to semantic labels automatically, but this might not always result in the desired behavior.
+
 Step-by-Step Instructions:
    1. Launch the *Convert* tab within Utilities.
-   2. Specify your preferred output directory. 
+   2. Specify your preferred output directory.
    3. Load the folder with your cropped volumes under **`Convert Folder`**.
    4. Click on **`Convert to semantic labels`**.
 
@@ -72,7 +79,7 @@ Step-by-Step Instructions:
 
    Example of instance labels from above converted to semantic labels
 
-To remove small objects, or to convert a single image, use the **`CTRL+O`** shortcut to open the image you wish to manipulate. 
+To remove small objects, or to convert a single image, use the **`CTRL+O`** shortcut to open the image you wish to manipulate.
 Then, select its corresponding layer, and start the process using layer-specific controls.
 
 Models for object detection
@@ -81,18 +88,21 @@ Models for object detection
 Training Guide
 **************
 
-1. Preparation: 
-  - **Size**: Ensure that your images are appropriately sized. Please see the cropping section for guidelines.
-  - **Data paths**: Input the paths for your images and labels. Additionally, specify an output location where the results will be saved.
+1. Preparation:
+
+   - **Size**: Ensure that your images are appropriately sized. Please see the cropping section for guidelines.
+   - **Data paths**: Input the paths for your images and labels. Additionally, specify an output location where the results will be saved.
 
 2. Training Options and Features:
-  - **Transfer weights**: While we offer pre-trained weights designed specifically for cleared brain tissue imagery, the flexibility to incorporate your own weights exists. If you're choosing the latter, ensure they are compatible with the model you selected (see : :ref:`custom_model_guide`).
-  - **Validation proportion**: Decide on a specific percentage to determine the number of images which will be used for training versus validation. While validation can in theory work with even one image, the richness of data in validation will greatly improve model's performance. Use 90% only if you have a very small dataset (less than 5 images).
-  - **Save as zip** : Copies the results in a zip archive for easier transfer.
+
+   - **Transfer weights**: While we offer pre-trained weights designed specifically for cleared brain tissue imagery, the flexibility to incorporate your own weights exists. If you're choosing the latter, ensure they are compatible with the model you selected (see : :ref:`custom_model_guide`).
+   - **Validation proportion**: Decide on a specific percentage to determine the number of images which will be used for training versus validation. While validation can in theory work with even one image, the richness of data in validation will greatly improve model's performance. Use 90% only if you have a very small dataset (less than 5 images).
+   - **Save as zip** : Copies the results in a zip archive for easier transfer.
 
 3. Data augmentation:
-    * If you have cropped cubic images with a power of two as the edge length, you do not need to extract patches, your images are usable as is.
-    * However, if you are using larger images or with variable sizes, you can use this option to auto-extract smaller patches that will be automatically padded back to a power of two no matter the size you choose. For optimal performance, make sure to use a value close or equal to a power of two still, such as 64 or 120.
+
+   * If you have cropped cubic images with a power of two as the edge length, you do not need to extract patches, your images are usable as is.
+   * However, if you are using larger images or with variable sizes, you can use this option to auto-extract smaller patches that will be automatically padded back to a power of two no matter the size you choose. For optimal performance, make sure to use a value close or equal to a power of two still, such as 64 or 120.
 
 .. important::
     Using a large value for the size will cause memory issues. If this happens, restart the work with smaller volumes.
@@ -100,14 +110,13 @@ Training Guide
 You also have the option to use data augmentation, which can improve performance and generalization.
 In most cases this should left enabled.
 
-4. Model selection:
-  You can choose from a variety of models, based on the needs of your project:
+1. Model selection: You can choose from a variety of models, based on the needs of your project:
 
-    * **SegResNet** is a lightweight model (low memory requirements) from MONAI originally designed for 3D fMRI data.
-    * **VNet** is a larger (than SegResNet) CNN from MONAI designed for medical image segmentation.
-    * **TRAILMAP** is our implementation in PyTorch additionally trained on mouse cortical neural nuclei from mesoSPIM data.
-    * **SwinUNetR** is a MONAI implementation of the SwinUNetR model. It is costly in compute and memory, but can achieve high performance.
-    * **WNet** is our reimplementation of an unsupervised model, which can be used to produce segmentation without labels.
+   * **SegResNet** is a lightweight model (low memory requirements) from MONAI originally designed for 3D fMRI data.
+   * **VNet** is a larger (than SegResNet) CNN from MONAI designed for medical image segmentation.
+   * **TRAILMAP** is our implementation in PyTorch additionally trained on mouse cortical neural nuclei from mesoSPIM data.
+   * **SwinUNetR** is a MONAI implementation of the SwinUNetR model. It is costly in compute and memory, but can achieve high performance.
+   * **WNet** is our reimplementation of an unsupervised model, which can be used to produce segmentation without labels.
 
 
 * **The loss** : For 3D volume object detection, the Dice or Dice-focal Loss is the most efficient.
@@ -138,7 +147,7 @@ In most cases this should left enabled.
 Once you set all these parameters, you can start the training. You can monitor progress with the plots; should you want to stop
 the training you can do so anytime  by pressing the **Start** button again, whose text should change to **Click to stop**.
 
-In the results folder, you will have access to the weights from training (**`.pth`** files),
+In the results folder, you will have access to the weights from training (**.pth** files),
 which you can then use in inference.
 
 Inference
@@ -165,11 +174,14 @@ If you have **anisotropic volumes**, you can compensate by entering the resoluti
 By default, inference will calculate and display probability maps (values between 0 and 1). For a segmentation output with distinct labels, modify the threshold to the desired probability.
 
 If instead you'd prefer instance labels, you can enable instance segmentation and select :
-  1. The method
-    * **Connected components** : Every seperated object above the threshold will be labeled as an instance.
-    * **Watershed** : Assigns identifiers to objects based on the gradient probability at the their center (set the threshold to a decently high value).
-    * **The threshold** : Objects above this threshold will be retained as single instances.
 
+* The method:
+
+  * **Voronoi-Otsu** : objects will be assigned an ID by using the Voronoi diagram of the centroids of each object, then using Otsu's thresholding to separate them. The sigmas should roughly match cell diameter.
+  * **Connected components** : Every seperated object above the threshold will be labeled as an instance.
+  * **Watershed** : Assigns identifiers to objects based on the gradient probability at the their center (set the threshold to a decently high value).
+
+* **The threshold** : Objects above this threshold will be retained as single instances.
 * **Small object removal** : To filter small artifacts; all objects below this volume in pixels will be removed.
 
 Using instance segmentation, you can also analyze the results by checking the *Save stats to CSV* option.
@@ -185,7 +197,7 @@ This will compute :
 * The ratio of :math:`\frac {Volume_{label}} {Volume_{total}}`.
 * The total number of unique object instance.
 
-To visualise some of the results, you can leave the **`View results in napari`** option checked.
+To visualise some of the results when running on a folder, you can leave the **View results in napari** option checked.
 
 .. note::
     Too plot your results, check out the `provided notebooks`_
@@ -199,15 +211,10 @@ You can then launch inference and the results will be saved in your specified fo
 
    Example of results from inference with original volumes, as well as semantic and instance predictions.
 
-.. figure:: ../images/plot_example_metrics.png
-   :scale: 30 %
-   :align: right
 
-   Dice metric score plot
 
 Scoring, review, analysis
 ----------------------------
-
 
 .. Using the metrics utility module, you can compare the model's predictions to any ground truth labels you might have.
     Simply provide your prediction and ground truth labels, and compute the results.
@@ -219,6 +226,7 @@ Scoring, review, analysis
 
 Labels review
 ************************
+.. _walkthrough_reviewing:
 
 Using the review module, you can correct the model's predictions.
 Load your images and labels, and enter the name of the csv file, keeps tracking of the review process( it
@@ -237,10 +245,10 @@ the  surroundings of this location for easy viewing.
 
    Layout of the review module
 
-Once you finish reviewing, press the **`Not checked`** button to switch the status to
-**`checked`** and save the time spent in the csv file.
+Once you finish reviewing, press the **Not checked** button to switch the status to
+**checked** and save the time spent in the csv file.
 
-once satisfied with your review, press the **`Save`** button to record your work.
+once satisfied with your review, press the **Save** button to record your work.
 
 Analysis : Jupyter notebooks
 *********************************

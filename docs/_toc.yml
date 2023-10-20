@@ -10,13 +10,13 @@ parts:
       - file: source/guides/inference_module_guide.rst
       - file: source/guides/cropping_module_guide.rst
       - file: source/guides/utils_module_guide.rst
+  - caption : Walkthroughs
+    chapters:
+      - file: source/guides/detailed_walkthrough.rst
   - caption : Advanced guides
     chapters:
       - file: source/guides/training_wnet.rst
       - file: source/guides/custom_model_template.rst
-  - caption : Walkthroughs
-    chapters:
-      - file: source/guides/detailed_walkthrough.rst
   - caption : Code
     chapters:
       - file: source/code/api.rst
