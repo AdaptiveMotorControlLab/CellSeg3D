@@ -1,3 +1,4 @@
+"""Legacy version of adapted TRAILMAP model, not used in the current version of the plugin."""
 # import torch
 # from torch import nn
 #
@@ -90,7 +91,6 @@
 #
 #
 # class TRAILMAP_(TRAILMAP):
-#     use_default_training = True
 #     weights_file = "TRAILMAP_PyTorch.pth"  # model additionally trained on Mathis/Wyss mesoSPIM data
 #     # FIXME currently incorrect, find good weights from TRAILMAP_test and upload them
 #

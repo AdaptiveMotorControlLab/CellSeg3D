@@ -6,7 +6,6 @@ from torch import nn
 class TestModel(nn.Module):
     """For tests only."""
 
-    use_default_training = True
     weights_file = "test.pth"
 
     def __init__(self, **kwargs):
@@ -15,6 +14,7 @@ class TestModel(nn.Module):
         self.linear = nn.Linear(8, 8)
 
     def forward(self, x):
+        """Forward pass of the TestModel model."""
         return self.linear(torch.tensor(x, requires_grad=True))
 
     # def get_output(self, _, input):

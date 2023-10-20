@@ -5,7 +5,6 @@ from monai.networks.nets import VNet
 class VNet_(VNet):
     """VNet wrapper for napari_cellseg3d."""
 
-    use_default_training = True
     weights_file = "VNet_latest.pth"
 
     def __init__(self, in_channels=1, out_channels=1, **kwargs):
