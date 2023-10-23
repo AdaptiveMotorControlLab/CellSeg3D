@@ -192,6 +192,7 @@ class QuantileNormalizationd(MapTransform):
         super().__init__(keys, allow_missing_keys)
 
     def __call__(self, data):
+        """Normalize each image in a batch individually by quantile normalization."""
         d = dict(data)
         for key in self.keys:
             d[key] = self.normalizer(d[key])
@@ -213,6 +214,7 @@ class QuantileNormalization(Transform):
     """MONAI-style transform to normalize each image in a batch individually by quantile normalization."""
 
     def __call__(self, img):
+        """Normalize each image in a batch individually by quantile normalization."""
         return utils.quantile_normalization(img)
 
 
@@ -267,7 +269,9 @@ class Threshold(Transform):
         self.threshold = threshold
 
     def __call__(self, img):
-        return torch.where(img > self.threshold, 1, 0)
+        """Threshold a tensor to 0 or 1."""
+        res = torch.where(img > self.threshold, 1, 0)
+        return torch.Tensor(res).float()
 
 
 @dataclass
