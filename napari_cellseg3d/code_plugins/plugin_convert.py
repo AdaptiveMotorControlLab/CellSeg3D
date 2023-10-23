@@ -236,10 +236,10 @@ class RemoveSmallUtils(BasePluginUtils):
         self.label_layer_loader.layer_list.label.setText("Layer :")
 
         self.start_btn = ui.Button("Start", self._start)
-        self.size_for_removal_counter = ui.IntIncrementCounter(
-            lower=1,
-            upper=100000,
-            default=10,
+        self.size_for_removal_counter = ui.DoubleIncrementCounter(
+            lower=0.0,
+            upper=100000.0,
+            default=10.0,
             text_label="Remove all smaller than (pxs):",
         )
 
