@@ -1276,7 +1276,11 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
     def _remove_result_layers(self):
         for layer in self.result_layers:
-            self._viewer.layers.remove(layer)
+            try:
+                self._viewer.layers.remove(layer)
+            except ValueError:
+                logger.debug("Layer already removed ?")
+                pass
         self.result_layers = []
 
     def _display_results(self, images_dict, complete_missing=False):
