@@ -88,7 +88,7 @@ Installing the plugin
 --------------------------------------------
 
 .. warning::
-    For M1 Mac users, please see the above section: :ref:`M1_Mac_installation_guide`
+    For M1 Mac users, please see the above :ref:`section <source/guides/installation_guide:M1/M2 (ARM64) Mac installation>`
 
 You can install `napari-cellseg3d` via pip:
 

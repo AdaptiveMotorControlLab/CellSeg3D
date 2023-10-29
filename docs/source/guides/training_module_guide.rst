@@ -8,8 +8,6 @@ Training📉
 
     Layout of the training module
 
-Supervised models
-===================
 
 **Training** allows you to train models for cell segmentation.
 Whenever necessary, pre-trained weights will be automatically downloaded and integrated.
@@ -19,7 +17,9 @@ Whenever necessary, pre-trained weights will be automatically downloaded and int
     **3D image files**, in either **`.tif`** or **`.tiff`** format. Loading a folder of 2D images as a stack is supported only if
     you use napari to load the stack as a 3D image, and save it as a 3D image file.
 
-Currently, the systems offers the following pre-defined models:
+Models
+===================
+Currently, we provide the following pre-defined models:
 
 ==============   ================================================================================================
 Model            Link to original paper
@@ -38,10 +38,15 @@ VNet             `Fully Convolutional Neural Networks for Volumetric Medical Ima
 .. _Swin UNETR, Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images: https://arxiv.org/abs/2201.01266
 .. _WNet, A Deep Model for Fully Unsupervised Image Segmentation: https://arxiv.org/abs/1711.08506
 
+Training
+===================
+
 .. important::
-    For the optimal performance of the machine learning models within this program, it is crucial that all images in a dataset have the same dimensions. Before starting loading, please ensure that all images are of the **same size**.
-    If there is a size variance, you can use the **`extract patches`"** option located under the augmentation tab. This will let you define a reduced, consistent size for all the images.
-    If you need to fragment a large file into cubes, please refer to the Fragment utility in :ref:`utils_module_guide`.
+    | For the optimal performance of the machine learning models within this program, it is crucial that all images in a dataset have the same dimensions.
+    | Before starting loading, please ensure that all images are of the **same size**.
+    | If there is a variance of size, you can use the ``Extract patches`` option located under the augmentation tab, please see below.
+    | This will let you define a reduced, consistent size for all the images.
+    | If you need to fragment a large file into cubes, please refer to the Fragment utility in :ref:`utils_module_guide`.
 
 The training module is comprised of several tabs :
 
@@ -201,8 +206,8 @@ WandB integration (optional)
 
 You can use the `Weights and Biases <https://wandb.ai/site>`_ platform to track your training metrics and results.
 
-.. important::
-    The WandB integration is available for WNet training.
+.. note::
+    WandB integration is available for all provided models.
 
 To use wandb, you will need to create an account [HERE](https://wandb.ai/site) and install the wandb python package.
 
@@ -224,9 +229,12 @@ To use wandb, you will need to create an account [HERE](https://wandb.ai/site) a
 
     wandb login
 
-Your API key will be asked. You can find it on your account page on the website.
-Once this is done, your WNet runs will be automatically logged to WandB.
-You can find them under **CellSeg3D WNet** on your project page.
+Your API key will be requested. You can find it on your account page on the website.
+Once this is done, your training runs will be automatically logged to WandB.
+You can find them under **CellSeg3D {MODEL NAME}** on your project page.
+
+.. note::
+    User parameters for WandB as well as improved model comparisons might be added in the future.
 
 Source code
 ==============================================
