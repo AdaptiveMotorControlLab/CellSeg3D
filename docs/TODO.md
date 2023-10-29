@@ -1,8 +1,8 @@
 [//]: # (
 TODO:
 - [ ] Add a way to get the current version of the library
-- [ ] Update all modules
-- [ ] Better WNet tutorial
-- [ ] Setup GH Actions
+- [x] Update all modules
+- [x] Better WNet tutorial
+- [x] Setup GH Actions
 - [ ] Add a bibliography
 )

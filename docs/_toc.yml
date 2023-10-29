@@ -5,6 +5,7 @@ root: welcome.rst
 parts:
   - caption : User guides
     chapters:
+      - file: source/guides/installation_guide.rst
       - file: source/guides/review_module_guide.rst
       - file: source/guides/training_module_guide.rst
       - file: source/guides/inference_module_guide.rst

@@ -38,8 +38,10 @@ sphinx:
   - 'sphinx.ext.autodoc'
   - 'sphinx.ext.autosummary'
   - 'sphinx.ext.viewcode'
+  - 'sphinx.ext.autosectionlabel'
   config:
     add_module_names: False
+    autosectionlabel_prefix_document: True
     autosummary_generate: True
     autoclass_content: "both"
     # templates_path: ['_templates']
