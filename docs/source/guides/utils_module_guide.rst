@@ -48,8 +48,40 @@ Break down large images into smaller cubes, optimal for training.
 
 8. Conditional Random Field (CRF)
 ---------------------------------
+
+.. note::
+    This utility is only available if you have installed the `pydensecrf` package.
+    You may install it by using the command ``pip install cellseg3d[crf]``.
+
 | Refines semantic predictions by pairing them with the original image.
 | For a list of parameters, see the :doc:`CRF API page<../code/_autosummary/napari_cellseg3d.code_models.crf>`.
+
+9. Labels statistics
+------------------------------------------------
+| Computes statistics for each object in the image.
+| Enter the name of the csv file to save the results, then select your layer or folder of labels to compute the statistics.
+
+.. note::
+    Please note that the image type is checked so that images that are not integer labels will be ignored.
+
+The available statistics are:
+
+For each object :
+
+* Object volume (pixels)
+* :math:`X,Y,Z` coordinates of the centroid
+* Sphericity
+
+Global metrics :
+
+* Image size
+* Total image volume (pixels)
+* Total object (labeled) volume (pixels)
+* Filling ratio (fraction of the volume that is labeled)
+* The number of labeled objects
+
+.. hint::
+    Check the `notebooks` folder for examples of plots to make using the statistics csv file.
 
 Source code
 ___________
