@@ -62,7 +62,7 @@ Break down large images into smaller cubes, optimal for training.
 | Enter the name of the csv file to save the results, then select your layer or folder of labels to compute the statistics.
 
 .. note::
-    Please note that the image type is checked so that images that are not integer labels will be ignored.
+    Images that are not only integer labels will be ignored.
 
 The available statistics are:
 
@@ -81,7 +81,7 @@ Global metrics :
 * The number of labeled objects
 
 .. hint::
-    Check the `notebooks` folder for examples of plots to make using the statistics csv file.
+    Check the ``notebooks`` folder for examples of plots using the statistics CSV file.
 
 Source code
 ___________
