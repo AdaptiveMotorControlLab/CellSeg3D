@@ -1,5 +1,6 @@
 """Several image processing utilities."""
 from pathlib import Path
+from warnings import warn
 
 import napari
 import numpy as np
@@ -667,11 +668,19 @@ class StatsUtils(BasePluginUtils):
         elif (
             self.folder_choice.isChecked() and len(self.labels_filepaths) != 0
         ):
-            images = [
-                volume_stats(imread(file)) for file in self.labels_filepaths
-            ]
+            images = [imread(file) for file in self.labels_filepaths]
             for i, image in enumerate(images):
-                stats_df = pd.DataFrame(image.get_dict())
+                if image.sum() == 0:
+                    m = f"Image {i} is empty, skipping."
+                    logger.warning(m)
+                    warn(m, stacklevel=0)
+                    continue
+                if not np.issubdtype(image.dtype, np.integer):
+                    m = f"Image {i} is not integer, skipping. Make sure your labels are saved as integer values"
+                    logger.warning(m)
+                    warn(m, stacklevel=0)
+                    continue
+                stats_df = pd.DataFrame(stats.get_dict())
                 csv_name = self.csv_name.text() + f"_{i}.csv"
                 stats_df.to_csv(
                     self.results_path + "/" + csv_name, index=False
