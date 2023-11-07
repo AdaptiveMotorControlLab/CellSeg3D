@@ -3,7 +3,8 @@ from pathlib import Path
 
 import napari
 import numpy as np
-from qtpy.QtWidgets import QSizePolicy
+import pandas as pd
+from qtpy.QtWidgets import QLineEdit, QSizePolicy
 from tifffile import imread
 
 import napari_cellseg3d.interface as ui
@@ -13,6 +14,7 @@ from napari_cellseg3d.code_models.instance_segmentation import (
     clear_small_objects,
     threshold,
     to_semantic,
+    volume_stats,
 )
 from napari_cellseg3d.code_plugins.plugin_base import BasePluginUtils
 from napari_cellseg3d.dev_scripts.crop_data import crop_3d_image
@@ -592,3 +594,87 @@ class ThresholdUtils(BasePluginUtils):
                 images,
                 self.images_filepaths,
             )
+
+
+class StatsUtils(BasePluginUtils):
+    """Widget to save statistics of a labels layer."""
+
+    save_path = Path.home() / "cellseg3d" / "stats"
+
+    def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
+        """Creates a StatsUtils widget.
+
+        Args:
+            viewer: viewer in which to process data
+            parent: parent widget
+        """
+        super().__init__(
+            viewer,
+            parent=parent,
+            loads_images=False,
+        )
+
+        self.data_panel = self._build_io_panel()
+
+        self.csv_name = QLineEdit("volume_stats", parent=self)
+        self.csv_name.setToolTip(
+            "Name of the csv file.\nThe extension is added automatically;\nif running on a folder, the id of the image will be added to the name."
+        )
+
+        self.start_btn = ui.Button("Start", self._start)
+
+        self.results_path = str(self.save_path)
+        self.results_filewidget.text_field.setText(self.results_path)
+        self.results_filewidget.check_ready()
+
+        self.container = self._build()
+
+    def _build(self):
+        container = ui.ContainerWidget()
+
+        ui.add_widgets(
+            self.data_panel.layout,
+            [
+                self.csv_name,
+                self.start_btn,
+            ],
+        )
+        container.layout.addWidget(self.data_panel)
+
+        ui.ScrollArea.make_scrollable(
+            container.layout, self, max_wh=[MAX_W, MAX_H]
+        )
+        self._set_io_visibility()
+        container.setSizePolicy(
+            QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
+        )
+        return container
+
+    def _start(self):
+        utils.mkdir_from_str(self.results_path)
+        if self.layer_choice.isChecked():
+            if self.label_layer_loader.layer_data() is not None:
+                layer = self.label_layer_loader.layer()
+
+                data = np.array(layer.data)
+                stats = volume_stats(data)
+
+                stats_df = pd.DataFrame(stats.get_dict())
+                csv_name = self.csv_name.text() + ".csv"
+                stats_df.to_csv(
+                    self.results_path + "/" + csv_name, index=False
+                )
+        elif (
+            self.folder_choice.isChecked() and len(self.labels_filepaths) != 0
+        ):
+            images = [
+                volume_stats(imread(file)) for file in self.labels_filepaths
+            ]
+            for i, image in enumerate(images):
+                stats_df = pd.DataFrame(image.get_dict())
+                csv_name = self.csv_name.text() + f"_{i}.csv"
+                stats_df.to_csv(
+                    self.results_path + "/" + csv_name, index=False
+                )
+        else:
+            logger.warning("Please specify a layer or a folder")

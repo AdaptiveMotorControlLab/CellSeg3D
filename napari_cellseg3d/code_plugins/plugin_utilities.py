@@ -16,6 +16,7 @@ from napari_cellseg3d.code_plugins.plugin_convert import (
     AnisoUtils,
     FragmentUtils,
     RemoveSmallUtils,
+    StatsUtils,
     ThresholdUtils,
     ToInstanceUtils,
     ToSemanticUtils,
@@ -33,6 +34,7 @@ UTILITIES_WIDGETS = {
     "Convert to semantic labels": ToSemanticUtils,
     "Threshold": ThresholdUtils,
     "CRF": CRFWidget,
+    "Label statistics": StatsUtils,
 }
 
 
@@ -54,6 +56,7 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
             "sem",
             "thresh",
             "crf",
+            "stats",
         ]
         self._create_utils_widgets(attr_names)
         self.utils_choice = ui.DropdownMenu(
