@@ -556,7 +556,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         image_id = result.image_id
         model_name = self.model_choice.currentText()
 
-        viewer.dims.ndisplay = 3
+        # viewer.dims.ndisplay = 3 # let user choose
         viewer.scale_bar.visible = True
 
         if self.config.show_original and result.original is not None:
@@ -585,7 +585,11 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             fractions_per_channel = utils.channels_fraction_above_threshold(
                 result.result, 0.5
             )
-            index_channel_least_labelled = np.argmin(fractions_per_channel)
+            index_channel_sorted = np.argsort(fractions_per_channel)
+            for channel in index_channel_sorted:
+                if result.result[channel].sum() > 0:
+                    index_channel_least_labelled = channel
+                    break
             viewer.dims.set_point(
                 0, index_channel_least_labelled
             )  # TODO(cyril: check if this is always the right axis
@@ -609,12 +613,26 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             )
 
             if len(result.instance_labels.shape) >= 4:
-                max_objs_channel = np.argmin(
+                channels_by_labels = np.argsort(
                     result.instance_labels.sum(axis=(1, 2, 3))
                 )
+                min_objs_channel = channels_by_labels[0]
+                # if least labeled is empty, use next least labeled channel
+                for i in range(1, len(channels_by_labels)):
+                    if (
+                        np.unique(
+                            result.instance_labels[
+                                channels_by_labels[i]
+                            ].flatten()
+                        ).size
+                        > 1
+                    ):
+                        min_objs_channel = channels_by_labels[i]
+                        break
+
                 number_cells = (
                     np.unique(
-                        result.instance_labels[max_objs_channel].flatten()
+                        result.instance_labels[min_objs_channel].flatten()
                     ).size
                     - 1
                 )
@@ -631,9 +649,6 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 result.stats, list
             ):  # list for several channels
                 logger.debug(f"len stats : {len(result.stats)}")
-                logger.debug(
-                    f"Stats dicts : {[s.get_dict() for s in result.stats if s is not None]}"
-                )
 
                 for i, stats in enumerate(result.stats):
                     # stats = result.stats
@@ -660,7 +675,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                             logger.debug(
                                 f"Length of stats array : {[len(s) for s in stats.get_dict().values()]}"
                             )
-                            logger.debug(f"Stats dict : {stats.get_dict()}")
+                            # logger.debug(f"Stats dict : {stats.get_dict()}")
 
     def _setup_worker(self):
         if self.folder_choice.isChecked():

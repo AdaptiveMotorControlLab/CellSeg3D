@@ -405,6 +405,23 @@ class InferenceWorker(GeneratorWorker):
             # sys.stdout = old_stdout
             # sys.stderr = old_stderr
 
+    def _correct_results_rotation(self, array, shape):
+        """Corrects the shape of the array if needed."""
+        if array is None:
+            return None
+        if array.shape[-3:] != shape[-3:]:
+            logger.debug(
+                f"Correcting rotation due to results shape mismatch: target {shape}, got {array.shape}"
+            )
+            array = utils.correct_rotation(array)
+            if (
+                array.shape[-3:] != shape[-3:]
+            ):  # check only non-channel dimensions
+                logger.warning(
+                    f"Results shape mismatch: target {shape}, got {array.shape}"
+                )
+        return array
+
     def create_inference_result(
         self,
         semantic_labels,
@@ -437,24 +454,12 @@ class InferenceWorker(GeneratorWorker):
                 "If the image is not from a layer, an original should always be available"
             )
 
-        if from_layer:
-            if i != 0:
-                raise ValueError(
-                    "A layer's ID should always be 0 (default value)"
-                )
+        if from_layer and i != 0:
+            raise ValueError("A layer's ID should always be 0 (default value)")
 
-            if semantic_labels and semantic_labels.shape != original.shape:
-                semantic_labels = utils.correct_rotation(semantic_labels)
-                if semantic_labels.shape != original.shape:
-                    logger.debug("WARNING: semantic labels shape mismatch")
-            if crf_results and crf_results.shape != original.shape:
-                crf_results = utils.correct_rotation(crf_results)
-                if crf_results.shape != original.shape:
-                    logger.debug("WARNING: CRF results shape mismatch")
-            if instance_labels and instance_labels.shape != original.shape:
-                instance_labels = utils.correct_rotation(instance_labels)
-                if instance_labels.shape != original.shape:
-                    logger.debug("WARNING: instance labels shape mismatch")
+        # semantic_labels = self._correct_results_rotation(semantic_labels, shape) # done at the level of model_output already
+        # instance_labels = self._correct_results_rotation(instance_labels, shape)
+        # crf_results = self._correct_results_rotation(crf_results, shape)
 
         return InferenceResult(
             image_id=i + 1,
@@ -618,12 +623,15 @@ class InferenceWorker(GeneratorWorker):
             aniso_transform=self.aniso_transform,
         )
 
-        if out.shape != inputs.shape:
-            out = utils.correct_rotation(out)
-            if out.shape != inputs.shape:
-                self.log.warning(
-                    f"Output shape {out.shape} does not match input shape {inputs.shape}, please check for extra channel/batch dimensions"
-                )
+        out = utils.correct_rotation(out)
+        extra_dims = len(inputs.shape) - 3
+        inputs_shape_corrected = np.swapaxes(
+            inputs, extra_dims, 2 + extra_dims
+        ).shape
+        if out.shape[-3:] != inputs_shape_corrected[-3:]:
+            logger.debug(
+                f"Output shape {out.shape[-3:]} does not match input shape {inputs_shape_corrected[-3:]} on HWD dims even after rotation"
+            )
         self.save_image(out, i=i)
         instance_labels, stats = self.get_instance_result(out, i=i)
         if self.config.use_crf:
@@ -703,6 +711,15 @@ class InferenceWorker(GeneratorWorker):
             post_process_transforms,
             aniso_transform=self.aniso_transform,
         )
+        out = utils.correct_rotation(out)
+        extra_dims = len(image.shape) - 3
+        layer_shape_corrected = np.swapaxes(
+            image, extra_dims, 2 + extra_dims
+        ).shape
+        if out.shape[-3:] != layer_shape_corrected[-3:]:
+            logger.debug(
+                f"Output shape {out.shape[-3:]} does not match input shape {layer_shape_corrected[-3:]} on HWD dims even after rotation"
+            )
         self.save_image(out, from_layer=True)
 
         instance_labels, stats = self.get_instance_result(
