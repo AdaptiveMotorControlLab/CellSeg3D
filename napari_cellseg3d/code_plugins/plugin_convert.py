@@ -659,6 +659,11 @@ class StatsUtils(BasePluginUtils):
 
                 data = np.array(layer.data)
                 stats = volume_stats(data)
+                if stats is None:
+                    logger.warning(
+                        "No stats to save, please ensure your label array is not empty"
+                    )
+                    return
 
                 stats_df = pd.DataFrame(stats.get_dict())
                 csv_name = self.csv_name.text() + ".csv"

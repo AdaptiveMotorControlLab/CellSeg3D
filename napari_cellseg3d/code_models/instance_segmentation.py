@@ -433,9 +433,13 @@ def volume_stats(volume_image):
     Returns:
         dict: Statistics described above
     """
+    # check if empty or all 0
+    if np.sum(volume_image) == 0:
+        logger.debug("Skipped empty label image")
+        return None
+
     properties = regionprops(volume_image)
 
-    # sphericity_va = []
     def sphericity(region):
         try:
             return sphericity_axis(
