@@ -654,9 +654,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                                 index=False,
                             )
                         except ValueError as e:
-                            self.log.warning(
-                                f"Error saving stats to csv : {e}"
-                            )
+                            self.log.warn(f"Error saving stats to csv : {e}")
                             logger.debug(
                                 f"Length of stats array : {[len(s) for s in stats.get_dict().values()]}"
                             )

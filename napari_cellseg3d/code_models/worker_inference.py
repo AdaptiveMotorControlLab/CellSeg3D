@@ -492,11 +492,11 @@ class InferenceWorker(GeneratorWorker):
                 semantic_labels,
                 i + 1,
             )
-            data_dict = self.stats_csv(instance_labels)
+            stats = self.stats_csv(instance_labels)
         else:
             instance_labels = None
-            data_dict = None
-        return instance_labels, data_dict
+            stats = None
+        return instance_labels, stats
 
     def save_image(
         self,
@@ -674,6 +674,9 @@ class InferenceWorker(GeneratorWorker):
         """Computes the stats of the instance labels."""
         try:
             if self.config.compute_stats:
+                logger.debug(
+                    f"Stats csv instance labels shape : {instance_labels.shape}"
+                )
                 if len(instance_labels.shape) == 4:
                     stats = [volume_stats(c) for c in instance_labels]
                 else:
