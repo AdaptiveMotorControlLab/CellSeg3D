@@ -136,14 +136,14 @@ class Datamanager(QWidget):
         if not self.as_folder:
             p = Path(label_dir)
             self.filename = p.name
-            label_dir = str(p)
-            logger.info("Loading single image")
-            logger.info(self.filename)
-            logger.info(label_dir)
+            label_dir = p.parents[0]
+            logger.info(f"Loading single image : {self.filename}")
+            logger.debug(label_dir)
 
         self.df, self.csv_path = self.load_csv(label_dir, model_type, checkbox)
 
-        logger.debug(self.csv_path, checkbox)
+        logger.debug(f"csv path : {self.csv_path}")
+        logger.debug(f"Create new dataset : {checkbox}")
         # logger.debug(self.viewer.dims.current_step[0])
         self.update_dm(self.viewer.dims.current_step[0])
 
@@ -223,10 +223,11 @@ class Datamanager(QWidget):
         )
         df.at[0, "time"] = "00:00:00"
 
-        csv_path = str(Path(label_dir) / Path(f"{model_type}_train0.csv"))
-        logger.debug("csv path for create")
-        logger.debug(csv_path)
-        df.to_csv(csv_path)
+        csv_path = Path(label_dir) / Path(f"{model_type}_train0.csv")
+        if not csv_path.parent.exists():
+            csv_path.parent.mkdir(parents=True)
+        logger.debug(f"CSV path : {csv_path}")
+        df.to_csv(str(csv_path))
 
         return df, csv_path
 
