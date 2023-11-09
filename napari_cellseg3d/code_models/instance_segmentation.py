@@ -273,7 +273,7 @@ def voronoi_otsu(
     volume: np.ndarray,
     spot_sigma: float,
     outline_sigma: float,
-    # remove_small_size: float,
+    remove_small_size: float = None,
 ):
     """Voronoi-Otsu labeling from pyclesperanto.
 
@@ -286,21 +286,22 @@ def voronoi_otsu(
         volume (np.ndarray): volume to segment
         spot_sigma (float): parameter determining how close detected objects can be
         outline_sigma (float): determines the smoothness of the segmentation
+        remove_small_size (float): remove all objects smaller than the specified size in pixel
 
     Returns:
     Instance segmentation labels from Voronoi-Otsu method
 
     """
-    # remove_small_size (float): remove all objects smaller than the specified size in pixels
-    # semantic = np.squeeze(volume)
     logger.debug(
         f"Running voronoi otsu segmentation with spot_sigma={spot_sigma} and outline_sigma={outline_sigma}"
     )
     instance = cle.voronoi_otsu_labeling(
         volume, spot_sigma=spot_sigma, outline_sigma=outline_sigma
     )
-    # instance = remove_small_objects(instance, remove_small_size)
-    return np.array(instance)
+    instance = np.array(instance)
+    if remove_small_size is not None:
+        instance = remove_small_objects(instance, remove_small_size)
+    return instance
 
 
 def binary_connected(
@@ -318,25 +319,10 @@ def binary_connected(
     logger.debug(
         f"Running connected components segmentation with thres={thres} and thres_small={thres_small}"
     )
-    # if len(volume.shape) > 3:
     semantic = np.squeeze(volume)
     foreground = np.where(semantic > thres, volume, 0)  # int(255 * thres)
     segm = label(foreground)
     segm = remove_small_objects(segm, thres_small)
-
-    # if not all(x == 1.0 for x in scale_factors):
-    #     target_size = (
-    #         int(semantic.shape[0] * scale_factors[0]),
-    #         int(semantic.shape[1] * scale_factors[1]),
-    #         int(semantic.shape[2] * scale_factors[2]),
-    #     )
-    #     segm = resize(
-    #         segm,
-    #         target_size,
-    #         order=0,
-    #         anti_aliasing=False,
-    #         preserve_range=True,
-    #     )
 
     return segm
 
@@ -362,10 +348,10 @@ def binary_watershed(
         rem_seed_thres (int): threshold for small seeds removal. Default : 3
 
     """
-    # logger.debug(
-    #     f"Running watershed segmentation with thres_objects={thres_objects}, thres_seeding={thres_seeding},"
-    #     f" thres_small={thres_small} and rem_seed_thres={rem_seed_thres}"
-    # )
+    logger.debug(
+        f"Running watershed segmentation with thres_objects={thres_objects}, thres_seeding={thres_seeding},"
+        f" thres_small={thres_small} and rem_seed_thres={rem_seed_thres}"
+    )
     semantic = np.squeeze(volume)
     seed_map = semantic > thres_seeding
     foreground = semantic > thres_objects
@@ -373,20 +359,6 @@ def binary_watershed(
     seed = remove_small_objects(seed, rem_seed_thres)
     segm = watershed(-semantic.astype(np.float64), seed, mask=foreground)
     segm = remove_small_objects(segm, thres_small)
-
-    # if not all(x == 1.0 for x in scale_factors):
-    #     target_size = (
-    #         int(semantic.shape[0] * scale_factors[0]),
-    #         int(semantic.shape[1] * scale_factors[1]),
-    #         int(semantic.shape[2] * scale_factors[2]),
-    #     )
-    #     segm = resize(
-    #         segm,
-    #         target_size,
-    #         order=0,
-    #         anti_aliasing=False,
-    #         preserve_range=True,
-    #     )
 
     return np.array(segm)
 
@@ -421,25 +393,6 @@ def clear_small_objects(image, threshold, is_file_path=False):
         result = to_semantic(result)
 
     return result
-
-
-# def to_instance(image, is_file_path=False):
-#     """Converts a **ground-truth** label to instance (unique id per object) labels. Does not remove small objects.
-#
-#     Args:
-#         image: image or path to image
-#         is_file_path: if True, will consider ``image`` to be a string containing a path to a file, if not treats it as an image data array.
-#
-#     Returns: resulting converted labels
-#
-#     """
-#     if is_file_path:
-#         image = [imread(image)]
-#         image = image.compute()
-#
-# return binary_watershed(
-#     image, thres_small=0, thres_seeding=0.3, rem_seed_thres=0
-# )
 
 
 def to_semantic(image, is_file_path=False):
@@ -506,15 +459,13 @@ def volume_stats(volume_image):
 
     volume = [region.area for region in properties]
 
-    # def fill(lst, n=len(properties) - 1):
-    #     return fill_list_in_between(lst, n, "")
-
     fill = partial(fill_list_in_between, n=len(properties) - 1, fill_value="")
 
     if len(volume_image.flatten()) != 0:
         ratio = fill([np.sum(volume) / len(volume_image.flatten())])
     else:
-        ratio = 0
+        ratio = [0]
+        ratio = fill(ratio)
 
     return ImageStats(
         volume,
@@ -704,7 +655,7 @@ class VoronoiOtsu(InstanceMethod):
             name=VORONOI_OTSU,
             function=voronoi_otsu,
             num_sliders=0,
-            num_counters=2,
+            num_counters=3,
             widget_parent=widget_parent,
         )
         self.counters[0].label.setText("Spot sigma")  # closeness
@@ -721,12 +672,12 @@ class VoronoiOtsu(InstanceMethod):
         self.counters[1].setMaximum(100)
         self.counters[1].setValue(2)
 
-        # self.counters[2].label.setText("Small object removal")
-        # self.counters[2].tooltips = (
-        #     "Volume/size threshold for small object removal."
-        #     "\nAll objects with a volume/size below this value will be removed."
-        # )
-        # self.counters[2].setValue(30)
+        self.counters[2].label.setText("Small object removal")
+        self.counters[2].tooltips = (
+            "Volume/size threshold for small object removal."
+            "\nAll objects with a volume/size below this value will be removed."
+        )
+        self.counters[2].setValue(1)
 
     @property
     def spot_sigma(self):
@@ -748,6 +699,16 @@ class VoronoiOtsu(InstanceMethod):
         """Sets the value of the outline sigma counter."""
         self.counters[1].setValue(value)
 
+    @property
+    def small_object_removal(self):
+        """Returns the value of the small object removal counter."""
+        return self.counters[2].value()
+
+    @small_object_removal.setter
+    def small_object_removal(self, value):
+        """Sets the value of the small object removal counter."""
+        self.counters[2].setValue(value)
+
     def run_method(self, image):
         """Runs the method on the image with the parameters set in the widget.
 
@@ -758,13 +719,15 @@ class VoronoiOtsu(InstanceMethod):
                 self.function,
                 spot_sigma=self.counters[0].value(),
                 outline_sigma=self.counters[1].value(),
+                remove_small_size=self.counters[2].value(),
             )
             return self.sliding_window(image, func)
 
         return self.function(
             image,
-            self.counters[0].value(),
-            self.counters[1].value(),
+            spot_sigma=self.counters[0].value(),
+            outline_sigma=self.counters[1].value(),
+            remove_small_size=self.counters[2].value(),
         )
 
 

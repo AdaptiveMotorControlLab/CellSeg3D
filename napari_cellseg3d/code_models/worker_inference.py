@@ -614,6 +614,12 @@ class InferenceWorker(GeneratorWorker):
             aniso_transform=self.aniso_transform,
         )
 
+        if out.shape != inputs.shape:
+            out = utils.correct_rotation(out)
+            if out.shape != inputs.shape:
+                self.log.warning(
+                    f"Output shape {out.shape} does not match input shape {inputs.shape}, please check for extra channel/batch dimensions"
+                )
         self.save_image(out, i=i)
         instance_labels, stats = self.get_instance_result(out, i=i)
         if self.config.use_crf:

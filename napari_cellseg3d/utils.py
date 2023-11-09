@@ -263,7 +263,7 @@ def seek_best_dice_coeff_channel(y_pred, y_true) -> torch.Tensor:
 
 
 def correct_rotation(image):
-    """Rotates the exes 0 and 2 in [DHW] section of image array."""
+    """Rotates the axes 0 and 2 in [DHW] section of image array."""
     extra_dims = len(image.shape) - 3
     return np.swapaxes(image, 0 + extra_dims, 2 + extra_dims)
 

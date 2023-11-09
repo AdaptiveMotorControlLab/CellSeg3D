@@ -590,7 +590,9 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 0, index_channel_least_labelled
             )  # TODO(cyril: check if this is always the right axis
 
-        if result.crf_results is not None:
+        if result.crf_results is not None and not isinstance(
+            result.crf_results, Exception
+        ):
             logger.debug(f"CRF results shape : {result.crf_results.shape}")
             viewer.add_image(
                 result.crf_results,
@@ -599,15 +601,27 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             )
         if (
             result.instance_labels is not None
+            and not isinstance(result.instance_labels, Exception)
             and self.worker_config.post_process_config.instance.enabled
         ):
             method_name = (
                 self.worker_config.post_process_config.instance.method.name
             )
 
-            number_cells = (
-                np.unique(result.instance_labels.flatten()).size - 1
-            )  # remove background
+            if len(result.instance_labels.shape) >= 4:
+                max_objs_channel = np.argmin(
+                    result.instance_labels.sum(axis=(1, 2, 3))
+                )
+                number_cells = (
+                    np.unique(
+                        result.instance_labels[max_objs_channel].flatten()
+                    ).size
+                    - 1
+                )
+            else:
+                number_cells = (
+                    np.unique(result.instance_labels.flatten()).size - 1
+                )  # remove background with -1
 
             name = f"({number_cells} objects)_{method_name}_instance_labels_{image_id}"
 
@@ -616,28 +630,37 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             if result.stats is not None and isinstance(
                 result.stats, list
             ):  # list for several channels
-                # logger.debug(f"len stats : {len(result.stats)}")
+                logger.debug(f"len stats : {len(result.stats)}")
+                logger.debug(
+                    f"Stats dicts : {[s.get_dict() for s in result.stats]}"
+                )
 
                 for i, stats in enumerate(result.stats):
                     # stats = result.stats
 
                     if self.worker_config.compute_stats and stats is not None:
-                        stats_dict = stats.get_dict()
-                        stats_df = pd.DataFrame(stats_dict)
+                        try:
+                            stats_dict = stats.get_dict()
+                            stats_df = pd.DataFrame(stats_dict)
 
-                        self.log.print_and_log(
-                            f"Number of instances in channel {i} : {stats.number_objects[0]}"
-                        )
+                            self.log.print_and_log(
+                                f"Number of instances in channel {i} : {stats.number_objects[0]}"
+                            )
 
-                        csv_name = f"/{method_name}_seg_results_{image_id}_channel_{i}_{utils.get_date_time()}.csv"
-                        stats_df.to_csv(
-                            self.worker_config.results_path + csv_name,
-                            index=False,
-                        )
+                            csv_name = f"/{model_name}_{method_name}_seg_results_{image_id}_channel_{i}_{utils.get_date_time()}.csv"
 
-                    # self.log.print_and_log(
-                    #     f"OBJECTS DETECTED : {number_cells}\n"
-                    # )
+                            stats_df.to_csv(
+                                self.worker_config.results_path + csv_name,
+                                index=False,
+                            )
+                        except ValueError as e:
+                            self.log.warning(
+                                f"Error saving stats to csv : {e}"
+                            )
+                            logger.debug(
+                                f"Length of stats array : {[len(s) for s in stats.get_dict().values()]}"
+                            )
+                            logger.debug(f"Stats dict : {stats.get_dict()}")
 
     def _setup_worker(self):
         if self.folder_choice.isChecked():
