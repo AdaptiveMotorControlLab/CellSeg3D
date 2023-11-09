@@ -682,7 +682,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.worker.warn_signal.connect(self.log.warn)
         self.worker.error_signal.connect(self.log.error)
 
-        self.worker.yielded.connect(partial(self.on_yield))  #
+        self.worker.yielded.connect(partial(self.on_yield))
         self.worker.errored.connect(partial(self.on_error))
         self.worker.finished.connect(self.on_finish)
 

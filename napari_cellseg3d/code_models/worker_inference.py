@@ -249,9 +249,7 @@ class InferenceWorker(GeneratorWorker):
                 f"Data array is not 3-dimensional but {volume_dims}-dimensional,"
                 f" please check for extra channel/batch dimensions"
             )
-        volume = np.swapaxes(
-            volume, 0, 2
-        )  # for dims to be monai-like, i.e. xyz, from napari zyx
+        volume = utils.correct_rotation(volume)
 
         dims_check = volume.shape
 
@@ -445,12 +443,18 @@ class InferenceWorker(GeneratorWorker):
                     "A layer's ID should always be 0 (default value)"
                 )
 
-            if semantic_labels is not None:
+            if semantic_labels and semantic_labels.shape != original.shape:
                 semantic_labels = utils.correct_rotation(semantic_labels)
-            if crf_results is not None:
+                if semantic_labels.shape != original.shape:
+                    logger.debug("WARNING: semantic labels shape mismatch")
+            if crf_results and crf_results.shape != original.shape:
                 crf_results = utils.correct_rotation(crf_results)
-            if instance_labels is not None:
+                if crf_results.shape != original.shape:
+                    logger.debug("WARNING: CRF results shape mismatch")
+            if instance_labels and instance_labels.shape != original.shape:
                 instance_labels = utils.correct_rotation(instance_labels)
+                if instance_labels.shape != original.shape:
+                    logger.debug("WARNING: instance labels shape mismatch")
 
         return InferenceResult(
             image_id=i + 1,
