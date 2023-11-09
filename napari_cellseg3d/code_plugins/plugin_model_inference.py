@@ -632,7 +632,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             ):  # list for several channels
                 logger.debug(f"len stats : {len(result.stats)}")
                 logger.debug(
-                    f"Stats dicts : {[s.get_dict() for s in result.stats]}"
+                    f"Stats dicts : {[s.get_dict() for s in result.stats if s is not None]}"
                 )
 
                 for i, stats in enumerate(result.stats):
@@ -654,7 +654,9 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                                 index=False,
                             )
                         except ValueError as e:
-                            self.log.warn(f"Error saving stats to csv : {e}")
+                            self.log.warning(
+                                f"Error saving stats to csv : {e}"
+                            )
                             logger.debug(
                                 f"Length of stats array : {[len(s) for s in stats.get_dict().values()]}"
                             )
