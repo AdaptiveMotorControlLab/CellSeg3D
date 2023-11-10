@@ -82,7 +82,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
         )
 
         self.dice_metric = DiceMetric(
-            include_background=True, reduction="mean", get_not_nans=False
+            include_background=False, reduction="mean", get_not_nans=False
         )
         self.normalize_function = utils.remap_image
         self.start_time = time.time()
