@@ -360,6 +360,8 @@ class BasePluginFolder(BasePluginSingleImage):
         """array(str): paths to images for training or inference"""
         self.labels_filepaths = []
         """array(str): paths to labels for training"""
+        self.validation_filepaths = []
+        """array(str): paths to validation files (unsup. learning)"""
         self.results_path = None
         """str: path to output folder,to save results in"""
 
@@ -372,24 +374,25 @@ class BasePluginFolder(BasePluginSingleImage):
 
         #######################################################
         # interface
-        # self.image_filewidget = ui.FilePathWidget(
-        #     "Images directory", self.load_image_dataset, self
-        # )
         self.image_filewidget.text_field = "Images directory"
         self.image_filewidget.button.clicked.disconnect(
             self._show_dialog_images
         )
         self.image_filewidget.button.clicked.connect(self.load_image_dataset)
 
-        # self.labels_filewidget = ui.FilePathWidget(
-        #     "Labels directory", self.load_label_dataset, self
-        # )
         self.labels_filewidget.text_field = "Labels directory"
         self.labels_filewidget.button.clicked.disconnect(
             self._show_dialog_labels
         )
         self.labels_filewidget.button.clicked.connect(self.load_label_dataset)
-
+        ################
+        # Validation images widget
+        self.unsupervised_images_filewidget = ui.FilePathWidget(
+            description="Training directory",
+            file_function=self.load_unsup_images_dataset,
+            parent=self,
+        )
+        self.unsupervised_images_filewidget.setVisible(False)
         # self.filetype_choice = ui.DropdownMenu(
         #     [".tif", ".tiff"], label="File format"
         # )
@@ -418,19 +421,38 @@ class BasePluginFolder(BasePluginSingleImage):
     def load_image_dataset(self):
         """Show file dialog to set :py:attr:`~images_filepaths`"""
         filenames = self.load_dataset_paths()
-        logger.debug(f"image filenames : {filenames}")
         if filenames:
+            logger.info("Images loaded :")
+            for f in filenames:
+                logger.info(f"{str(Path(f).name)}")
             self.images_filepaths = [str(path) for path in sorted(filenames)]
             path = str(Path(filenames[0]).parent)
             self.image_filewidget.text_field.setText(path)
             self.image_filewidget.check_ready()
             self._update_default_paths(path)
 
+    def load_unsup_images_dataset(self):
+        """Show file dialog to set :py:attr:`~val_images_filepaths`"""
+        filenames = self.load_dataset_paths()
+        if filenames:
+            logger.info("Images loaded (unsupervised training) :")
+            for f in filenames:
+                logger.info(f"{str(Path(f).name)}")
+            self.validation_filepaths = [
+                str(path) for path in sorted(filenames)
+            ]
+            path = str(Path(filenames[0]).parent)
+            self.unsupervised_images_filewidget.text_field.setText(path)
+            self.unsupervised_images_filewidget.check_ready()
+            self._update_default_paths(path)
+
     def load_label_dataset(self):
         """Show file dialog to set :py:attr:`~labels_filepaths`"""
         filenames = self.load_dataset_paths()
-        logger.debug(f"labels filenames : {filenames}")
         if filenames:
+            logger.info("Labels loaded :")
+            for f in filenames:
+                logger.info(f"{str(Path(f).name)}")
             self.labels_filepaths = [str(path) for path in sorted(filenames)]
             path = str(Path(filenames[0]).parent)
             self.labels_filewidget.text_field.setText(path)
@@ -444,6 +466,7 @@ class BasePluginFolder(BasePluginSingleImage):
             self._default_path = [
                 self.extract_dataset_paths(self.images_filepaths),
                 self.extract_dataset_paths(self.labels_filepaths),
+                self.extract_dataset_paths(self.validation_filepaths),
                 self.results_path,
             ]
             return utils.parse_default_path(self._default_path)
@@ -459,6 +482,12 @@ class BasePluginFolder(BasePluginSingleImage):
         if paths[0] is None:
             return None
         return str(Path(paths[0]).parent)
+
+    def _check_all_filepaths(self):
+        self.image_filewidget.check_ready()
+        self.labels_filewidget.check_ready()
+        self.results_filewidget.check_ready()
+        self.unsupervised_images_filewidget.check_ready()
 
 
 class BasePluginUtils(BasePluginFolder):

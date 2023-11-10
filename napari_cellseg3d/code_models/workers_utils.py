@@ -217,6 +217,25 @@ class RemapTensor(Transform):
         return utils.remap_image(img, new_max=self.max, new_min=self.min)
 
 
+# class RemapTensord(MapTransform):
+#     def __init__(
+#         self, keys, new_max, new_min, allow_missing_keys: bool = False
+#     ):
+#         super().__init__(keys, allow_missing_keys)
+#         self.max = new_max
+#         self.min = new_min
+#
+#     def __call__(self, data):
+#         d = dict(data)
+#         for key in self.keys:
+#             for i in range(d[key].shape[0]):
+#                 logger.debug(f"remapping across channel {i}")
+#                 d[key][i] = utils.remap_image(
+#                     d[key][i], new_max=self.max, new_min=self.min
+#                 )
+#         return d
+
+
 class Threshold(Transform):
     def __init__(self, threshold=0.5):
         super().__init__()
@@ -243,7 +262,11 @@ class InferenceResult:
 class TrainingReport:
     show_plot: bool = True
     epoch: int = 0
-    loss_values: t.Dict = None  # TODO(cyril) : change to dict and unpack different losses for e.g. WNet with several losses
-    validation_metric: t.List = None
+    loss_1_values: t.Dict = None  # example : {"Loss" : [0.1, 0.2, 0.3]}
+    loss_2_values: t.List = None
     weights: np.array = None
-    images: t.List[np.array] = None
+    images_dict: t.Dict = (
+        None  # output, discrete output, target, target labels
+    )
+    # OR decoder output, encoder output, target, target labels
+    # format : {"Layer name" : {"data" : np.array, "cmap" : "turbo"}}

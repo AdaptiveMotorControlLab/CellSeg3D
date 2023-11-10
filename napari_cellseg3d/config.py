@@ -24,10 +24,10 @@ logger = LOGGER
 MODEL_LIST = {
     "SegResNet": SegResNet_,
     "VNet": VNet_,
-    # "TRAILMAP": TRAILMAP,
     "TRAILMAP_MS": TRAILMAP_MS_,
     "SwinUNetR": SwinUNETR_,
     "WNet": WNet_,
+    # "TRAILMAP": TRAILMAP,
     # "test" : DO NOT USE, reserved for testing
 }
 
@@ -37,7 +37,8 @@ PRETRAINED_WEIGHTS_DIR = str(
 
 
 ################
-# Review
+#     Review   #
+################
 
 
 @dataclass
@@ -61,13 +62,14 @@ class ReviewSession:
     time_taken: datetime.timedelta
 
 
-################
-# Model & weights
+###################
+# Model & weights #
+###################
 
 
 @dataclass
 class ModelInfo:
-    """Dataclass recording model info
+    """Dataclass recording supervised models info
     Args:
         name (str): name of the model
         model_input_size (Optional[List[int]]): input size of the model
@@ -102,8 +104,9 @@ class WeightsInfo:
     use_pretrained: Optional[bool] = False
 
 
-################
-# Post processing & instance segmentation
+#############################################
+# Post processing & instance segmentation   #
+#############################################
 
 
 @dataclass
@@ -153,8 +156,9 @@ class CRFConfig:
     n_iters: int = 5
 
 
-################
-# Inference configs
+#####################
+# Inference configs #
+#####################
 
 
 @dataclass
@@ -219,16 +223,17 @@ class InferenceWorkerConfig:
     layer: napari.layers.Layer = None
 
 
-################
-# Training configs
+####################
+# Training configs #
+####################
 
 
 @dataclass
 class DeterministicConfig:
     """Class to record deterministic config"""
 
-    enabled: bool = False
-    seed: int = 23498
+    enabled: bool = True
+    seed: int = 34936339  # default seed from NP_MAX
 
 
 @dataclass
@@ -240,26 +245,66 @@ class TrainerConfig:
 
 @dataclass
 class TrainingWorkerConfig:
-    """Class to record config for Trainer plugin"""
+    """General class to record config for training"""
 
+    # model params
     device: str = "cpu"
-    model_info: ModelInfo = None
-    weights_info: WeightsInfo = None
-    train_data_dict: dict = None
-    validation_percent: float = 0.8
     max_epochs: int = 50
-    loss_function: callable = None
     learning_rate: np.float64 = 1e-3
-    scheduler_patience: int = 10
-    scheduler_factor: float = 0.5
     validation_interval: int = 2
     batch_size: int = 1
+    deterministic_config: DeterministicConfig = DeterministicConfig()
+    scheduler_factor: float = 0.5
+    scheduler_patience: int = 10
+    weights_info: WeightsInfo = WeightsInfo()
+    # data params
     results_path_folder: str = str(Path.home() / "cellseg3d" / "training")
     sampling: bool = False
     num_samples: int = 2
     sample_size: List[int] = None
     do_augmentation: bool = True
-    deterministic_config: DeterministicConfig = DeterministicConfig()
+    num_workers: int = 4
+    train_data_dict: dict = None
+
+
+@dataclass
+class SupervisedTrainingWorkerConfig(TrainingWorkerConfig):
+    """Class to record config for Trainer plugin"""
+
+    model_info: ModelInfo = None
+    loss_function: callable = None
+    validation_percent: float = 0.8
+
+
+@dataclass
+class WNetTrainingWorkerConfig(TrainingWorkerConfig):
+    """Class to record config for WNet worker"""
+
+    # model params
+    in_channels: int = 1  # encoder input channels
+    out_channels: int = 1  # decoder (reconstruction) output channels
+    num_classes: int = 2  # encoder output channels
+    dropout: float = 0.65
+    learning_rate: np.float64 = 2e-5
+    use_clipping: bool = False  # use gradient clipping
+    clipping: float = 1.0  # clipping value
+    weight_decay: float = 0.01  # 1e-5  # weight decay (used 0.01 historically)
+    # NCuts loss params
+    intensity_sigma: float = 1.0
+    spatial_sigma: float = 4.0
+    radius: int = 2  # pixel radius for loss computation; might be overriden depending on data shape
+    # reconstruction loss params
+    reconstruction_loss: str = "MSE"  # or "BCE"
+    # summed losses weights
+    n_cuts_weight: float = 0.5
+    rec_loss_weight: float = (
+        0.5 / 100
+    )  # must be adjusted depending on images; compare to NCuts loss value
+    # normalization params
+    # normalizing_function: callable = remap_image # FIXME: call directly in worker, not a param
+    # data params
+    train_data_dict: dict = None
+    eval_volume_dict: str = None
 
 
 ################
@@ -269,7 +314,7 @@ class TrainingWorkerConfig:
 
 @dataclass
 class WNetCRFConfig:
-    "Class to store parameters of WNet CRF post processing"
+    """Class to store parameters of WNet CRF post-processing"""
 
     # CRF
     sa = 10  # 50

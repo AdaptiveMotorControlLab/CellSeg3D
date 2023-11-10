@@ -146,7 +146,6 @@ class CRFWidget(BasePluginUtils):
 
         self.results_path = str(self.save_path)
         self.results_filewidget.text_field.setText(self.results_path)
-
         self.results_filewidget.check_ready()
 
         self._container = ui.ContainerWidget(parent=self, l=11, t=11, r=11)

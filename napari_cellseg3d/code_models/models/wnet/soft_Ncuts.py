@@ -5,12 +5,13 @@ This faster version was proposed on https://github.com/fkodom/wnet-unsupervised-
 """
 
 import math
-
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from scipy.stats import norm
+
+from napari_cellseg3d.utils import LOGGER as logger
 
 __author__ = "Yves Paychère, Colin Hofmann, Cyril Achard"
 __credits__ = [
@@ -54,7 +55,7 @@ class SoftNCutsLoss(nn.Module):
                 self.W,
                 self.D,
             )
-        print(f"Radius set to {self.radius}")
+        logger.info(f"Radius set to {self.radius}")
 
     def forward(self, labels, inputs):
         """Forward pass of the Soft N-Cuts loss.

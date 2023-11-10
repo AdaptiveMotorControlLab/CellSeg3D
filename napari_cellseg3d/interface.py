@@ -1,12 +1,12 @@
-import contextlib
 import threading
 from functools import partial
 from typing import List, Optional
 
 import napari
-from qtpy import QtCore
 
 # Qt
+# from qtpy.QtCore import QtWarningMsg
+from qtpy import QtCore
 from qtpy.QtCore import QObject, Qt, QtWarningMsg, QUrl
 from qtpy.QtGui import QCursor, QDesktopServices, QTextCursor
 from qtpy.QtWidgets import (
@@ -496,7 +496,7 @@ class Slider(QSlider):
         elif self._divide_factor == 10:
             self._value_label.setFixedWidth(30)
         else:
-            self._value_label.setFixedWidth(40)
+            self._value_label.setFixedWidth(50)
         self._value_label.setAlignment(Qt.AlignCenter)
         self._value_label.setSizePolicy(
             QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed
@@ -880,9 +880,7 @@ class FilePathWidget(QWidget):  # TODO include load as folder
 
         self.build()
         self.check_ready()
-
-        if self._required:
-            self._text_field.textChanged.connect(self.check_ready)
+        self.text_field.textChanged.connect(self.check_ready)
 
     def build(self):
         """Builds the layout of the widget"""
@@ -921,11 +919,15 @@ class FilePathWidget(QWidget):  # TODO include load as folder
 
     def check_ready(self):
         """Check if a path is correctly set"""
-        if self.text_field.text() in ["", self._initial_desc]:
+        if (
+            self.text_field.text() in ["", self._initial_desc]
+            and self.required
+        ):
             self.update_field_color("indianred")
             self.text_field.setToolTip("Mandatory field !")
             return False
         self.update_field_color(f"{napari_param_darkgrey}")
+        self.text_field.setToolTip(f"{self.text_field.text()}")
         return True
 
     @property
@@ -935,12 +937,6 @@ class FilePathWidget(QWidget):  # TODO include load as folder
     @required.setter
     def required(self, is_required):
         """If set to True, will be colored red if incorrectly set"""
-        if is_required:
-            self.text_field.textChanged.connect(self.check_ready)
-        else:
-            with contextlib.suppress(TypeError):
-                self.text_field.textChanged.disconnect(self.check_ready)
-
         self.check_ready()
         self._required = is_required
 
@@ -1262,7 +1258,7 @@ def open_folder_dialog(
 ):
     default_path = utils.parse_default_path(possible_paths)
 
-    logger.info(f"Default : {default_path}")
+    logger.debug(f"Default : {default_path}")
     return QFileDialog.getExistingDirectory(
         widget, "Open directory", default_path  # + "/.."
     )
@@ -1335,9 +1331,10 @@ class GroupedWidget(QGroupBox):
         alignment=LEFT_AL,
     ):
         group = cls(title, l, t, r, b)
-        group.layout.addWidget(widget)
+        group.layout.addWidget(widget, alignment=alignment)
         group.setLayout(group.layout)
         layout.addWidget(group, alignment=alignment)
+        return group
 
 
 def add_widgets(layout, widgets, alignment=LEFT_AL):

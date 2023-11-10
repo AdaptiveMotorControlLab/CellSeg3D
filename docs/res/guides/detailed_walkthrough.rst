@@ -120,9 +120,9 @@ Finally, the last tab lets you choose :
 
     * SegResNet is a lightweight model (low memory requirements) from MONAI originally designed for 3D fMRI data.
     * VNet is a larger (than SegResNet) CNN from MONAI designed for medical image segmentation.
-    * TRAILMAP is our PyTorch implementation of a 3D CNN model trained for axonal detection in cleared tissue.
     * TRAILMAP_MS is our implementation in PyTorch additionally trained on mouse cortical neural nuclei from mesoSPIM data.
-    * Note, the code is very modular, so it is relatively straightforward to use (and contribute) your model as well.
+    * SwinUNetR is a MONAI implementation of the SwinUNetR model. It is costly in compute and memory, but can achieve high performance.
+    * WNet is our reimplementation of an unsupervised model, which can be used to produce segmentation without labels.
 
 
 * The loss : for object detection in 3D volumes you'll likely want to use the Dice or Dice-focal Loss.
@@ -239,13 +239,12 @@ Scoring, review, analysis
 ----------------------------
 
 
-.. Using the metrics utility module, you can compare the model's predictions to any ground truth
-labels you might have.
-Simply provide your prediction and ground truth labels, and compute the results.
-A Dice metric of 1 indicates perfect matching, whereas a score of 0 indicates complete mismatch.
-Select which score **you consider as sub-optimal**, and all results below this will be **shown in napari**.
-If at any time the **orientation of your prediction labels changed compared to the ground truth**, check the
-"Find best orientation" option to compensate for it.
+.. Using the metrics utility module, you can compare the model's predictions to any ground truth labels you might have.
+    Simply provide your prediction and ground truth labels, and compute the results.
+    A Dice metric of 1 indicates perfect matching, whereas a score of 0 indicates complete mismatch.
+    Select which score **you consider as sub-optimal**, and all results below this will be **shown in napari**.
+    If at any time the **orientation of your prediction labels changed compared to the ground truth**, check the
+    "Find best orientation" option to compensate for it.
 
 
 Labels review

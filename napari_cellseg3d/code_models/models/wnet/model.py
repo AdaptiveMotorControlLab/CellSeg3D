@@ -16,6 +16,7 @@ __credits__ = [
     "Xide Xia",
     "Brian Kulis",
 ]
+NUM_GROUPS = 4
 
 
 class WNet_encoder(nn.Module):
@@ -31,7 +32,7 @@ class WNet_encoder(nn.Module):
         self.encoder = UNet(
             in_channels=in_channels,
             out_channels=out_channels,
-            encoder=True,
+            softmax=False,
         )
 
     def forward(self, x):
@@ -54,14 +55,14 @@ class WNet(nn.Module):
     ):
         super(WNet, self).__init__()
         self.encoder = UNet(
-            in_channels, num_classes, encoder=True, dropout=dropout
+            in_channels, num_classes, softmax=True, dropout=dropout
         )
         self.decoder = UNet(
-            num_classes, out_channels, encoder=False, dropout=dropout
+            num_classes, out_channels, softmax=False, dropout=dropout
         )
 
     def forward(self, x):
-        """Forward pass of the W-Net model."""
+        """Forward pass of the W-Net model. Returns the segmentation and the reconstructed image."""
         enc = self.forward_encoder(x)
         return enc, self.forward_decoder(enc)
 
@@ -83,7 +84,7 @@ class UNet(nn.Module):
         in_channels: int,
         out_channels: int,
         channels: List[int] = None,
-        encoder: bool = True,
+        softmax: bool = True,
         dropout: float = 0.65,
     ):
         if channels is None:
@@ -99,44 +100,50 @@ class UNet(nn.Module):
         self.in_b = InBlock(in_channels, self.channels[0], dropout=dropout)
         self.conv1 = Block(channels[0], self.channels[1], dropout=dropout)
         self.conv2 = Block(channels[1], self.channels[2], dropout=dropout)
-        self.conv3 = Block(channels[2], self.channels[3], dropout=dropout)
-        self.bot = Block(channels[3], self.channels[4], dropout=dropout)
-        self.deconv1 = Block(channels[4], self.channels[3], dropout=dropout)
-        self.conv_trans1 = nn.ConvTranspose3d(
-            self.channels[4], self.channels[3], 2, stride=2
-        )
+        # self.conv3 = Block(channels[2], self.channels[3], dropout=dropout)
+        # self.bot = Block(channels[3], self.channels[4], dropout=dropout)
+        self.bot = Block(channels[2], self.channels[3], dropout=dropout)
+        # self.bot = Block(channels[1], self.channels[2], dropout=dropout)
+        # self.bot = Block(channels[0], self.channels[1], dropout=dropout)
+        # self.deconv1 = Block(channels[4], self.channels[3], dropout=dropout)
         self.deconv2 = Block(channels[3], self.channels[2], dropout=dropout)
+        self.deconv3 = Block(channels[2], self.channels[1], dropout=dropout)
+        self.out_b = OutBlock(channels[1], out_channels, dropout=dropout)
+        # self.conv_trans1 = nn.ConvTranspose3d(
+        #     self.channels[4], self.channels[3], 2, stride=2
+        # )
         self.conv_trans2 = nn.ConvTranspose3d(
             self.channels[3], self.channels[2], 2, stride=2
         )
-        self.deconv3 = Block(channels[2], self.channels[1], dropout=dropout)
         self.conv_trans3 = nn.ConvTranspose3d(
             self.channels[2], self.channels[1], 2, stride=2
         )
-        self.out_b = OutBlock(channels[1], out_channels, dropout=dropout)
         self.conv_trans_out = nn.ConvTranspose3d(
             self.channels[1], self.channels[0], 2, stride=2
         )
 
         self.sm = nn.Softmax(dim=1)
-        self.encoder = encoder
+        self.softmax = softmax
 
     def forward(self, x):
         """Forward pass of the U-Net model."""
         in_b = self.in_b(x)
         c1 = self.conv1(self.max_pool(in_b))
         c2 = self.conv2(self.max_pool(c1))
-        c3 = self.conv3(self.max_pool(c2))
-        x = self.bot(self.max_pool(c3))
-        x = self.deconv1(
-            torch.cat(
-                [
-                    c3,
-                    self.conv_trans1(x),
-                ],
-                dim=1,
-            )
-        )
+        # c3 = self.conv3(self.max_pool(c2))
+        # x = self.bot(self.max_pool(c3))
+        x = self.bot(self.max_pool(c2))
+        # x = self.bot(self.max_pool(c1))
+        # x = self.bot(self.max_pool(in_b))
+        # x = self.deconv1(
+        #     torch.cat(
+        #         [
+        #             c3,
+        #             self.conv_trans1(x),
+        #         ],
+        #         dim=1,
+        #     )
+        # )
         x = self.deconv2(
             torch.cat(
                 [
@@ -164,7 +171,7 @@ class UNet(nn.Module):
                 dim=1,
             )
         )
-        if self.encoder:
+        if self.softmax:
             x = self.sm(x)
         return x
 
@@ -179,11 +186,13 @@ class InBlock(nn.Module):
             nn.Conv3d(in_channels, out_channels, 3, padding=1),
             nn.ReLU(),
             nn.Dropout(p=dropout),
-            nn.BatchNorm3d(out_channels),
+            # nn.BatchNorm3d(out_channels),
+            nn.GroupNorm(num_groups=NUM_GROUPS, num_channels=out_channels),
             nn.Conv3d(out_channels, out_channels, 3, padding=1),
             nn.ReLU(),
             nn.Dropout(p=dropout),
-            nn.BatchNorm3d(out_channels),
+            # nn.BatchNorm3d(out_channels),
+            nn.GroupNorm(num_groups=NUM_GROUPS, num_channels=out_channels),
         )
 
     def forward(self, x):
@@ -202,12 +211,14 @@ class Block(nn.Module):
             nn.Conv3d(in_channels, out_channels, 1),
             nn.ReLU(),
             nn.Dropout(p=dropout),
-            nn.BatchNorm3d(out_channels),
+            # nn.BatchNorm3d(out_channels),
+            nn.GroupNorm(num_groups=NUM_GROUPS, num_channels=out_channels),
             nn.Conv3d(out_channels, out_channels, 3, padding=1),
             nn.Conv3d(out_channels, out_channels, 1),
             nn.ReLU(),
             nn.Dropout(p=dropout),
-            nn.BatchNorm3d(out_channels),
+            # nn.BatchNorm3d(out_channels),
+            nn.GroupNorm(num_groups=NUM_GROUPS, num_channels=out_channels),
         )
 
     def forward(self, x):
@@ -225,11 +236,13 @@ class OutBlock(nn.Module):
             nn.Conv3d(in_channels, 64, 3, padding=1),
             nn.ReLU(),
             nn.Dropout(p=dropout),
-            nn.BatchNorm3d(64),
+            # nn.BatchNorm3d(64),
+            nn.GroupNorm(num_groups=NUM_GROUPS, num_channels=64),
             nn.Conv3d(64, 64, 3, padding=1),
             nn.ReLU(),
             nn.Dropout(p=dropout),
-            nn.BatchNorm3d(64),
+            # nn.BatchNorm3d(64),
+            nn.GroupNorm(num_groups=NUM_GROUPS, num_channels=64),
             nn.Conv3d(64, out_channels, 1),
         )
 

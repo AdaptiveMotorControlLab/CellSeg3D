@@ -5,7 +5,7 @@ from napari_cellseg3d.utils import remap_image
 
 class WNet_(WNet_encoder):
     use_default_training = False
-    weights_file = "wnet.pth"
+    weights_file = "wnet_latest.pth"
 
     def __init__(
         self,

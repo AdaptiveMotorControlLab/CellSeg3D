@@ -140,7 +140,6 @@ class AnisoUtils(BasePluginUtils):
 
         self.aniso_widgets = ui.AnisotropyWidgets(self, always_visible=True)
         self.start_btn = ui.Button("Start", self._start)
-
         self.results_path = str(self.save_path)
         self.results_filewidget.text_field.setText(str(self.results_path))
         self.results_filewidget.check_ready()
@@ -247,7 +246,6 @@ class RemoveSmallUtils(BasePluginUtils):
 
         self.results_path = str(self.save_path)
         self.results_filewidget.text_field.setText(self.results_path)
-
         self.results_filewidget.check_ready()
 
         self.container = self._build()
@@ -337,6 +335,7 @@ class ToSemanticUtils(BasePluginUtils):
 
         self.data_panel = self._build_io_panel()
         self.start_btn = ui.Button("Start", self._start)
+
         self.results_path = str(self.save_path)
         self.results_filewidget.text_field.setText(self.results_path)
         self.results_filewidget.check_ready()

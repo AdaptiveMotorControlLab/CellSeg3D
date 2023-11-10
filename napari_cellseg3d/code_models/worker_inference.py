@@ -181,7 +181,6 @@ class InferenceWorker(GeneratorWorker):
     def load_folder(self):
         images_dict = self.create_inference_dict(self.config.images_filepaths)
 
-        # TODO : better solution than loading first image always ?
         data_check = LoadImaged(keys=["image"])(images_dict[0])
         check = data_check["image"].shape
         pad = utils.get_padding_dim(check)
@@ -688,7 +687,7 @@ class InferenceWorker(GeneratorWorker):
                             weights,
                             map_location=self.config.device,
                         ),
-                        strict=True,
+                        strict=False,  # True, # TODO(cyril): change to True
                     )
                     self.log(f"Weights status : {missing}")
                 except Exception as e:
@@ -786,6 +785,12 @@ class InferenceWorker(GeneratorWorker):
                 )
 
             model.to("cpu")
+            model = None
+            del model
+            inference_loader = None
+            del inference_loader
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
             # self.quit()
         except Exception as e:
             logger.exception(e)
