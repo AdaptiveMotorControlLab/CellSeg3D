@@ -9,7 +9,7 @@ import torch
 from monai.data import DataLoader, Dataset
 from monai.inferers import sliding_window_inference
 from monai.transforms import (
-    AddChannel,
+    # AddChannel,
     # AsDiscrete,
     Compose,
     EnsureChannelFirstd,
@@ -250,6 +250,7 @@ class InferenceWorker(GeneratorWorker):
                 f" please check for extra channel/batch dimensions"
             )
         volume = utils.correct_rotation(volume)
+        # volume = np.reshape(volume, newshape=(1, 1, *volume.shape))
 
         dims_check = volume.shape
 
@@ -268,9 +269,9 @@ class InferenceWorker(GeneratorWorker):
                     normalization,
                     ToTensor(),
                     # anisotropic_transform,
-                    AddChannel(),
+                    # AddChannel(),
                     # SpatialPad(spatial_size=pad),
-                    AddChannel(),
+                    # AddChannel(),
                     EnsureType(),
                 ],
                 map_items=False,
@@ -285,9 +286,9 @@ class InferenceWorker(GeneratorWorker):
                     normalization,
                     ToTensor(),
                     # anisotropic_transform,
-                    AddChannel(),
+                    # AddChannel(),
                     SpatialPad(spatial_size=pad),
-                    AddChannel(),
+                    # AddChannel(),
                     EnsureType(),
                 ],
                 map_items=False,
@@ -668,6 +669,14 @@ class InferenceWorker(GeneratorWorker):
         try:
             if aniso_transform is not None:
                 image = aniso_transform(image)
+
+            if image.shape[-3:] != labels.shape[-3:]:
+                image = utils.correct_rotation(image)
+                if image.shape[-3:] != labels.shape[-3:]:
+                    logger.warning(
+                        f"Labels shape mismatch: target {image.shape}, got {labels.shape}. CRF will likely fail."
+                    )
+
             crf_results = crf_with_config(
                 image, labels, config=self.config.crf_config, log=self.log
             )
@@ -704,13 +713,15 @@ class InferenceWorker(GeneratorWorker):
         """Runs inference on a layer."""
         self.log("-" * 10)
         self.log("Inference started on layer...")
-
+        image = image.view((1, 1, *image.shape))
+        logger.debug(f"Layer shape @ inference input: {image.shape}")
         out = self.model_output(
             image,
             model,
             post_process_transforms,
             aniso_transform=self.aniso_transform,
         )
+        logger.debug(f"Inference on layer result shape : {out.shape}")
         out = utils.correct_rotation(out)
         extra_dims = len(image.shape) - 3
         layer_shape_corrected = np.swapaxes(
