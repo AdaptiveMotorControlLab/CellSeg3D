@@ -421,7 +421,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 logger.debug(f"wandb config : {config_dict}")
                 wandb.init(
                     config=config_dict,
-                    project="CellSeg3D WNet",
+                    project="CellSeg3D",
                     mode=self.wandb_config.mode,
                 )
 
@@ -1111,7 +1111,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 logger.debug(f"wandb config : {config_dict}")
                 wandb.init(
                     config=config_dict,
-                    project=f"CellSeg3D {self.config.model_info.name}",
+                    project="CellSeg3D",
                     mode=self.wandb_config.mode,
                 )
 

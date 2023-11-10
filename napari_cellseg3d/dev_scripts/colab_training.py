@@ -329,7 +329,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
                 logger.debug(f"wandb config : {config_dict}")
                 wandb.init(
                     config=config_dict,
-                    project="CellSeg3D WNet (Colab)",
+                    project="CellSeg3D (Colab)",
                     mode=self.wandb_config.mode,
                 )
 
