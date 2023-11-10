@@ -262,6 +262,7 @@ class InferenceWorker(GeneratorWorker):
             if self.config.model_info.name != "WNet"
             else lambda x: x
         )
+        volume = np.reshape(volume, newshape=(1, *volume.shape))
         if self.config.sliding_window_config.is_enabled():
             load_transforms = Compose(
                 [
@@ -296,6 +297,7 @@ class InferenceWorker(GeneratorWorker):
             )
 
         input_image = load_transforms(volume)
+        input_image = input_image.unsqueeze(0)
         logger.debug(f"INPUT IMAGE SHAPE : {input_image.shape}")
         logger.debug(f"INPUT IMAGE TYPE : {input_image.dtype}")
         self.log("Done")
@@ -713,7 +715,6 @@ class InferenceWorker(GeneratorWorker):
         """Runs inference on a layer."""
         self.log("-" * 10)
         self.log("Inference started on layer...")
-        image = image.view((1, 1, *image.shape))
         logger.debug(f"Layer shape @ inference input: {image.shape}")
         out = self.model_output(
             image,

@@ -1335,7 +1335,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 logger.debug("Cache dataset : train")
                 train_dataset = CacheDataset(
                     data=self.train_files,
-                    transform=Compose(load_whole_images, train_transforms),
+                    transform=Compose([load_whole_images, train_transforms]),
                 )
                 logger.debug("Cache dataset : val")
                 validation_dataset = CacheDataset(
