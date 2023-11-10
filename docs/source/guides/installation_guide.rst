@@ -2,11 +2,13 @@ Installation guide ⚙
 ======================
 This guide outlines the steps for installing CellSeg3D and its dependencies. The plugin is compatible with Windows, Linux, and MacOS.
 
-**Note for M1/M2 (ARM64) Mac Users:**  
+**Note for M1/M2 (ARM64) Mac Users:**
 Please refer to the :ref:`section below <source/guides/installation_guide:M1/M2 (ARM64) Mac installation>` for specific instructions.
 
-.. warning:: 
-    If you encounter any issues during installation, feel free to open an issue on our [GitHub repository] (https://github.com/AdaptiveMotorControlLab/CellSeg3d).
+.. warning::
+    If you encounter any issues during installation, feel free to open an issue on our `GitHub repository`_.
+
+.. _GitHub repository: https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues
 
 
 Installing pre-requisites
@@ -30,7 +32,7 @@ For PyTorch installation, refer to `PyTorch's website`_ , with or without CUDA a
 Select the installation criteria that match your OS and hardware (GPU or CPU).
 
 .. note::
-    While a **CUDA-capable GPU** isn't mandatory, it’s highly recommended for both training and inference. 
+    While a **CUDA-capable GPU** is not mandatory, it is highly recommended for both training and inference.
 
 
 * Running into MONAI-related errors? Consult MONAI’s optional dependencies for solutions. Please see `MONAI's optional dependencies`_ page for instructions on getting the readers required by your images.
@@ -53,7 +55,8 @@ Installing CellSeg3D
   pip install napari-cellseg3d
 
 **Directly in napari**:
-- Navigate to **Plugins > Install/Uninstall Packages
+
+- Navigate to **Plugins > Install/Uninstall Packages**
 - Search for ``napari-cellseg3d``
 
 **For local installation** (after cloning from GitHub)
@@ -70,15 +73,13 @@ M1/M2 (ARM64) Mac installation
 -------------------------------
 .. _ARM64_Mac_installation:
 
-For ARM64 Macs, we recommend using our custom CONDA environment. This is particularly important for M1 or M2 MacBooks. 
+For ARM64 Macs, we recommend using our custom CONDA environment. This is particularly important for M1 or M2 MacBooks.
 
 Start by installing `miniconda3`_.
 
 .. _miniconda3: https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html
 
-1. **Clone the `repository`** :
-
-.. _repository: https://github.com/AdaptiveMotorControlLab/CellSeg3d
+1. **Clone the repository** (`link <https://github.com/AdaptiveMotorControlLab/CellSeg3d>`_):
 
 .. code-block::
 
@@ -108,6 +109,3 @@ In the terminal, navigate to the CellSeg3D folder:
 .. code-block::
 
     pip install napari-cellseg3d
-
-
-
