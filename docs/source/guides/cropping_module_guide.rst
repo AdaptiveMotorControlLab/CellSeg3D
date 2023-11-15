@@ -17,7 +17,7 @@ To access it:
 
 Once cropped, you have multiple options to save the volumes and labels:
     - Use the **`Quicksave`** button in Napari.
-    - Select the layer and then go to **`File` -> `Save selected layers`**. 
+    - Select the layer and then go to **`File` -> `Save selected layers`**.
     - With the correct layer highlighted, simply press **`CTRL + S`**.
 
 .. Note::
@@ -26,9 +26,9 @@ Once cropped, you have multiple options to save the volumes and labels:
 Launching the cropping process
 ------------------------------
 1. From the layer selection dropdown menu, select your image. If you want to crop a second image with the same dimensions simultaneously,
-check the **`Crop another image simultaneously`** option and then select the relevant layer. 
+check the **`Crop another image simultaneously`** option and then select the relevant layer.
 
-2. Define your desired cropped volume size. This size will remain fixed for the duration of the session. 
+2. Define your desired cropped volume size. This size will remain fixed for the duration of the session.
 To update the size, you will need to restart the process.
 
 3. You can also correct the anisotropy, if you work with anisotropic data: simply set your microscope's resolution in microns.
@@ -62,7 +62,7 @@ you to **adjust the position** of the cropped volumes and labels in the x,y and 
     * If your **cropped volume isnt visible**, consider changing the **colormap** of the image and the cropped
       volume to improve their visibility.
     * You may want to adjust the **opacity** and **contrast thresholds** depending on your image.
-    * If the image appears empty: 
+    * If the image appears empty:
         - Right-click on the contrast limits sliders.
         - Select **`Full Range`** and then **`Reset`**.
 

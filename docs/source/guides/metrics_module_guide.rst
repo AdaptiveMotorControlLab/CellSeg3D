@@ -10,7 +10,7 @@ Metrics utility guide 📈
    Dice metric plot result
 
 This tool computes the Dice coefficient, a similarity measure, between two sets of label folders.
-Ranges from 0 (no similarity) to 1 (perfect similarity). 
+Ranges from 0 (no similarity) to 1 (perfect similarity).
 
 The Dice coefficient is defined as :
 
