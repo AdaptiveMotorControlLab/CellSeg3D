@@ -106,12 +106,14 @@ venv/
 /docs/source/code/_autosummary/
 /reqs/
 /loss_plots/
+/wandb/
 notebooks/csv_cell_plot.html
 notebooks/full_plot.html
 *.csv
 *.png
 notebooks/instance_test.ipynb
 *.prof
+/docs/source/code/_autosummary/*.rst
 
 #include test data
 !napari_cellseg3d/_tests/res/test.tif
