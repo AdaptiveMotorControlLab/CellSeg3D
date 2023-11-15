@@ -110,6 +110,7 @@ notebooks/full_plot.html
 *.png
 notebooks/instance_test.ipynb
 *.prof
+/docs/source/code/_autosummary/*.rst
 
 #include test data
 !napari_cellseg3d/_tests/res/test.tif
