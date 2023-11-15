@@ -1,3 +1,4 @@
+"""Basic napari plugin framework for inference and training."""
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -18,7 +19,7 @@ logger = utils.LOGGER
 
 
 class ModelFramework(BasePluginFolder):
-    """A framework with buttons to use for loading images, labels, models, etc. for both inference and training"""
+    """A framework with buttons to use for loading images, labels, models, etc. for both inference and training."""
 
     def __init__(
         self,
@@ -28,7 +29,7 @@ class ModelFramework(BasePluginFolder):
         loads_labels=True,
         has_results=True,
     ):
-        """Creates a plugin framework with the following elements :
+        """Creates a plugin framework with the following elements.
 
         * A button to choose an image folder containing the images of a dataset (e.g. dataset/images)
 
@@ -128,12 +129,12 @@ class ModelFramework(BasePluginFolder):
         self.btn_save_log.setVisible(False)
 
     def send_log(self, text):
-        """Emit a signal to print in a Log"""
+        """Emit a signal to print in a Log."""
         if self.log is not None:
             self.log.print_and_log(text)
 
     def save_log(self, do_timestamp=True):
-        """Saves the worker's log to disk at self.results_path when called"""
+        """Saves the worker's log to disk at self.results_path when called."""
         if self.log is not None:
             log = self.log.toPlainText()
 
@@ -163,8 +164,8 @@ class ModelFramework(BasePluginFolder):
 
         Args:
             path (str): path to save folder
+            do_timestamp (bool, optional): whether to add a timestamp to the log name. Defaults to True.
         """
-
         log = self.log.toPlainText()
 
         if do_timestamp:
@@ -187,9 +188,7 @@ class ModelFramework(BasePluginFolder):
             )
 
     def display_status_report(self):
-        """Adds a text log, a progress bar and a "save log" button on the left side of the viewer
-        (usually when starting a worker)"""
-
+        """Adds a text log, a progress bar and a "save log" button on the left side of the viewer (usually when starting a worker)."""
         # if self.container_report is None or self.log is None:
         #     logger.warning(
         #         "Status report widget has been closed. Trying to re-instantiate..."
@@ -240,12 +239,13 @@ class ModelFramework(BasePluginFolder):
         self.progress.setValue(0)
 
     def _toggle_weights_path(self):
-        """Toggle visibility of weight path"""
+        """Toggle visibility of weight path."""
         ui.toggle_visibility(
             self.custom_weights_choice, self.weights_filewidget
         )
 
     def get_unsupervised_image_filepaths(self):
+        """Returns a list of filepaths to images in the unsupervised images folder."""
         volume_directory = Path(
             self.unsupervised_images_filewidget.text_field.text()
         )
@@ -273,11 +273,10 @@ class ModelFramework(BasePluginFolder):
         """Creates data dictionary for MONAI transforms and training.
 
         Returns:
-            A dict with the following keys
-
-            * "image": image
-            * "label" : corresponding label
+            A dict with the following keys: "image", "label"
         """
+        logger.debug(f"Images : {self.images_filepaths}")
+        logger.debug(f"Labels : {self.labels_filepaths}")
 
         logger.debug(f"Images : {self.images_filepaths}")
         logger.debug(f"Labels : {self.labels_filepaths}")
@@ -310,7 +309,7 @@ class ModelFramework(BasePluginFolder):
 
     @staticmethod
     def get_available_models():
-        """Getter for module (class and functions) associated to currently selected model"""
+        """Getter for module (class and functions) associated to currently selected model."""
         return config.MODEL_LIST
 
     # def load_model_path(self): # TODO add custom models
@@ -330,8 +329,7 @@ class ModelFramework(BasePluginFolder):
             self._default_weights_folder = str(Path(file[0]).parent)
 
     def _load_weights_path(self):
-        """Show file dialog to set :py:attr:`model_path`"""
-
+        """Show file dialog to set :py:attr:`model_path`."""
         # logger.debug(self._default_weights_folder)
 
         file = ui.open_file_dialog(
@@ -342,6 +340,7 @@ class ModelFramework(BasePluginFolder):
         self._update_weights_path(file)
 
     def check_device_choice(self):
+        """Checks the device choice in the UI and returns the corresponding torch device."""
         choice = self.device_choice.currentText()
         if choice == "CPU":
             device = "cpu"
@@ -355,10 +354,11 @@ class ModelFramework(BasePluginFolder):
 
     @staticmethod
     def get_device(show=True):
-        """
-        Tries to use the device specified by user and uses it for tensor operations.
+        """Tries to use the device specified by user and uses it for tensor operations.
+
         If not available, automatically discovers any cuda device.
-        If none is available (CUDA not installed), uses cpu instead."""
+        If none is available (CUDA not installed), uses cpu instead.
+        """
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         if show:
             logger.info(f"Using {device} device")
@@ -367,7 +367,7 @@ class ModelFramework(BasePluginFolder):
         return device
 
     def empty_cuda_cache(self):
-        """Empties the cuda cache if the device is a cuda device"""
+        """Empties the cuda cache if the device is a cuda device."""
         if self.get_device(show=False).type == "cuda":
             logger.info("Emptying cache...")
             torch.cuda.empty_cache()

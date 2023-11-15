@@ -23,11 +23,11 @@ from napari_cellseg3d.utils import rand_gen
 @thread_worker
 def two_way_communication_with_args(start, end):
     """Both sends and receives values to & from the main thread.
+
     Accepts arguments, puts them on the worker object.
     Receives values from main thread with ``incoming = yield``
-    Optionally returns a value at the end
+    Optionally returns a value at the end.
     """
-
     # do computationally intensive work here
     i = start
     while i < end:
@@ -43,7 +43,10 @@ def two_way_communication_with_args(start, end):
 
 
 class Controller(QWidget):
+    """Widget that controls a function running in another thread."""
+
     def __init__(self, viewer):
+        """Build the widget."""
         super().__init__()
 
         self.viewer = viewer

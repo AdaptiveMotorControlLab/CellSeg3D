@@ -1,3 +1,4 @@
+"""Contains the :py:class:`~InferenceWorker` class, which is a custom worker to run inference jobs in."""
 import platform
 from pathlib import Path
 
@@ -40,13 +41,20 @@ from napari_cellseg3d.code_models.workers_utils import (
 )
 
 logger = utils.LOGGER
+# experimental code to auto-remove erroneously over-labeled empty regions from instance segmentation
+EXPERIMENTAL_AUTO_DISCARD_EMPTY_REGIONS = False
+"""Whether to automatically discard erroneously over-labeled empty regions from semantic segmentation or not."""
+EXPERIMENTAL_AUTO_DISCARD_FRACTION_THRESHOLD = 0.9
+"""The fraction of pixels above which a region is considered wrongly labeled."""
+EXPERIMENTAL_AUTO_DISCARD_VALUE = 0.35
+"""The value above which a pixel is considered to contribute to over-labeling."""
 
-"""
-Writing something to log messages from outside the main thread needs specific care,
-Following the instructions in the guides below to have a worker with custom signals,
-a custom worker function was implemented.
-"""
 
+# Writing something to log messages from outside the main thread needs specific care,
+# Following the instructions in the guides below to have a worker with custom signals,
+# a custom worker function was implemented.
+
+# References:
 # https://python-forum.io/thread-31349.html
 # https://www.pythoncentral.io/pysidepyqt-tutorial-creating-your-own-signals-and-slots/
 # https://napari-staging-site.github.io/guides/stable/threading.html
@@ -54,13 +62,17 @@ a custom worker function was implemented.
 
 class InferenceWorker(GeneratorWorker):
     """A custom worker to run inference jobs in.
-    Inherits from :py:class:`napari.qt.threading.GeneratorWorker`"""
+
+    Inherits from :py:class:`napari.qt.threading.GeneratorWorker`.
+    """
 
     def __init__(
         self,
         worker_config: config.InferenceWorkerConfig,
     ):
         """Initializes a worker for inference with the arguments needed by the :py:func:`~inference` function.
+
+        Note: See :py:func:`~self.inference` for more details on the arguments.
 
         The config contains the following attributes:
         * device: cuda or cpu device to use for torch
@@ -78,11 +90,10 @@ class InferenceWorker(GeneratorWorker):
         * layer: the layer to run inference on
 
         Args:
-            * worker_config (config.InferenceWorkerConfig): dataclass containing the proper configuration elements
+            worker_config (config.InferenceWorkerConfig): dataclass containing the proper configuration elements
 
-        Note: See :py:func:`~self.inference`
+
         """
-
         super().__init__(self.inference)
         self._signals = LogSignal()  # add custom signals
         self.log_signal = self._signals.log_signal
@@ -98,17 +109,19 @@ class InferenceWorker(GeneratorWorker):
 
     @staticmethod
     def create_inference_dict(images_filepaths):
-        """Create a dict for MONAI with "image" keys with all image paths in :py:attr:`~self.images_filepaths`
+        """Create a dict for MONAI with "image" keys with all image paths in :py:attr:`~self.images_filepaths`.
 
         Returns:
-            dict: list of image paths from loaded folder"""
+            dict: list of image paths from loaded folder
+        """
         return [{"image": image_name} for image_name in images_filepaths]
 
     def set_download_log(self, widget):
+        """Sets the log widget for the downloader."""
         self.downloader.log_widget = widget
 
     def log(self, text):
-        """Sends a signal that ``text`` should be logged
+        """Sends a signal that ``text`` should be logged.
 
         Args:
             text (str): text to logged
@@ -116,11 +129,11 @@ class InferenceWorker(GeneratorWorker):
         self.log_signal.emit(text)
 
     def warn(self, warning):
-        """Sends a warning to main thread"""
+        """Sends a warning to main thread."""
         self.warn_signal.emit(warning)
 
     def _raise_error(self, exception, msg):
-        """Raises an error in main thread"""
+        """Raises an error in main thread."""
         logger.error(msg, exc_info=True)
         logger.error(exception, exc_info=True)
 
@@ -135,6 +148,7 @@ class InferenceWorker(GeneratorWorker):
         yield exception
 
     def log_parameters(self):
+        """Logs the parameters of the inference."""
         config = self.config
 
         self.log("-" * 20)
@@ -179,16 +193,19 @@ class InferenceWorker(GeneratorWorker):
         self.log("-" * 20)
 
     def load_folder(self):
+        """Loads the folder specified in :py:attr:`~self.images_filepaths` and returns a MONAI DataLoader."""
         images_dict = self.create_inference_dict(self.config.images_filepaths)
 
-        data_check = LoadImaged(keys=["image"])(images_dict[0])
+        data_check = LoadImaged(keys=["image"], image_only=True)(
+            images_dict[0]
+        )
         check = data_check["image"].shape
         pad = utils.get_padding_dim(check)
 
         if self.config.sliding_window_config.is_enabled():
             load_transforms = Compose(
                 [
-                    LoadImaged(keys=["image"]),
+                    LoadImaged(keys=["image"], image_only=True),
                     # AddChanneld(keys=["image"]), #already done
                     EnsureChannelFirstd(keys=["image"]),
                     # Orientationd(keys=["image"], axcodes="PLI"),
@@ -200,7 +217,7 @@ class InferenceWorker(GeneratorWorker):
         else:
             load_transforms = Compose(
                 [
-                    LoadImaged(keys=["image"]),
+                    LoadImaged(keys=["image"], image_only=True),
                     # AddChanneld(keys=["image"]), #already done
                     EnsureChannelFirstd(keys=["image"]),
                     QuantileNormalizationd(keys=["image"]),
@@ -220,6 +237,7 @@ class InferenceWorker(GeneratorWorker):
         return inference_loader
 
     def load_layer(self):
+        """Loads the layer specified in :py:attr:`~self.layer` and returns a MONAI DataLoader."""
         self.log("Loading layer")
         image = np.squeeze(self.config.layer.data)
         volume = image.astype(np.float32)
@@ -292,6 +310,14 @@ class InferenceWorker(GeneratorWorker):
         post_process_transforms,
         aniso_transform=None,
     ):
+        """Runs the model on the inputs and returns the output.
+
+        Args:
+            inputs (torch.Tensor): the input tensor to run the model on
+            model (torch.nn.Module): the model to run
+            post_process_transforms (monai.transforms.Compose): the transforms to apply to the output
+            aniso_transform (monai.transforms.Zoom): the anisotropic transform to apply to the output
+        """
         inputs = inputs.to("cpu")
         dataset_device = (
             "cpu" if self.config.keep_on_cpu else self.config.device
@@ -315,6 +341,36 @@ class InferenceWorker(GeneratorWorker):
                 def model_output_wrapper(inputs):
                     # inputs = normalization(inputs)
                     result = model(inputs)
+
+                    ####################### EXPERIMENTAL CODE
+                    if EXPERIMENTAL_AUTO_DISCARD_EMPTY_REGIONS:
+                        result = post_process_transforms(result)
+                        logger.debug("Checking for empty regions")
+                        check_result = result.detach().cpu().numpy()
+                        for i in range(check_result.shape[0]):
+                            for j in range(check_result.shape[1]):
+                                fraction_labeled = (
+                                    utils.fraction_above_threshold(
+                                        check_result[i, j],
+                                        EXPERIMENTAL_AUTO_DISCARD_VALUE,
+                                    )
+                                )
+                                logger.debug(
+                                    f"Fraction labeled: {fraction_labeled}"
+                                )
+                                if (
+                                    fraction_labeled
+                                    > EXPERIMENTAL_AUTO_DISCARD_FRACTION_THRESHOLD
+                                ):
+                                    logger.debug(
+                                        f"Discarding empty region with fraction {fraction_labeled}"
+                                    )
+                                    result[i, j] = torch.zeros_like(
+                                        result[i, j]
+                                    )
+                        return result
+                    ##########################################
+
                     return post_process_transforms(result)
 
                 model.eval()
@@ -352,6 +408,23 @@ class InferenceWorker(GeneratorWorker):
             # sys.stdout = old_stdout
             # sys.stderr = old_stderr
 
+    def _correct_results_rotation(self, array, shape):
+        """Corrects the shape of the array if needed."""
+        if array is None:
+            return None
+        if array.shape[-3:] != shape[-3:]:
+            logger.debug(
+                f"Correcting rotation due to results shape mismatch: target {shape}, got {array.shape}"
+            )
+            array = utils.correct_rotation(array)
+            if (
+                array.shape[-3:] != shape[-3:]
+            ):  # check only non-channel dimensions
+                logger.warning(
+                    f"Results shape mismatch: target {shape}, got {array.shape}"
+                )
+        return array
+
     def create_inference_result(
         self,
         semantic_labels,
@@ -362,23 +435,34 @@ class InferenceWorker(GeneratorWorker):
         stats=None,
         i=0,
     ) -> InferenceResult:
+        """Creates an :py:class:`~InferenceResult` object from the inference results.
+
+        Args:
+            semantic_labels (np.ndarray): the semantic labels
+            instance_labels (np.ndarray): the instance labels
+            crf_results (np.ndarray): the CRF results
+            from_layer (bool, optional): whether the inference was run on a layer or not. Defaults to False.
+            original (np.ndarray, optional): the original image. Defaults to None.
+            stats (list, optional): the stats of the instance labels. Defaults to None.
+            i (int, optional): the index of the image. Defaults to 0.
+
+        Raises:
+            ValueError: if the image is not from a layer and no original is provided
+
+        Returns:
+            InferenceResult: the inference result. See :py:class:`~InferenceResult` for more details.
+        """
         if not from_layer and original is None:
             raise ValueError(
                 "If the image is not from a layer, an original should always be available"
             )
 
-        if from_layer:
-            if i != 0:
-                raise ValueError(
-                    "A layer's ID should always be 0 (default value)"
-                )
+        if from_layer and i != 0:
+            raise ValueError("A layer's ID should always be 0 (default value)")
 
-            if semantic_labels is not None:
-                semantic_labels = utils.correct_rotation(semantic_labels)
-            if crf_results is not None:
-                crf_results = utils.correct_rotation(crf_results)
-            if instance_labels is not None:
-                instance_labels = utils.correct_rotation(instance_labels)
+        # semantic_labels = self._correct_results_rotation(semantic_labels, shape) # done at the level of model_output already
+        # instance_labels = self._correct_results_rotation(instance_labels, shape)
+        # crf_results = self._correct_results_rotation(crf_results, shape)
 
         return InferenceResult(
             image_id=i + 1,
@@ -391,9 +475,25 @@ class InferenceWorker(GeneratorWorker):
         )
 
     def get_original_filename(self, i):
+        """Gets the original filename from the :py:attr:`~self.images_filepaths` attribute."""
         return Path(self.config.images_filepaths[i]).stem
 
     def get_instance_result(self, semantic_labels, from_layer=False, i=-1):
+        """Gets the instance segmentation result.
+
+        Args:
+            semantic_labels (np.ndarray): the semantic labels
+            from_layer (bool, optional): whether the inference was run on a layer or not. Defaults to False.
+            i (int, optional): the index of the image. Defaults to -1.
+
+        Raises:
+            ValueError: if the image is not from a layer and no ID is provided
+
+        Returns:
+            tuple: a tuple containing:
+                * the instance labels
+                * the stats of the instance labels
+        """
         if not from_layer and i == -1:
             raise ValueError(
                 "An ID should be provided when running from a file"
@@ -404,11 +504,11 @@ class InferenceWorker(GeneratorWorker):
                 semantic_labels,
                 i + 1,
             )
-            data_dict = self.stats_csv(instance_labels)
+            stats = self.stats_csv(instance_labels)
         else:
             instance_labels = None
-            data_dict = None
-        return instance_labels, data_dict
+            stats = None
+        return instance_labels, stats
 
     def save_image(
         self,
@@ -417,6 +517,14 @@ class InferenceWorker(GeneratorWorker):
         i=0,
         additional_info="",
     ):
+        """Save the image to the :py:attr:`~self.results_path` folder.
+
+        Args:
+            image (np.ndarray): the image to save
+            from_layer (bool, optional): whether the inference was run on a layer or not. Defaults to False.
+            i (int, optional): the index of the image. Defaults to 0.
+            additional_info (str, optional): additional info to add to the filename. Defaults to "".
+        """
         if not from_layer:
             original_filename = "_" + self.get_original_filename(i) + "_"
             filetype = self.config.filetype
@@ -450,6 +558,7 @@ class InferenceWorker(GeneratorWorker):
             self.log(f"File n°{i+1} saved as : {filename}")
 
     def aniso_transform(self, image):
+        """Applies an anisotropic transform to the image."""
         if self.config.post_process_config.zoom.enabled:
             zoom = self.config.post_process_config.zoom.zoom_values
             anisotropic_transform = Zoom(
@@ -463,12 +572,21 @@ class InferenceWorker(GeneratorWorker):
     def instance_seg(
         self, semantic_labels, image_id=0, original_filename="layer"
     ):
+        """Runs the instance segmentation on the semantic labels.
+
+        Args:
+            semantic_labels (np.ndarray): the semantic labels
+            image_id (int, optional): the index of the image. Defaults to 0.
+            original_filename (str, optional): the original filename. Defaults to "layer".
+        """
         if image_id is not None:
             self.log(f"Running instance segmentation for image n°{image_id}")
 
         method = self.config.post_process_config.instance.method
-        instance_labels = method.run_method_on_channels(semantic_labels)
-        self.log(f"DEBUG instance results shape : {instance_labels.shape}")
+        instance_labels = method.run_method_on_channels_from_params(
+            semantic_labels
+        )
+        logger.debug(f"DEBUG instance results shape : {instance_labels.shape}")
 
         filetype = (
             ".tif"
@@ -495,6 +613,7 @@ class InferenceWorker(GeneratorWorker):
         return instance_labels
 
     def inference_on_folder(self, inf_data, i, model, post_process_transforms):
+        """Runs inference on a folder."""
         self.log("-" * 10)
         self.log(f"Inference started on image n°{i + 1}...")
 
@@ -507,6 +626,15 @@ class InferenceWorker(GeneratorWorker):
             aniso_transform=self.aniso_transform,
         )
 
+        out = utils.correct_rotation(out)
+        extra_dims = len(inputs.shape) - 3
+        inputs_shape_corrected = np.swapaxes(
+            inputs, extra_dims, 2 + extra_dims
+        ).shape
+        if out.shape[-3:] != inputs_shape_corrected[-3:]:
+            logger.debug(
+                f"Output shape {out.shape[-3:]} does not match input shape {inputs_shape_corrected[-3:]} on HWD dims even after rotation"
+            )
         self.save_image(out, i=i)
         instance_labels, stats = self.get_instance_result(out, i=i)
         if self.config.use_crf:
@@ -539,6 +667,7 @@ class InferenceWorker(GeneratorWorker):
         )
 
     def run_crf(self, image, labels, aniso_transform, image_id=0):
+        """Runs CRF on the image and labels."""
         try:
             if aniso_transform is not None:
                 image = aniso_transform(image)
@@ -565,8 +694,12 @@ class InferenceWorker(GeneratorWorker):
             return None
 
     def stats_csv(self, instance_labels):
+        """Computes the stats of the instance labels."""
         try:
             if self.config.compute_stats:
+                logger.debug(
+                    f"Stats csv instance labels shape : {instance_labels.shape}"
+                )
                 if len(instance_labels.shape) == 4:
                     stats = [volume_stats(c) for c in instance_labels]
                 else:
@@ -579,6 +712,7 @@ class InferenceWorker(GeneratorWorker):
             return None
 
     def inference_on_layer(self, image, model, post_process_transforms):
+        """Runs inference on a layer."""
         self.log("-" * 10)
         self.log("Inference started on layer...")
         logger.debug(f"Layer shape @ inference input: {image.shape}")
@@ -619,9 +753,10 @@ class InferenceWorker(GeneratorWorker):
 
     # @thread_worker(connect={"errored": self._raise_error})
     def inference(self):
-        """
+        """Main inference function.
+
         Requires:
-            * device: cuda or cpu device to use for torch
+            * device: cuda or cpu device to use for torch.
 
             * model_dict: the :py:attr:`~self.models_dict` dictionary to obtain the model name, class and instance
 
@@ -690,7 +825,7 @@ class InferenceWorker(GeneratorWorker):
                     raise ValueError("Model is None")
                 # try:
                 self.log("Loading weights...")
-                if weights_config.custom:
+                if weights_config.use_custom:
                     weights = weights_config.path
                 else:
                     self.downloader.download_weights(

@@ -93,6 +93,8 @@ venv/
 # written by setuptools_scm
 **/_version.py
 
+# WANDB
+/wandb/
 
 
 ########
@@ -100,7 +102,8 @@ venv/
 #dataset, weights, old logos, requirements
 /napari_cellseg3d/code_models/models/dataset/
 /napari_cellseg3d/code_models/models/saved_weights/
-/docs/res/logo/old_logo/
+/docs/source/logo/old_logo/
+/docs/source/code/_autosummary/
 /reqs/
 /loss_plots/
 /wandb/
@@ -111,7 +114,7 @@ notebooks/full_plot.html
 notebooks/instance_test.ipynb
 *.prof
 /docs/_build/
-/docs/source/code/_autosummary/
+/docs/source/code/_autosummary/*.rst
 
 #include test data
 !napari_cellseg3d/_tests/res/test.tif
@@ -121,3 +124,8 @@ notebooks/instance_test.ipynb
 !napari_cellseg3d/_tests/res/wnet_test/lab/*.tif
 !napari_cellseg3d/_tests/res/wnet_test/vol/*.tif
 cov.syspath.txt
+
+#include docs images
+!docs/source/logo/*
+!docs/source/images/*
+napari_cellseg3d/dev_scripts/wandb

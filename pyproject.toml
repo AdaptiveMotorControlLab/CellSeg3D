@@ -73,6 +73,7 @@ select = [
     "E", "F", "W",
     "A",
     "B",
+    "D",
     "G",
     "I",
     "PT",
@@ -84,6 +85,7 @@ select = [
 ]
 # Never enforce `E501` (line length violations) and 'E741' (ambiguous variable names)
 # and 'G004' (do not use f-strings in logging)
+# and 'A003' (Shadowing python builtins)
 ignore = ["E501", "E741", "G004", "A003"]
 exclude = [
     ".bzr",
@@ -111,6 +113,9 @@ exclude = [
     "napari_cellseg3d/_tests/conftest.py",
 ]
 
+[tool.ruff.pydocstyle]
+convention = "google"
+
 [tool.black]
 line-length = 79
 
@@ -122,18 +127,27 @@ line_length = 79
 crf = [
     "pydensecrf@git+https://github.com/kodalli/pydensecrf.git#egg=master",
 ]
+onnx-cpu = [
+    "onnx",
+    "onnxruntime"
+]
+onnx-gpu = [
+    "onnx",
+    "onnxruntime-gpu"
+]
+wandb = [
+    "wandb"
+]
 dev = [
     "isort",
     "black",
     "ruff",
     "pre-commit",
     "tuna",
+    "twine",
 ]
 docs = [
-    "sphinx",
-    "sphinx_autodoc_typehints",
-    "sphinx_rtd_theme",
-    "twine",
+    "jupyter-book",
 ]
 test = [
     "pytest",
@@ -143,12 +157,4 @@ test = [
     "tox",
     "twine",
     "pydensecrf@git+https://github.com/kodalli/pydensecrf.git#egg=master",
-]
-onnx-cpu = [
-    "onnx",
-    "onnxruntime"
-]
-onnx-gpu = [
-    "onnx",
-    "onnxruntime-gpu"
 ]
