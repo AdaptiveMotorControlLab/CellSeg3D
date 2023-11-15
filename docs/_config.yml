@@ -2,7 +2,7 @@
 # Learn more at https://jupyterbook.org/customize/config.html
 
 title: napari-cellseg3d Documentation
-author: Cyril Achard, Maxime Vidal, Timokleia Kousi, Mackenzie Mathis
+author: Cyril Achard, Maxime Vidal, Timokleia Kousi, Mackenzie Mathis | Mathis Laboratory
 logo: source/logo/logo_alpha.png
 
 # Force re-execution of notebooks on each build.
