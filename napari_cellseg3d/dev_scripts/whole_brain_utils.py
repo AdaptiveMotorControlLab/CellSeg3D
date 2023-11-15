@@ -10,20 +10,20 @@ def extract_continuous_region(image):
     return label(image)
 
 
-def get_boundaries(image_regions):
+def get_boundaries(image_regions, thickness=1):
     """Obtain boundaries from image regions."""
     boundaries = np.zeros_like(image_regions)
     label_values = np.unique(image_regions)
     for i in label_values:
         if i == 0:
             continue
-        boundary = find_boundaries(image_regions == i)
+        boundary = find_boundaries(image_regions == i, thickness=thickness)
         boundaries += np.where(boundary > 0, i, 0)
     return boundaries
 
 
 def remove_boundaries_from_segmentation(
-    image_segmentation, image_labels=None, image=None
+    image_segmentation, image_labels=None, image=None, thickness=1
 ):
     """Remove boundaries from segmentation."""
     if image_labels is None:
@@ -32,8 +32,7 @@ def remove_boundaries_from_segmentation(
         image_regions = extract_continuous_region(image)
     else:
         image_regions = image_labels
-    boundaries = get_boundaries(image_regions)
+    boundaries = get_boundaries(image_regions, thickness=thickness)
 
     seg_in = np.where(image_regions > 0, image_segmentation, 0)
-    seg_no_boundaries = np.where(boundaries > 0, 0, seg_in)
-    return seg_no_boundaries, seg_in, boundaries, image_regions
+    return np.where(boundaries > 0, 0, seg_in)
