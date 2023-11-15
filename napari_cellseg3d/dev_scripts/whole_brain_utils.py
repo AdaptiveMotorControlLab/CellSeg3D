@@ -17,7 +17,7 @@ def get_boundaries(image_regions, thickness=1):
     for i in label_values:
         if i == 0:
             continue
-        boundary = find_boundaries(image_regions == i, thickness=thickness)
+        boundary = find_boundaries(image_regions == i, connectivity=thickness)
         boundaries += np.where(boundary > 0, i, 0)
     return boundaries
 
