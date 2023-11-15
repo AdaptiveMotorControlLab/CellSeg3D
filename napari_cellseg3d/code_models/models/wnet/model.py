@@ -1,7 +1,4 @@
-"""
-Implementation of a 3D W-Net model, based on the 2D version from https://arxiv.org/abs/1711.08506.
-The model performs unsupervised segmentation of 3D images.
-"""
+"""Implementation of a 3D W-Net model, based on the 2D version from https://arxiv.org/abs/1711.08506. The model performs unsupervised segmentation of 3D images."""
 
 from typing import List
 
@@ -25,14 +22,16 @@ class WNet_encoder(nn.Module):
     def __init__(
         self,
         in_channels=1,
-        out_channels=2
-        # num_classes=2
+        out_channels=2,
+        # num_classes=2,
+        softmax=True,
     ):
+        """Initialize the W-Net encoder."""
         super().__init__()
         self.encoder = UNet(
             in_channels=in_channels,
             out_channels=out_channels,
-            softmax=False,
+            softmax=softmax,
         )
 
     def forward(self, x):
@@ -42,6 +41,7 @@ class WNet_encoder(nn.Module):
 
 class WNet(nn.Module):
     """Implementation of a 3D W-Net model, based on the 2D version from https://arxiv.org/abs/1711.08506.
+
     The model performs unsupervised segmentation of 3D images.
     It first encodes the input image into a latent space using the U-Net UEncoder, then decodes it back to the original image using the U-Net UDecoder.
     """
@@ -53,6 +53,7 @@ class WNet(nn.Module):
         num_classes=2,
         dropout=0.65,
     ):
+        """Initialize the W-Net model."""
         super(WNet, self).__init__()
         self.encoder = UNet(
             in_channels, num_classes, softmax=True, dropout=dropout
@@ -87,6 +88,7 @@ class UNet(nn.Module):
         softmax: bool = True,
         dropout: float = 0.65,
     ):
+        """Creates a U-Net model, which is half of the W-Net model."""
         if channels is None:
             channels = [64, 128, 256, 512, 1024]
         if len(channels) != 5:
@@ -180,6 +182,13 @@ class InBlock(nn.Module):
     """Input block of the U-Net architecture."""
 
     def __init__(self, in_channels, out_channels, dropout=0.65):
+        """Create the input block.
+
+        Args:
+            in_channels (int): Number of input channels.
+            out_channels (int): Number of output channels.
+            dropout (float, optional): Dropout probability. Defaults to 0.65.
+        """
         super(InBlock, self).__init__()
         # self.device = device
         self.module = nn.Sequential(
@@ -204,6 +213,13 @@ class Block(nn.Module):
     """Basic block of the U-Net architecture."""
 
     def __init__(self, in_channels, out_channels, dropout=0.65):
+        """Initialize the basic block.
+
+        Args:
+            in_channels (int): Number of input channels.
+            out_channels (int): Number of output channels.
+            dropout (float, optional): Dropout probability. Defaults to 0.65.
+        """
         super(Block, self).__init__()
         # self.device = device
         self.module = nn.Sequential(
@@ -230,6 +246,13 @@ class OutBlock(nn.Module):
     """Output block of the U-Net architecture."""
 
     def __init__(self, in_channels, out_channels, dropout=0.65):
+        """Initialize the output block.
+
+        Args:
+            in_channels (int): Number of input channels.
+            out_channels (int): Number of output channels.
+            dropout (float, optional): Dropout probability. Defaults to 0.65.
+        """
         super(OutBlock, self).__init__()
         # self.device = device
         self.module = nn.Sequential(

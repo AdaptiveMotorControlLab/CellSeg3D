@@ -1,3 +1,5 @@
+"""Training plugin for napari_cellseg3d."""
+
 import shutil
 import warnings
 from functools import partial
@@ -29,15 +31,17 @@ from napari_cellseg3d.code_models.worker_training import (
 )
 from napari_cellseg3d.code_models.workers_utils import TrainingReport
 
+logger = utils.LOGGER
 NUMBER_TABS = 4  # how many tabs in the widget
 DEFAULT_PATCH_SIZE = 64  # default patch size for training
-logger = utils.LOGGER
 
 
 class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
     """A plugin to train pre-defined PyTorch models for one-channel segmentation directly in napari.
+
     Features parameter selection for training, dynamic loss plotting and automatic saving of the best weights during
-    training through validation."""
+    training through validation.
+    """
 
     default_config = config.SupervisedTrainingWorkerConfig()
 
@@ -45,7 +49,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self,
         viewer: "napari.viewer.Viewer",
     ):
-        """Creates a Trainer tab widget with the following functionalities :
+        """Creates a Trainer tab widget with the following functionalities.
 
         * First tab : Dataset parameters
             * A choice for the file extension of images to be loaded
@@ -104,7 +108,6 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             val_interval (uint) : epoch interval for validation
 
         """
-
         super().__init__(viewer)
 
         # self.master = parent
@@ -183,10 +186,10 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ###########
 
         self.zip_choice = ui.CheckBox("Compress results")
-        self.validation_percent_choice = ui.Slider(
+        self.train_split_percent_choice = ui.Slider(
             lower=10,
             upper=90,
-            default=self.default_config.validation_percent * 100,
+            default=self.default_config.training_percent * 100,
             step=5,
             parent=self,
         )
@@ -316,17 +319,19 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ############################
         self._set_tooltips()
         self._build()
+
+        self.model_choice.setCurrentIndex(4)
         self.model_choice.currentTextChanged.connect(
             partial(self._toggle_unsupervised_mode, enabled=False)
         )
-        self._toggle_unsupervised_mode(enabled=False)
+        self._toggle_unsupervised_mode(enabled=True)
 
     def _set_tooltips(self):
         # tooltips
         self.zip_choice.setToolTip(
             "Save a copy of the results as a zip folder"
         )
-        self.validation_percent_choice.tooltips = "The percentage of images to retain for training.\nThe remaining images will be used for validation"
+        self.train_split_percent_choice.tooltips = "The percentage of images to retain for training.\nThe remaining images will be used for validation"
         self.epoch_choice.tooltips = "The number of epochs to train for.\nThe more you train, the better the model will fit the training data"
         self.loss_choice.setToolTip(
             "The loss function to use for training.\nSee the list in the training guide for more info"
@@ -422,11 +427,9 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.container_seed.setVisible(False)
 
     def check_ready(self):
-        """
-        Checks that the paths to the images and labels are correctly set
+        """Checks that the paths to the images and labels are correctly set.
 
         Returns:
-
             * True if paths are set correctly
 
             * False and displays a warning if not
@@ -447,19 +450,23 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         return True
 
     def _toggle_unsupervised_mode(self, enabled=False):
-        """Change all the UI elements needed for unsupervised learning mode"""
+        """Change all the UI elements needed for unsupervised learning mode."""
         if self.model_choice.currentText() == "WNet" or enabled:
             unsupervised = True
             self.start_btn = self.start_button_unsupervised
-            self.image_filewidget.text_field.setText("Validation images")
-            self.labels_filewidget.text_field.setText("Validation labels")
+            if self.image_filewidget.text_field.text() == "Images directory":
+                self.image_filewidget.text_field.setText("Validation images")
+            if self.labels_filewidget.text_field.text() == "Labels directory":
+                self.labels_filewidget.text_field.setText("Validation labels")
             self.learning_rate_choice.lr_value_choice.setValue(2)
             self.learning_rate_choice.lr_exponent_choice.setCurrentIndex(3)
         else:
             unsupervised = False
             self.start_btn = self.start_button_supervised
-            self.image_filewidget.text_field.setText("Images directory")
-            self.labels_filewidget.text_field.setText("Labels directory")
+            if self.image_filewidget.text_field.text() == "Validation images":
+                self.image_filewidget.text_field.setText("Images directory")
+            if self.labels_filewidget.text_field.text() == "Validation labels":
+                self.labels_filewidget.text_field.setText("Labels directory")
             self.learning_rate_choice.lr_value_choice.setValue(1)
             self.learning_rate_choice.lr_exponent_choice.setCurrentIndex(1)
 
@@ -488,7 +495,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self._check_all_filepaths()
 
     def _build(self):
-        """Builds the layout of the widget and creates the following tabs and prompts:
+        """Builds the layout of the widget and creates the following tabs and prompts.
 
         * Model parameters :
 
@@ -520,8 +527,8 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
             * Previous tab
 
-            * Start (see :py:func:`~start`)"""
-
+        * Start (see :py:func:`~start`)
+        """
         # for w in self.children():
         #     w.setToolTip(f"{w}")
 
@@ -675,8 +682,8 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ui.add_blank(data_tab_w, data_tab_l)
         #######################
         self.validation_group = ui.GroupedWidget.create_single_widget_group(
-            "Validation (%)",
-            self.validation_percent_choice.container,
+            "Training split (%)",
+            self.train_split_percent_choice.container,
             data_tab_l,
         )
         #######################
@@ -913,12 +920,11 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.results_path = default_results_path
 
     def send_log(self, text):
-        """Sends a message via the Log attribute"""
+        """Sends a message via the Log attribute."""
         self.log.print_and_log(text)
 
     def start(self):
-        """
-        Initiates the :py:func:`train` function as a worker and does the following :
+        """Initiates the :py:func:`train` function as a worker and does the following.
 
         * Checks that filepaths are set correctly using :py:func:`check_ready`
 
@@ -930,8 +936,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         * When the worker finishes, clears the memory (tries to for now)
 
-        TODO:
-
+        Todo:
         * Fix memory allocation from torch
 
 
@@ -942,6 +947,8 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         if self._stop_requested:
             self.log.print_and_log("Worker is already stopping !")
+            if self.worker is None:
+                self._stop_requested = False
             return
 
         if not self.check_ready():  # issues a warning if not ready
@@ -1036,9 +1043,10 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self,
         additional_description=None,
     ) -> config.TrainingWorkerConfig:
-        """Creates a worker config for supervised or unsupervised training
+        """Creates a worker config for supervised or unsupervised training.
+
         Args:
-            additional_description: Additional description to add to the results folder name
+            additional_description: Additional description to add to the results folder name.
 
         Returns:
             A worker config
@@ -1047,11 +1055,14 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         model_config = config.ModelInfo(name=self.model_choice.currentText())
 
         self.weights_config.path = self.weights_config.path
-        self.weights_config.custom = self.custom_weights_choice.isChecked()
+        self.weights_config.use_custom = self.custom_weights_choice.isChecked()
+
         self.weights_config.use_pretrained = (
             self.use_transfer_choice.isChecked()
             and not self.custom_weights_choice.isChecked()
         )
+        self.weights_config.use_custom = self.custom_weights_choice.isChecked()
+
         deterministic_config = config.DeterministicConfig(
             enabled=self.use_deterministic_choice.isChecked(),
             seed=self.box_seed.value(),
@@ -1107,23 +1118,24 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         patch_size,
         deterministic_config,
     ):
-        """Sets the worker config for supervised training
+        """Sets the worker config for supervised training.
+
         Args:
             model_config: Model config
             results_path_folder: Path to results folder
             patch_size: Patch size
-            deterministic_config: Deterministic config
+            deterministic_config: Deterministic config.
 
         Returns:
             A worker config
         """
-        validation_percent = self.validation_percent_choice.slider_value / 100
+        validation_percent = self.train_split_percent_choice.slider_value / 100
         self.worker_config = config.SupervisedTrainingWorkerConfig(
             device=self.check_device_choice(),
             model_info=model_config,
             weights_info=self.weights_config,
             train_data_dict=self.data,
-            validation_percent=validation_percent,
+            training_percent=validation_percent,
             max_epochs=self.epoch_choice.value(),
             loss_function=self.loss_choice.currentText(),
             learning_rate=self.learning_rate_choice.get_learning_rate(),
@@ -1148,16 +1160,24 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         deterministic_config,
         eval_volume_dict,
     ) -> config.WNetTrainingWorkerConfig:
-        """Sets the worker config for unsupervised training
+        """Sets the worker config for unsupervised training.
+
         Args:
             results_path_folder: Path to results folder
             patch_size: Patch size
             deterministic_config: Deterministic config
-            eval_volume_dict: Evaluation volume dictionary
+            eval_volume_dict: Evaluation volume dictionary.
 
         Returns:
             A worker config
         """
+        batch_size = self.batch_choice.slider_value
+        if eval_volume_dict is None:
+            eval_batch_size = 1
+        else:
+            eval_batch_size = (
+                1 if len(eval_volume_dict) < batch_size else batch_size
+            )
         self.worker_config = config.WNetTrainingWorkerConfig(
             device=self.check_device_choice(),
             weights_info=self.weights_config,
@@ -1165,7 +1185,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             max_epochs=self.epoch_choice.value(),
             learning_rate=self.learning_rate_choice.get_learning_rate(),
             validation_interval=self.val_interval_choice.value(),
-            batch_size=self.batch_choice.slider_value,
+            batch_size=batch_size,
             results_path_folder=str(results_path_folder),
             sampling=self.patch_choice.isChecked(),
             num_samples=self.sample_choice_slider.slider_value,
@@ -1179,18 +1199,20 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             n_cuts_weight=self.wnet_widgets.ncuts_weight_choice.value(),
             rec_loss_weight=self.wnet_widgets.get_reconstruction_weight(),
             eval_volume_dict=eval_volume_dict,
+            eval_batch_size=eval_batch_size,
         )
 
         return self.worker_config
 
-    def _is_current_job_supervised(self):
+    def _is_current_job_supervised(
+        self,
+    ):  # TODO(cyril) rework for better check and _make_csv
         if isinstance(self.worker, WNetTrainingWorker):
             return False
         return True
 
     def on_start(self):
-        """Catches started signal from worker"""
-
+        """Catches started signal from worker."""
         self.remove_docked_widgets()
         self.display_status_report()
         self.log.clear()
@@ -1200,7 +1222,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.log.print_and_log("\nWorker is running...")
 
     def on_finish(self):
-        """Catches finished signal from worker"""
+        """Catches finished signal from worker."""
         self.log.print_and_log("*" * 20)
         self.log.print_and_log(f"\nWorker finished at {utils.get_time()}")
 
@@ -1240,11 +1262,12 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.worker = None
 
     def on_error(self):
-        """Catches errored signal from worker"""
+        """Catches errored signal from worker."""
         self.log.print_and_log(f"WORKER ERRORED at {utils.get_time()}")
         self.worker = None
 
     def on_stop(self):
+        """Catches stop signal from worker."""
         self._remove_result_layers()
         self.worker = None
         self._stop_requested = False
@@ -1253,11 +1276,15 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
     def _remove_result_layers(self):
         for layer in self.result_layers:
-            self._viewer.layers.remove(layer)
+            try:
+                self._viewer.layers.remove(layer)
+            except ValueError:
+                logger.debug("Layer already removed ?")
+                pass
         self.result_layers = []
 
     def _display_results(self, images_dict, complete_missing=False):
-        """Show various model input/outputs in napari viewer as a list of layers"""
+        """Show various model input/outputs in napari viewer as a list of layers."""
         layer_list = []
         if not complete_missing:
             for layer_name in list(images_dict.keys()):
@@ -1293,6 +1320,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                     self.result_layers[i].reset_contrast_limits()
 
     def on_yield(self, report: TrainingReport):
+        """Catches yielded signal from worker and plots the loss."""
         if report == TrainingReport():
             return  # skip empty reports
 
@@ -1344,7 +1372,19 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             logger.warning("No loss values to add to csv !")
             return
 
-        if self._is_current_job_supervised():
+        try:
+            self.loss_1_values["Loss"]
+            supervised = True
+        except KeyError("Loss"):
+            try:
+                self.loss_1_values["SoftNCuts"]
+                supervised = False
+            except KeyError("SoftNCuts") as e:
+                raise KeyError(
+                    "Error when making csv. Check loss dict keys ?"
+                ) from e
+
+        if supervised:
             val = utils.fill_list_in_between(
                 self.loss_2_values,
                 self.worker_config.validation_interval - 1,
@@ -1354,7 +1394,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.df = pd.DataFrame(
                 {
                     "epoch": size_column,
-                    "loss": self.loss_1_values,
+                    "loss": self.loss_1_values["Loss"],
                     "validation": val,
                 }
             )
@@ -1405,7 +1445,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         loss_values_2: list,
         show_plot_2_max: bool = True,
     ):
-        """Creates two subplots to plot the training loss and validation metric"""
+        """Creates two subplots to plot the training loss and validation metric."""
         plot_key = (
             "supervised"
             if self._is_current_job_supervised()
@@ -1437,11 +1477,11 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             # update plot 2
             if self._is_current_job_supervised():
                 x = [
-                    self.worker_config.validation_interval * (i + 1)
+                    int(self.worker_config.validation_interval * (i + 1))
                     for i in range(len(loss_values_2))
                 ]
             else:
-                x = [i + 1 for i in range(len(loss_values_2))]
+                x = [int(i + 1) for i in range(len(loss_values_2))]
             y = loss_values_2
 
             self.plot_2.plot(x, y, zorder=1)
@@ -1456,15 +1496,14 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.canvas.draw_idle()
 
     def update_loss_plot(self, loss_1: dict, loss_2: list):
-        """
-        Updates the plots on subsequent validation steps.
+        """Updates the plots on subsequent validation steps.
+
         Creates the plot on the second validation step (epoch == val_interval*2).
         Updates the plot on subsequent validation steps.
         Epoch is obtained from the length of the loss vector.
 
         Returns: returns empty if the epoch is < than 2 * validation interval.
         """
-
         epoch = len(loss_1[list(loss_1.keys())[0]])
         logger.debug(f"Updating loss plot for epoch {epoch}")
         plot_max = self._is_current_job_supervised()
@@ -1526,7 +1565,10 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
 
 class LearningRateWidget(ui.ContainerWidget):
+    """A widget to choose the learning rate."""
+
     def __init__(self, parent=None):
+        """Creates a widget to choose the learning rate."""
         super().__init__(vertical=False, parent=parent)
 
         self.lr_exponent_dict = {
@@ -1568,6 +1610,7 @@ class LearningRateWidget(ui.ContainerWidget):
         )
 
     def get_learning_rate(self) -> float:
+        """Return the learning rate as a float."""
         return float(
             self.lr_value_choice.value()
             * self.lr_exponent_dict[self.lr_exponent_choice.currentText()]
@@ -1575,11 +1618,12 @@ class LearningRateWidget(ui.ContainerWidget):
 
 
 class WNetWidgets:
-    """A collection of widgets for the WNet training GUI"""
+    """A collection of widgets for the WNet training GUI."""
 
     default_config = config.WNetTrainingWorkerConfig()
 
     def __init__(self, parent):
+        """Creates a collection of widgets for the WNet training GUI."""
         self.num_classes_choice = ui.DropdownMenu(
             entries=["2", "3", "4"],
             parent=parent,
@@ -1661,6 +1705,7 @@ class WNetWidgets:
         )
 
     def get_reconstruction_weight(self):
+        """Returns the reconstruction weight as a float."""
         return float(
             self.reconstruction_weight_choice.value()
             / self.reconstruction_weight_divide_factor_choice.value()

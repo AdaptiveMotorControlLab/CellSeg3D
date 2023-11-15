@@ -1,3 +1,4 @@
+"""Crop utility plugin for napari_cellseg3d."""
 from math import floor
 from pathlib import Path
 
@@ -26,7 +27,7 @@ class Cropping(
     utils_default_paths = []
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
-        """Creates a Cropping plugin with several buttons :
+        """Creates a Cropping plugin with several buttons.
 
         * Open file prompt to select volumes directory
 
@@ -40,7 +41,6 @@ class Cropping(
 
         * A button to close the widget
         """
-
         super().__init__(viewer)
 
         if parent is not None:
@@ -58,7 +58,7 @@ class Cropping(
         # )
 
         self.image_layer_loader.layer_list.currentIndexChanged.connect(
-            self.auto_set_dims
+            self._auto_set_dims
         )
         # ui.LayerSelecter(self._viewer, "Image 1")
         # self.layer_selection2 = ui.LayerSelecter(self._viewer, "Image 2")
@@ -125,7 +125,7 @@ class Cropping(
         self._build()
         self._toggle_second_image_io_visibility()
         self._check_image_list()
-        self.auto_set_dims()
+        self._auto_set_dims()
 
     def _toggle_second_image_io_visibility(self):
         crop_2nd = self.crop_second_image_choice.isChecked()
@@ -146,7 +146,7 @@ class Cropping(
             except IndexError:
                 return
 
-    def auto_set_dims(self):
+    def _auto_set_dims(self):
         logger.debug(self.image_layer_loader.layer_name())
         data = self.image_layer_loader.layer_data()
         if data is not None:
@@ -159,8 +159,7 @@ class Cropping(
                     box.setValue(floor(data.shape[i] / 2))
 
     def _build(self):
-        """Build buttons in a layout and add them to the napari Viewer"""
-
+        """Build buttons in a layout and add them to the napari Viewer."""
         container = ui.ContainerWidget(0, 0, 1, 11)
         layout = container.layout
 
@@ -237,7 +236,6 @@ class Cropping(
 
         * If labels are present, saves the cropped version as a single file or 2D stacks folder depending on what was loaded.
         """
-
         viewer = self._viewer
 
         self._check_results_path(str(self.results_path))
@@ -270,9 +268,7 @@ class Cropping(
         return False
 
     def _start(self):
-        """Launches cropping process by loading the files from the chosen folders,
-        and adds control widgets to the napari Viewer for moving the cropped volume.
-        """
+        """Launches cropping process by loading the files from the chosen folders, and adds control widgets to the napari Viewer for moving the cropped volume."""
         if not self._check_ready():
             logger.warning("Please select at least one valid layer !")
             return
@@ -324,10 +320,10 @@ class Cropping(
                 layer.visible = False
                 # hide other layers, because of anisotropy
 
-            self.image_layer1 = self.add_isotropic_layer(self.image_layer1)
+            self.image_layer1 = self._add_isotropic_layer(self.image_layer1)
 
             if self.crop_second_image:
-                self.image_layer2 = self.add_isotropic_layer(
+                self.image_layer2 = self._add_isotropic_layer(
                     self.image_layer2, visible=False
                 )
         else:
@@ -355,7 +351,7 @@ class Cropping(
 
         self._add_crop_sliders()
 
-    def add_isotropic_layer(
+    def _add_isotropic_layer(
         self,
         layer,
         colormap="inferno",
@@ -503,7 +499,7 @@ class Cropping(
             labels_crop_layer=None,
             crop_lbls=False,
         ):
-            """ "Update cropped volume position"""
+            """Update cropped volume position."""
             # self._check_for_empty_layer(highres_crop_layer, highres_crop_layer.data)
 
             # logger.debug(f"axis : {axis}")
@@ -539,6 +535,7 @@ class Cropping(
                 i : i + cropx, j : j + cropy, k : k + cropz
             ]
             highres_crop_layer.translate = scale * izyx
+            highres_crop_layer.reset_contrast_limits()
             highres_crop_layer.refresh()
 
             # self._check_for_empty_layer(
@@ -550,6 +547,7 @@ class Cropping(
                     i : i + cropx, j : j + cropy, k : k + cropz
                 ]
                 labels_crop_layer.translate = scale * izyx
+                highres_crop_layer.reset_contrast_limits()
                 labels_crop_layer.refresh()
 
             self._x = i

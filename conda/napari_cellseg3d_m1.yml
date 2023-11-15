@@ -16,7 +16,7 @@ dependencies:
         - tifffile>=2022.2.9
         - imageio-ffmpeg>=0.4.5
         - torch>=1.11
-        - monai[nibabel,einops]>=0.9.0
+        - monai>=0.9.0
         - tqdm
         - nibabel
         - scikit-image
