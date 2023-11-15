@@ -1,3 +1,4 @@
+"""Contains the workers used to train the models."""
 import platform
 import time
 from abc import abstractmethod
@@ -88,11 +89,14 @@ a custom worker function was implemented.
 
 class TrainingWorkerBase(GeneratorWorker):
     """A basic worker abstract class, to run training jobs in.
-    Contains the minimal common elements required for training models."""
+
+    Contains the minimal common elements required for training models.
+    """
 
     wandb_config = config.WandBConfig()
 
     def __init__(self):
+        """Initializes the worker."""
         super().__init__(self.train)
         self._signals = LogSignal()
         self.log_signal = self._signals.log_signal
@@ -107,12 +111,13 @@ class TrainingWorkerBase(GeneratorWorker):
         ################################
 
     def set_download_log(self, widget):
-        """Sets the log widget for the downloader to output to"""
+        """Sets the log widget for the downloader to output to."""
         self.downloader.log_widget = widget
 
     def log(self, text):
-        """Sends a Qt signal that the provided text should be logged
-        Goes in a Log object, defined in :py:mod:`napari_cellseg3d.interface
+        """Sends a Qt signal that the provided text should be logged.
+
+        Goes in a Log object, defined in :py:mod:`napari_cellseg3d.interface`.
         Sends a signal to the main thread to log the text.
         Signal is defined in napari_cellseg3d.workers_utils.LogSignal.
 
@@ -122,11 +127,11 @@ class TrainingWorkerBase(GeneratorWorker):
         self.log_signal.emit(text)
 
     def warn(self, warning):
-        """Sends a warning to main thread"""
+        """Sends a warning to main thread."""
         self.warn_signal.emit(warning)
 
     def raise_error(self, exception, msg):
-        """Sends an error to main thread"""
+        """Sends an error to main thread."""
         logger.error(msg, exc_info=True)
         logger.error(exception, exc_info=True)
         self.error_signal.emit(exception, msg)
@@ -135,18 +140,19 @@ class TrainingWorkerBase(GeneratorWorker):
 
     @abstractmethod
     def log_parameters(self):
-        """Logs the parameters of the training"""
+        """Logs the parameters of the training."""
         raise NotImplementedError
 
     @abstractmethod
     def train(self):
-        """Starts a training job"""
+        """Starts a training job."""
         raise NotImplementedError
 
 
 class WNetTrainingWorker(TrainingWorkerBase):
     """A custom worker to run WNet (unsupervised) training jobs in.
-    Inherits from :py:class:`napari.qt.threading.GeneratorWorker` via :py:class:`TrainingWorkerBase`
+
+    Inherits from :py:class:`napari.qt.threading.GeneratorWorker` via :py:class:`TrainingWorkerBase`.
     """
 
     # TODO : add wandb parameters
@@ -155,6 +161,11 @@ class WNetTrainingWorker(TrainingWorkerBase):
         self,
         worker_config: config.WNetTrainingWorkerConfig,
     ):
+        """Initializes the worker.
+
+        Args:
+            worker_config (config.WNetTrainingWorkerConfig): The configuration object
+        """
         super().__init__()
         self.config = worker_config
 
@@ -174,15 +185,14 @@ class WNetTrainingWorker(TrainingWorkerBase):
         self.data_shape = None
 
     def get_patch_dataset(self, train_transforms):
-        """Creates a Dataset from the original data using the tifffile library
+        """Creates a Dataset from the original data using the tifffile library.
 
         Args:
-            train_data_dict (dict): dict with the Paths to the directory containing the data
+            train_transforms (monai.transforms.Compose): The transforms to apply to the data
 
         Returns:
             (tuple): A tuple containing the shape of the data and the dataset
         """
-
         patch_func = Compose(
             [
                 LoadImaged(keys=["image"], image_only=True),
@@ -216,6 +226,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
         return self.config.sample_size, dataset
 
     def get_dataset_eval(self, eval_dataset_dict):
+        """Creates a Dataset applying some transforms/augmentation on the data using the MONAI library."""
         eval_transforms = Compose(
             [
                 LoadImaged(keys=["image", "label"]),
@@ -248,10 +259,10 @@ class WNetTrainingWorker(TrainingWorkerBase):
         )
 
     def get_dataset(self, train_transforms):
-        """Creates a Dataset applying some transforms/augmentation on the data using the MONAI library
+        """Creates a Dataset applying some transforms/augmentation on the data using the MONAI library.
 
         Args:
-            config (WNetTrainingWorkerConfig): The configuration object
+            train_transforms (monai.transforms.Compose): The transforms to apply to the data
 
         Returns:
             (tuple): A tuple containing the shape of the data and the dataset
@@ -339,6 +350,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
         return self.dataloader, self.eval_dataloader, self.data_shape
 
     def log_parameters(self):
+        """Logs the parameters of the training."""
         self.log("*" * 20)
         self.log("-- Parameters --")
         self.log(f"Device: {self.config.device}")
@@ -346,7 +358,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
         self.log(f"Epochs: {self.config.max_epochs}")
         self.log(f"Learning rate: {self.config.learning_rate}")
         self.log(f"Validation interval: {self.config.validation_interval}")
-        if self.config.weights_info.custom:
+        if self.config.weights_info.use_custom:
             self.log(f"Custom weights: {self.config.weights_info.path}")
         elif self.config.weights_info.use_pretrained:
             self.log(f"Pretrained weights: {self.config.weights_info.path}")
@@ -388,6 +400,15 @@ class WNetTrainingWorker(TrainingWorkerBase):
     def train(
         self, provided_model=None, provided_optimizer=None, provided_loss=None
     ):
+        """Main training function.
+
+        Note : args are mainly used for testing purposes. Model is otherwise initialized in the function.
+
+        Args:
+            provided_model (WNet, optional): A model to use for training. Defaults to None.
+            provided_optimizer (torch.optim.Optimizer, optional): An optimizer to use for training. Defaults to None.
+            provided_loss (torch.nn.Module, optional): A loss function to use for training. Defaults to None.
+        """
         try:
             if self.config is None:
                 self.config = config.WNetTrainingWorkerConfig()
@@ -400,7 +421,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 logger.debug(f"wandb config : {config_dict}")
                 wandb.init(
                     config=config_dict,
-                    project="CellSeg3D WNet",
+                    project="CellSeg3D",
                     mode=self.wandb_config.mode,
                 )
 
@@ -445,7 +466,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
             if WANDB_INSTALLED:
                 wandb.watch(model, log_freq=100)
 
-            if self.config.weights_info.custom:
+            if self.config.weights_info.use_custom:
                 if self.config.weights_info.use_pretrained:
                     weights_file = "wnet.pth"
                     self.downloader.download_weights("WNet", weights_file)
@@ -768,6 +789,15 @@ class WNetTrainingWorker(TrainingWorkerBase):
             raise e
 
     def eval(self, model, epoch) -> TrainingReport:
+        """Evaluates the model on the validation set.
+
+        Args:
+            model (WNet): The model to evaluate
+            epoch (int): The current epoch
+
+        Returns:
+            TrainingReport: A training report containing the results of the evaluation. See :py:class:`napari_cellseg3d.workers_utils.TrainingReport`
+        """
         with torch.no_grad():
             device = self.config.device
             for _k, val_data in enumerate(self.eval_dataloader):
@@ -893,16 +923,19 @@ class WNetTrainingWorker(TrainingWorkerBase):
 
 class SupervisedTrainingWorker(TrainingWorkerBase):
     """A custom worker to run supervised training jobs in.
-    Inherits from :py:class:`napari.qt.threading.GeneratorWorker` via :py:class:`TrainingWorkerBase`
+
+    Inherits from :py:class:`napari.qt.threading.GeneratorWorker` via :py:class:`TrainingWorkerBase`.
     """
+
+    labels_not_semantic = False
 
     def __init__(
         self,
         worker_config: config.SupervisedTrainingWorkerConfig,
     ):
-        """Initializes a worker for inference with the arguments needed by the :py:func:`~train` function. Note: See :py:func:`~train`
+        """Initializes a worker for inference with the arguments needed by the :py:func:`~train` function. Note: See :py:func:`~train`.
 
-        Args:
+        Config provides the following attributes:
             * device : device to train on, cuda or cpu
 
             * model_dict : dict containing the model's "name" and "class"
@@ -935,7 +968,6 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
 
             * deterministic : dict with "use deterministic" : bool, whether to use deterministic training, "seed": seed for RNG
 
-
         """
         super().__init__()  # worker function is self.train in parent class
         self.config = worker_config
@@ -952,7 +984,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
         }
         self.loss_function = None
 
-    def set_loss_from_config(self):
+    def _set_loss_from_config(self):
         try:
             self.loss_function = self.loss_dict[self.config.loss_function]
         except KeyError as e:
@@ -960,11 +992,12 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
         return self.loss_function
 
     def log_parameters(self):
+        """Logs the parameters of the training."""
         self.log("-" * 20)
         self.log("Parameters summary :\n")
 
         self.log(
-            f"Percentage of dataset used for validation : {self.config.validation_percent * 100}%"
+            f"Percentage of dataset used for training : {self.config.training_percent * 100}%"
         )
 
         # self.log("-" * 10)
@@ -1003,7 +1036,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
         if self.config.do_augmentation:
             self.log("Data augmentation is enabled")
 
-        if not self.config.weights_info.use_pretrained:
+        if self.config.weights_info.use_custom:
             self.log(f"Using weights from : {self.config.weights_info.path}")
             if self._weight_error:
                 self.log(
@@ -1023,9 +1056,10 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
         provided_loss=None,
         provided_scheduler=None,
     ):
-        """Trains the PyTorch model for the given number of epochs, with the selected model and data,
-        using the chosen batch size, validation interval, loss function, and number of samples.
-        Will perform validation once every :py:obj:`val_interval` and save results if the mean dice is better
+        """Trains the PyTorch model for the given number of epochs.
+
+        Uses the selected model and data, using the chosen batch size, validation interval, loss function, and number of samples.
+        Will perform validation once every :py:obj:`val_interval` and save results if the mean dice is better.
 
         Requires:
 
@@ -1061,7 +1095,6 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
 
         * deterministic : dict with "use deterministic" : bool, whether to use deterministic training, "seed": seed for RNG
         """
-
         #########################
         # error_log = open(results_path +"/error_log.log" % multiprocessing.current_process().name, 'x')
         # faulthandler.enable(file=error_log, all_threads=True)
@@ -1073,6 +1106,15 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
         start_time = time.time()
 
         try:
+            if WANDB_INSTALLED:
+                config_dict = self.config.__dict__
+                logger.debug(f"wandb config : {config_dict}")
+                wandb.init(
+                    config=config_dict,
+                    project="CellSeg3D",
+                    mode=self.wandb_config.mode,
+                )
+
             if deterministic_config.enabled:
                 set_determinism(
                     seed=deterministic_config.seed
@@ -1087,6 +1129,17 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             self.log(f"config model : {self.config.model_info.name}")
             model_name = model_config.name
             model_class = model_config.get_model()
+
+            ######## Check that labels are semantic, not instance
+            check_labels = LoadImaged(keys=["label"])(
+                self.config.train_data_dict[0]
+            )
+            if check_labels["label"].max() > 1:
+                self.warn(
+                    "Labels are not semantic, but instance. Converting to semantic, this might cause errors."
+                )
+                self.labels_not_semantic = True
+            ########
 
             if not self.config.sampling:
                 data_check = LoadImaged(keys=["image"])(
@@ -1106,6 +1159,9 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             device = torch.device(self.config.device)
             model = model.to(device)
 
+            if WANDB_INSTALLED:
+                wandb.watch(model, log_freq=100)
+
             epoch_loss_values = []
             val_metric_values = []
 
@@ -1114,13 +1170,13 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                     self.config.train_data_dict[
                         0 : int(
                             len(self.config.train_data_dict)
-                            * self.config.validation_percent
+                            * self.config.training_percent
                         )
                     ],
                     self.config.train_data_dict[
                         int(
                             len(self.config.train_data_dict)
-                            * self.config.validation_percent
+                            * self.config.training_percent
                         ) :
                     ],
                 )
@@ -1177,6 +1233,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             )
 
             def get_patch_loader_func(num_samples):
+                """Returns a function that will be used to extract patches from the images."""
                 return Compose(
                     [
                         LoadImaged(keys=["image", "label"]),
@@ -1207,12 +1264,11 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 # TODO(cyril) : maybe implement something in user config to toggle this behavior
                 if len(self.config.train_data_dict) < 2:
                     num_train_samples = ceil(
-                        self.config.num_samples
-                        * self.config.validation_percent
+                        self.config.num_samples * self.config.training_percent
                     )
                     num_val_samples = ceil(
                         self.config.num_samples
-                        * (1 - self.config.validation_percent)
+                        * (1 - self.config.training_percent)
                     )
                     if num_train_samples < 2:
                         self.log(
@@ -1279,7 +1335,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 logger.debug("Cache dataset : train")
                 train_dataset = CacheDataset(
                     data=self.train_files,
-                    transform=Compose(load_whole_images, train_transforms),
+                    transform=Compose([load_whole_images, train_transforms]),
                 )
                 logger.debug("Cache dataset : val")
                 validation_dataset = CacheDataset(
@@ -1335,7 +1391,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             # time = utils.get_date_time()
             logger.debug("Weights")
 
-            if weights_config.custom:
+            if weights_config.use_custom:
                 if weights_config.use_pretrained:
                     weights_file = model_class.weights_file
                     self.downloader.download_weights(model_name, weights_file)
@@ -1373,7 +1429,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             self.log_parameters()
 
             # device = torch.device(self.config.device)
-            self.set_loss_from_config()
+            self._set_loss_from_config()
             if provided_loss is not None:
                 self.loss_function = provided_loss
 
@@ -1407,9 +1463,12 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                     )
                     # logger.debug(f"Inputs shape : {inputs.shape}")
                     # logger.debug(f"Labels shape : {labels.shape}")
+                    if self.labels_not_semantic:
+                        labels = labels.clamp(0, 1)
+
                     optimizer.zero_grad()
                     outputs = model(inputs)
-                    # self.log(f"Output dimensions : {outputs.shape}")
+                    # logger.debug(f"Output dimensions : {outputs.shape}")
                     if outputs.shape[1] > 1:
                         outputs = outputs[
                             :, 1:, :, :
@@ -1418,6 +1477,10 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                             outputs = outputs.unsqueeze(0)
                     # logger.debug(f"Outputs shape : {outputs.shape}")
                     loss = self.loss_function(outputs, labels)
+
+                    if WANDB_INSTALLED:
+                        wandb.log({"Training/Loss": loss.item()})
+
                     loss.backward()
                     optimizer.step()
                     epoch_loss += loss.detach().item()
@@ -1447,7 +1510,15 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                         supervised=True,
                     )
 
-                # return
+                if WANDB_INSTALLED:
+                    wandb.log({"Training/Epoch loss": epoch_loss / step})
+                    wandb.log(
+                        {
+                            "LR/Model learning rate": optimizer.param_groups[
+                                0
+                            ]["lr"]
+                        }
+                    )
 
                 epoch_loss /= step
                 epoch_loss_values.append(epoch_loss)
@@ -1560,6 +1631,10 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                         )
 
                         metric = dice_metric.aggregate().detach().item()
+
+                        if WANDB_INSTALLED:
+                            wandb.log({"Validation/Dice metric": metric})
+
                         dice_metric.reset()
                         val_metric_values.append(metric)
 
@@ -1622,6 +1697,11 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 f"Train completed, best_metric: {best_metric:.4f} "
                 f"at epoch: {best_metric_epoch}"
             )
+
+            if WANDB_INSTALLED:
+                wandb.log({"Validation/Best metric": best_metric})
+                wandb.log({"Validation/Best metric epoch": best_metric_epoch})
+
             # Save last checkpoint
             weights_filename = f"{model_name}_latest.pth"
             self.log("Saving last model")

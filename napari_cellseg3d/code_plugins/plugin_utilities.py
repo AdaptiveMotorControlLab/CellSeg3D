@@ -1,3 +1,4 @@
+"""Central plugin for all utilities."""
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -15,6 +16,7 @@ from napari_cellseg3d.code_plugins.plugin_convert import (
     AnisoUtils,
     FragmentUtils,
     RemoveSmallUtils,
+    StatsUtils,
     ThresholdUtils,
     ToInstanceUtils,
     ToSemanticUtils,
@@ -32,11 +34,15 @@ UTILITIES_WIDGETS = {
     "Convert to semantic labels": ToSemanticUtils,
     "Threshold": ThresholdUtils,
     "CRF": CRFWidget,
+    "Label statistics": StatsUtils,
 }
 
 
 class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
+    """Central plugin for all utilities."""
+
     def __init__(self, viewer: "napari.viewer.Viewer"):
+        """Creates a widget with all utilities."""
         super().__init__()
         self._viewer = viewer
         self.current_widget = None
@@ -50,6 +56,7 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
             "sem",
             "thresh",
             "crf",
+            "stats",
         ]
         self._create_utils_widgets(attr_names)
         self.utils_choice = ui.DropdownMenu(

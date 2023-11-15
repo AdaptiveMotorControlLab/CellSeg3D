@@ -21,18 +21,20 @@ Creates labels of artifacts in an image based on existing labels of neurons
 
 def map_labels(labels, artefacts):
     """Map the artefacts labels to the neurons labels.
+
     Parameters
     ----------
     labels : ndarray
         Label image with neurons labelled as mulitple values.
     artefacts : ndarray
         Label image with artefacts labelled as mulitple values.
-    Returns
+
+    Returns:
     -------
     map_labels_existing: numpy array
         The label value of the artefact and the label value of the neurone associated or the neurons associated
     new_labels: list
-        The labels of the artefacts that are not labelled in the neurons
+        The labels of the artefacts that are not labelled in the neurons.
     """
     map_labels_existing = []
     new_labels = []
@@ -75,6 +77,7 @@ def make_labels(
     augment_contrast_factor=2,
 ):
     """Detect nucleus. using a binary watershed algorithm and otsu thresholding.
+
     Parameters
     ----------
     image : str
@@ -91,12 +94,12 @@ def make_labels(
         If True, use watershed algorithm to detect nucleus.
     augment_contrast_factor : int, optional
         Factor to augment the contrast of the image.
-    Returns
+
+    Returns:
     -------
     ndarray
         Label image with nucleus labelled with 1 value per nucleus.
     """
-
     # image = imread(image)
     image = (image - np.min(image)) / (np.max(image) - np.min(image))
 
@@ -129,6 +132,7 @@ def make_labels(
 
 def select_image_by_labels(image, labels, path_image_out, label_values):
     """Select image by labels.
+
     Parameters
     ----------
     image : np.array
@@ -166,6 +170,7 @@ def crop_image(img):
 
 def crop_image_path(image, path_image_out):
     """Crop image.
+
     Parameters
     ----------
     image : np.array
@@ -188,6 +193,7 @@ def make_artefact_labels(
     remove_true_labels=True,
 ):
     """Detect pseudo nucleus.
+
     Parameters
     ----------
     image : ndarray
@@ -206,12 +212,12 @@ def make_artefact_labels(
         If True, each different artefact will be labelled as a different value.
     remove_true_labels : bool, optional
         If True, the true labels will be removed from the artefacts.
-    Returns
+
+    Returns:
     -------
     ndarray
         Label image with pseudo nucleus labelled with 1 value per artefact.
     """
-
     neurons = np.array(labels > 0)
     non_neurons = np.array(labels == 0)
 
@@ -277,6 +283,7 @@ def make_artefact_labels(
 
 def select_artefacts_by_size(artefacts, min_size, is_labeled=False):
     """Select artefacts by size.
+
     Parameters
     ----------
     artefacts : ndarray
@@ -285,7 +292,8 @@ def select_artefacts_by_size(artefacts, min_size, is_labeled=False):
         Minimum size of artefacts to keep
     is_labeled : bool, optional
         If True, the artefacts are already labelled.
-    Returns
+
+    Returns:
     -------
     ndarray
         Label image with artefacts labelled and small artefacts removed.
@@ -308,6 +316,7 @@ def create_artefact_labels(
     contrast_power=20,
 ):
     """Create a new label image with artefacts labelled as 2 and neurons labelled as 1.
+
     Parameters
     ----------
     image : np.array
@@ -339,6 +348,7 @@ def create_artefact_labels(
 
 def visualize_images(paths):
     """Visualize images.
+
     Parameters
     ----------
     paths : list
@@ -360,6 +370,7 @@ def create_artefact_labels_from_folder(
     contrast_power=20,
 ):
     """Create a new label image with artefacts labelled as 2 and neurons labelled as 1 for all images in a folder. The images created are stored in a folder artefact_neurons.
+
     Parameters
     ----------
     path : str

@@ -1,16 +1,20 @@
+"""Model for testing purposes."""
 import torch
 from torch import nn
 
 
 class TestModel(nn.Module):
-    use_default_training = True
+    """For tests only."""
+
     weights_file = "test.pth"
 
     def __init__(self, **kwargs):
+        """Create a TestModel model."""
         super().__init__()
         self.linear = nn.Linear(8, 8)
 
     def forward(self, x):
+        """Forward pass of the TestModel model."""
         return self.linear(torch.tensor(x, requires_grad=True))
 
     # def get_output(self, _, input):

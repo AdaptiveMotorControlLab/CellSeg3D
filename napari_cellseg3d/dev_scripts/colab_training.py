@@ -1,3 +1,4 @@
+"""Script to run WNet training in Google Colab."""
 import time
 from pathlib import Path
 
@@ -59,7 +60,8 @@ except ImportError:
 
 class WNetTrainingWorkerColab(TrainingWorkerBase):
     """A custom worker to run WNet (unsupervised) training jobs in.
-    Inherits from :py:class:`napari.qt.threading.GeneratorWorker` via :py:class:`TrainingWorkerBase`
+
+    Inherits from :py:class:`napari.qt.threading.GeneratorWorker` via :py:class:`TrainingWorkerBase`.
     """
 
     def __init__(
@@ -67,6 +69,12 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
         worker_config: config.WNetTrainingWorkerConfig,
         wandb_config: config.WandBConfig = None,
     ):
+        """Create a WNet training worker for Google Colab.
+
+        Args:
+            worker_config: worker configuration
+            wandb_config: optional wandb configuration
+        """
         super().__init__()
         self.config = worker_config
         self.wandb_config = (
@@ -74,7 +82,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
         )
 
         self.dice_metric = DiceMetric(
-            include_background=True, reduction="mean", get_not_nans=False
+            include_background=False, reduction="mean", get_not_nans=False
         )
         self.normalize_function = utils.remap_image
         self.start_time = time.time()
@@ -89,18 +97,18 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
         self.data_shape = None
 
     def log(self, text):
+        """Log a message to the logger and to wandb if installed."""
         logger.info(text)
 
     def get_patch_dataset(self, train_transforms):
-        """Creates a Dataset from the original data using the tifffile library
+        """Creates a Dataset from the original data using the tifffile library.
 
         Args:
-            train_data_dict (dict): dict with the Paths to the directory containing the data
+            train_transforms (Compose): The transforms to apply to the data
 
         Returns:
             (tuple): A tuple containing the shape of the data and the dataset
         """
-
         patch_func = Compose(
             [
                 LoadImaged(keys=["image"], image_only=True),
@@ -134,6 +142,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
         return self.config.sample_size, dataset
 
     def get_dataset_eval(self, eval_dataset_dict):
+        """Creates a Dataset applying some transforms/augmentation on the data using the MONAI library."""
         eval_transforms = Compose(
             [
                 LoadImaged(keys=["image", "label"]),
@@ -166,10 +175,10 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
         )
 
     def get_dataset(self, train_transforms):
-        """Creates a Dataset applying some transforms/augmentation on the data using the MONAI library
+        """Creates a Dataset applying some transforms/augmentation on the data using the MONAI library.
 
         Args:
-            config (WNetTrainingWorkerConfig): The configuration object
+            train_transforms (Compose): The transforms to apply to the data
 
         Returns:
             (tuple): A tuple containing the shape of the data and the dataset
@@ -257,6 +266,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
         return self.dataloader, self.eval_dataloader, self.data_shape
 
     def log_parameters(self):
+        """Log the parameters of the training."""
         self.log("*" * 20)
         self.log("-- Parameters --")
         self.log(f"Device: {self.config.device}")
@@ -264,7 +274,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
         self.log(f"Epochs: {self.config.max_epochs}")
         self.log(f"Learning rate: {self.config.learning_rate}")
         self.log(f"Validation interval: {self.config.validation_interval}")
-        if self.config.weights_info.custom:
+        if self.config.weights_info.use_custom:
             self.log(f"Custom weights: {self.config.weights_info.path}")
         elif self.config.weights_info.use_pretrained:
             self.log(f"Pretrained weights: {self.config.weights_info.path}")
@@ -306,6 +316,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
     def train(
         self, provided_model=None, provided_optimizer=None, provided_loss=None
     ):
+        """Train the model."""
         try:
             if self.config is None:
                 self.config = config.WNetTrainingWorkerConfig()
@@ -318,7 +329,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
                 logger.debug(f"wandb config : {config_dict}")
                 wandb.init(
                     config=config_dict,
-                    project="CellSeg3D WNet (Colab)",
+                    project="CellSeg3D (Colab)",
                     mode=self.wandb_config.mode,
                 )
 
@@ -363,7 +374,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
             if WANDB_INSTALLED:
                 wandb.watch(model, log_freq=100)
 
-            if self.config.weights_info.custom:
+            if self.config.weights_info.use_custom:
                 if self.config.weights_info.use_pretrained:
                     weights_file = "wnet.pth"
                     self.downloader.download_weights("WNet", weights_file)
@@ -599,6 +610,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
             raise e
 
     def eval(self, model, _):
+        """Evaluate the model on the validation set."""
         with torch.no_grad():
             device = self.config.device
             for _k, val_data in enumerate(self.eval_dataloader):
@@ -712,6 +724,7 @@ def get_colab_worker(
 
     Args:
         worker_config (config.WNetTrainingWorkerConfig): config for the training worker
+        wandb_config (config.WandBConfig): config for wandb
     """
     worker = WNetTrainingWorkerColab(worker_config)
     worker.wandb_config = wandb_config
@@ -742,7 +755,6 @@ def create_eval_dataset_dict(image_directory, label_directory):
         * "image": image
         * "label" : corresponding label
     """
-
     images_filepaths = sorted(Path.glob(image_directory, "*.tif"))
     labels_filepaths = sorted(Path.glob(label_directory, "*.tif"))
 

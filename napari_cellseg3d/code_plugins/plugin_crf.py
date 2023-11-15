@@ -1,3 +1,4 @@
+"""CRF plugin for napari_cellseg3d."""
 import contextlib
 from functools import partial
 from pathlib import Path
@@ -19,9 +20,10 @@ from napari_cellseg3d.utils import LOGGER as logger
 
 # TODO add CRF on folder
 class CRFParamsWidget(ui.GroupedWidget):
-    """Use this widget when adding the crf as part of another widget (rather than a standalone widget)"""
+    """Use this widget when adding the crf as part of another widget (rather than a standalone widget)."""
 
     def __init__(self, parent=None):
+        """Create a widget to set CRF parameters."""
         super().__init__(title="CRF parameters", parent=parent)
         #######
         # CRF params #
@@ -57,7 +59,7 @@ class CRFParamsWidget(ui.GroupedWidget):
                     ),
                 ],
             )
-            self.set_layout()
+            self._set_layout()
             return
         ui.add_widgets(
             self.layout,
@@ -76,7 +78,7 @@ class CRFParamsWidget(ui.GroupedWidget):
                 self.n_iter_choice,
             ],
         )
-        self.set_layout()
+        self._set_layout()
 
     def _set_tooltips(self):
         self.sa_choice.setToolTip(
@@ -97,6 +99,7 @@ class CRFParamsWidget(ui.GroupedWidget):
         self.n_iter_choice.setToolTip("Number of iterations of the CRF.")
 
     def make_config(self):
+        """Make a CRF config from the widget values."""
         return config.CRFConfig(
             sa=self.sa_choice.value(),
             sb=self.sb_choice.value(),
@@ -108,13 +111,13 @@ class CRFParamsWidget(ui.GroupedWidget):
 
 
 class CRFWidget(BasePluginUtils):
-    """Widget to run CRF post-processing"""
+    """Widget to run CRF post-processing."""
 
     save_path = Path.home() / "cellseg3d" / "crf"
 
     def __init__(self, viewer, parent=None):
-        """
-        Create a widget for CRF post-processing.
+        """Create a widget for CRF post-processing.
+
         Args:
             viewer: napari viewer to display the widget
             parent: parent widget. Defaults to None.
@@ -185,9 +188,11 @@ class CRFWidget(BasePluginUtils):
         return self._container
 
     def make_config(self):
+        """Make a CRF config from the widget values."""
         return self.crf_params_widget.make_config()
 
     def print_config(self):
+        """Print the CRF config to the logger."""
         logger.info("CRF config:")
         for item in self.make_config().__dict__.items():
             logger.info(f"{item[0]}: {item[1]}")
@@ -216,6 +221,7 @@ class CRFWidget(BasePluginUtils):
         return True
 
     def run_crf_on_batch(self, images_list: list, labels_list: list, log=None):
+        """Run CRF on a batch of images and labels."""
         self.crf_results = []
         for image, label in zip(images_list, labels_list):
             tqdm(
@@ -229,6 +235,7 @@ class CRFWidget(BasePluginUtils):
         return self.crf_results
 
     def _prepare_worker(self, images_list: list, labels_list: list):
+        """Prepare the CRF worker."""
         self.worker = CRFWorker(
             images_list=images_list,
             labels_list=labels_list,
