@@ -666,6 +666,7 @@ class StatsUtils(BasePluginUtils):
 
                 stats_df = pd.DataFrame(stats.get_dict())
                 csv_name = self.csv_name.text() + ".csv"
+                logger.info(f"Saving stats to {self.results_path}/{csv_name}")
                 stats_df.to_csv(
                     self.results_path + "/" + csv_name, index=False
                 )
@@ -686,6 +687,7 @@ class StatsUtils(BasePluginUtils):
                     continue
                 stats_df = pd.DataFrame(stats.get_dict())
                 csv_name = self.csv_name.text() + f"_{i}.csv"
+                logger.info(f"Saving stats to {self.results_path}/{csv_name}")
                 stats_df.to_csv(
                     self.results_path + "/" + csv_name, index=False
                 )
