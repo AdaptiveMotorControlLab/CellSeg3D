@@ -520,7 +520,7 @@ class ThresholdUtils(BasePluginUtils):
             upper=100000.0,
             step=0.5,
             default=10.0,
-            text_label="Remove all smaller than (value):",
+            text_label="Threshold value (high-pass):",
         )
 
         self.results_path = str(self.save_path)
