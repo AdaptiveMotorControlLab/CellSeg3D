@@ -616,6 +616,7 @@ class StatsUtils(BasePluginUtils):
 
         self.data_panel = self._build_io_panel()
 
+        self.csv_name_label = ui.make_label("CSV name :")
         self.csv_name = QLineEdit("volume_stats", parent=self)
         self.csv_name.setToolTip(
             "Name of the csv file.\nThe extension is added automatically;\nif running on a folder, the id of the image will be added to the name."
@@ -635,6 +636,7 @@ class StatsUtils(BasePluginUtils):
         ui.add_widgets(
             self.data_panel.layout,
             [
+                self.csv_name_label,
                 self.csv_name,
                 self.start_btn,
             ],
