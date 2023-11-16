@@ -7,7 +7,7 @@ dependencies:
     - python=3.8
     - pip
     - pyqt
-    - imagecodecs>=2023.3.16
+    - imagecodecs
     - pip:
         - numpy
         - napari>=0.4.14
