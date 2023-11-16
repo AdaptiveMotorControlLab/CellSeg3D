@@ -38,7 +38,7 @@ dependencies = [
     "imagecodecs>=2023.3.16",
     "torch>=1.11",
     "monai[nibabel,einops]>=0.9.0",
-    "itk",
+#   "itk",
     "tqdm",
     "nibabel",
     "scikit-image",
