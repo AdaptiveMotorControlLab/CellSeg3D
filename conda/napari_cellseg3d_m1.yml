@@ -6,6 +6,8 @@ channels:
 dependencies:
     - python=3.8
     - pip
+    - pyqt
+    - simpleitk
     - pip:
         - numpy
         - napari>=0.4.14
