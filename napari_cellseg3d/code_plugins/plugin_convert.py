@@ -674,6 +674,7 @@ class StatsUtils(BasePluginUtils):
             self.folder_choice.isChecked() and len(self.labels_filepaths) != 0
         ):
             images = [imread(file) for file in self.labels_filepaths]
+            images_names = [Path(file).stem for file in self.labels_filepaths]
             for i, image in enumerate(images):
                 if image.sum() == 0:
                     m = f"Image {i} is empty, skipping."
@@ -685,8 +686,11 @@ class StatsUtils(BasePluginUtils):
                     logger.warning(m)
                     warn(m, stacklevel=0)
                     continue
+                stats = volume_stats(image)
                 stats_df = pd.DataFrame(stats.get_dict())
-                csv_name = self.csv_name.text() + f"_{i}.csv"
+                csv_name = (
+                    str(images_names[i]) + self.csv_name.text() + f"_{i}.csv"
+                )
                 logger.info(f"Saving stats to {self.results_path}/{csv_name}")
                 stats_df.to_csv(
                     self.results_path + "/" + csv_name, index=False
