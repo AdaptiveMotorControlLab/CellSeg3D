@@ -702,7 +702,5 @@ class StatsUtils(BasePluginUtils):
                 stats_df.to_csv(
                     Path(self.results_path) / Path(csv_name), index=False
                 )
-                image = None  # FreeMemory
-                del image
         else:
             logger.warning("Please specify a layer or a folder")
