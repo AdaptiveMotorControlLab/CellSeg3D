@@ -674,6 +674,7 @@ class StatsUtils(BasePluginUtils):
             self.folder_choice.isChecked() and len(self.labels_filepaths) != 0
         ):
             for i, image_path in enumerate(self.labels_filepaths):
+                logger.debug(f"Loading image {i} : {image_path}")
                 image = imread(image_path)
                 image_name = Path(image_path).stem
                 if image.sum() == 0:
@@ -686,13 +687,15 @@ class StatsUtils(BasePluginUtils):
                     logger.warning(m)
                     warn(m, stacklevel=0)
                     continue
+                logger.debug(f"Image {i} has shape {image.shape}")
                 stats = volume_stats(image)
+                logger.debug("Computing stats")
                 stats_df = pd.DataFrame(stats.get_dict())
                 csv_name = (
                     str(image_name) + "_" + self.csv_name.text() + f"_{i}.csv"
                 )
                 logger.info(
-                    f"Saving stats to {Path(self.results_path) / Path(csv_name)}"
+                    f"Saving stats to {(Path(self.results_path) / Path(csv_name)).resolve()}"
                 )
                 stats_df.to_csv(
                     Path(self.results_path) / Path(csv_name), index=False
