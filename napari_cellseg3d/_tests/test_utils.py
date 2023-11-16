@@ -224,15 +224,15 @@ def test_parse_default_path():
     long_path = Path().home
     long_path = (
         long_path
-        / "very"
-        / "long"
-        / "path"
-        / "what"
-        / "a"
-        / "bore"
-        / "ifonlytherewassomething"
-        / "tohelpmenotsearchit"
-        / "allthetime"
+        + "/very"
+        + "/long"
+        + "/path"
+        + "/what"
+        + "/a"
+        + "/bore"
+        + "/ifonlytherewassomething"
+        + "/tohelpmenotsearchit"
+        + "/allthetime"
     )
     path = [test_path, None, None, long_path, ""]
     assert utils.parse_default_path(path, check_existence=False) == str(
