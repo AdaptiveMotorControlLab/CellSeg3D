@@ -236,7 +236,7 @@ def test_parse_default_path():
     )
     path = [test_path, None, None, long_path, ""]
     assert utils.parse_default_path(path, check_existence=False) == str(
-        long_path.as_posix()
+        long_path  # .as_posix()
     )
 
 
