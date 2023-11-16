@@ -239,11 +239,11 @@ class ImageStats:
     centroid_y: List[float]
     centroid_z: List[float]
     sphericity_ax: List[float]
-    # image_size: List[int]
-    # total_image_volume: int
-    # total_filled_volume: int
-    # filling_ratio: float
-    # number_objects: int
+    image_size: List[int]
+    total_image_volume: int
+    total_filled_volume: int
+    filling_ratio: float
+    number_objects: int
 
     def get_dict(self):
         """Returns a dict containing the statistics."""
@@ -254,11 +254,11 @@ class ImageStats:
             "Centroid z": self.centroid_z,
             # "Sphericity (volume/area)": sphericity_va,
             "Sphericity (axes)": self.sphericity_ax,
-            # "Image size": self.image_size,
-            # "Total image volume": self.total_image_volume,
-            # "Total object volume (pixels)": self.total_filled_volume,
-            # "Filling ratio": self.filling_ratio,
-            # "Number objects": self.number_objects,
+            "Image size": self.image_size,
+            "Total image volume": self.total_image_volume,
+            "Total object volume (pixels)": self.total_filled_volume,
+            "Filling ratio": self.filling_ratio,
+            "Number objects": self.number_objects,
         }
 
 
