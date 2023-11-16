@@ -673,9 +673,9 @@ class StatsUtils(BasePluginUtils):
         elif (
             self.folder_choice.isChecked() and len(self.labels_filepaths) != 0
         ):
-            images = [imread(file) for file in self.labels_filepaths]
-            images_names = [Path(file).stem for file in self.labels_filepaths]
-            for i, image in enumerate(images):
+            for i, image_path in enumerate(self.labels_filepaths):
+                image = imread(image_path)
+                image_name = Path(image_path).stem
                 if image.sum() == 0:
                     m = f"Image {i} is empty, skipping."
                     logger.warning(m)
@@ -689,10 +689,7 @@ class StatsUtils(BasePluginUtils):
                 stats = volume_stats(image)
                 stats_df = pd.DataFrame(stats.get_dict())
                 csv_name = (
-                    str(images_names[i])
-                    + "_"
-                    + self.csv_name.text()
-                    + f"_{i}.csv"
+                    str(image_name) + "_" + self.csv_name.text() + f"_{i}.csv"
                 )
                 logger.info(
                     f"Saving stats to {Path(self.results_path) / Path(csv_name)}"
@@ -700,5 +697,7 @@ class StatsUtils(BasePluginUtils):
                 stats_df.to_csv(
                     Path(self.results_path) / Path(csv_name), index=False
                 )
+                image = None  # FreeMemory
+                del image
         else:
             logger.warning("Please specify a layer or a folder")
