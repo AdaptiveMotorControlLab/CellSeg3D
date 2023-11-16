@@ -690,7 +690,13 @@ class StatsUtils(BasePluginUtils):
                     warn(m, stacklevel=0)
                     continue
                 logger.debug(f"Image {i} has shape {image.shape}")
-                stats = volume_stats(image)
+                try:
+                    stats = volume_stats(image)
+                except Exception as e:
+                    logger.warning(
+                        f"Error computing stats for image {i} : {e}"
+                    )
+                    warn(f"Error computing stats for image {i}", stacklevel=0)
                 logger.debug("Computing stats")
                 stats_df = pd.DataFrame(stats.get_dict())
                 csv_name = (

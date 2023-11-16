@@ -16,7 +16,7 @@ from tqdm import tqdm
 # local
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.utils import LOGGER as logger
-from napari_cellseg3d.utils import fill_list_in_between, sphericity_axis
+from napari_cellseg3d.utils import fill_list_in_between
 
 # from skimage.measure import marching_cubes
 # from skimage.measure import mesh_surface_area
@@ -238,7 +238,7 @@ class ImageStats:
     centroid_x: List[float]
     centroid_y: List[float]
     centroid_z: List[float]
-    sphericity_ax: List[float]
+    # sphericity_ax: List[float]
     image_size: List[int]
     total_image_volume: int
     total_filled_volume: int
@@ -253,7 +253,7 @@ class ImageStats:
             "Centroid y": self.centroid_y,
             "Centroid z": self.centroid_z,
             # "Sphericity (volume/area)": sphericity_va,
-            "Sphericity (axes)": self.sphericity_ax,
+            # "Sphericity (axes)": self.sphericity_ax,
             "Image size": self.image_size,
             "Total image volume": self.total_image_volume,
             "Total object volume (pixels)": self.total_filled_volume,
@@ -440,17 +440,17 @@ def volume_stats(volume_image):
 
     properties = regionprops(volume_image)
 
-    def sphericity(region):
-        try:
-            return sphericity_axis(
-                region.axis_major_length * 0.5, region.axis_minor_length * 0.5
-            )
-        except ValueError:
-            return (
-                np.nan
-            )  # FIXME better way ? inconsistent errors in region.axis_minor_length
+    # def sphericity(region):
+    #     try:
+    #         return sphericity_axis(
+    #             region.axis_major_length * 0.5, region.axis_minor_length * 0.5
+    #         )
+    #     except ValueError:
+    #         return (
+    #             np.nan
+    #         )  # FIXME better way ? inconsistent errors in region.axis_minor_length
 
-    sphericity_ax = [sphericity(region) for region in properties]
+    # [sphericity(region) for region in properties]
     # for region in properties:
     # object = (volume_image == region.label).transpose(1, 2, 0)
     # verts, faces, _, values = marching_cubes(
@@ -476,7 +476,7 @@ def volume_stats(volume_image):
         [region.centroid[0] for region in properties],
         [region.centroid[1] for region in properties],
         [region.centroid[2] for region in properties],
-        sphericity_ax,
+        # sphericity_ax,
         fill([volume_image.shape]),
         fill([len(volume_image.flatten())]),
         fill([np.sum(volume)]),
