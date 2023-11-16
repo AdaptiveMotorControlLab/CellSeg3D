@@ -8,6 +8,7 @@ dependencies:
     - pip
     - pyqt
     - simpleitk
+    - imagecodecs
     - pip:
         - numpy
         - napari>=0.4.14
