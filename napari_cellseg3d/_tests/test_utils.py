@@ -221,7 +221,7 @@ def test_parse_default_path():
         Path.home()
     )
 
-    long_path = Path("D:/")
+    long_path = Path().home
     long_path = (
         long_path
         / "very"
@@ -236,7 +236,7 @@ def test_parse_default_path():
     )
     path = [test_path, None, None, long_path, ""]
     assert utils.parse_default_path(path, check_existence=False) == str(
-        long_path  # .as_posix()
+        long_path.as_posix()
     )
 
 
