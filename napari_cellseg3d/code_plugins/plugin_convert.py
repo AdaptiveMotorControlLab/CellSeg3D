@@ -689,11 +689,16 @@ class StatsUtils(BasePluginUtils):
                 stats = volume_stats(image)
                 stats_df = pd.DataFrame(stats.get_dict())
                 csv_name = (
-                    str(images_names[i]) + self.csv_name.text() + f"_{i}.csv"
+                    str(images_names[i])
+                    + "_"
+                    + self.csv_name.text()
+                    + f"_{i}.csv"
                 )
-                logger.info(f"Saving stats to {self.results_path}/{csv_name}")
+                logger.info(
+                    f"Saving stats to {Path(self.results_path) / Path(csv_name)}"
+                )
                 stats_df.to_csv(
-                    self.results_path + "/" + csv_name, index=False
+                    Path(self.results_path) / Path(csv_name), index=False
                 )
         else:
             logger.warning("Please specify a layer or a folder")
