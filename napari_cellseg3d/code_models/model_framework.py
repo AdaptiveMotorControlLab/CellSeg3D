@@ -252,7 +252,7 @@ class ModelFramework(BasePluginFolder):
 
         if not volume_directory.exists():
             raise ValueError(f"Data folder {volume_directory} does not exist")
-        return sorted(Path.glob(volume_directory, "*.tif"))
+        return sorted(Path.glob(volume_directory, "*.tif, *.tiff"))
 
     def create_dataset_dict_no_labs(self):
         """Creates unsupervised data dictionary for MONAI transforms and training."""

@@ -60,8 +60,8 @@ def prepare_data(images_path, labels_path):
     if not RESULTS_PATH.exists():
         RESULTS_PATH.mkdir(parents=True, exist_ok=True)
 
-    images = sorted(Path.glob(images_path, "*.tif"))
-    labels = sorted(Path.glob(labels_path, "*.tif"))
+    images = sorted(Path.glob(images_path, "*.tif, *.tiff"))
+    labels = sorted(Path.glob(labels_path, "*.tif, *.tiff"))
 
     print(f"Images paths: {images}")
     print(f"Labels paths: {labels}")

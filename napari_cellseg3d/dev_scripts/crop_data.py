@@ -1,3 +1,4 @@
+"""Simple script to fragment a 3d image into smaller 3d images of size roi_size."""
 from pathlib import Path
 
 import numpy as np
@@ -6,6 +7,7 @@ from tifffile import imread, imwrite
 
 def crop_3d_image(image, roi_size):
     """Crops a 3d image by extracting all regions of size roi_size.
+
     If the edge of the array is reached, the cropped region is overlapped with the previous cropped region.
     """
     image_size = image.shape
@@ -44,7 +46,7 @@ if __name__ == "__main__":
     )
     if not image_path.exists() or not image_path.is_dir():
         raise ValueError(f"Image path {image_path} does not exist")
-    image_list = image_path.glob("*.tif")
+    image_list = image_path.glob("*.tif, *.tiff")
     for j in image_list:
         print(j)
         image = imread(str(j))

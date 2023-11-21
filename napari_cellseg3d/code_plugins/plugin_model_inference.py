@@ -688,7 +688,6 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             raise ValueError("Please select to load a layer or folder")
 
         self.worker.set_download_log(self.log)
-
         self.worker.started.connect(self.on_start)
 
         self.worker.log_signal.connect(self.log.print_and_log)

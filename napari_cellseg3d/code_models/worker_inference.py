@@ -529,7 +529,8 @@ class InferenceWorker(GeneratorWorker):
             original_filename = "_" + self.get_original_filename(i) + "_"
             filetype = self.config.filetype
         else:
-            original_filename = "_"
+            layer_name = self.config.layer.name
+            original_filename = f"{layer_name}_"
             filetype = ".tif"
 
         time = utils.get_date_time()
@@ -538,9 +539,9 @@ class InferenceWorker(GeneratorWorker):
             self.config.results_path
             + "/"
             + f"{additional_info}"
-            + f"Prediction_{i+1}"
             + original_filename
             + self.config.model_info.name
+            + f"_pred_{i+1}"
             + f"_{time}"
             + filetype
         )
