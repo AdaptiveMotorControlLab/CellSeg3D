@@ -105,7 +105,7 @@ In the terminal, navigate to the CellSeg3D folder:
 
     pip install napari-cellseg3d
 
-OR if you cloned the repository:
+OR to install from source:
 
 .. code-block::
 

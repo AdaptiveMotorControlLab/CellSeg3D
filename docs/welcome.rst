@@ -52,6 +52,7 @@ you need further assistance, please see below.
 Installation
 --------------------------------------------
 CellSeg3D can be run on Windows, Linux, or MacOS.
+
 For detailed installation instructions, including installing pre-requisites,
 please see :ref:`source/guides/installation_guide:Installation guide ⚙`
 
