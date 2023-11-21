@@ -66,7 +66,7 @@ To avoid issues when installing on the ARM64 architecture, please follow these s
 
         pip install napari-cellseg3d
 
-  OR in napari -> Plugin -> Install/uninstall package -> Install by name/url -> paste "napari-cellseg3d" -> Install
+   OR in napari -> Plugin -> Install/uninstall package -> Install by name/url -> paste "napari-cellseg3d" -> Install
 
 ## Documentation
 
