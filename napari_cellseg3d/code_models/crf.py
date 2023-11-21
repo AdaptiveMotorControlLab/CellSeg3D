@@ -16,7 +16,7 @@ Efficient Inference in Fully Connected CRFs with Gaussian Edge Potentials
 Philipp Krähenbühl and Vladlen Koltun
 NIPS 2011
 
-Implemented using the pydense library available at https://github.com/kodalli/pydensecrf.
+Implemented using the pydense library available at https://github.com/lucasb-eyer/pydensecrf.
 """
 
 from warnings import warn
