@@ -90,6 +90,7 @@ In the terminal, navigate to the CellSeg3D folder:
 
 .. code-block::
 
+    cd CellSeg3D
     conda env create -f conda/napari_cellseg3d_m1.yml
 
 3. **Activate the environment** :
@@ -98,14 +99,14 @@ In the terminal, navigate to the CellSeg3D folder:
 
     conda activate napari_cellseg3d_m1
 
-4. **Install PyQt5 via conda** :
-
-.. code-block::
-
-    conda install -c anaconda pyqt
-
-5. **Install the plugin** :
+4. **Install the plugin** :
 
 .. code-block::
 
     pip install napari-cellseg3d
+
+OR if you cloned the repository:
+
+.. code-block::
+
+    pip install -e .

@@ -58,14 +58,15 @@ To avoid issues when installing on the ARM64 architecture, please follow these s
         conda env create -f conda/napari_cellseg3d_m1.yml
         conda activate napari_cellseg3d_m1
 
-2) Then install PyQt5 from conda separately :
+2) And install the plugin :
+   From repository root folder, run :
 
-        conda install -c anaconda pyqt
-
-3) And install the plugin :
+        pip install -e .
+   OR directly via PyPi :
 
         pip install napari-cellseg3d
 
+  OR in napari -> Plugin -> Install/uninstall package -> Install by name/url -> paste "napari-cellseg3d" -> Install
 
 ## Documentation
 
