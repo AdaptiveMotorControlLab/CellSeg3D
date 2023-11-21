@@ -91,7 +91,7 @@ def test_unsupervised_training(make_napari_viewer_proxy):
     [w.setValue(4) for w in widget.patch_size_widgets]
 
     widget.unsupervised_images_filewidget.text_field.setText(
-        str(im_path.parent)
+        str((im_path.parent / "wnet_test").resolve())
     )
     # widget.start()
     widget.data = widget.create_dataset_dict_no_labs()

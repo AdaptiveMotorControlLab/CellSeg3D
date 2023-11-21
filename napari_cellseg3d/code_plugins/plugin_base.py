@@ -411,7 +411,7 @@ class BasePluginFolder(BasePluginSingleImage):
         # filetype = self.filetype_choice.currentText()
         directory = ui.open_folder_dialog(self, self._default_path)
 
-        file_paths = sorted(Path(directory).glob("*.tif, *.tiff"))
+        file_paths = utils.get_all_matching_files(directory)
         if len(file_paths) == 0:
             logger.warning(
                 "The folder does not contain any compatible .tif files.\n"

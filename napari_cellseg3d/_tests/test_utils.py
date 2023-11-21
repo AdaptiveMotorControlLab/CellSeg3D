@@ -26,7 +26,7 @@ def test_singleton_class():
 def test_save_folder():
     test_path = Path(__file__).resolve().parent / "res"
     folder_name = "test_folder"
-    images = [rand_gen.random((5, 5, 5)) for _ in range(10)]
+    images = [rand_gen.random((5, 5, 5)).astype(np.float32) for _ in range(10)]
     images_paths = [f"{i}.tif" for i in range(10)]
 
     utils.save_folder(

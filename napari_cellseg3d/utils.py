@@ -510,19 +510,31 @@ def get_all_matching_files(path, pattern=None):
 
     Args:
         path (str): path to the directory containing the images
-        pattern (list): list of file extensions to match
+        pattern (list): list of file extensions to match, defaults to [".tif", ".tiff"] if None
 
     Returns:
         list: list of all files in the directory matching the pattern, sorted alphabetically
     """
     if pattern is None:
         pattern = {".tif", ".tiff"}
+    path = Path(path).resolve()
     if not path.exists():
         raise ValueError(f"Data folder {path} does not exist")
-    files = list(
-        [p.resolve() for p in Path(path).glob("*") if p.suffix in pattern]
-    )
+    files = list([p for p in Path(path).glob("*") if p.suffix in pattern])
+    # for p in Path(path).glob("*"):
+    #     LOGGER.debug(f"Found file {p} with suffix {p.suffix}")
+    #     LOGGER.debug(f"Suffix in pattern : {p.suffix in pattern}")
+    #     if p.suffix in pattern:
+    #         LOGGER.debug(f"File {p} matches pattern")
     LOGGER.debug(f"Found files : {files}")
+    try:
+        if len(files) == 0:
+            LOGGER.warning(f"No files found in {path}")
+            return None
+    except TypeError:
+        if files is None:
+            LOGGER.warning(f"No files found in {path}")
+            return None
     return sorted(files)
 
 
