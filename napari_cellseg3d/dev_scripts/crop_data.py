@@ -4,6 +4,8 @@ from pathlib import Path
 import numpy as np
 from tifffile import imread, imwrite
 
+from napari_cellseg3d.utils import get_all_matching_files
+
 
 def crop_3d_image(image, roi_size):
     """Crops a 3d image by extracting all regions of size roi_size.
@@ -46,7 +48,7 @@ if __name__ == "__main__":
     )
     if not image_path.exists() or not image_path.is_dir():
         raise ValueError(f"Image path {image_path} does not exist")
-    image_list = image_path.glob("*.tif, *.tiff")
+    image_list = get_all_matching_files(image_path)
     for j in image_list:
         print(j)
         image = imread(str(j))

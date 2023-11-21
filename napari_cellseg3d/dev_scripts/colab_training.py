@@ -735,7 +735,9 @@ def create_dataset_dict_no_labs(volume_directory):
     """Creates unsupervised data dictionary for MONAI transforms and training."""
     if not volume_directory.exists():
         raise ValueError(f"Data folder {volume_directory} does not exist")
-    images_filepaths = sorted(Path.glob(volume_directory, "*.tif, *.tiff"))
+    images_filepaths = utils.get_all_matching_files(
+        volume_directory, {"*.tif", "*.tiff"}
+    )
     if len(images_filepaths) == 0:
         raise ValueError(f"Data folder {volume_directory} is empty")
 
@@ -755,8 +757,12 @@ def create_eval_dataset_dict(image_directory, label_directory):
         * "image": image
         * "label" : corresponding label
     """
-    images_filepaths = sorted(Path.glob(image_directory, "*.tif, *.tiff"))
-    labels_filepaths = sorted(Path.glob(label_directory, "*.tif, *.tiff"))
+    images_filepaths = utils.get_all_matching_files(
+        image_directory, {"*.tif", "*.tiff"}
+    )
+    labels_filepaths = utils.get_all_matching_files(
+        label_directory, {"*.tif", "*.tiff"}
+    )
 
     if len(images_filepaths) == 0 or len(labels_filepaths) == 0:
         raise ValueError("Data folders are empty")

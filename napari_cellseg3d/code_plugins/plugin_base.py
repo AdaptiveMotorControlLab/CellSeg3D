@@ -61,7 +61,7 @@ class BasePluginSingleImage(QTabWidget):
         ################
         self.layer_choice = ui.RadioButton("Layer", parent=self)
         self.folder_choice = ui.RadioButton("Folder", parent=self)
-        # self.filetype = None
+        self.filetype = None
         self.radio_buttons = ui.combine_blocks(
             self.folder_choice, self.layer_choice
         )
@@ -233,8 +233,8 @@ class BasePluginSingleImage(QTabWidget):
         f_name = ui.open_file_dialog(self, self._default_path)
         logger.debug(f"File dialog returned {f_name}")
         choice = str(f_name[0])
-        # self.filetype = str(Path(choice).suffix)
-        # logger.debug(f"Filetype set to {self.filetype}")
+        self.filetype = str(Path(choice).suffix)
+        logger.debug(f"Filetype set to {self.filetype}")
         self._update_default_paths()
         return choice
 

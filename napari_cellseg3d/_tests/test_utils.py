@@ -253,3 +253,12 @@ def test_quantile_norm():
     array_norm = utils.quantile_normalization(array)
     assert array_norm.min() >= low_quantile
     assert array_norm.max() <= high_quantile
+
+
+def test_get_all_matching_files():
+    test_image_path = Path(__file__).resolve().parent / "res/wnet_test"
+    paths = utils.get_all_matching_files(test_image_path)
+
+    assert len(paths) == 1
+    assert [Path(p).is_file() for p in paths]
+    assert [Path(p).suffix == ".tif" for p in paths]

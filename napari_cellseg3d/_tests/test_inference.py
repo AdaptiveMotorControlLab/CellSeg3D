@@ -94,11 +94,14 @@ def test_inference_on_folder():
 
 
 def test_post_processing():
-    config = InferenceWorkerConfig()
-    worker = InferenceWorker(worker_config=config)
-
     image = rand_gen.random((1, 1, 64, 64, 64))
     labels = rand_gen.random((1, 2, 64, 64, 64))
+    mock_layer = napari.layers.Image(data=image)
+    mock_layer.name = "test"
+
+    config = InferenceWorkerConfig()
+    config.layer = mock_layer
+    worker = InferenceWorker(worker_config=config)
 
     results = worker.run_crf(image, labels, lambda x: x)
     assert results.shape == (2, 64, 64, 64)

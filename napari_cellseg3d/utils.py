@@ -505,6 +505,27 @@ def get_time_filepath():
     return f"{datetime.now():%H_%M_%S}"
 
 
+def get_all_matching_files(path, pattern=None):
+    """Returns a list of all files in a directory matching the pattern.
+
+    Args:
+        path (str): path to the directory containing the images
+        pattern (list): list of file extensions to match
+
+    Returns:
+        list: list of all files in the directory matching the pattern, sorted alphabetically
+    """
+    if pattern is None:
+        pattern = {".tif", ".tiff"}
+    if not path.exists():
+        raise ValueError(f"Data folder {path} does not exist")
+    files = list(
+        [p.resolve() for p in Path(path).glob("*") if p.suffix in pattern]
+    )
+    LOGGER.debug(f"Found files : {files}")
+    return sorted(files)
+
+
 def load_images(dir_or_path, filetype="", as_folder: bool = False):
     """Loads the images in ``directory``, with different behaviour depending on ``filetype`` and ``as_folder``.
 

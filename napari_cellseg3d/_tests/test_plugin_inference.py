@@ -50,7 +50,7 @@ def test_inference(make_napari_viewer_proxy, qtbot):
     assert worker.config is not None
     assert worker.config.model_info is not None
     assert worker.config.sliding_window_config.is_enabled() is False
-    worker.config.layer = viewer.layers[0].data
+    worker.config.layer = viewer.layers[0]
     worker.config.post_process_config.instance.enabled = True
     worker.config.post_process_config.instance.method = (
         INSTANCE_SEGMENTATION_METHOD_LIST["Watershed"]()

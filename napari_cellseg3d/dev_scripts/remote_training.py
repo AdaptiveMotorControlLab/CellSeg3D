@@ -7,6 +7,7 @@ from napari_cellseg3d.code_models.worker_training import (
     SupervisedTrainingWorker,
 )
 from napari_cellseg3d.utils import LOGGER as logger
+from napari_cellseg3d.utils import get_all_matching_files
 
 TRAINING_SPLIT = 0.2  # 0.4, 0.8
 MODEL_NAME = "SegResNet"  # "SwinUNetR"
@@ -60,8 +61,8 @@ def prepare_data(images_path, labels_path):
     if not RESULTS_PATH.exists():
         RESULTS_PATH.mkdir(parents=True, exist_ok=True)
 
-    images = sorted(Path.glob(images_path, "*.tif, *.tiff"))
-    labels = sorted(Path.glob(labels_path, "*.tif, *.tiff"))
+    images = get_all_matching_files(images_path)
+    labels = get_all_matching_files(labels_path)
 
     print(f"Images paths: {images}")
     print(f"Labels paths: {labels}")
