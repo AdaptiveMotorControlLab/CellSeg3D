@@ -58,7 +58,7 @@ To avoid issues when installing on the ARM64 architecture, please follow these s
         conda env create -f conda/napari_cellseg3d_m1.yml
         conda activate napari_cellseg3d_m1
 
-2) And install the plugin :
+2) Install the plugin.
    From repository root folder, run :
 
         pip install -e .
