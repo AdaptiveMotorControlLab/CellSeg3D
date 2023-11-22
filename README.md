@@ -1,6 +1,5 @@
 # napari-cellseg3D: a napari plug-in for direct 3D cell segmentation with deep learning
 
-
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/838605d0-9723-4e43-83cd-6dbfe4adf36b/cellseg-logo.png?format=1500w" title="cellseg3d" alt="cellseg3d logo" width="350" align="right" vspace = "80"/>
 
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
@@ -10,22 +9,32 @@
 [![codecov](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3d/branch/main/graph/badge.svg?token=hzUcn3XN8F)](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3d)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-cellseg3d)](https://www.napari-hub.org/plugins/napari-cellseg3d)
 
-
 A napari plugin for 3D cell segmentation: training, inference, and data review. In particular, this project was developed for analysis of mesoSPIM-acquired (cleared tissue + lightsheet) datasets.
+
+**Help us make the code better by reporting issues and adding your feature requests!**
 
 ----------------------------------
 
 ## News
 
-*April 2023: New version with interface overhaul published ! New model and utilities coming soon*
+**New version : v1.0**
+Addded :
 
-
-**This is an alpha version, please expect bugs and issues, and help us make the code better by reporting them as an issue!**
+- Improved training interface
+- Unsupervised model : WNet
+  - Generate labels directly from raw data !
+  - Can be trained in napari directly or in Colab
+  - Pretrained weights for mesoSPIM whole-brain cell segmentation
+- WandB support (install wandb and login to use automatically when training)
+- Remade and improved documentation
+  - Moved to Jupyter Book
+  - Dedicated installation page, and working ARM64 install for macOS Silicon users
+- New utilities
+- Many small improvements and many bug fixes
 
 ## Demo
 
 ![demo](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/0d16a71b-3ff2-477a-9d83-18d96cb1ce28/full_demo.gif?format=500w)
-
 
 ## Installation
 
@@ -66,7 +75,7 @@ To avoid issues when installing on the ARM64 architecture, please follow these s
 
         pip install napari-cellseg3d
 
-   OR in napari -> Plugin -> Install/uninstall package -> Install by name/url -> paste "napari-cellseg3d" -> Install
+   OR directly via [napari-hub] (see Installation section above)
 
 ## Documentation
 
@@ -87,20 +96,20 @@ Then go into Plugins > napari-cellseg3d, and choose which tool to use.
 - **Train**:  This module allows you to train segmentation algorithms from labeled volumes.
 - **Utilities**: This module allows you to perform several actions like cropping your volumes and labels dynamically, by selecting a fixed size volume and moving it around the image; computing prediction scores from ground truth and predicition labels; or converting labels from instance to segmentation and the opposite.
 
-
 ## Requirements
-**Python >= 3.8 required**
 
-Requires **pytorch** and **MONAI**.
+**Python 3.8 or 3.9 required.**
+Requires **[napari]**, **[PyTorch]** and **[MONAI]**.
+
 For PyTorch, please see [PyTorch's website for installation instructions].
-A CUDA-capable GPU is not needed but very strongly recommended, especially for training.
-If you get errors from MONAI regarding missing readers, please see [MONAI's optional dependencies] page for instructions on getting the readers required by your images.
 
+A CUDA-capable GPU is not needed but very strongly recommended, especially for training.
+
+If you get errors from MONAI regarding missing readers, please see [MONAI's optional dependencies] page for instructions on getting the readers required by your images.
 
 ## Issues
 
 If you encounter any problems, please [file an issue] along with a detailed description.
-
 
 ## Testing
 
@@ -135,20 +144,15 @@ Distributed under the terms of the [MIT] license.
 [Cookiecutter]: https://github.com/audreyr/cookiecutter
 [@napari]: https://github.com/napari
 [MIT]: http://opensource.org/licenses/MIT
-[BSD-3]: http://opensource.org/licenses/BSD-3-Clause
-[GNU GPL v3.0]: http://www.gnu.org/licenses/gpl-3.0.txt
-[GNU LGPL v3.0]: http://www.gnu.org/licenses/lgpl-3.0.txt
-[Apache Software License 2.0]: http://www.apache.org/licenses/LICENSE-2.0
-[Mozilla Public License 2.0]: https://www.mozilla.org/media/MPL/2.0/index.txt
 [cookiecutter-napari-plugin]: https://github.com/napari/cookiecutter-napari-plugin
-
-[napari]: https://github.com/napari/napari
 [tox]: https://tox.readthedocs.io/en/latest/
 [pip]: https://pypi.org/project/pip/
 [PyPI]: https://pypi.org/
 
 [PyTorch's website for installation instructions]: https://pytorch.org/get-started/locally/
+[PyTorch]: https://pytorch.org/get-started/locally/
 [MONAI's optional dependencies]: https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies
+[MONAI]: https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies
 
 ## Acknowledgements
 
@@ -157,12 +161,5 @@ This work was funded, in part, from the Wyss Center to the [Mathis Laboratory of
 Please refer to the documentation for full acknowledgements.
 
 ## Plugin base
+
 This [napari] plugin was generated with [Cookiecutter] using [@napari]'s [cookiecutter-napari-plugin] template.
-
-<!--
-Don't miss the full getting started guide to set up your new package:
-https://github.com/napari/cookiecutter-napari-plugin#getting-started
-
-and review the napari docs for plugin developers:
-https://napari.org/plugins/stable/index.html
--->
