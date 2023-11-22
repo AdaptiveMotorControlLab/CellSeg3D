@@ -539,7 +539,7 @@ class InferenceWorker(GeneratorWorker):
             additional_info (str, optional): additional info to add to the filename. Defaults to "".
         """
         if not from_layer:
-            original_filename = "_" + self.get_original_filename(i) + "_"
+            original_filename = self.get_original_filename(i) + "_"
             filetype = self.config.filetype
         else:
             layer_name = self.config.layer.name
