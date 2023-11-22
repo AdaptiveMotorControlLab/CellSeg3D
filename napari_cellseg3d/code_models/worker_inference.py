@@ -34,7 +34,6 @@ from napari_cellseg3d.code_models.workers_utils import (
     LogSignal,
     ONNXModelWrapper,
     QuantileNormalization,
-    QuantileNormalizationd,
     RemapTensor,
     Threshold,
     WeightsDownloader,
@@ -212,7 +211,7 @@ class InferenceWorker(GeneratorWorker):
                     EnsureChannelFirstd(keys=["image"]),
                     # Orientationd(keys=["image"], axcodes="PLI"),
                     # anisotropic_transform,
-                    QuantileNormalizationd(keys=["image"]),
+                    # QuantileNormalizationd(keys=["image"]),
                     EnsureTyped(keys=["image"]),
                 ]
             )
@@ -225,7 +224,7 @@ class InferenceWorker(GeneratorWorker):
                     LoadImaged(keys=["image"], image_only=True),
                     # AddChanneld(keys=["image"]), #already done
                     EnsureChannelFirstd(keys=["image"]),
-                    QuantileNormalizationd(keys=["image"]),
+                    # QuantileNormalizationd(keys=["image"]),
                     # Orientationd(keys=["image"], axcodes="PLI"),
                     # anisotropic_transform,
                     SpatialPadd(keys=["image"], spatial_size=pad),
@@ -339,12 +338,21 @@ class InferenceWorker(GeneratorWorker):
             # logger.debug(f"model : {model}")
             logger.debug(f"inputs shape : {inputs.shape}")
             logger.debug(f"inputs type : {inputs.dtype}")
-            # normalization = QuantileNormalization()
+            if (
+                self.config.layer is None
+                and self.config.images_filepaths is not None
+            ):
+                normalization = QuantileNormalization()
+            else:
+
+                def normalization(x):
+                    return x
+
             try:
                 # outputs = model(inputs)
 
                 def model_output_wrapper(inputs):
-                    # inputs = normalization(inputs)
+                    inputs = normalization(inputs)
                     result = model(inputs)
 
                     ####################### EXPERIMENTAL CODE
