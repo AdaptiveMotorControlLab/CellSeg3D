@@ -202,8 +202,8 @@ def sphericity_axis(semi_major, semi_minor):
         result = "Error in calculation"
 
     if math.isnan(result):
-        LOGGER.warning("NaN in sphericity calculation was replaced by 0")
-        result = 0
+        LOGGER.debug("NaN in sphericity calculation was replaced by None")
+        result = None
 
     return result
 
