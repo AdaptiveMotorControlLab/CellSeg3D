@@ -459,7 +459,7 @@ def volume_stats(volume_image):
             nan_errors_count += 1
         sphericities.append(sphericity_ax)
     logger.warning(
-        f"Due to divisions by zero issues, {nan_errors_count} sphericities were set to NaN. This occurs for objects with a volume of 1 pixel."
+        f"{nan_errors_count} invalid sphericities were set to NaN. This occurs for objects with a volume of 1 pixel."
     )
     # for region in properties:
     # object = (volume_image == region.label).transpose(1, 2, 0)
