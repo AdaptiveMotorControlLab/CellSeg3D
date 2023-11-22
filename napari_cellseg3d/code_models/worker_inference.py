@@ -203,6 +203,8 @@ class InferenceWorker(GeneratorWorker):
         pad = utils.get_padding_dim(check)
 
         if self.config.sliding_window_config.is_enabled():
+            logger.debug("Sliding window is enabled")
+            logger.debug(f"Loading image with shape : {str(check)}")
             load_transforms = Compose(
                 [
                     LoadImaged(keys=["image"], image_only=True),
@@ -215,6 +217,9 @@ class InferenceWorker(GeneratorWorker):
                 ]
             )
         else:
+            logger.debug("Sliding window is disabled")
+            logger.debug("Applying padding")
+            logger.debug(f"Loading image with shape: {str(pad)}")
             load_transforms = Compose(
                 [
                     LoadImaged(keys=["image"], image_only=True),
