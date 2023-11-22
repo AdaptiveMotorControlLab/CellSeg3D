@@ -102,7 +102,7 @@ Then go into Plugins > napari-cellseg3d, and choose which tool to use.
 **Python 3.8 or 3.9 required.**
 Requires **[napari]**, **[PyTorch]** and **[MONAI]**.
 
-For PyTorch, please see [PyTorch's website for installation instructions].
+For PyTorch, please see [the PyTorch website for installation instructions].
 
 A CUDA-capable GPU is not needed but very strongly recommended, especially for training.
 
@@ -150,7 +150,7 @@ Distributed under the terms of the [MIT] license.
 [pip]: https://pypi.org/project/pip/
 [PyPI]: https://pypi.org/
 
-[PyTorch's website for installation instructions]: https://pytorch.org/get-started/locally/
+[the PyTorch website for installation instructions]: https://pytorch.org/get-started/locally/
 [PyTorch]: https://pytorch.org/get-started/locally/
 [MONAI's optional dependencies]: https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies
 [MONAI]: https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies
