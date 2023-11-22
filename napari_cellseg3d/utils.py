@@ -193,10 +193,10 @@ def sphericity_axis(semi_major, semi_minor):
             / (a + (b**2) / root * np.log((a + root) / b))
         )
     except ZeroDivisionError:
-        LOGGER.warning(
-            "Zero division in sphericity calculation was replaced by 0"
+        LOGGER.debug(
+            "Zero division in sphericity calculation was replaced by None"
         )
-        result = 0
+        result = None
     except ValueError as e:
         LOGGER.warning(f"Error encountered in calculation : {e}")
         result = "Error in calculation"

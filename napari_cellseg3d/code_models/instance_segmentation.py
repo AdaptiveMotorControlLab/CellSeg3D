@@ -450,7 +450,15 @@ def volume_stats(volume_image):
                 np.nan
             )  # FIXME better way ? inconsistent errors in region.axis_minor_length
 
-    sphericity_ax = [sphericity(region) for region in properties]
+    sphericities = []
+    nan_errors_count = 0
+    for region in properties:
+        sphericity_ax = sphericity(region)
+        if sphericity_axis is None:
+            sphericity_ax = np.nan
+            nan_errors_count += 1
+        sphericities.append(sphericity_ax)
+
     # for region in properties:
     # object = (volume_image == region.label).transpose(1, 2, 0)
     # verts, faces, _, values = marching_cubes(
@@ -476,7 +484,7 @@ def volume_stats(volume_image):
         [region.centroid[0] for region in properties],
         [region.centroid[1] for region in properties],
         [region.centroid[2] for region in properties],
-        sphericity_ax,
+        sphericities,
         fill([volume_image.shape]),
         fill([len(volume_image.flatten())]),
         fill([np.sum(volume)]),
