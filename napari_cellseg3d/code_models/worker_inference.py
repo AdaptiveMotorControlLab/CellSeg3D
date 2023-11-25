@@ -542,7 +542,10 @@ class InferenceWorker(GeneratorWorker):
             original_filename = self.get_original_filename(i) + "_"
             filetype = self.config.filetype
         else:
-            layer_name = self.config.layer.name
+            try:
+                layer_name = self.config.layer.name
+            except AttributeError:
+                layer_name = "volume"
             original_filename = f"{layer_name}_"
             filetype = ".tif"
 
