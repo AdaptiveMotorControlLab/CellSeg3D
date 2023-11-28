@@ -150,8 +150,10 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             parent=self,
         )
 
-        self.window_infer_box = ui.CheckBox("Use window inference")
-        self.window_infer_box.toggled.connect(self._toggle_display_window_size)
+        self.use_window_choice = ui.CheckBox("Use window inference")
+        self.use_window_choice.toggled.connect(
+            self._toggle_display_window_size
+        )
 
         sizes_window = ["8", "16", "32", "64", "128", "256", "512"]
         self._default_window_size = sizes_window.index("64")
@@ -186,6 +188,21 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 window_size_widgets,
                 self.window_overlap_slider.container,
             ],
+        )
+        ##################
+        ##################
+        # auto-artifact removal widgets
+        self.attempt_artifact_removal_box = ui.CheckBox(
+            "Attempt artifact removal",
+            func=self._toggle_display_artifact_size_thresh,
+            parent=self,
+        )
+        self.artifact_removal_size = ui.IntIncrementCounter(
+            lower=1,
+            upper=10000,
+            default=500,
+            text_label="Remove larger than :",
+            step=100,
         )
 
         ##################
@@ -261,7 +278,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         self.thresholding_checkbox.setToolTip(thresh_desc)
         self.thresholding_slider.tooltips = thresh_desc
-        self.window_infer_box.setToolTip(
+        self.use_window_choice.setToolTip(
             "Sliding window inference runs the model on parts of the image"
             "\nrather than the whole image, to reduce memory requirements."
             "\nUse this if you have large images."
@@ -304,11 +321,11 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         if self.model_choice.currentText() == "WNet":
             self.wnet_enabled = True
             self.window_size_choice.setCurrentIndex(self._default_window_size)
-            self.window_infer_box.setChecked(self.wnet_enabled)
+            self.use_window_choice.setChecked(self.wnet_enabled)
         self.window_size_choice.setDisabled(
             self.wnet_enabled and not self.custom_weights_choice.isChecked()
         )
-        self.window_infer_box.setDisabled(
+        self.use_window_choice.setDisabled(
             self.wnet_enabled and not self.custom_weights_choice.isChecked()
         )
 
@@ -333,6 +350,13 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.thresholding_checkbox, self.thresholding_slider.container
         )
 
+    def _toggle_display_artifact_size_thresh(self):
+        """Shows the choices for thresholding results depending on whether :py:attr:`self.attempt_artifact_removal_box` is checked."""
+        ui.toggle_visibility(
+            self.attempt_artifact_removal_box,
+            self.artifact_removal_size.container,
+        )
+
     def _toggle_display_crf(self):
         """Shows the choices for CRF post-processing depending on whether :py:attr:`self.use_crf` is checked."""
         ui.toggle_visibility(self.use_crf, self.crf_widgets)
@@ -343,7 +367,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
     def _toggle_display_window_size(self):
         """Show or hide window size choice depending on status of self.window_infer_box."""
-        ui.toggle_visibility(self.window_infer_box, self.window_infer_params)
+        ui.toggle_visibility(self.use_window_choice, self.window_infer_params)
 
     def _load_weights_path(self):
         """Show file dialog to set :py:attr:`model_path`."""
@@ -433,7 +457,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ui.add_widgets(
             inference_param_group_l,
             [
-                self.window_infer_box,
+                self.use_window_choice,
                 self.window_infer_params,
                 self.keep_data_on_cpu_box,
                 self.device_choice.label,
@@ -811,7 +835,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             instance=self.instance_config,
         )
 
-        if self.window_infer_box.isChecked():
+        if self.use_window_choice.isChecked():
             size = int(self.window_size_choice.currentText())
             window_config = config.SlidingWindowConfig(
                 window_size=size,

@@ -363,6 +363,26 @@ def binary_watershed(
     return np.array(segm)
 
 
+def clear_large_objects(image, large_label_size=200):
+    """Uses watershed to label all obejcts, and removes the ones with a volume larger than the specified threshold.
+
+    Args:
+        image: array containing the image
+        large_label_size:  size threshold for removal of objects in pixels. E.g. if 10, all objects larger than 10 pixels as a whole will be removed.
+
+    Returns:
+        array: The image with large objects removed
+    """
+    labeled = binary_watershed(
+        image,
+        thres_objects=0,
+        thres_seeding=0,
+        thres_small=large_label_size,
+        rem_seed_thres=0,
+    )
+    return np.where(labeled > 0, 0, image)
+
+
 def clear_small_objects(image, threshold, is_file_path=False):
     """Calls skimage.remove_small_objects to remove small fragments that might be artifacts.
 
