@@ -117,6 +117,7 @@ class ArtifactRemovalUtils(BasePluginUtils):
                     removed,
                     f"artifact_removed_{layer.name}",
                     existing_layer=self.layer,
+                    add_as_labels=True,
                 )
         elif (
             self.folder_choice.isChecked() and len(self.labels_filepaths) != 0
@@ -407,6 +408,7 @@ class RemoveSmallUtils(BasePluginUtils):
                     removed,
                     f"cleared_{layer.name}",
                     existing_layer=self.layer,
+                    add_as_labels=True,
                 )
         elif (
             self.folder_choice.isChecked() and len(self.images_filepaths) != 0
@@ -588,6 +590,7 @@ class ToInstanceUtils(BasePluginUtils):
                     instance,
                     f"instance_{layer.name}",
                     existing_layer=self.layer,
+                    add_as_labels=True,
                 )
 
         elif (

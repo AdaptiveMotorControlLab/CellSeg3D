@@ -75,6 +75,8 @@ def show_result(
     name,
     existing_layer: napari.layers.Layer = None,
     colormap="bop orange",
+    add_as_labels=False,
+    add_as_image=False,
 ) -> napari.layers.Layer:
     """Adds layers to a viewer to show result to user.
 
@@ -85,24 +87,35 @@ def show_result(
         name: name of the added layer
         existing_layer: existing layer to update, if any
         colormap: colormap to use for the layer
+        add_as_labels: whether to add the layer as a Labels layer. Overrides guessing from layer type.
+        add_as_image: whether to add the layer as an Image layer. Overrides guessing from layer type.
 
     Returns:
         napari.layers.Layer: the layer added to the viewer
     """
     colormap = colormap if colormap is not None else "gray"
     if existing_layer is None:
-        if isinstance(layer, napari.layers.Image):
+        if add_as_image:
             LOGGER.info("Added resulting image layer")
             results_layer = viewer.add_image(
                 image, name=name, colormap=colormap
             )
-        elif isinstance(layer, napari.layers.Labels):
+        elif add_as_labels:
             LOGGER.info("Added resulting label layer")
             results_layer = viewer.add_labels(image, name=name)
         else:
-            LOGGER.warning(
-                f"Results not shown, unsupported layer type {type(layer)}"
-            )
+            if isinstance(layer, napari.layers.Image):
+                LOGGER.info("Added resulting image layer")
+                results_layer = viewer.add_image(
+                    image, name=name, colormap=colormap
+                )
+            elif isinstance(layer, napari.layers.Labels):
+                LOGGER.info("Added resulting label layer")
+                results_layer = viewer.add_labels(image, name=name)
+            else:
+                LOGGER.warning(
+                    f"Results not shown, unsupported layer type {type(layer)}"
+                )
     else:
         try:
             viewer.layers[existing_layer.name].data = image
