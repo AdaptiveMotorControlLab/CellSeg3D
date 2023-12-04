@@ -1235,7 +1235,7 @@ class IntIncrementCounter(QSpinBox):
         set_spinbox(self, lower, upper, default, step, fixed)
 
         self.label = None
-        self.container = None
+        # self.container = None
 
         if text_label is not None:
             self.label = make_label(name=text_label)

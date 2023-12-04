@@ -27,7 +27,10 @@ from tifffile import imwrite
 # local
 from napari_cellseg3d import config, utils
 from napari_cellseg3d.code_models.crf import crf_with_config
-from napari_cellseg3d.code_models.instance_segmentation import volume_stats
+from napari_cellseg3d.code_models.instance_segmentation import (
+    clear_large_objects,
+    volume_stats,
+)
 from napari_cellseg3d.code_models.workers_utils import (
     PRETRAINED_WEIGHTS_DIR,
     InferenceResult,
@@ -513,6 +516,13 @@ class InferenceWorker(GeneratorWorker):
             )
 
         if self.config.post_process_config.instance.enabled:
+            if self.config.post_process_config.artifact_removal:
+                self.log("Removing artifacts...")
+                semantic_labels = clear_large_objects(
+                    semantic_labels,
+                    self.config.post_process_config.artifact_removal_size,
+                )
+
             instance_labels = self.instance_seg(
                 semantic_labels,
                 i + 1,

@@ -366,6 +366,8 @@ def binary_watershed(
 def clear_large_objects(image, large_label_size=200):
     """Uses watershed to label all obejcts, and removes the ones with a volume larger than the specified threshold.
 
+    This is intended for artifact removal, and should not be used for instance segmentation.
+
     Args:
         image: array containing the image
         large_label_size:  size threshold for removal of objects in pixels. E.g. if 10, all objects larger than 10 pixels as a whole will be removed.

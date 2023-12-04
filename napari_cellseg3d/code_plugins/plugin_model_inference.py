@@ -197,6 +197,9 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             func=self._toggle_display_artifact_size_thresh,
             parent=self,
         )
+        self.remove_artifacts_label = ui.make_label(
+            "Remove labels larger than :"
+        )
         self.artifact_removal_size = ui.IntIncrementCounter(
             lower=1,
             upper=10000,
@@ -204,7 +207,10 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             text_label="Remove larger than :",
             step=100,
         )
-
+        self.artifact_container = ui.ContainerWidget(parent=self)
+        self.attempt_artifact_removal_box.toggled.connect(
+            self._toggle_display_artifact_size_thresh
+        )
         ##################
         ##################
         # instance segmentation widgets
@@ -215,6 +221,9 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             "Run instance segmentation",
             func=self._toggle_display_instance,
             parent=self,
+        )
+        self.use_instance_choice.toggled.connect(
+            self._toggle_artifact_removal_widgets
         )
         self.use_crf = ui.CheckBox(
             "Use CRF post-processing",
@@ -300,6 +309,12 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             "Will save several statistics for each object to a csv in the results folder. Stats include : "
             "volume, centroid coordinates, sphericity"
         )
+        artifact_tooltip = "If enabled, will remove labels of objects larger than the chosen size in instance segmentation"
+        self.artifact_removal_size.setToolTip(
+            artifact_tooltip + "\nDefault is 500 pixels"
+        )
+        self.attempt_artifact_removal_box.setToolTip(artifact_tooltip)
+        self.artifact_container.setToolTip(artifact_tooltip)
         ##################
         ##################
 
@@ -354,7 +369,11 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         """Shows the choices for thresholding results depending on whether :py:attr:`self.attempt_artifact_removal_box` is checked."""
         ui.toggle_visibility(
             self.attempt_artifact_removal_box,
-            self.artifact_removal_size.container,
+            self.artifact_removal_size,
+        )
+        ui.toggle_visibility(
+            self.attempt_artifact_removal_box,
+            self.remove_artifacts_label,
         )
 
     def _toggle_display_crf(self):
@@ -364,6 +383,10 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
     def _toggle_display_instance(self):
         """Shows or hides the options for instance segmentation based on current user selection."""
         ui.toggle_visibility(self.use_instance_choice, self.instance_widgets)
+
+    def _toggle_artifact_removal_widgets(self):
+        """Shows or hides the options for instance segmentation based on current user selection."""
+        ui.toggle_visibility(self.use_instance_choice, self.artifact_container)
 
     def _toggle_display_window_size(self):
         """Show or hide window size choice depending on status of self.window_infer_box."""
@@ -483,6 +506,15 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.thresholding_slider.container.setVisible(False)
 
         ui.add_widgets(
+            self.artifact_container.layout,
+            [
+                self.attempt_artifact_removal_box,
+                self.remove_artifacts_label,
+                self.artifact_removal_size,
+            ],
+        )
+        self.artifact_container.setVisible(False)
+        ui.add_widgets(
             post_proc_layout,
             [
                 self.anisotropy_wdgt,  # anisotropy
@@ -492,6 +524,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.crf_widgets,
                 self.use_instance_choice,
                 self.instance_widgets,
+                self.artifact_container,
                 self.save_stats_to_csv_box,
                 # self.instance_param_container,  # instance segmentation
             ],
@@ -833,6 +866,8 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             zoom=zoom_config,
             thresholding=thresholding_config,
             instance=self.instance_config,
+            artifact_removal=self.attempt_artifact_removal_box.isChecked(),
+            artifact_removal_size=self.artifact_removal_size.value(),
         )
 
         if self.use_window_choice.isChecked():
