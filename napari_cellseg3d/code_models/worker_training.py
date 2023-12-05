@@ -68,6 +68,7 @@ try:
         init,
     )
 
+    # used to check if wandb is installed, otherwise not used this way
     WANDB_INSTALLED = True
 except (ImportError, ModuleNotFoundError):
     logger.info(
