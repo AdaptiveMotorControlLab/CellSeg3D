@@ -486,7 +486,7 @@ class InferenceWorker(GeneratorWorker):
             instance_labels=instance_labels,
             crf_results=crf_results,
             stats=stats,
-            result=semantic_labels,
+            semantic_segmentation=semantic_labels,
             model_name=self.config.model_info.name,
         )
 

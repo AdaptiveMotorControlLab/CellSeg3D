@@ -513,7 +513,10 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.artifact_removal_size,
             ],
         )
-        self.artifact_container.setVisible(False)
+        # self.attempt_artifact_removal_box.setVisible(False)
+        self.remove_artifacts_label.setVisible(False)
+        self.artifact_removal_size.setVisible(False)
+
         ui.add_widgets(
             post_proc_layout,
             [
@@ -630,21 +633,21 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         # out_colormap = "twilight"
 
         viewer.add_image(
-            result.result,
+            result.semantic_segmentation,
             colormap=out_colormap,
             name=f"pred_{image_id}_{model_name}",
             opacity=0.8,
         )
 
         if (
-            len(result.result.shape) == 4
+            len(result.semantic_segmentation.shape) == 4
         ):  # seek channel that is most likely to be foreground
             fractions_per_channel = utils.channels_fraction_above_threshold(
-                result.result, 0.5
+                result.semantic_segmentation, 0.5
             )
             index_channel_sorted = np.argsort(fractions_per_channel)
             for channel in index_channel_sorted:
-                if result.result[channel].sum() > 0:
+                if result.semantic_segmentation[channel].sum() > 0:
                     index_channel_least_labelled = channel
                     break
             viewer.dims.set_point(

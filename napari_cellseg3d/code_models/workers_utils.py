@@ -283,7 +283,7 @@ class InferenceResult:
     instance_labels: np.array = None
     crf_results: np.array = None
     stats: "np.array[ImageStats]" = None
-    result: np.array = None
+    semantic_segmentation: np.array = None
     model_name: str = None
 
 
