@@ -25,7 +25,6 @@ jobs:
     - name: Install dependencies
       run: |
         pip install jupyter-book
-        cd CellSeg3D
         pip install -e .
 
     # Build the book
