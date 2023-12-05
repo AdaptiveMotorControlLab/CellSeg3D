@@ -18,10 +18,23 @@ NIPS 2011
 
 Implemented using the pydense library available at https://github.com/lucasb-eyer/pydensecrf.
 """
+import importlib
 
-from warnings import warn
+import numpy as np
+from napari.qt.threading import GeneratorWorker
 
-try:
+from napari_cellseg3d.config import CRFConfig
+from napari_cellseg3d.utils import LOGGER as logger
+
+spec = importlib.util.find_spec("pydensecrf")
+CRF_INSTALLED = spec is not None
+if not CRF_INSTALLED:
+    logger.info(
+        "pydensecrf not installed, CRF post-processing will not be available. "
+        "Please install by running pip install cellseg3d[crf]"
+        "This is not a hard requirement, you do not need it to install it unless you want to use the CRF post-processing step."
+    )
+else:
     import pydensecrf.densecrf as dcrf
     from pydensecrf.utils import (
         create_pairwise_bilateral,
@@ -29,21 +42,23 @@ try:
         unary_from_softmax,
     )
 
-    CRF_INSTALLED = True
-except ImportError:
-    warn(
-        "pydensecrf not installed, CRF post-processing will not be available. "
-        "Please install by running pip install cellseg3d[crf]",
-        stacklevel=1,
-    )
-    CRF_INSTALLED = False
+# try:
+#     import pydensecrf.densecrf as dcrf
+#     from pydensecrf.utils import (
+#         create_pairwise_bilateral,
+#         create_pairwise_gaussian,
+#         unary_from_softmax,
+#     )
+#     CRF_INSTALLED = True
+# except (ImportError, ModuleNotFoundError):
+#     logger.info(
+#         "pydensecrf not installed, CRF post-processing will not be available. "
+#         "Please install by running pip install cellseg3d[crf]"
+#         "This is not a hard requirement, you do not need it to install it unless you want to use the CRF post-processing step."
+#     )
+#     CRF_INSTALLED = False
+# use importlib instead to check if pydensecrf is installed
 
-
-import numpy as np
-from napari.qt.threading import GeneratorWorker
-
-from napari_cellseg3d.config import CRFConfig
-from napari_cellseg3d.utils import LOGGER as logger
 
 __author__ = "Yves Paychère, Colin Hofmann, Cyril Achard"
 __credits__ = [

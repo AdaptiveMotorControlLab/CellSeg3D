@@ -530,7 +530,8 @@ class InferenceWorker(GeneratorWorker):
             raise ValueError(
                 "An ID should be provided when running from a file"
             )
-
+        # old_stderr = sys.stderr
+        # sys.stderr = TqdmToLogSignal(self.log_w_replacement)
         if self.config.post_process_config.instance.enabled:
             if self.config.post_process_config.artifact_removal:
                 self.log("Removing artifacts...")
@@ -547,6 +548,7 @@ class InferenceWorker(GeneratorWorker):
         else:
             instance_labels = None
             stats = None
+        # sys.stderr = old_stderr
         return instance_labels, stats
 
     def save_image(
