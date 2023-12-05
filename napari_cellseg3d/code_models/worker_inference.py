@@ -1,5 +1,6 @@
 """Contains the :py:class:`~InferenceWorker` class, which is a custom worker to run inference jobs in."""
 import platform
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -27,16 +28,19 @@ from tifffile import imwrite
 # local
 from napari_cellseg3d import config, utils
 from napari_cellseg3d.code_models.crf import crf_with_config
-from napari_cellseg3d.code_models.instance_segmentation import volume_stats
+from napari_cellseg3d.code_models.instance_segmentation import (
+    clear_large_objects,
+    volume_stats,
+)
 from napari_cellseg3d.code_models.workers_utils import (
     PRETRAINED_WEIGHTS_DIR,
     InferenceResult,
     LogSignal,
     ONNXModelWrapper,
     QuantileNormalization,
-    QuantileNormalizationd,
     RemapTensor,
     Threshold,
+    TqdmToLogSignal,
     WeightsDownloader,
 )
 
@@ -97,6 +101,7 @@ class InferenceWorker(GeneratorWorker):
         super().__init__(self.inference)
         self._signals = LogSignal()  # add custom signals
         self.log_signal = self._signals.log_signal
+        self.log_w_replace_signal = self._signals.log_w_replace_signal
         self.warn_signal = self._signals.warn_signal
         self.error_signal = self._signals.error_signal
 
@@ -127,6 +132,14 @@ class InferenceWorker(GeneratorWorker):
             text (str): text to logged
         """
         self.log_signal.emit(text)
+
+    def log_w_replacement(self, text):
+        """Sends a signal that ``text`` should be logged, replacing the last line.
+
+        Args:
+            text (str): text to logged
+        """
+        self.log_w_replace_signal.emit(text)
 
     def warn(self, warning):
         """Sends a warning to main thread."""
@@ -203,6 +216,8 @@ class InferenceWorker(GeneratorWorker):
         pad = utils.get_padding_dim(check)
 
         if self.config.sliding_window_config.is_enabled():
+            logger.debug("Sliding window is enabled")
+            logger.debug(f"Loading image with shape : {str(check)}")
             load_transforms = Compose(
                 [
                     LoadImaged(keys=["image"], image_only=True),
@@ -210,17 +225,20 @@ class InferenceWorker(GeneratorWorker):
                     EnsureChannelFirstd(keys=["image"]),
                     # Orientationd(keys=["image"], axcodes="PLI"),
                     # anisotropic_transform,
-                    QuantileNormalizationd(keys=["image"]),
+                    # QuantileNormalizationd(keys=["image"]),
                     EnsureTyped(keys=["image"]),
                 ]
             )
         else:
+            logger.debug("Sliding window is disabled")
+            logger.debug("Applying padding")
+            logger.debug(f"Loading image with shape: {str(pad)}")
             load_transforms = Compose(
                 [
                     LoadImaged(keys=["image"], image_only=True),
                     # AddChanneld(keys=["image"]), #already done
                     EnsureChannelFirstd(keys=["image"]),
-                    QuantileNormalizationd(keys=["image"]),
+                    # QuantileNormalizationd(keys=["image"]),
                     # Orientationd(keys=["image"], axcodes="PLI"),
                     # anisotropic_transform,
                     SpatialPadd(keys=["image"], spatial_size=pad),
@@ -334,12 +352,21 @@ class InferenceWorker(GeneratorWorker):
             # logger.debug(f"model : {model}")
             logger.debug(f"inputs shape : {inputs.shape}")
             logger.debug(f"inputs type : {inputs.dtype}")
-            # normalization = QuantileNormalization()
+            if (
+                self.config.layer is None
+                and self.config.images_filepaths is not None
+            ):
+                normalization = QuantileNormalization()
+            else:
+
+                def normalization(x):
+                    return x
+
             try:
                 # outputs = model(inputs)
 
                 def model_output_wrapper(inputs):
-                    # inputs = normalization(inputs)
+                    inputs = normalization(inputs)
                     result = model(inputs)
 
                     ####################### EXPERIMENTAL CODE
@@ -370,11 +397,14 @@ class InferenceWorker(GeneratorWorker):
                                     )
                         return result
                     ##########################################
-
                     return post_process_transforms(result)
 
                 model.eval()
                 with torch.no_grad():
+                    ### Redirect tqdm pbar to logger
+                    old_stdout = sys.stderr
+                    sys.stderr = TqdmToLogSignal(self.log_w_replacement)
+                    ###
                     outputs = sliding_window_inference(
                         inputs,
                         roi_size=window_size,
@@ -387,6 +417,8 @@ class InferenceWorker(GeneratorWorker):
                         sigma_scale=0.01,
                         progress=True,
                     )
+                    ###
+                    sys.stderr = old_stdout
             except Exception as e:
                 logger.exception(e)
                 logger.debug("failed to run sliding window inference")
@@ -470,7 +502,7 @@ class InferenceWorker(GeneratorWorker):
             instance_labels=instance_labels,
             crf_results=crf_results,
             stats=stats,
-            result=semantic_labels,
+            semantic_segmentation=semantic_labels,
             model_name=self.config.model_info.name,
         )
 
@@ -498,8 +530,16 @@ class InferenceWorker(GeneratorWorker):
             raise ValueError(
                 "An ID should be provided when running from a file"
             )
-
+        # old_stderr = sys.stderr
+        # sys.stderr = TqdmToLogSignal(self.log_w_replacement)
         if self.config.post_process_config.instance.enabled:
+            if self.config.post_process_config.artifact_removal:
+                self.log("Removing artifacts...")
+                semantic_labels = clear_large_objects(
+                    semantic_labels,
+                    self.config.post_process_config.artifact_removal_size,
+                )
+
             instance_labels = self.instance_seg(
                 semantic_labels,
                 i + 1,
@@ -508,6 +548,7 @@ class InferenceWorker(GeneratorWorker):
         else:
             instance_labels = None
             stats = None
+        # sys.stderr = old_stderr
         return instance_labels, stats
 
     def save_image(
@@ -526,10 +567,14 @@ class InferenceWorker(GeneratorWorker):
             additional_info (str, optional): additional info to add to the filename. Defaults to "".
         """
         if not from_layer:
-            original_filename = "_" + self.get_original_filename(i) + "_"
+            original_filename = self.get_original_filename(i) + "_"
             filetype = self.config.filetype
         else:
-            original_filename = "_"
+            try:
+                layer_name = self.config.layer.name
+            except AttributeError:
+                layer_name = "volume"
+            original_filename = f"{layer_name}_"
             filetype = ".tif"
 
         time = utils.get_date_time()
@@ -538,9 +583,9 @@ class InferenceWorker(GeneratorWorker):
             self.config.results_path
             + "/"
             + f"{additional_info}"
-            + f"Prediction_{i+1}"
             + original_filename
             + self.config.model_info.name
+            + f"_pred_{i+1}"
             + f"_{time}"
             + filetype
         )

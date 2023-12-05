@@ -44,7 +44,7 @@ def test_worker_configs(make_napari_viewer_proxy):
                 worker.config, attr
             )
     widget.unsupervised_images_filewidget.text_field.setText(
-        str(im_path.parent)
+        str((im_path.parent / "wnet_test").resolve())
     )
     widget.data = widget.create_dataset_dict_no_labs()
     worker = widget._create_worker(additional_results_description="TEST_2")

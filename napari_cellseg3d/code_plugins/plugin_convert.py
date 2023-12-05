@@ -12,6 +12,7 @@ import napari_cellseg3d.interface as ui
 from napari_cellseg3d import utils
 from napari_cellseg3d.code_models.instance_segmentation import (
     InstanceWidgets,
+    clear_large_objects,
     clear_small_objects,
     threshold,
     to_semantic,
@@ -24,6 +25,115 @@ MAX_W = ui.UTILS_MAX_WIDTH
 MAX_H = ui.UTILS_MAX_HEIGHT
 
 logger = utils.LOGGER
+
+
+class ArtifactRemovalUtils(BasePluginUtils):
+    """Class to remove artifacts from images by removing large objects."""
+
+    save_path = Path.home() / "cellseg3d" / "artifact_removed"
+
+    def __init__(self, viewer: "napari.Viewer.viewer", parent=None):
+        """Creates a ArtifactRemovalUtils widget.
+
+        Args:
+            viewer: viewer in which to process data
+            parent: parent widget
+        """
+        super().__init__(
+            viewer,
+            parent,
+            loads_labels=True,
+            loads_images=False,
+        )
+        self.data_panel = self._build_io_panel()
+        self.container = None
+        self.start_btn = ui.Button("Start", self._start)
+
+        self.artifact_size_counter = ui.IntIncrementCounter(
+            lower=0,
+            upper=100000,
+            default=100,
+            text_label="Remove all larger than\n(volume in pxs):",
+        )
+
+        self.label_layer_loader.layer_list.label.setText("Layer :")
+        self.label_layer_loader.set_layer_type(napari.layers.Labels)
+
+        self.results_path = str(self.save_path)
+        self.results_filewidget.text_field.setText(str(self.results_path))
+        self.results_filewidget.check_ready()
+
+        self._build()
+
+    def _build(self):
+        container = ui.ContainerWidget()
+        self.container = container
+
+        ui.add_widgets(
+            self.data_panel.layout,
+            [
+                self.data_panel,
+                ui.add_blank(container),
+                self.artifact_size_counter.label,
+                self.artifact_size_counter,
+                # ui.add_blank(container),
+                self.start_btn,
+            ],
+        )
+        container.layout.addWidget(self.data_panel)
+        ui.ScrollArea.make_scrollable(
+            container.layout,
+            self,
+            max_wh=[MAX_W, MAX_H],
+        )
+        self._set_io_visibility()
+        container.setSizePolicy(
+            QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
+        )
+        return container
+
+    def _remove_large(self, data, size):
+        return clear_large_objects(data, size).astype(np.uint16)
+
+    def _start(self):
+        utils.mkdir_from_str(self.results_path)
+        remove_size = self.artifact_size_counter.value()
+
+        if self.layer_choice.isChecked():
+            if self.label_layer_loader.layer_data() is not None:
+                layer = self.label_layer_loader.layer()
+
+                data = np.array(layer.data)
+                removed = self._remove_large(data, remove_size)
+
+                utils.save_layer(
+                    self.results_path,
+                    f"artifact_removed_{layer.name}_{utils.get_date_time()}.tif",
+                    removed,
+                )
+                self.layer = utils.show_result(
+                    self._viewer,
+                    layer,
+                    removed,
+                    f"artifact_removed_{layer.name}",
+                    existing_layer=self.layer,
+                    add_as_labels=True,
+                )
+        elif (
+            self.folder_choice.isChecked() and len(self.labels_filepaths) != 0
+        ):
+            images = [
+                self._remove_large(imread(file), remove_size)
+                for file in self.labels_filepaths
+            ]
+            utils.save_folder(
+                self.results_path,
+                f"artifact_removed_results_{utils.get_date_time()}",
+                images,
+                self.labels_filepaths,
+            )
+        else:
+            logger.warning("Please specify a layer or a folder")
 
 
 class FragmentUtils(BasePluginUtils):
@@ -298,6 +408,7 @@ class RemoveSmallUtils(BasePluginUtils):
                     removed,
                     f"cleared_{layer.name}",
                     existing_layer=self.layer,
+                    add_as_labels=True,
                 )
         elif (
             self.folder_choice.isChecked() and len(self.images_filepaths) != 0
@@ -479,6 +590,7 @@ class ToInstanceUtils(BasePluginUtils):
                     instance,
                     f"instance_{layer.name}",
                     existing_layer=self.layer,
+                    add_as_labels=True,
                 )
 
         elif (
@@ -616,6 +728,7 @@ class StatsUtils(BasePluginUtils):
 
         self.data_panel = self._build_io_panel()
 
+        self.csv_name_label = ui.make_label("CSV name :")
         self.csv_name = QLineEdit("volume_stats", parent=self)
         self.csv_name.setToolTip(
             "Name of the csv file.\nThe extension is added automatically;\nif running on a folder, the id of the image will be added to the name."
@@ -635,6 +748,7 @@ class StatsUtils(BasePluginUtils):
         ui.add_widgets(
             self.data_panel.layout,
             [
+                self.csv_name_label,
                 self.csv_name,
                 self.start_btn,
             ],
@@ -666,14 +780,17 @@ class StatsUtils(BasePluginUtils):
 
                 stats_df = pd.DataFrame(stats.get_dict())
                 csv_name = self.csv_name.text() + ".csv"
+                logger.info(f"Saving stats to {self.results_path}/{csv_name}")
                 stats_df.to_csv(
                     self.results_path + "/" + csv_name, index=False
                 )
         elif (
             self.folder_choice.isChecked() and len(self.labels_filepaths) != 0
         ):
-            images = [imread(file) for file in self.labels_filepaths]
-            for i, image in enumerate(images):
+            for i, image_path in enumerate(self.labels_filepaths):
+                logger.debug(f"Loading image {i} : {image_path}")
+                image = imread(image_path)
+                image_name = Path(image_path).stem
                 if image.sum() == 0:
                     m = f"Image {i} is empty, skipping."
                     logger.warning(m)
@@ -684,10 +801,24 @@ class StatsUtils(BasePluginUtils):
                     logger.warning(m)
                     warn(m, stacklevel=0)
                     continue
+                logger.debug(f"Image {i} has shape {image.shape}")
+                try:
+                    stats = volume_stats(image)
+                except Exception as e:
+                    logger.warning(
+                        f"Error computing stats for image {i} : {e}"
+                    )
+                    warn(f"Error computing stats for image {i}", stacklevel=0)
+                logger.debug("Computing stats")
                 stats_df = pd.DataFrame(stats.get_dict())
-                csv_name = self.csv_name.text() + f"_{i}.csv"
+                csv_name = (
+                    str(image_name) + "_" + self.csv_name.text() + f"_{i}.csv"
+                )
+                logger.info(
+                    f"Saving stats to {(Path(self.results_path) / Path(csv_name)).resolve()}"
+                )
                 stats_df.to_csv(
-                    self.results_path + "/" + csv_name, index=False
+                    Path(self.results_path) / Path(csv_name), index=False
                 )
         else:
             logger.warning("Please specify a layer or a folder")

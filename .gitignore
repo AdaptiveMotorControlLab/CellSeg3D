@@ -115,6 +115,8 @@ notebooks/instance_test.ipynb
 *.prof
 /docs/_build/
 /docs/source/code/_autosummary/*.rst
+cov.syspath.txt
+napari_cellseg3d/dev_scripts/wandb
 
 #include test data
 !napari_cellseg3d/_tests/res/test.tif
@@ -123,9 +125,7 @@ notebooks/instance_test.ipynb
 !napari_cellseg3d/_tests/res/wnet_test/*.tif
 !napari_cellseg3d/_tests/res/wnet_test/lab/*.tif
 !napari_cellseg3d/_tests/res/wnet_test/vol/*.tif
-cov.syspath.txt
 
 #include docs images
 !docs/source/logo/*
 !docs/source/images/*
-napari_cellseg3d/dev_scripts/wandb

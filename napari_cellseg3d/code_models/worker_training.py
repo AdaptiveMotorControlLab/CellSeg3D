@@ -62,19 +62,23 @@ from napari_cellseg3d.code_models.workers_utils import (
 )
 
 logger = utils.LOGGER
-VERBOSE_SCHEDULER = True
-logger.debug(f"PRETRAINED WEIGHT DIR LOCATION : {PRETRAINED_WEIGHTS_DIR}")
-
 try:
     import wandb
+    from wandb import (
+        init,
+    )
 
+    # used to check if wandb is installed, otherwise not used this way
     WANDB_INSTALLED = True
-except ImportError:
-    logger.warning(
+except (ImportError, ModuleNotFoundError):
+    logger.info(
         "wandb not installed, wandb config will not be taken into account",
         stacklevel=1,
     )
     WANDB_INSTALLED = False
+
+VERBOSE_SCHEDULER = True
+logger.debug(f"PRETRAINED WEIGHT DIR LOCATION : {PRETRAINED_WEIGHTS_DIR}")
 
 """
 Writing something to log messages from outside the main thread needs specific care,
@@ -1109,11 +1113,18 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             if WANDB_INSTALLED:
                 config_dict = self.config.__dict__
                 logger.debug(f"wandb config : {config_dict}")
-                wandb.init(
-                    config=config_dict,
-                    project="CellSeg3D",
-                    mode=self.wandb_config.mode,
-                )
+                try:
+                    wandb.init(
+                        config=config_dict,
+                        project="CellSeg3D",
+                        mode=self.wandb_config.mode,
+                    )
+                except AttributeError:
+                    logger.warning(
+                        "Could not initialize wandb."
+                        "This might be due to running napari in a folder where there is a directory named 'wandb'."
+                        "Aborting, please run napari in a different folder or install wandb. Sorry for the inconvenience."
+                    )
 
             if deterministic_config.enabled:
                 set_determinism(

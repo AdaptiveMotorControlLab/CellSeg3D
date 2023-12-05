@@ -75,6 +75,8 @@ def show_result(
     name,
     existing_layer: napari.layers.Layer = None,
     colormap="bop orange",
+    add_as_labels=False,
+    add_as_image=False,
 ) -> napari.layers.Layer:
     """Adds layers to a viewer to show result to user.
 
@@ -85,24 +87,35 @@ def show_result(
         name: name of the added layer
         existing_layer: existing layer to update, if any
         colormap: colormap to use for the layer
+        add_as_labels: whether to add the layer as a Labels layer. Overrides guessing from layer type.
+        add_as_image: whether to add the layer as an Image layer. Overrides guessing from layer type.
 
     Returns:
         napari.layers.Layer: the layer added to the viewer
     """
     colormap = colormap if colormap is not None else "gray"
     if existing_layer is None:
-        if isinstance(layer, napari.layers.Image):
+        if add_as_image:
             LOGGER.info("Added resulting image layer")
             results_layer = viewer.add_image(
                 image, name=name, colormap=colormap
             )
-        elif isinstance(layer, napari.layers.Labels):
+        elif add_as_labels:
             LOGGER.info("Added resulting label layer")
             results_layer = viewer.add_labels(image, name=name)
         else:
-            LOGGER.warning(
-                f"Results not shown, unsupported layer type {type(layer)}"
-            )
+            if isinstance(layer, napari.layers.Image):
+                LOGGER.info("Added resulting image layer")
+                results_layer = viewer.add_image(
+                    image, name=name, colormap=colormap
+                )
+            elif isinstance(layer, napari.layers.Labels):
+                LOGGER.info("Added resulting label layer")
+                results_layer = viewer.add_labels(image, name=name)
+            else:
+                LOGGER.warning(
+                    f"Results not shown, unsupported layer type {type(layer)}"
+                )
     else:
         try:
             viewer.layers[existing_layer.name].data = image
@@ -193,17 +206,17 @@ def sphericity_axis(semi_major, semi_minor):
             / (a + (b**2) / root * np.log((a + root) / b))
         )
     except ZeroDivisionError:
-        LOGGER.warning(
-            "Zero division in sphericity calculation was replaced by 0"
+        LOGGER.debug(
+            "Zero division in sphericity calculation was replaced by None"
         )
-        result = 0
+        result = None
     except ValueError as e:
         LOGGER.warning(f"Error encountered in calculation : {e}")
         result = "Error in calculation"
 
     if math.isnan(result):
-        LOGGER.warning("NaN in sphericity calculation was replaced by 0")
-        result = 0
+        LOGGER.debug("NaN in sphericity calculation was replaced by None")
+        result = None
 
     return result
 
@@ -503,6 +516,39 @@ def get_time():
 def get_time_filepath():
     """Get time in the following format : hour_minute_second. Compatible with saving."""
     return f"{datetime.now():%H_%M_%S}"
+
+
+def get_all_matching_files(path, pattern=None):
+    """Returns a list of all files in a directory matching the pattern.
+
+    Args:
+        path (str): path to the directory containing the images
+        pattern (list): list of file extensions to match, defaults to [".tif", ".tiff"] if None
+
+    Returns:
+        list: list of all files in the directory matching the pattern, sorted alphabetically
+    """
+    if pattern is None:
+        pattern = {".tif", ".tiff"}
+    path = Path(path).resolve()
+    if not path.exists():
+        raise ValueError(f"Data folder {path} does not exist")
+    files = list([p for p in Path(path).glob("*") if p.suffix in pattern])
+    # for p in Path(path).glob("*"):
+    #     LOGGER.debug(f"Found file {p} with suffix {p.suffix}")
+    #     LOGGER.debug(f"Suffix in pattern : {p.suffix in pattern}")
+    #     if p.suffix in pattern:
+    #         LOGGER.debug(f"File {p} matches pattern")
+    LOGGER.debug(f"Found files : {files}")
+    try:
+        if len(files) == 0:
+            LOGGER.warning(f"No files found in {path}")
+            return None
+    except TypeError:
+        if files is None:
+            LOGGER.warning(f"No files found in {path}")
+            return None
+    return sorted(files)
 
 
 def load_images(dir_or_path, filetype="", as_folder: bool = False):

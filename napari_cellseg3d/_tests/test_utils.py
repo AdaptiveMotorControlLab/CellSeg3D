@@ -26,7 +26,7 @@ def test_singleton_class():
 def test_save_folder():
     test_path = Path(__file__).resolve().parent / "res"
     folder_name = "test_folder"
-    images = [rand_gen.random((5, 5, 5)) for _ in range(10)]
+    images = [rand_gen.random((5, 5, 5)).astype(np.float32) for _ in range(10)]
     images_paths = [f"{i}.tif" for i in range(10)]
 
     utils.save_folder(
@@ -64,6 +64,10 @@ def test_sphericities():
             sphericity_axes = 0
         except ValueError:
             sphericity_axes = 0
+        if sphericity_axes is None:
+            sphericity_axes = (
+                0  # errors already handled in function, returns None
+            )
         assert 0 <= sphericity_axes <= 1
 
 
@@ -221,7 +225,7 @@ def test_parse_default_path():
         Path.home()
     )
 
-    long_path = Path("D:/")
+    long_path = Path.home()
     long_path = (
         long_path
         / "very"
@@ -253,3 +257,12 @@ def test_quantile_norm():
     array_norm = utils.quantile_normalization(array)
     assert array_norm.min() >= low_quantile
     assert array_norm.max() <= high_quantile
+
+
+def test_get_all_matching_files():
+    test_image_path = Path(__file__).resolve().parent / "res/wnet_test"
+    paths = utils.get_all_matching_files(test_image_path)
+
+    assert len(paths) == 1
+    assert [Path(p).is_file() for p in paths]
+    assert [Path(p).suffix == ".tif" for p in paths]

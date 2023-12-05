@@ -248,11 +248,9 @@ class ModelFramework(BasePluginFolder):
         """Returns a list of filepaths to images in the unsupervised images folder."""
         volume_directory = Path(
             self.unsupervised_images_filewidget.text_field.text()
-        )
-
-        if not volume_directory.exists():
-            raise ValueError(f"Data folder {volume_directory} does not exist")
-        return sorted(Path.glob(volume_directory, "*.tif"))
+        ).resolve()
+        logger.debug(f"Volume directory : {volume_directory}")
+        return utils.get_all_matching_files(volume_directory)
 
     def create_dataset_dict_no_labs(self):
         """Creates unsupervised data dictionary for MONAI transforms and training."""

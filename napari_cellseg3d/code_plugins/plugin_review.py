@@ -199,7 +199,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         self.config.csv_path = self.results_filewidget.text_field.text()
 
         self.config.new_csv = self.new_csv_choice.isChecked()
-        self.config.filetype = self.filetype
+        # self.config.filetype = self.filetype
 
         if self.anisotropy_widgets.enabled:
             zoom = self.anisotropy_widgets.scaling_zyx()

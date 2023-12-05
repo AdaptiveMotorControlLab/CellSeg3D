@@ -11,10 +11,11 @@ Use CellSeg3D to:
 * Review labeled cell volumes from whole-brain samples of mice imaged by mesoSPIM microscopy [1]_
 * Train and use segmentation models from the MONAI project [2]_ or implement your own custom 3D segmentation models using PyTorch.
 
-No labeled data? Try our unsupervised model to automate your data labelling.
+No labeled data? Try our unsupervised model, based on the `WNet`_ model, to automate your data labelling.
 
 The models provided should be adaptable to other tasks related to detection of 3D objects,
 outside of whole-brain light-sheet microscopy.
+This applies to the unsupervised model as well, feel free to try to generate labels for your own data!
 
 .. figure:: https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/0d16a71b-3ff2-477a-9d83-18d96cb1ce28/full_demo.gif?format=500w
    :alt: CellSeg3D demo
@@ -52,6 +53,7 @@ you need further assistance, please see below.
 Installation
 --------------------------------------------
 CellSeg3D can be run on Windows, Linux, or MacOS.
+
 For detailed installation instructions, including installing pre-requisites,
 please see :ref:`source/guides/installation_guide:Installation guide ⚙`
 
@@ -71,8 +73,6 @@ For local installation after cloning from GitHub, please run the following in th
   pip install -e .
 
 If the installation was successful, you will find the napari-cellseg3D plugin in the Plugins section of napari.
-
-
 
 Usage
 --------------------------------------------
@@ -160,7 +160,7 @@ This plugin mainly uses the following libraries and software:
 
 * `pyclEsperanto`_ (for the Voronoi Otsu labeling) by Robert Haase
 
-* A custom re-implementation of the `WNet model`_ by Xia and Kulis [3]_
+* A custom re-implementation of the `WNet`_ by Xia and Kulis [3]_
 
 .. _Mathis Laboratory of Adaptive Motor Control: http://www.mackenziemathislab.org/
 .. _Wyss Center: https://wysscenter.ch/
@@ -170,7 +170,7 @@ This plugin mainly uses the following libraries and software:
 .. _MONAI project: https://monai.io/
 .. _on their website: https://docs.monai.io/en/stable/networks.html#nets
 .. _pyclEsperanto: https://github.com/clEsperanto/pyclesperanto_prototype
-.. _WNet model: https://arxiv.org/abs/1711.08506
+.. _WNet: https://arxiv.org/abs/1711.08506
 
 .. rubric:: References
 

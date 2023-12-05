@@ -129,6 +129,8 @@ class LogSignal(WorkerBaseSignals):
 
     log_signal = Signal(str)
     """qtpy.QtCore.Signal: signal to be sent when some text should be logged"""
+    log_w_replace_signal = Signal(str)
+    """qtpy.QtCore.Signal: signal to be sent when some text should be logged, replacing the last line"""
     warn_signal = Signal(str)
     """qtpy.QtCore.Signal: signal to be sent when some warning should be emitted in main thread"""
     error_signal = Signal(Exception, str)
@@ -140,6 +142,26 @@ class LogSignal(WorkerBaseSignals):
     def __init__(self, parent=None):
         """Creates a LogSignal."""
         super().__init__(parent=parent)
+
+
+class TqdmToLogSignal:
+    """File-like object to redirect tqdm output to the logger widget in the GUI that self.log emits to."""
+
+    def __init__(self, log_func):
+        """Creates a TqdmToLogSignal.
+
+        Args:
+        log_func (callable): function to call to log the output.
+        """
+        self.log_func = log_func
+
+    def write(self, x):
+        """Writes the output to the log_func."""
+        self.log_func(x.strip())
+
+    def flush(self):
+        """Flushes the output. Unused."""
+        pass
 
 
 class ONNXModelWrapper(torch.nn.Module):
@@ -283,7 +305,7 @@ class InferenceResult:
     instance_labels: np.array = None
     crf_results: np.array = None
     stats: "np.array[ImageStats]" = None
-    result: np.array = None
+    semantic_segmentation: np.array = None
     model_name: str = None
 
 
