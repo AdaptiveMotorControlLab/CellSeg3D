@@ -62,9 +62,6 @@ from napari_cellseg3d.code_models.workers_utils import (
 )
 
 logger = utils.LOGGER
-VERBOSE_SCHEDULER = True
-logger.debug(f"PRETRAINED WEIGHT DIR LOCATION : {PRETRAINED_WEIGHTS_DIR}")
-
 try:
     import wandb
     from wandb import (
@@ -73,12 +70,14 @@ try:
 
     WANDB_INSTALLED = True
 except (ImportError, ModuleNotFoundError):
-    logger.warning(
+    logger.info(
         "wandb not installed, wandb config will not be taken into account",
         stacklevel=1,
     )
     WANDB_INSTALLED = False
 
+VERBOSE_SCHEDULER = True
+logger.debug(f"PRETRAINED WEIGHT DIR LOCATION : {PRETRAINED_WEIGHTS_DIR}")
 
 """
 Writing something to log messages from outside the main thread needs specific care,
