@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Training module guide - Unsupervised models &mdash; napari-cellseg3d  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Metrics utility guide" href="metrics_module_guide.html" />
+    <link rel="prev" title="Inference module guide" href="inference_module_guide.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html">
+            
+              <img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Main modules guides:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Review module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference_module_guide.html">Inference module guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Training module guide - Unsupervised models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#training-module-guide-supervised-models">Training module guide - Supervised models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#source-code">Source code</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utilities :</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="metrics_module_guide.html">Metrics utility guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils_module_guide.html">Label conversion utility guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cropping_module_guide.html">Cropping utility guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="training_wnet.html">WNet model training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Detailed walkthrough - Supervised learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Declaring a custom model</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../code/interface.html">interface.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_base.html">plugin_base.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_review.html">plugin_review.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_review_dock.html">plugin_dock.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_crop.html">plugin_crop.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_convert.html">plugin_convert.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_metrics.html">plugin_metrics.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/model_framework.html">model_framework.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/workers.html">workers.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/instance_segmentation.html">instance_segmentation.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_model_inference.html">plugin_model_inference.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_model_training.html">plugin_model_training.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/utils.html">utils.py</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">napari-cellseg3d</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Training module guide - Unsupervised models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/res/guides/training_module_guide.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="training-module-guide-unsupervised-models">
+<span id="training-module-guide"></span><h1>Training module guide - Unsupervised models<a class="headerlink" href="#training-module-guide-unsupervised-models" title="Permalink to this headline"></a></h1>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The WNet training is for now only available in the provided jupyter notebook, in the <code class="docutils literal notranslate"><span class="pre">notebooks</span></code> folder.
+Please see the <a class="reference internal" href="training_wnet.html#training-wnet"><span class="std std-ref">WNet model training</span></a> section for more information.</p>
+</div>
+</section>
+<section id="training-module-guide-supervised-models">
+<h1>Training module guide - Supervised models<a class="headerlink" href="#training-module-guide-supervised-models" title="Permalink to this headline"></a></h1>
+<p>This module allows you to train pre-defined Pytorch models for cell segmentation.
+Pre-defined models are stored in napari-cellseg-3d/models.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Currently, only inference on <strong>3D volumes is supported</strong>. Your image and label folders should both contain a set of
+<strong>3D image files</strong>, currently either <strong>.tif</strong> or <strong>.tiff</strong>. Loading a folder of 2D images as a stack is not supported as of yet.</p>
+</div>
+<p>Currently, the following pre-defined models are available :</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 87%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Model</p></th>
+<th class="head"><p>Link to original paper</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>VNet</p></td>
+<td><p><a class="reference external" href="https://arxiv.org/pdf/1606.04797.pdf">Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>SegResNet</p></td>
+<td><p><a class="reference external" href="https://arxiv.org/pdf/1810.11654.pdf">3D MRI brain tumor segmentation using autoencoder regularization</a></p></td>
+</tr>
+<tr class="row-even"><td><p>TRAILMAP_MS</p></td>
+<td><p>A PyTorch implementation of the <a class="reference external" href="https://github.com/AlbertPun/TRAILMAP">TRAILMAP project on GitHub</a> pretrained with MesoSpim data</p></td>
+</tr>
+<tr class="row-odd"><td><p>TRAILMAP</p></td>
+<td><p>An implementation of the <a class="reference external" href="https://github.com/AlbertPun/TRAILMAP">TRAILMAP project on GitHub</a> using a <a class="reference external" href="https://github.com/wolny/pytorch-3dunet">3DUNet for PyTorch</a></p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<div class="line-block">
+<div class="line">The machine learning models used by this program require all images of a dataset to be of the same size.</div>
+<div class="line">Please ensure that all the images you are loading are of the <strong>same size</strong>, or to use the <strong>“extract patches” (in augmentation tab)</strong> with an appropriately small size to ensure all images being used by the model are of a workable size.</div>
+</div>
+</div>
+<p>The training module is comprised of several tabs.</p>
+<ol class="arabic simple">
+<li><p>The first one, <strong>Data</strong>, will let you set :</p></li>
+</ol>
+<ul class="simple">
+<li><p>The path to the images folder (3D image files)</p></li>
+<li><p>The path to the labels folder (3D image files)</p></li>
+<li><p>The path to the results folder</p></li>
+<li><p>Whether to copy results to a zip file (for easier transferability)</p></li>
+<li><p>Whether to use pre-trained weights that are provided; if you choose to do so, the model will be initialized with the specified weights, possibly improving performance (transfer learning).
+You can also load custom weights; simply ensure they are compatible with the model.</p></li>
+<li><p>The proportion of the dataset to keep for training versus validation; if you have a large dataset, you can set it to a lower value to have more accurate validation steps.</p></li>
+</ul>
+<ol class="arabic simple" start="2">
+<li><p>The second tab, <strong>Augmentation</strong>, lets you define dataset and augmentation parameters such as :</p></li>
+</ol>
+<ul class="simple">
+<li><p>Whether to use images “as is” (<strong>requires all images to be of the same size and cubic</strong>) or extract patches.</p></li>
+</ul>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<div class="line-block">
+<div class="line"><strong>All image sizes used should be as close to a power of two as possible, or equal to a power of two.</strong></div>
+<div class="line">Images are automatically padded; a 64 pixels cube will be used as is, but a 65 pixel cube will be padded up to 128 pixels, resulting in much higher memory use.</div>
+</div>
+</div>
+<ul>
+<li><p>If you’re extracting patches :</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The size of patches to be extracted (ideally, please use a value <strong>close or equal to a power of two</strong>, such as 120 or 60 to ensure correct size. See above note.)</p></li>
+<li><p>The number of samples to extract from each of your images. A larger number will likely mean better performances, but longer training and larger memory usage.</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you’re using a single image (preferably large) it is recommended to enable patch extraction.</p>
+</div>
+<ul class="simple">
+<li><p>Whether to perform data augmentation or not (elastic deforms, intensity shifts. random flipping,etc).
+Ideally it should always be enabled, but you can disable it if it causes issues.</p></li>
+</ul>
+<ol class="arabic simple" start="3">
+<li><p>The third contains training related parameters :</p></li>
+</ol>
+<ul class="simple">
+<li><p>The <strong>model</strong> to use for training (see table above)</p></li>
+<li><p>The <strong>loss function</strong> used for training (see table below)</p></li>
+<li><p>The <strong>learning rate</strong> of the optimizer. Setting it to a lower value if you’re using pre-trained weights can improve performance.</p></li>
+<li><p>The <strong>batch size</strong> (larger means quicker training and possibly better performance but increased memory usage)</p></li>
+<li><p>The <strong>number of epochs</strong> (a possibility is to start with 60 epochs, and decrease or increase depending on performance.)</p></li>
+<li><p>The <strong>epoch interval</strong> for validation (for example, if set to two, the module will use the validation dataset to evaluate the model with the dice metric every two epochs.)</p></li>
+<li><p>The <strong>schedular patience</strong>, which is the amount of epoch at a plateau that is waited for until the learning rate is reduced</p></li>
+<li><p>The <strong>scheduler factor</strong>, which is the factor by which to reduce the learning rate once a plateau is reached</p></li>
+<li><p>Whether to use deterministic training, and the seed to use.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the dice metric is better on a given validation interval, the model weights will be saved in the results folder.</p>
+</div>
+<p>The available loss functions are :</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 80%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Function</p></th>
+<th class="head"><p>Reference</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Dice loss</p></td>
+<td><p><a class="reference external" href="https://docs.monai.io/en/stable/losses.html#diceloss">Dice Loss from MONAI</a> with <code class="docutils literal notranslate"><span class="pre">sigmoid=true</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Focal loss</p></td>
+<td><p><a class="reference external" href="https://docs.monai.io/en/stable/losses.html#focalloss">Focal Loss from MONAI</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Dice-Focal loss</p></td>
+<td><p><a class="reference external" href="https://docs.monai.io/en/stable/losses.html#dicefocalloss">Dice-focal Loss from MONAI</a> with <code class="docutils literal notranslate"><span class="pre">sigmoid=true</span></code> and <code class="docutils literal notranslate"><span class="pre">lambda_dice</span> <span class="pre">=</span> <span class="pre">0.5</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Generalized Dice loss</p></td>
+<td><p><a class="reference external" href="https://docs.monai.io/en/stable/losses.html#generalizeddiceloss">Generalized dice Loss from MONAI</a> with <code class="docutils literal notranslate"><span class="pre">sigmoid=true</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Dice-CE loss</p></td>
+<td><p><a class="reference external" href="https://docs.monai.io/en/stable/losses.html#diceceloss">Dice-CE Loss from MONAI</a> with <code class="docutils literal notranslate"><span class="pre">sigmoid=true</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Tversky loss</p></td>
+<td><p><a class="reference external" href="https://docs.monai.io/en/stable/losses.html#tverskyloss">Tversky Loss from MONAI</a> with <code class="docutils literal notranslate"><span class="pre">sigmoid=true</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>Once you are ready, press the Start button to begin training. The module will automatically load your dataset,
+perform data augmentation if you chose to, select a CUDA device if one is present, and train the model.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can stop the training at any time by clicking on the start button again.</p>
+<p><strong>The training will stop after the next batch has been processed, and will try to save the model. Please note that results might be broken if you stop the training.</strong></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can save the log with the button underneath it to record the losses and validation metrics numerical values at each step. This log is autosaved as well when training completes.</p>
+</div>
+<p>After two validations steps have been performed (depending on the interval you set),
+the training loss values and validation metrics will be automatically plotted
+and shown on napari every time a validation step completes.
+This plot automatically saved each time validation is performed for now.
+The final version is stored separately in the results folder.</p>
+<figure class="align-center" id="id1">
+<img alt="../../_images/plots_train.png" src="../../_images/plots_train.png" />
+<figcaption>
+<p><span class="caption-text">Example of plots displayed by the training module after 40 epochs</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+<section id="source-code">
+<h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../code/plugin_model_training.html"><span class="doc">plugin_model_training.py</span></a></p></li>
+<li><p><a class="reference internal" href="../code/model_framework.html"><span class="doc">model_framework.py</span></a></p></li>
+<li><p><a class="reference internal" href="../code/workers.html"><span class="doc">workers.py</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="inference_module_guide.html" class="btn btn-neutral float-left" title="Inference module guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="metrics_module_guide.html" class="btn btn-neutral float-right" title="Metrics utility guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022-2023, Cyril Achard, Maxime Vidal.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

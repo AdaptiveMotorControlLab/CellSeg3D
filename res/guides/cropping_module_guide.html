@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cropping utility guide &mdash; napari-cellseg3d  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="WNet model training" href="training_wnet.html" />
+    <link rel="prev" title="Label conversion utility guide" href="utils_module_guide.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html">
+            
+              <img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Main modules guides:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Review module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference_module_guide.html">Inference module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training_module_guide.html">Training module guide - Unsupervised models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training_module_guide.html#training-module-guide-supervised-models">Training module guide - Supervised models</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utilities :</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="metrics_module_guide.html">Metrics utility guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils_module_guide.html">Label conversion utility guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Cropping utility guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#launching-the-cropping-process">Launching the cropping process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-new-layers">Creating new layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#interface-functionalities">Interface &amp; functionalities</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="training_wnet.html">WNet model training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Detailed walkthrough - Supervised learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Declaring a custom model</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../code/interface.html">interface.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_base.html">plugin_base.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_review.html">plugin_review.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_review_dock.html">plugin_dock.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_crop.html">plugin_crop.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_convert.html">plugin_convert.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_metrics.html">plugin_metrics.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/model_framework.html">model_framework.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/workers.html">workers.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/instance_segmentation.html">instance_segmentation.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_model_inference.html">plugin_model_inference.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/plugin_model_training.html">plugin_model_training.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/utils.html">utils.py</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">napari-cellseg3d</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Cropping utility guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/res/guides/cropping_module_guide.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="cropping-utility-guide">
+<span id="cropping-module-guide"></span><h1>Cropping utility guide<a class="headerlink" href="#cropping-utility-guide" title="Permalink to this headline"></a></h1>
+<p>This module allows you to crop your volumes and labels dynamically,
+by selecting a fixed size volume and moving it around the image.</p>
+<p>You can then save the cropped volume and labels directly using napari,
+by using the <strong>Quicksave</strong> button,
+or by selecting the layer and then using <strong>File -&gt; Save selected layer</strong>,
+or simply <strong>CTRL+S</strong> once you have selected the correct layer.</p>
+<section id="launching-the-cropping-process">
+<h2>Launching the cropping process<a class="headerlink" href="#launching-the-cropping-process" title="Permalink to this headline"></a></h2>
+<p>First, simply pick your images using the layer selection dropdown menu.
+If you’d like to crop a second image, e.g. labels, at the same time,
+simply check the <em>“Crop another image simultaneously”</em> checkbox and
+pick the corresponding layer.</p>
+<p>You can then choose the size of the cropped volume, which will be constant throughout the process; make sure it is correct beforehand.</p>
+<p>You can also opt to correct the anisotropy if your image is anisotropic :
+simply set the resolution to the one of your microscope.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>This will simply scale the image in the viewer, but saved images will <strong>still be anisotropic.</strong> To resize your image, see <a class="reference internal" href="utils_module_guide.html"><span class="doc">Label conversion utility guide</span></a></p>
+</div>
+<p>Once you are ready, you can press <strong>Start</strong> to start the review process.
+If you’d like to change the size of the volume, change the parameters as previously to your desired size and hit start again.</p>
+</section>
+<section id="creating-new-layers">
+<h2>Creating new layers<a class="headerlink" href="#creating-new-layers" title="Permalink to this headline"></a></h2>
+<p>To “zoom in” your volume, you can use the “Create new layers” checkbox to make a new cropping layer controlled by the sliders
+next time you hit Start. This way, you can first select your region of interest by using the tool as described above,
+then enable the option, select the cropped region produced before as the input layer, and define a smaller crop size in order to crop within your region of interest.</p>
+</section>
+<section id="interface-functionalities">
+<h2>Interface &amp; functionalities<a class="headerlink" href="#interface-functionalities" title="Permalink to this headline"></a></h2>
+<img alt="../../_images/cropping_process_example.png" src="../../_images/cropping_process_example.png" />
+<p>Once you have launched the review process, you will have access to three sliders that will let
+you <strong>change the position</strong> of the cropped volumes and labels in the x,y and z positions.</p>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>If you <strong>cannot see your cropped volume well</strong>, feel free to change the <strong>colormap</strong> of the image and the cropped
+volume to better see them.
+You may want to change the <strong>opacity</strong> and <strong>contrast thresholds</strong> depending on your image, too.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When you are done you can save the cropped volume and labels directly with the
+<strong>Quicksave</strong> button on the lower left, which will save in the folder you picked the image from, or as
+a separate folder if you loaded a folder as a stack.
+If you want more options (name, format) you can save by selecting the layer and then
+using <strong>File -&gt; Save selected layer</strong>, or simply <strong>CTRL+S</strong> once you have selected the correct layer.</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="utils_module_guide.html" class="btn btn-neutral float-left" title="Label conversion utility guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="training_wnet.html" class="btn btn-neutral float-right" title="WNet model training" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022-2023, Cyril Achard, Maxime Vidal.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

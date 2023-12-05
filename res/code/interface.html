@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>interface.py &mdash; napari-cellseg3d  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="plugin_base.py" href="plugin_base.html" />
+    <link rel="prev" title="Advanced : Declaring a custom model" href="../guides/custom_model_template.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html">
+            
+              <img src="../../_static/logo_alpha.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Main modules guides:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../welcome.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/review_module_guide.html">Review module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/inference_module_guide.html">Inference module guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/training_module_guide.html">Training module guide - Unsupervised models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/training_module_guide.html#training-module-guide-supervised-models">Training module guide - Supervised models</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utilities :</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/metrics_module_guide.html">Metrics utility guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/utils_module_guide.html">Label conversion utility guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/cropping_module_guide.html">Cropping utility guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Advanced guides and walk-through:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/training_wnet.html">WNet model training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/detailed_walkthrough.html">Detailed walkthrough - Supervised learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/custom_model_template.html">Advanced : Declaring a custom model</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Source files:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">interface.py</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#classes">Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#qwidgetsingleton">QWidgetSingleton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#utilsdropdown">UtilsDropdown</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#log">Log</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#containerwidget">ContainerWidget</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#button">Button</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dropdownmenu">DropdownMenu</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#checkbox">CheckBox</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#anisotropywidgets">AnisotropyWidgets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#filepathwidget">FilePathWidget</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scrollarea">ScrollArea</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#doubleincrementcounter">DoubleIncrementCounter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#intincrementcounter">IntIncrementCounter</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#functions">Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#handle-adjust-errors">handle_adjust_errors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#handle-adjust-errors-wrapper">handle_adjust_errors_wrapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#open-url">open_url</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#make-group">make_group</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#combine-blocks">combine_blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#add-blank">add_blank</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#add-label">add_label</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#toggle-visibility">toggle_visibility</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#open-file-dialog">open_file_dialog</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_base.html">plugin_base.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_review.html">plugin_review.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_review_dock.html">plugin_dock.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_crop.html">plugin_crop.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_convert.html">plugin_convert.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_metrics.html">plugin_metrics.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_framework.html">model_framework.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workers.html">workers.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="instance_segmentation.html">instance_segmentation.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_model_inference.html">plugin_model_inference.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin_model_training.html">plugin_model_training.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils.py</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">napari-cellseg3d</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">interface.py</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/res/code/interface.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="interface-py">
+<h1>interface.py<a class="headerlink" href="#interface-py" title="Permalink to this headline"></a></h1>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline"></a></h2>
+<section id="qwidgetsingleton">
+<h3>QWidgetSingleton<a class="headerlink" href="#qwidgetsingleton" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.QWidgetSingleton">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">QWidgetSingleton</span></span><a class="headerlink" href="#napari_cellseg3d.interface.QWidgetSingleton" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>To be used as a metaclass when making a singleton QWidget,</dt><dd><p>meaning only one instance exists at a time.
+Avoids unnecessary memory overhead and keeps user parameters even when a widget is closed</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.QWidgetSingleton.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.QWidgetSingleton.__call__" title="Permalink to this definition"></a></dt>
+<dd><p>Ensure only one instance of a QWidget with QWidgetSingleton as a metaclass exists at a time</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="utilsdropdown">
+<h3>UtilsDropdown<a class="headerlink" href="#utilsdropdown" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.UtilsDropdown">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">UtilsDropdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.UtilsDropdown" title="Permalink to this definition"></a></dt>
+<dd><p>Singleton class for use in instantiating only one Utility dropdown menu that can be accessed from the plugin.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.UtilsDropdown.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.UtilsDropdown.__init__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.UtilsDropdown.dropdown_menu_call">
+<span class="sig-name descname"><span class="pre">dropdown_menu_call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">widget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.UtilsDropdown.dropdown_menu_call" title="Permalink to this definition"></a></dt>
+<dd><p>Calls the utility dropdown menu at the location of a CTRL+right-click</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.UtilsDropdown.show_utils_menu">
+<span class="sig-name descname"><span class="pre">show_utils_menu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">widget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.UtilsDropdown.show_utils_menu" title="Permalink to this definition"></a></dt>
+<dd><p>Shows the context menu for utilities. Use with dropdown_menu_call.
+:param widget: widget to show context menu in
+:param event: mouse press event</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="log">
+<h3>Log<a class="headerlink" href="#log" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.Log">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">Log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.Log" title="Permalink to this definition"></a></dt>
+<dd><p>Class to implement a log for important user info. Should be thread-safe.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.Log.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.Log.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a log with a lock for multithreading</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>parent</strong> (<em>QWidget</em>) – parent widget to add Log instance to.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.Log.print_and_log">
+<span class="sig-name descname"><span class="pre">print_and_log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">printing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.Log.print_and_log" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Utility used to both print to terminal and log text to a QTextEdit</dt><dd><p>item in a thread-safe manner. Use only for important user info.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> (<em>str</em>) – Text to be printed and logged</p></li>
+<li><p><strong>printing</strong> (<em>bool</em>) – Whether to print the message as well or not using logger.info(). Defaults to True.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.Log.replace_last_line">
+<span class="sig-name descname"><span class="pre">replace_last_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.Log.replace_last_line" title="Permalink to this definition"></a></dt>
+<dd><p>Replace last line. For use in progress bar</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.Log.warn">
+<span class="sig-name descname"><span class="pre">warn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">warning</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.Log.warn" title="Permalink to this definition"></a></dt>
+<dd><p>Show logger.warning from another thread</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.Log.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.Log.write" title="Permalink to this definition"></a></dt>
+<dd><p>Write message to log in a thread-safe manner
+:param message: string to be printed</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="containerwidget">
+<h3>ContainerWidget<a class="headerlink" href="#containerwidget" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.ContainerWidget">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">ContainerWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertical</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.ContainerWidget" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.ContainerWidget.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertical</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.ContainerWidget.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a container widget that can contain other widgets
+:param l: left margin in pixels
+:param t: top margin in pixels
+:param r: right margin in pixels
+:param b: bottom margin in pixels
+:param vertical: if True, renders vertically. Horizontal otherwise
+:param parent: parent QWidget
+:param fixed: uses QLayout.SetFixedSize if True</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="button">
+<h3>Button<a class="headerlink" href="#button" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.Button">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">Button</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.Button" title="Permalink to this definition"></a></dt>
+<dd><p>Class for a button with a title and connected to a function when clicked. Inherits from QPushButton.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>title</strong> (<em>str-like</em>) – title of the button. Defaults to None, if None no title is set</p></li>
+<li><p><strong>func</strong> (<em>callable</em>) – function to execute when button is clicked. Defaults to None, no binding is made if None</p></li>
+<li><p><strong>parent</strong> (<em>QWidget</em>) – parent QWidget to add button to. Defaults to None, no parent is set if None</p></li>
+<li><p><strong>fixed</strong> (<em>bool</em>) – if True, will set the size policy of the button to Fixed in h and w. Defaults to True.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.Button.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.Button.__init__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.Button.visibility_condition">
+<span class="sig-name descname"><span class="pre">visibility_condition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkbox</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.Button.visibility_condition" title="Permalink to this definition"></a></dt>
+<dd><p>Provide a QCheckBox to use to determine whether to show the button or not</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="dropdownmenu">
+<h3>DropdownMenu<a class="headerlink" href="#dropdownmenu" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.DropdownMenu">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">DropdownMenu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.DropdownMenu" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a dropdown menu with a title and adds specified entries to it</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.DropdownMenu.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.DropdownMenu.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Args:
+entries (array(str)): Entries to add to the dropdown menu. Defaults to None, no entries if None
+parent (QWidget): parent QWidget to add dropdown menu to. Defaults to None, no parent is set if None
+text_label (str) : if not None, creates a QLabel with the contents of ‘label’, and returns the label as well
+fixed (bool): if True, will set the size policy of the dropdown menu to Fixed in h and w. Defaults to True.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="checkbox">
+<h3>CheckBox<a class="headerlink" href="#checkbox" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.CheckBox">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">CheckBox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.CheckBox" title="Permalink to this definition"></a></dt>
+<dd><p>Shortcut class for creating QCheckBox with a title and a function</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.CheckBox.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.CheckBox.__init__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>title</strong> (<em>str-like</em>) – title of the checkbox. Defaults to None, if None no title is set</p></li>
+<li><p><strong>func</strong> (<em>callable</em>) – function to execute when checkbox is toggled. Defaults to None, no binding is made if None</p></li>
+<li><p><strong>parent</strong> (<em>QWidget</em>) – parent QWidget to add checkbox to. Defaults to None, no parent is set if None</p></li>
+<li><p><strong>fixed</strong> (<em>bool</em>) – if True, will set the size policy of the checkbox to Fixed in h and w. Defaults to True.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="anisotropywidgets">
+<h3>AnisotropyWidgets<a class="headerlink" href="#anisotropywidgets" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.AnisotropyWidgets">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">AnisotropyWidgets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">always_visible</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.AnisotropyWidgets" title="Permalink to this definition"></a></dt>
+<dd><p>Class that creates widgets for anisotropy handling. Includes :
+- A checkbox to hides or shows the controls
+- Three spinboxes to enter resolution for each dimension</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.AnisotropyWidgets.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">always_visible</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.AnisotropyWidgets.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Creates an instance of AnisotropyWidgets
+:param - parent: parent QWidget
+:param - default_x: default resolution to use for x axis in microns
+:param - default_y: default resolution to use for y axis in microns
+:param - default_z: default resolution to use for z axis in microns</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.AnisotropyWidgets.build">
+<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.AnisotropyWidgets.build" title="Permalink to this definition"></a></dt>
+<dd><p>Builds the layout of the widget</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.AnisotropyWidgets.enabled">
+<span class="sig-name descname"><span class="pre">enabled</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.AnisotropyWidgets.enabled" title="Permalink to this definition"></a></dt>
+<dd><p>Returns : whether anisotropy correction has been enabled or not</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.AnisotropyWidgets.resolution_xyz">
+<span class="sig-name descname"><span class="pre">resolution_xyz</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.AnisotropyWidgets.resolution_xyz" title="Permalink to this definition"></a></dt>
+<dd><p>The resolution selected for each of the three dimensions. XYZ order (for MONAI)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.AnisotropyWidgets.resolution_zyx">
+<span class="sig-name descname"><span class="pre">resolution_zyx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.AnisotropyWidgets.resolution_zyx" title="Permalink to this definition"></a></dt>
+<dd><p>The resolution selected for each of the three dimensions. ZYX order (for napari)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.AnisotropyWidgets.scaling_xyz">
+<span class="sig-name descname"><span class="pre">scaling_xyz</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.AnisotropyWidgets.scaling_xyz" title="Permalink to this definition"></a></dt>
+<dd><p>The scaling factors for each of the three dimensions. XYZ order (for MONAI)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.AnisotropyWidgets.scaling_zyx">
+<span class="sig-name descname"><span class="pre">scaling_zyx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.AnisotropyWidgets.scaling_zyx" title="Permalink to this definition"></a></dt>
+<dd><p>The scaling factors for each of the three dimensions. ZYX order (for napari)</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="filepathwidget">
+<h3>FilePathWidget<a class="headerlink" href="#filepathwidget" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.FilePathWidget">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">FilePathWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.FilePathWidget" title="Permalink to this definition"></a></dt>
+<dd><p>Widget to handle the choice of file paths for data throughout the plugin. Provides the following elements :
+- An “Open” button to show a file dialog (defined externally)
+- A QLineEdit in read only to display the chosen path/file</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.FilePathWidget.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.FilePathWidget.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a FilePathWidget.
+:type description: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>
+:param description: Initial text to add to the text box
+:type description: str
+:type file_function: <code class="xref py py-class docutils literal notranslate"><span class="pre">callable</span></code>
+:param file_function: Function to handle the file dialog
+:type file_function: callable
+:type parent: <code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code>]
+:param parent: parent QWidget
+:type parent: Optional[QWidget]
+:type required: <code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>]
+:param required: if True, field will be highlighted in red if empty. Defaults to False.
+:type required: Optional[bool]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.FilePathWidget.build">
+<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.FilePathWidget.build" title="Permalink to this definition"></a></dt>
+<dd><p>Builds the layout of the widget</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.FilePathWidget.button">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">button</span></span><a class="headerlink" href="#napari_cellseg3d.interface.FilePathWidget.button" title="Permalink to this definition"></a></dt>
+<dd><p>Get “Open” button</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.FilePathWidget.check_ready">
+<span class="sig-name descname"><span class="pre">check_ready</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.FilePathWidget.check_ready" title="Permalink to this definition"></a></dt>
+<dd><p>Check if a path is correctly set</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.FilePathWidget.text_field">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">text_field</span></span><a class="headerlink" href="#napari_cellseg3d.interface.FilePathWidget.text_field" title="Permalink to this definition"></a></dt>
+<dd><p>Get text field with file path</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.FilePathWidget.update_field_color">
+<span class="sig-name descname"><span class="pre">update_field_color</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">color</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.FilePathWidget.update_field_color" title="Permalink to this definition"></a></dt>
+<dd><p>Updates the background of the text field</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="scrollarea">
+<h3>ScrollArea<a class="headerlink" href="#scrollarea" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.ScrollArea">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">ScrollArea</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contained_layout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_wh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_wh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_wh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.ScrollArea" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a QScrollArea and sets it up, then adds the contained_layout to it.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.ScrollArea.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contained_layout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_wh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_wh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_wh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.ScrollArea.__init__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>contained_layout</strong> (<em>QLayout</em>) – the layout of widgets to be made scrollable</p></li>
+<li><p><strong>min_wh</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – array of two ints for respectively the minimum width and minimum height of the scrollable area. Defaults to None, lets Qt decide if None</p></li>
+<li><p><strong>max_wh</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – array of two ints for respectively the maximum width and maximum height of the scrollable area. Defaults to None, lets Qt decide if None</p></li>
+<li><p><strong>base_wh</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – array of two ints for respectively the initial width and initial height of the scrollable area. Defaults to None, lets Qt decide if None</p></li>
+<li><p><strong>parent</strong> (<em>Optional</em><em>[</em><em>QWidget</em><em>]</em>) – array of two ints for respectively the initial width and initial height of the scrollable area. Defaults to None, lets Qt decide if None</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.ScrollArea.make_scrollable">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">make_scrollable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contained_layout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_wh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_wh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_wh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.ScrollArea.make_scrollable" title="Permalink to this definition"></a></dt>
+<dd><p>Factory method to create a scroll area in a widget
+:type contained_layout: <code class="xref py py-class docutils literal notranslate"><span class="pre">QLayout</span></code>
+:param contained_layout: the widget to be made scrollable
+:type contained_layout: QLayout
+:type parent: <code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code>
+:param parent: the parent widget to add the resulting scroll area in
+:type parent: QWidget
+:type min_wh: <code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]]
+:param min_wh: array of two ints for respectively the minimum width and minimum height of the scrollable area. Defaults to None, lets Qt decide if None
+:type min_wh: Optional[List[int]]
+:type max_wh: <code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]]
+:param max_wh: array of two ints for respectively the maximum width and maximum height of the scrollable area. Defaults to None, lets Qt decide if None
+:type max_wh: Optional[List[int]]
+:type base_wh: <code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]]
+:param base_wh: array of two ints for respectively the initial width and initial height of the scrollable area. Defaults to None, lets Qt decide if None
+:type base_wh: Optional[List[int]]</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="doubleincrementcounter">
+<h3>DoubleIncrementCounter<a class="headerlink" href="#doubleincrementcounter" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.DoubleIncrementCounter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">DoubleIncrementCounter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lower</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.DoubleIncrementCounter" title="Permalink to this definition"></a></dt>
+<dd><p>Class implementing a number counter with increments (spin box) for floats.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.DoubleIncrementCounter.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lower</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.DoubleIncrementCounter.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Args:
+lower (Optional[float]): minimum value, defaults to 0
+upper (Optional[float]): maximum value, defaults to 10
+default (Optional[float]): default value, defaults to 0
+step (Optional[float]): step value, defaults to 1
+parent: parent widget, defaults to None
+fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed
+text_label (Optional[str]): if provided, creates a label with the chosen title to use with the counter</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="intincrementcounter">
+<h3>IntIncrementCounter<a class="headerlink" href="#intincrementcounter" title="Permalink to this headline"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.IntIncrementCounter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">IntIncrementCounter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lower</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.IntIncrementCounter" title="Permalink to this definition"></a></dt>
+<dd><p>Class implementing a number counter with increments (spin box) for int.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.IntIncrementCounter.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lower</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.IntIncrementCounter.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Args:
+lower (Optional[int]): minimum value, defaults to 0
+upper (Optional[int]): maximum value, defaults to 10
+default (Optional[int]): default value, defaults to 0
+step (Optional[int]): step value, defaults to 1
+parent: parent widget, defaults to None
+fixed (bool): if True, sets the QSizePolicy of the spinbox to Fixed</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline"></a></h2>
+<section id="handle-adjust-errors">
+<h3>handle_adjust_errors<a class="headerlink" href="#handle-adjust-errors" title="Permalink to this headline"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.handle_adjust_errors">
+<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">handle_adjust_errors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">widget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warning_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.handle_adjust_errors" title="Permalink to this definition"></a></dt>
+<dd><p>Qt message handler that attempts to react to errors when setting the window size
+and resizes the main window</p>
+</dd></dl>
+
+</section>
+<section id="handle-adjust-errors-wrapper">
+<h3>handle_adjust_errors_wrapper<a class="headerlink" href="#handle-adjust-errors-wrapper" title="Permalink to this headline"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.handle_adjust_errors_wrapper">
+<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">handle_adjust_errors_wrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">widget</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.handle_adjust_errors_wrapper" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a callable that can be used with qInstallMessageHandler directly</p>
+</dd></dl>
+
+</section>
+<section id="open-url">
+<h3>open_url<a class="headerlink" href="#open-url" title="Permalink to this headline"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.open_url">
+<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">open_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.open_url" title="Permalink to this definition"></a></dt>
+<dd><p>Opens the url given as a string in OS default browser using <code class="xref py py-func docutils literal notranslate"><span class="pre">QDesktopServices.openUrl()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>url</strong> (<em>str</em>) – Url to be opened</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="make-group">
+<h3>make_group<a class="headerlink" href="#make-group" title="Permalink to this headline"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.make_group">
+<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">make_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.make_group" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a group widget and layout, with a header (<cite>title</cite>) and content margins for top/left/right/bottom <cite>L, T, R, B</cite> (in pixels)
+Group widget and layout returned will have a Fixed size policy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>title</strong> (<em>str</em>) – Title of the group</p></li>
+<li><p><strong>l</strong> (<em>int</em>) – left margin</p></li>
+<li><p><strong>t</strong> (<em>int</em>) – top margin</p></li>
+<li><p><strong>r</strong> (<em>int</em>) – right margin</p></li>
+<li><p><strong>b</strong> (<em>int</em>) – bottom margin</p></li>
+<li><p><strong>parent</strong> (<em>QWidget</em>) – parent widget. If None, no parent is set</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="combine-blocks">
+<h3>combine_blocks<a class="headerlink" href="#combine-blocks" title="Permalink to this headline"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.combine_blocks">
+<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">combine_blocks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">right_or_below</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">left_or_above</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizontal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.combine_blocks" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Combines two QWidget objects and puts them side by side (first on the left/top and second on the right/bottom depending on “horizontal”)</dt><dd><p>Weird argument names due the initial implementation of it.  # TODO maybe fix arg names</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>left_or_above</strong> (<em>QWidget</em>) – First widget, to be added on the left/above of “second”</p></li>
+<li><p><strong>right_or_below</strong> (<em>QWidget</em>) – Second widget, to be displayed right/below of “first”</p></li>
+<li><p><strong>min_spacing</strong> (<em>int</em>) – Minimum spacing between the two widgets (from the start of label to the start of button)
+horizontal (bool): whether to stack widgets vertically (False) or horizontally (True)</p></li>
+<li><p><strong>l</strong> (<em>int</em>) – left spacing in pixels</p></li>
+<li><p><strong>t</strong> (<em>int</em>) – top spacing in pixels</p></li>
+<li><p><strong>r</strong> (<em>int</em>) – right spacing in pixels</p></li>
+<li><p><strong>b</strong> (<em>int</em>) – bottom spacing in pixels</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>new QWidget containing the merged widget and label</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>QWidget</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="add-blank">
+<h3>add_blank<a class="headerlink" href="#add-blank" title="Permalink to this headline"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.add_blank">
+<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">add_blank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">widget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.add_blank" title="Permalink to this definition"></a></dt>
+<dd><p>Adds a space between consecutive buttons/labels in a layout when building a widget</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>widget</strong> (<em>QWidget</em>) – widget to add blank in</p></li>
+<li><p><strong>layout</strong> (<em>QLayout</em>) – layout to add blank in</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>blank label</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>QLabel</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="add-label">
+<h3>add_label<a class="headerlink" href="#add-label" title="Permalink to this headline"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.add_label">
+<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">add_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">widget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_before</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizontal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.add_label" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="toggle-visibility">
+<h3>toggle_visibility<a class="headerlink" href="#toggle-visibility" title="Permalink to this headline"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.toggle_visibility">
+<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">toggle_visibility</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkbox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widget</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.toggle_visibility" title="Permalink to this definition"></a></dt>
+<dd><p>Toggles the visibility of a widget based on the status of a checkbox.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>checkbox</strong> – The QCheckbox that determines whether to show or not</p></li>
+<li><p><strong>widget</strong> – The widget to hide or show</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="open-file-dialog">
+<h3>open_file_dialog<a class="headerlink" href="#open-file-dialog" title="Permalink to this headline"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="napari_cellseg3d.interface.open_file_dialog">
+<span class="sig-prename descclassname"><span class="pre">napari_cellseg3d.interface.</span></span><span class="sig-name descname"><span class="pre">open_file_dialog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">widget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">possible_paths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Image</span> <span class="pre">file</span> <span class="pre">(*.tif</span> <span class="pre">*.tiff)'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_cellseg3d.interface.open_file_dialog" title="Permalink to this definition"></a></dt>
+<dd><p>Opens a window to choose a file directory using QFileDialog.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>widget</strong> (<em>QWidget</em>) – Widget to display file dialog in</p></li>
+<li><p><strong>possible_paths</strong> (<em>str</em>) – Paths that may have been chosen before, can be a string</p></li>
+<li><p><strong>paths</strong> (<em>or an array of strings containing the</em>) – </p></li>
+<li><p><strong>load_as_folder</strong> (<em>bool</em>) – Whether to open a folder or a single file. If True, will allow opening folder as a single file (2D stack interpreted as 3D)</p></li>
+<li><p><strong>file_extension</strong> (<em>str</em>) – The description and file extension to load (format : <code class="docutils literal notranslate"><span class="pre">&quot;Description</span> <span class="pre">(*.example1</span> <span class="pre">*.example2)&quot;</span></code>). Default <code class="docutils literal notranslate"><span class="pre">&quot;Image</span> <span class="pre">file</span> <span class="pre">(*.tif</span> <span class="pre">*.tiff)&quot;</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../guides/custom_model_template.html" class="btn btn-neutral float-left" title="Advanced : Declaring a custom model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="plugin_base.html" class="btn btn-neutral float-right" title="plugin_base.py" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022-2023, Cyril Achard, Maxime Vidal.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
