@@ -225,7 +225,7 @@ def test_parse_default_path():
         Path.home()
     )
 
-    long_path = Path("D:/")
+    long_path = Path.home()
     long_path = (
         long_path
         / "very"
