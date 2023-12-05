@@ -216,8 +216,10 @@ class Log(QTextEdit):
 
         self.lock = threading.Lock()
 
-    # def receive_log(self, text):
-    #     self.print_and_log(text)
+    def flush(self):
+        """Flush the log."""
+        pass
+
     def write(self, message):
         """Write message to log in a thread-safe manner.
 

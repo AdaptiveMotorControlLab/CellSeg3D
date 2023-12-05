@@ -1,5 +1,6 @@
 """Contains the :py:class:`~InferenceWorker` class, which is a custom worker to run inference jobs in."""
 import platform
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -39,6 +40,7 @@ from napari_cellseg3d.code_models.workers_utils import (
     QuantileNormalization,
     RemapTensor,
     Threshold,
+    TqdmToLogSignal,
     WeightsDownloader,
 )
 
@@ -99,6 +101,7 @@ class InferenceWorker(GeneratorWorker):
         super().__init__(self.inference)
         self._signals = LogSignal()  # add custom signals
         self.log_signal = self._signals.log_signal
+        self.log_w_replace_signal = self._signals.log_w_replace_signal
         self.warn_signal = self._signals.warn_signal
         self.error_signal = self._signals.error_signal
 
@@ -129,6 +132,14 @@ class InferenceWorker(GeneratorWorker):
             text (str): text to logged
         """
         self.log_signal.emit(text)
+
+    def log_w_replacement(self, text):
+        """Sends a signal that ``text`` should be logged, replacing the last line.
+
+        Args:
+            text (str): text to logged
+        """
+        self.log_w_replace_signal.emit(text)
 
     def warn(self, warning):
         """Sends a warning to main thread."""
@@ -386,11 +397,14 @@ class InferenceWorker(GeneratorWorker):
                                     )
                         return result
                     ##########################################
-
                     return post_process_transforms(result)
 
                 model.eval()
                 with torch.no_grad():
+                    ### Redirect tqdm pbar to logger
+                    old_stdout = sys.stderr
+                    sys.stderr = TqdmToLogSignal(self.log_w_replacement)
+                    ###
                     outputs = sliding_window_inference(
                         inputs,
                         roi_size=window_size,
@@ -403,6 +417,8 @@ class InferenceWorker(GeneratorWorker):
                         sigma_scale=0.01,
                         progress=True,
                     )
+                    ###
+                    sys.stderr = old_stdout
             except Exception as e:
                 logger.exception(e)
                 logger.debug("failed to run sliding window inference")
