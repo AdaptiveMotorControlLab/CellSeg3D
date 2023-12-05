@@ -1,0 +1,825 @@
+
+
+<!DOCTYPE html>
+
+
+<html data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Detailed walkthrough - Supervised learning &#8212; napari-cellseg3d Documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'source/guides/detailed_walkthrough';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Advanced : WNet training" href="training_wnet.html" />
+    <link rel="prev" title="Utilities 🛠" href="utils_module_guide.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="None"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../../welcome.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/logo_alpha.png" class="logo__image only-light" alt="napari-cellseg3d Documentation - Home"/>
+    <script>document.write(`<img src="../../_static/logo_alpha.png" class="logo__image only-dark" alt="napari-cellseg3d Documentation - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../welcome.html">
+                    Welcome to CellSeg3D!
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">User guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation_guide.html">Installation guide ⚙</a></li>
+<li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Review🔍</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training_module_guide.html">Training📉</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference_module_guide.html">Inference📊</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cropping_module_guide.html">Cropping✂️</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils_module_guide.html">Utilities 🛠</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Walkthroughs</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Detailed walkthrough - Supervised learning</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="training_wnet.html">Advanced : WNet training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Custom models</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Code</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../code/api.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.interface.html">napari_cellseg3d.interface</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.html">napari_cellseg3d.code_models</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.crf.html">napari_cellseg3d.code_models.crf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.instance_segmentation.html">napari_cellseg3d.code_models.instance_segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.model_framework.html">napari_cellseg3d.code_models.model_framework</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.models.html">napari_cellseg3d.code_models.models</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.models.TEMPLATE_model.html">napari_cellseg3d.code_models.models.TEMPLATE_model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.models.model_SegResNet.html">napari_cellseg3d.code_models.models.model_SegResNet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.models.model_SwinUNetR.html">napari_cellseg3d.code_models.models.model_SwinUNetR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.models.model_TRAILMAP.html">napari_cellseg3d.code_models.models.model_TRAILMAP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.models.model_TRAILMAP_MS.html">napari_cellseg3d.code_models.models.model_TRAILMAP_MS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.models.model_VNet.html">napari_cellseg3d.code_models.models.model_VNet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.models.model_WNet.html">napari_cellseg3d.code_models.models.model_WNet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.models.model_test.html">napari_cellseg3d.code_models.models.model_test</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.models.pretrained.html">napari_cellseg3d.code_models.models.pretrained</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.models.unet.html">napari_cellseg3d.code_models.models.unet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.models.wnet.html">napari_cellseg3d.code_models.models.wnet</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.worker_inference.html">napari_cellseg3d.code_models.worker_inference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.worker_training.html">napari_cellseg3d.code_models.worker_training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.workers_utils.html">napari_cellseg3d.code_models.workers_utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.html">napari_cellseg3d.code_plugins</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.plugin_base.html">napari_cellseg3d.code_plugins.plugin_base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.plugin_convert.html">napari_cellseg3d.code_plugins.plugin_convert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.plugin_crf.html">napari_cellseg3d.code_plugins.plugin_crf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.plugin_crop.html">napari_cellseg3d.code_plugins.plugin_crop</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.plugin_helper.html">napari_cellseg3d.code_plugins.plugin_helper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.plugin_metrics.html">napari_cellseg3d.code_plugins.plugin_metrics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.plugin_model_inference.html">napari_cellseg3d.code_plugins.plugin_model_inference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.plugin_model_training.html">napari_cellseg3d.code_plugins.plugin_model_training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.plugin_review.html">napari_cellseg3d.code_plugins.plugin_review</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.plugin_review_dock.html">napari_cellseg3d.code_plugins.plugin_review_dock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.plugin_utilities.html">napari_cellseg3d.code_plugins.plugin_utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.utils.html">napari_cellseg3d.utils</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/AdaptiveMotorControlLab/CellSeg3d" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues/new?title=Issue%20on%20page%20%2Fsource/guides/detailed_walkthrough.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/source/guides/detailed_walkthrough.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Detailed walkthrough - Supervised learning</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up-images-and-labels">Setting up images and labels</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cropping">Cropping</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#label-conversion-utility">Label conversion utility</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#models-for-object-detection">Models for object detection</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#training-guide">Training Guide</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inference">Inference</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scoring-review-analysis">Scoring, review, analysis</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#labels-review">Labels review</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#analysis-jupyter-notebooks">Analysis : Jupyter notebooks</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="detailed-walkthrough-supervised-learning">
+<span id="detailed-walkthrough"></span><h1>Detailed walkthrough - Supervised learning<a class="headerlink" href="#detailed-walkthrough-supervised-learning" title="Permalink to this headline">#</a></h1>
+<p>This guide will show you step-by-step how to use the plugin’s workflow, beginning with human annotated datasets, to generating predictions on new volumes.</p>
+<section id="setting-up-images-and-labels">
+<h2>Setting up images and labels<a class="headerlink" href="#setting-up-images-and-labels" title="Permalink to this headline">#</a></h2>
+<p>CellSeg3D is designed for cleared-brain tissue data (collected using mesoSPIM ligthsheet systems).
+Here’s what we offer:</p>
+<ul class="simple">
+<li><p><strong>Ready-to-use deep learning models</strong>: Optimised for whole-neuron imaging in the cortex.</p></li>
+<li><p><strong>MONAI models support</strong></p></li>
+<li><p><strong>Trailmap in Pytorch</strong>: We’ve integrated TRAILMAP into PyTorch, harnessing mesoSPIM data.</p></li>
+</ul>
+<p>Ready to get started? Ensure you have part of a cleared brain from mesoSPIM imaging as a big <strong>.tif</strong> file and its label at hand.</p>
+<p>For quick model checks, check the “Inference” sections in our docs.</p>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="../../_images/init_image_labels.png"><img alt="../../_images/init_image_labels.png" src="../../_images/init_image_labels.png" style="width: 1188.0px; height: 738.0px;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 13 </span><span class="caption-text">Example of an anisotropic volume (i.e., often times the z resolution is not the same as x and y) and its associated labels.</span><a class="headerlink" href="#id1" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This guide emphasizes a human-in-the-loop review of labels.
+If you need to start labeling volumes from scratch or correct initial labels, we recommend consulting the sections on <a class="reference internal" href="#walkthrough-reviewing"><span class="std std-ref">Review</span></a> section right after <a class="reference internal" href="#walkthrough-cropping"><span class="std std-ref">Cropping</span></a>.</p>
+</div>
+<section id="cropping">
+<h3>Cropping<a class="headerlink" href="#cropping" title="Permalink to this headline">#</a></h3>
+<p id="walkthrough-cropping">To reduce memory requirements and build a dataset from a single, large volume,
+you can use the <strong>cropping</strong> tool to extract multiple smaller images from a large volume for training.</p>
+<ol class="arabic simple">
+<li><p>Load your primary image and any corresponding labels. If cropping labels, ensure “Crop labels simultaneously” is selected.</p></li>
+<li><p>Choose your desired volume size for extraction.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For optimal training, opt for cubic images set to powers of two : a default of <span class="math notranslate nohighlight">\(64^3\)</span> should be a good start if you’re unsure.
+Stick to this size across your dataset.
+However, if specific regions need varied sizes, you can compensate for it during training.
+When running inference on multiple images in a folder, try to maintain size uniformity.</p>
+</div>
+<ol class="arabic simple">
+<li><p>Use the slider to choose the exact areas you want to extract.</p></li>
+<li><p>Options for saving:
+- Use the <strong>quicksave</strong> feature
+- Or, select the intended layer and press <strong>`CTRL+S`</strong></p></li>
+</ol>
+<figure class="align-center" id="id2">
+<img alt="../../_images/cropping_process_example.png" src="../../_images/cropping_process_example.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 14 </span><span class="caption-text">Cropping module layout</span><a class="headerlink" href="#id2" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="label-conversion-utility">
+<h3>Label conversion utility<a class="headerlink" href="#label-conversion-utility" title="Permalink to this headline">#</a></h3>
+<p>Assuming you have instance labels, you’ll need to convert them to semantic labels before using them for training.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Instance labels used in training will be converted to semantic labels automatically, but this might not always result in the desired behavior.</p>
+</div>
+<dl class="simple">
+<dt>Step-by-Step Instructions:</dt><dd><ol class="arabic simple">
+<li><p>Launch the <em>Convert</em> tab within Utilities.</p></li>
+<li><p>Specify your preferred output directory.</p></li>
+<li><p>Load the folder with your cropped volumes under <strong>`Convert Folder`</strong>.</p></li>
+<li><p>Click on <strong>`Convert to semantic labels`</strong>.</p></li>
+</ol>
+</dd>
+</dl>
+<figure class="align-center" id="id3">
+<a class="reference internal image-reference" href="../../_images/converted_labels.png"><img alt="../../_images/converted_labels.png" src="../../_images/converted_labels.png" style="width: 680.0px; height: 384.0px;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 15 </span><span class="caption-text">Example of instance labels from above converted to semantic labels</span><a class="headerlink" href="#id3" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<p>To remove small objects, or to convert a single image, use the <strong>`CTRL+O`</strong> shortcut to open the image you wish to manipulate.
+Then, select its corresponding layer, and start the process using layer-specific controls.</p>
+</section>
+</section>
+<section id="models-for-object-detection">
+<h2>Models for object detection<a class="headerlink" href="#models-for-object-detection" title="Permalink to this headline">#</a></h2>
+<section id="training-guide">
+<h3>Training Guide<a class="headerlink" href="#training-guide" title="Permalink to this headline">#</a></h3>
+<ol class="arabic simple">
+<li><p>Preparation:</p>
+<ul class="simple">
+<li><p><strong>Size</strong>: Ensure that your images are appropriately sized. Please see the cropping section for guidelines.</p></li>
+<li><p><strong>Data paths</strong>: Input the paths for your images and labels. Additionally, specify an output location where the results will be saved.</p></li>
+</ul>
+</li>
+<li><p>Training Options and Features:</p>
+<ul class="simple">
+<li><p><strong>Transfer weights</strong>: While we offer pre-trained weights designed specifically for cleared brain tissue imagery, the flexibility to incorporate your own weights exists. If you’re choosing the latter, ensure they are compatible with the model you selected (see : <a class="reference internal" href="custom_model_template.html#custom-model-guide"><span class="std std-ref">Advanced : Custom models</span></a>).</p></li>
+<li><p><strong>Validation proportion</strong>: Decide on a specific percentage to determine the number of images which will be used for training versus validation. While validation can in theory work with even one image, the richness of data in validation will greatly improve model’s performance. Use 90% only if you have a very small dataset (less than 5 images).</p></li>
+<li><p><strong>Save as zip</strong> : Copies the results in a zip archive for easier transfer.</p></li>
+</ul>
+</li>
+<li><p>Data augmentation:</p>
+<ul class="simple">
+<li><p>If you have cropped cubic images with a power of two as the edge length, you do not need to extract patches, your images are usable as is.</p></li>
+<li><p>However, if you are using larger images or with variable sizes, you can use this option to auto-extract smaller patches that will be automatically padded back to a power of two no matter the size you choose. For optimal performance, make sure to use a value close or equal to a power of two still, such as 64 or 120.</p></li>
+</ul>
+</li>
+</ol>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Using a large value for the size will cause memory issues. If this happens, restart the work with smaller volumes.</p>
+</div>
+<p>You also have the option to use data augmentation, which can improve performance and generalization.
+In most cases this should left enabled.</p>
+<ol class="arabic simple">
+<li><p>Model selection: You can choose from a variety of models, based on the needs of your project:</p>
+<ul class="simple">
+<li><p><strong>SegResNet</strong> is a lightweight model (low memory requirements) from MONAI originally designed for 3D fMRI data.</p></li>
+<li><p><strong>VNet</strong> is a larger (than SegResNet) CNN from MONAI designed for medical image segmentation.</p></li>
+<li><p><strong>TRAILMAP</strong> is our implementation in PyTorch additionally trained on mouse cortical neural nuclei from mesoSPIM data.</p></li>
+<li><p><strong>SwinUNetR</strong> is a MONAI implementation of the SwinUNetR model. It is costly in compute and memory, but can achieve high performance.</p></li>
+<li><p><strong>WNet</strong> is our reimplementation of an unsupervised model, which can be used to produce segmentation without labels.</p></li>
+</ul>
+</li>
+</ol>
+<ul class="simple">
+<li><p><strong>The loss</strong> : For 3D volume object detection, the Dice or Dice-focal Loss is the most efficient.</p></li>
+<li><p><strong>Batch size</strong> : Chose a value suited to your memory. To avoid memory issues, leave it to one.</p></li>
+<li><p><strong>Learning rate</strong> : Default to 1e-3 unless using specific weights, then adjust.</p></li>
+<li><p><strong>Number of epochs</strong> : More epochs mean longer training but potentially better results. Begin with 40 epochs.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>During training, you can monitor the process using plots : ideally the validation curve should ascend
+whereas the loss curve should descend. If the validation starts lowering after reaching a maximum, but the loss still decreases,
+it could indicate over-fitting, which will negatively impact generalization for the given weights.
+You might want use weights generated from the epoch with the maximum validation score if that is the case.</p>
+</div>
+<figure class="align-center" id="id4">
+<img alt="../../_images/plots_train.png" src="../../_images/plots_train.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 16 </span><span class="caption-text">Plots displayed by the training module after 40 epochs</span><a class="headerlink" href="#id4" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<ul class="simple">
+<li><p><strong>Validation interval</strong> : Dictates how frequently the model halts training to validate its current performance. If the value is e.g. 2, the training will stop every 2 epochs to perform validation and save the results if the score is better than the previous one.Pausing frequently (smaller value) ensures you capture the best model state more often. Yet, it extends the overall training time.</p></li>
+<li><p><strong>Deterministic training</strong> : To guarantee reproducibility in results across training sessions. When deterministic training is enabled, remember the seed you’ve inputted. Using the same seed with the same model, images, and parameters should consistently yield similar results. See <a class="reference external" href="https://docs.monai.io/en/stable/utils.html#module-monai.utils.misc">MONAI deterministic training</a>.</p></li>
+</ul>
+<p>Once you set all these parameters, you can start the training. You can monitor progress with the plots; should you want to stop
+the training you can do so anytime  by pressing the <strong>Start</strong> button again, whose text should change to <strong>Click to stop</strong>.</p>
+<p>In the results folder, you will have access to the weights from training (<strong>.pth</strong> files),
+which you can then use in inference.</p>
+</section>
+<section id="inference">
+<h3>Inference<a class="headerlink" href="#inference" title="Permalink to this headline">#</a></h3>
+<p>To start, choose the folder with images ready for inference, and the location you want to store your results.</p>
+<p>Then, select the model you trained (see note below for SegResNet), and load your weights from training.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you already trained a SegResNet, set the counter below the model choice to the size of the images you trained the model on.
+(Either use the size of the image itself if you did not extract patches, or the size of the nearest superior power of two of the patches you extracted)</p>
+<p>Example :</p>
+<ul class="simple">
+<li><p>If you used <span class="math notranslate nohighlight">\(64^3\)</span> whole volumes to train the model, enter <span class="math notranslate nohighlight">\(64\)</span> in the counter.</p></li>
+<li><p>If you extracted <span class="math notranslate nohighlight">\(120^3\)</span> patches from larger images, enter <span class="math notranslate nohighlight">\(128\)</span></p></li>
+</ul>
+</div>
+<p>Use <strong>window inference</strong> when the size of your images is substantial. Ensure the size aligns with your images, as under-sizing might impact the quality of your results. You can keep the dataset on the CPU to reduce memory usage, but this might decelerate the process.</p>
+<p>If you have <strong>anisotropic volumes</strong>, you can compensate by entering the resolution of your microscope.</p>
+<p>By default, inference will calculate and display probability maps (values between 0 and 1). For a segmentation output with distinct labels, modify the threshold to the desired probability.</p>
+<p>If instead you’d prefer instance labels, you can enable instance segmentation and select :</p>
+<ul class="simple">
+<li><p>The method:</p>
+<ul>
+<li><p><strong>Voronoi-Otsu</strong> : objects will be assigned an ID by using the Voronoi diagram of the centroids of each object, then using Otsu’s thresholding to separate them. The sigmas should roughly match cell diameter.</p></li>
+<li><p><strong>Connected components</strong> : Every seperated object above the threshold will be labeled as an instance.</p></li>
+<li><p><strong>Watershed</strong> : Assigns identifiers to objects based on the gradient probability at the their center (set the threshold to a decently high value).</p></li>
+</ul>
+</li>
+<li><p><strong>The threshold</strong> : Objects above this threshold will be retained as single instances.</p></li>
+<li><p><strong>Small object removal</strong> : To filter small artifacts; all objects below this volume in pixels will be removed.</p></li>
+</ul>
+<p>Using instance segmentation, you can also analyze the results by checking the <em>Save stats to CSV</em> option.</p>
+<p>This will compute :</p>
+<ul class="simple">
+<li><p>The volume of each cell in pixels.</p></li>
+<li><p>The centroid coordinates in <span class="math notranslate nohighlight">\(X,Y,Z\)</span>.</p></li>
+<li><p>The sphericity of each cell.</p></li>
+<li><p>The original size of the image.</p></li>
+<li><p>The total volume in pixels.</p></li>
+<li><p>The total volume occupied by objects.</p></li>
+<li><p>The ratio of <span class="math notranslate nohighlight">\(\frac {Volume_{label}} {Volume_{total}}\)</span>.</p></li>
+<li><p>The total number of unique object instance.</p></li>
+</ul>
+<p>To visualise some of the results when running on a folder, you can leave the <strong>View results in napari</strong> option checked.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Too plot your results, check out the <a class="reference external" href="https://github.com/AdaptiveMotorControlLab/CellSeg3d/tree/main/notebooks">provided notebooks</a></p>
+</div>
+<p>You can then launch inference and the results will be saved in your specified folder.</p>
+</section>
+</section>
+<section id="scoring-review-analysis">
+<h2>Scoring, review, analysis<a class="headerlink" href="#scoring-review-analysis" title="Permalink to this headline">#</a></h2>
+<section id="labels-review">
+<h3>Labels review<a class="headerlink" href="#labels-review" title="Permalink to this headline">#</a></h3>
+<p id="walkthrough-reviewing">Using the review module, you can correct the model’s predictions.
+Load your images and labels, and enter the name of the csv file, keeps tracking of the review process( it
+records which slices have been checked or not and the time taken).</p>
+<p>See the <a class="reference external" href="https://napari.org/howtos/layers/labels.html#selecting-a-label">napari tutorial on annotation</a> for instruction on correcting and adding labels.</p>
+<p>If you wish to see the surroundings of an object to ensure it should be labeled,
+you can use <strong>`Shift+Click`</strong> on the location you wish to see; this will plot
+the  surroundings of this location for easy viewing.</p>
+<figure class="align-center" id="id5">
+<img alt="../../_images/review_process_example.png" src="../../_images/review_process_example.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 17 </span><span class="caption-text">Layout of the review module</span><a class="headerlink" href="#id5" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<p>Once you finish reviewing, press the <strong>Not checked</strong> button to switch the status to
+<strong>checked</strong> and save the time spent in the csv file.</p>
+<p>once satisfied with your review, press the <strong>Save</strong> button to record your work.</p>
+</section>
+<section id="analysis-jupyter-notebooks">
+<h3>Analysis : Jupyter notebooks<a class="headerlink" href="#analysis-jupyter-notebooks" title="Permalink to this headline">#</a></h3>
+<p>In the <a class="reference external" href="https://github.com/AdaptiveMotorControlLab/CellSeg3d/tree/main/notebooks">notebooks folder of the repository</a>, you can find notebooks for plotting
+labels (full_plot.ipynb), and notebooks for plotting the inference results (csv_cell_plot.ipynb).</p>
+<p>Simply enter your folder or csv file path and the notebooks will plot your results.
+Make sure you have all required libraries installed and jupyter extensions set up as explained
+for the plots to work.</p>
+<figure class="align-center" id="id6">
+<img alt="../../_images/stat_plots.png" src="../../_images/stat_plots.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 18 </span><span class="caption-text">Example of the plot present in the notebooks.
+Coordinates are based on centroids, the size represents the volume, the color, and the sphericity.</span><a class="headerlink" href="#id6" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<p>With this complete, you can repeat the workflow as needed.</p>
+</section>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./source/guides"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="utils_module_guide.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Utilities 🛠</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="training_wnet.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Advanced : WNet training</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up-images-and-labels">Setting up images and labels</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cropping">Cropping</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#label-conversion-utility">Label conversion utility</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#models-for-object-detection">Models for object detection</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#training-guide">Training Guide</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inference">Inference</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scoring-review-analysis">Scoring, review, analysis</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#labels-review">Labels review</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#analysis-jupyter-notebooks">Analysis : Jupyter notebooks</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Cyril Achard, Maxime Vidal, Timokleia Kousi, Mackenzie Mathis | Mathis Laboratory
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

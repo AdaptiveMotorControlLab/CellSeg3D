@@ -1,0 +1,633 @@
+
+
+<!DOCTYPE html>
+
+
+<html data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>napari_cellseg3d.utils &#8212; napari-cellseg3d Documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../../../_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'source/code/_autosummary/napari_cellseg3d.utils';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="prev" title="napari_cellseg3d.code_plugins.plugin_utilities" href="napari_cellseg3d.code_plugins.plugin_utilities.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="None"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../../../welcome.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo_alpha.png" class="logo__image only-light" alt="napari-cellseg3d Documentation - Home"/>
+    <script>document.write(`<img src="../../../_static/logo_alpha.png" class="logo__image only-dark" alt="napari-cellseg3d Documentation - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../../welcome.html">
+                    Welcome to CellSeg3D!
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">User guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../guides/installation_guide.html">Installation guide ⚙</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/review_module_guide.html">Review🔍</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/training_module_guide.html">Training📉</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/inference_module_guide.html">Inference📊</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/cropping_module_guide.html">Cropping✂️</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/utils_module_guide.html">Utilities 🛠</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Walkthroughs</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../guides/detailed_walkthrough.html">Detailed walkthrough - Supervised learning</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../guides/training_wnet.html">Advanced : WNet training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/custom_model_template.html">Advanced : Custom models</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Code</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../api.html">API reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="napari_cellseg3d.interface.html">napari_cellseg3d.interface</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="napari_cellseg3d.code_models.html">napari_cellseg3d.code_models</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="napari_cellseg3d.code_models.crf.html">napari_cellseg3d.code_models.crf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="napari_cellseg3d.code_models.instance_segmentation.html">napari_cellseg3d.code_models.instance_segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="napari_cellseg3d.code_models.model_framework.html">napari_cellseg3d.code_models.model_framework</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="napari_cellseg3d.code_models.models.html">napari_cellseg3d.code_models.models</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="napari_cellseg3d.code_models.models.TEMPLATE_model.html">napari_cellseg3d.code_models.models.TEMPLATE_model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="napari_cellseg3d.code_models.models.model_SegResNet.html">napari_cellseg3d.code_models.models.model_SegResNet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="napari_cellseg3d.code_models.models.model_SwinUNetR.html">napari_cellseg3d.code_models.models.model_SwinUNetR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="napari_cellseg3d.code_models.models.model_TRAILMAP.html">napari_cellseg3d.code_models.models.model_TRAILMAP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="napari_cellseg3d.code_models.models.model_TRAILMAP_MS.html">napari_cellseg3d.code_models.models.model_TRAILMAP_MS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="napari_cellseg3d.code_models.models.model_VNet.html">napari_cellseg3d.code_models.models.model_VNet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="napari_cellseg3d.code_models.models.model_WNet.html">napari_cellseg3d.code_models.models.model_WNet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="napari_cellseg3d.code_models.models.model_test.html">napari_cellseg3d.code_models.models.model_test</a></li>
+<li class="toctree-l4"><a class="reference internal" href="napari_cellseg3d.code_models.models.pretrained.html">napari_cellseg3d.code_models.models.pretrained</a></li>
+<li class="toctree-l4"><a class="reference internal" href="napari_cellseg3d.code_models.models.unet.html">napari_cellseg3d.code_models.models.unet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="napari_cellseg3d.code_models.models.wnet.html">napari_cellseg3d.code_models.models.wnet</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="napari_cellseg3d.code_models.worker_inference.html">napari_cellseg3d.code_models.worker_inference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="napari_cellseg3d.code_models.worker_training.html">napari_cellseg3d.code_models.worker_training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="napari_cellseg3d.code_models.workers_utils.html">napari_cellseg3d.code_models.workers_utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="napari_cellseg3d.code_plugins.html">napari_cellseg3d.code_plugins</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="napari_cellseg3d.code_plugins.plugin_base.html">napari_cellseg3d.code_plugins.plugin_base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="napari_cellseg3d.code_plugins.plugin_convert.html">napari_cellseg3d.code_plugins.plugin_convert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="napari_cellseg3d.code_plugins.plugin_crf.html">napari_cellseg3d.code_plugins.plugin_crf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="napari_cellseg3d.code_plugins.plugin_crop.html">napari_cellseg3d.code_plugins.plugin_crop</a></li>
+<li class="toctree-l3"><a class="reference internal" href="napari_cellseg3d.code_plugins.plugin_helper.html">napari_cellseg3d.code_plugins.plugin_helper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="napari_cellseg3d.code_plugins.plugin_metrics.html">napari_cellseg3d.code_plugins.plugin_metrics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="napari_cellseg3d.code_plugins.plugin_model_inference.html">napari_cellseg3d.code_plugins.plugin_model_inference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="napari_cellseg3d.code_plugins.plugin_model_training.html">napari_cellseg3d.code_plugins.plugin_model_training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="napari_cellseg3d.code_plugins.plugin_review.html">napari_cellseg3d.code_plugins.plugin_review</a></li>
+<li class="toctree-l3"><a class="reference internal" href="napari_cellseg3d.code_plugins.plugin_review_dock.html">napari_cellseg3d.code_plugins.plugin_review_dock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="napari_cellseg3d.code_plugins.plugin_utilities.html">napari_cellseg3d.code_plugins.plugin_utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">napari_cellseg3d.utils</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/AdaptiveMotorControlLab/CellSeg3d" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues/new?title=Issue%20on%20page%20%2Fsource/code/_autosummary/napari_cellseg3d.utils.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../../_sources/source/code/_autosummary/napari_cellseg3d.utils.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>napari_cellseg3d.utils</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="module-napari_cellseg3d.utils">
+<span id="napari-cellseg3d-utils"></span><h1>napari_cellseg3d.utils<a class="headerlink" href="#module-napari_cellseg3d.utils" title="Permalink to this headline">#</a></h1>
+<p>Utilities functions, classes, and variables.</p>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">align_array_sizes</span></code>(array_shape, target_shape)</p></td>
+<td><p>Aligns the sizes of two arrays by adding zeros to the smaller one.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">channels_fraction_above_threshold</span></code>(volume[, ...])</p></td>
+<td><p>Computes the fraction of pixels above a certain value in a 4D volume for each channel.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">correct_rotation</span></code>(image)</p></td>
+<td><p>Rotates the axes 0 and 2 in [DHW] section of image array.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">denormalize_y</span></code>(image)</p></td>
+<td><p>De-normalizes the values of an image array to be between [0;255] rather than [0;1].</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dice_coeff</span></code>(y_true, y_pred[, smooth])</p></td>
+<td><p>Compute Dice-Sorensen coefficient between two numpy arrays.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fill_list_in_between</span></code>(lst, n, fill_value)</p></td>
+<td><p>Fills a list with n * elem between each member of list.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fraction_above_threshold</span></code>(volume[, threshold])</p></td>
+<td><p>Computes the fraction of pixels above a certain value in a volume.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_all_matching_files</span></code>(path[, pattern])</p></td>
+<td><p>Returns a list of all files in a directory matching the pattern.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_date_time</span></code>()</p></td>
+<td><p>Get date and time in the following format : year_month_day_hour_minute_second.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_padding_dim</span></code>(image_shape[, anisotropy_factor])</p></td>
+<td><p>Finds the nearest and superior power of two for each image dimension to zero-pad it for CNN processing.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_time</span></code>()</p></td>
+<td><p>Get time in the following format : hour:minute:second.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_time_filepath</span></code>()</p></td>
+<td><p>Get time in the following format : hour_minute_second.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_images</span></code>(dir_or_path[, filetype, as_folder])</p></td>
+<td><p>Loads the images in <code class="docutils literal notranslate"><span class="pre">directory</span></code>, with different behaviour depending on <code class="docutils literal notranslate"><span class="pre">filetype</span></code> and <code class="docutils literal notranslate"><span class="pre">as_folder</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mkdir_from_str</span></code>(path[, exist_ok, parents])</p></td>
+<td><p>Creates a directory from a string path.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_max</span></code>(image)</p></td>
+<td><p>Normalizes an image using the max and min value.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_x</span></code>(image)</p></td>
+<td><p>Normalizes the values of an image array to be between [-1;1] rather than [0;255].</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_y</span></code>(image)</p></td>
+<td><p>Normalizes the values of an image array to be between [0;1] rather than [0;255].</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_default_path</span></code>(possible_paths[, ...])</p></td>
+<td><p>Returns a default path based on a vector of paths, some of which might be empty.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">quantile_normalization</span></code>(image[, ...])</p></td>
+<td><p>Normalizes an image using the quantiles.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">remap_image</span></code>(image[, new_max, new_min, ...])</p></td>
+<td><p>Normalizes a numpy array or Tensor using the max and min value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">resize</span></code>(image, zoom_factors)</p></td>
+<td><p>Resizes an image using the zoom_factors.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_folder</span></code>(results_path, folder_name, ...)</p></td>
+<td><p>Saves a list of images in a folder.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_layer</span></code>(results_path, image_name, image)</p></td>
+<td><p>Saves an image layer at the specified path.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">seek_best_dice_coeff_channel</span></code>(y_pred, y_true)</p></td>
+<td><p>Compute Dice-Sorensen coefficient between unsupervised model output and ground truth labels; returns the channel with the highest dice coefficient.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">show_result</span></code>(viewer, layer, image, name[, ...])</p></td>
+<td><p>Adds layers to a viewer to show result to user.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sphericity_axis</span></code>(semi_major, semi_minor)</p></td>
+<td><p>Computes the sphericity from volume semi major (a) and semi minor (b) axes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sphericity_volume_area</span></code>(volume, surface_area)</p></td>
+<td><p>Computes the sphericity from volume and area.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_difference</span></code>(time_start, time_finish[, ...])</p></td>
+<td><p>Computes the time difference between two datetime objects.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Singleton</span></code></p></td>
+<td><p>Singleton class that can only be instantiated once at a time, with said unique instance always being accessed on call.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./source/code/_autosummary"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="napari_cellseg3d.code_plugins.plugin_utilities.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">napari_cellseg3d.code_plugins.plugin_utilities</p>
+      </div>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Cyril Achard, Maxime Vidal, Timokleia Kousi, Mackenzie Mathis | Mathis Laboratory
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
