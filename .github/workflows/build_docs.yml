@@ -4,7 +4,6 @@ on:
   push:
     branches: # branch to trigger deployment
       - main
-      - cy/training
 
 # This job installs dependencies, build the book, and pushes it to `gh-pages`
 jobs:
