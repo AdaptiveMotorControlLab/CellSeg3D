@@ -1,5 +1,6 @@
 """Contains the :py:class:`~InferenceWorker` class, which is a custom worker to run inference jobs in."""
 import platform
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -27,7 +28,10 @@ from tifffile import imwrite
 # local
 from napari_cellseg3d import config, utils
 from napari_cellseg3d.code_models.crf import crf_with_config
-from napari_cellseg3d.code_models.instance_segmentation import volume_stats
+from napari_cellseg3d.code_models.instance_segmentation import (
+    clear_large_objects,
+    volume_stats,
+)
 from napari_cellseg3d.code_models.workers_utils import (
     PRETRAINED_WEIGHTS_DIR,
     InferenceResult,
@@ -36,6 +40,7 @@ from napari_cellseg3d.code_models.workers_utils import (
     QuantileNormalization,
     RemapTensor,
     Threshold,
+    TqdmToLogSignal,
     WeightsDownloader,
 )
 
@@ -96,6 +101,7 @@ class InferenceWorker(GeneratorWorker):
         super().__init__(self.inference)
         self._signals = LogSignal()  # add custom signals
         self.log_signal = self._signals.log_signal
+        self.log_w_replace_signal = self._signals.log_w_replace_signal
         self.warn_signal = self._signals.warn_signal
         self.error_signal = self._signals.error_signal
 
@@ -126,6 +132,14 @@ class InferenceWorker(GeneratorWorker):
             text (str): text to logged
         """
         self.log_signal.emit(text)
+
+    def log_w_replacement(self, text):
+        """Sends a signal that ``text`` should be logged, replacing the last line.
+
+        Args:
+            text (str): text to logged
+        """
+        self.log_w_replace_signal.emit(text)
 
     def warn(self, warning):
         """Sends a warning to main thread."""
@@ -383,11 +397,14 @@ class InferenceWorker(GeneratorWorker):
                                     )
                         return result
                     ##########################################
-
                     return post_process_transforms(result)
 
                 model.eval()
                 with torch.no_grad():
+                    ### Redirect tqdm pbar to logger
+                    old_stdout = sys.stderr
+                    sys.stderr = TqdmToLogSignal(self.log_w_replacement)
+                    ###
                     outputs = sliding_window_inference(
                         inputs,
                         roi_size=window_size,
@@ -400,6 +417,8 @@ class InferenceWorker(GeneratorWorker):
                         sigma_scale=0.01,
                         progress=True,
                     )
+                    ###
+                    sys.stderr = old_stdout
             except Exception as e:
                 logger.exception(e)
                 logger.debug("failed to run sliding window inference")
@@ -483,7 +502,7 @@ class InferenceWorker(GeneratorWorker):
             instance_labels=instance_labels,
             crf_results=crf_results,
             stats=stats,
-            result=semantic_labels,
+            semantic_segmentation=semantic_labels,
             model_name=self.config.model_info.name,
         )
 
@@ -511,8 +530,16 @@ class InferenceWorker(GeneratorWorker):
             raise ValueError(
                 "An ID should be provided when running from a file"
             )
-
+        # old_stderr = sys.stderr
+        # sys.stderr = TqdmToLogSignal(self.log_w_replacement)
         if self.config.post_process_config.instance.enabled:
+            if self.config.post_process_config.artifact_removal:
+                self.log("Removing artifacts...")
+                semantic_labels = clear_large_objects(
+                    semantic_labels,
+                    self.config.post_process_config.artifact_removal_size,
+                )
+
             instance_labels = self.instance_seg(
                 semantic_labels,
                 i + 1,
@@ -521,6 +548,7 @@ class InferenceWorker(GeneratorWorker):
         else:
             instance_labels = None
             stats = None
+        # sys.stderr = old_stderr
         return instance_labels, stats
 
     def save_image(

@@ -14,6 +14,7 @@ from napari_cellseg3d import utils
 from napari_cellseg3d.code_plugins.plugin_base import BasePluginUtils
 from napari_cellseg3d.code_plugins.plugin_convert import (
     AnisoUtils,
+    ArtifactRemovalUtils,
     FragmentUtils,
     RemoveSmallUtils,
     StatsUtils,
@@ -25,6 +26,8 @@ from napari_cellseg3d.code_plugins.plugin_crf import CRFWidget
 from napari_cellseg3d.code_plugins.plugin_crop import Cropping
 from napari_cellseg3d.utils import LOGGER as logger
 
+# NOTE : to add a new utility: add it to the dictionary below, in attr_names in the Utilities class, and import it above
+
 UTILITIES_WIDGETS = {
     "Crop": Cropping,
     "Fragment 3D volume": FragmentUtils,
@@ -35,6 +38,7 @@ UTILITIES_WIDGETS = {
     "Threshold": ThresholdUtils,
     "CRF": CRFWidget,
     "Label statistics": StatsUtils,
+    "Clear large labels": ArtifactRemovalUtils,
 }
 
 
@@ -57,6 +61,7 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
             "thresh",
             "crf",
             "stats",
+            "artifacts",
         ]
         self._create_utils_widgets(attr_names)
         self.utils_choice = ui.DropdownMenu(

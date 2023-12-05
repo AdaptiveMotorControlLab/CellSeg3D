@@ -185,6 +185,8 @@ class PostProcessConfig:
     zoom: Zoom = Zoom()
     thresholding: Thresholding = Thresholding()
     instance: InstanceSegConfig = InstanceSegConfig()
+    artifact_removal: bool = False
+    artifact_removal_size: int = 500
 
 
 @dataclass

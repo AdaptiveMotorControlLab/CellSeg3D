@@ -64,6 +64,10 @@ def test_sphericities():
             sphericity_axes = 0
         except ValueError:
             sphericity_axes = 0
+        if sphericity_axes is None:
+            sphericity_axes = (
+                0  # errors already handled in function, returns None
+            )
         assert 0 <= sphericity_axes <= 1
 
 

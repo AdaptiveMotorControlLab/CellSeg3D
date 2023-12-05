@@ -192,7 +192,7 @@ class InstanceMethod:
         return result.squeeze()
 
     @staticmethod
-    def sliding_window(volume, func, patch_size=512):
+    def sliding_window(volume, func, patch_size=512, increment_labels=True):
         """Given a volume of dimensions HxWxD, runs the provided function segmentation on the volume using a sliding window of size patch_size.
 
         If the edge has been reached, the patch size is reduced to fit the remaining space.
@@ -202,6 +202,7 @@ class InstanceMethod:
             volume (np.array): The volume to segment
             func (callable): Function to use for instance segmentation. Should be a partial function with the parameters already set.
             patch_size (int): The size of the sliding window.
+            increment_labels (bool): If True, increments the labels of each patch by the maximum label of the previous patch.
 
         Returns:
             np.array: Instance segmentation labels from
@@ -209,7 +210,9 @@ class InstanceMethod:
         result = np.zeros(volume.shape, dtype=np.uint32)
         max_label_id = 0
         x, y, z = volume.shape
-        for i in tqdm(range(0, x, patch_size)):
+        pbar_total = (x // patch_size) * (y // patch_size) * (z // patch_size)
+        pbar = tqdm(total=pbar_total)
+        for i in range(0, x, patch_size):
             for j in range(0, y, patch_size):
                 for k in range(0, z, patch_size):
                     patch = volume[
@@ -220,13 +223,16 @@ class InstanceMethod:
                     patch_result = func(patch)
                     patch_result = np.array(patch_result)
                     # make sure labels are unique, only where result is not 0
-                    patch_result[patch_result > 0] += max_label_id
+                    if increment_labels:
+                        patch_result[patch_result > 0] += max_label_id
+                        max_label_id = np.max(patch_result)
                     result[
                         i : min(i + patch_size, x),
                         j : min(j + patch_size, y),
                         k : min(k + patch_size, z),
                     ] = patch_result
-                    max_label_id = np.max(patch_result)
+                    pbar.update(1)
+        pbar.close()
         return result
 
 
@@ -361,6 +367,42 @@ def binary_watershed(
     segm = remove_small_objects(segm, thres_small)
 
     return np.array(segm)
+
+
+def clear_large_objects(image, large_label_size=200, use_window=True):
+    """Uses watershed to label all obejcts, and removes the ones with a volume larger than the specified threshold.
+
+    This is intended for artifact removal, and should not be used for instance segmentation.
+
+    Args:
+        image: array containing the image
+        large_label_size:  size threshold for removal of objects in pixels. E.g. if 10, all objects larger than 10 pixels as a whole will be removed.
+        use_window: if True, will use a sliding window to perform instance segmentation to avoid memory issues. Default : True
+
+    Returns:
+        array: The image with large objects removed
+    """
+    if use_window:
+        func = partial(
+            binary_watershed,
+            thres_objects=0,
+            thres_seeding=0,
+            thres_small=large_label_size,
+            rem_seed_thres=0,
+        )
+        res = InstanceMethod.sliding_window(
+            image, func, increment_labels=False
+        )
+        return np.where(res > 0, 0, image)
+
+    labeled = binary_watershed(
+        image,
+        thres_objects=0,
+        thres_seeding=0,
+        thres_small=large_label_size,
+        rem_seed_thres=0,
+    )
+    return np.where(labeled > 0, 0, image)
 
 
 def clear_small_objects(image, threshold, is_file_path=False):

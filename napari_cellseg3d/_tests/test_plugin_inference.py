@@ -25,7 +25,7 @@ def test_inference(make_napari_viewer_proxy, qtbot):
 
     assert len(viewer.layers) == 1
 
-    widget.window_infer_box.setChecked(True)
+    widget.use_window_choice.setChecked(True)
     widget.window_overlap_slider.setValue(0)
     widget.keep_data_on_cpu_box.setChecked(True)
 
@@ -33,7 +33,7 @@ def test_inference(make_napari_viewer_proxy, qtbot):
 
     widget.model_choice.setCurrentText("WNet")
     widget._restrict_window_size_for_model()
-    assert widget.window_infer_box.isChecked()
+    assert widget.use_window_choice.isChecked()
     assert widget.window_size_choice.currentText() == "64"
 
     test_model_name = "test"
@@ -41,7 +41,7 @@ def test_inference(make_napari_viewer_proxy, qtbot):
     widget.model_choice.addItem(test_model_name)
     widget.model_choice.setCurrentText(test_model_name)
 
-    widget.window_infer_box.setChecked(False)
+    widget.use_window_choice.setChecked(False)
     widget.worker_config = widget._set_worker_config()
     assert widget.worker_config is not None
     assert widget.model_info is not None
@@ -61,7 +61,7 @@ def test_inference(make_napari_viewer_proxy, qtbot):
 
     res = next(worker.inference())
     assert isinstance(res, InferenceResult)
-    assert res.result.shape == (8, 8, 8)
+    assert res.semantic_segmentation.shape == (8, 8, 8)
     assert res.instance_labels.shape == (8, 8, 8)
     widget.on_yield(res)
 
@@ -73,7 +73,7 @@ def test_inference(make_napari_viewer_proxy, qtbot):
         instance_labels=mock_labels,
         crf_results=mock_image,
         stats=[volume_stats(mock_labels)],
-        result=mock_image,
+        semantic_segmentation=mock_image,
         model_name="test",
     )
     num_layers = len(viewer.layers)
