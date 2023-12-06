@@ -129,3 +129,5 @@ napari_cellseg3d/dev_scripts/wandb
 #include docs images
 !docs/source/logo/*
 !docs/source/images/*
+lcov.info
+coverage.lcov
