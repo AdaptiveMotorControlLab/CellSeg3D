@@ -11,18 +11,18 @@ dependencies:
     - pip:
         - numpy
         - napari>=0.4.14
-        - opencv-python>=4.5.5
+        # - opencv-python>=4.5.5
         - scikit-image>=0.19.2
         - matplotlib>=3.4.1
         - tifffile>=2022.2.9
-        - imageio-ffmpeg>=0.4.5
+        # - imageio-ffmpeg>=0.4.5
         - torch>=1.11
         - monai[nibabel, einops]>=0.9.0
         - tqdm
-        - nibabel
+        # - nibabel
         - scikit-image
-        - pillow
+        # - pillow
         - pyclesperanto-prototype
         - tqdm
         - matplotlib
-        - vispy>=0.9.6
+        # - vispy>=0.9.6
