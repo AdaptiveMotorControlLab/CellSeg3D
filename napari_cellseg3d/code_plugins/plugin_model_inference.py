@@ -1,3 +1,4 @@
+"""Inference plugin for napari_cellseg3d."""
 from functools import partial
 from typing import TYPE_CHECKING
 
@@ -15,22 +16,18 @@ from napari_cellseg3d.code_models.instance_segmentation import (
     InstanceWidgets,
 )
 from napari_cellseg3d.code_models.model_framework import ModelFramework
-from napari_cellseg3d.code_models.workers import (
-    InferenceResult,
-    InferenceWorker,
-)
+from napari_cellseg3d.code_models.worker_inference import InferenceWorker
+from napari_cellseg3d.code_models.workers_utils import InferenceResult
 from napari_cellseg3d.code_plugins.plugin_crf import CRFParamsWidget
 
 logger = utils.LOGGER
 
 
 class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
-    """A plugin to run already trained models in evaluation mode to preform inference and output a label on all
-    given volumes."""
+    """A plugin to run already trained models in evaluation mode to preform inference and output a label on all given volumes."""
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
-        """
-        Creates an Inference loader plugin with the following widgets :
+        """Creates an Inference loader plugin with the following widgets.
 
         * Data :
             * A file extension choice for the images to load from selected folders
@@ -63,6 +60,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         Args:
             viewer (napari.viewer.Viewer): napari viewer to display the widget in
+            parent (QWidget, optional): Defaults to None.
         """
         super().__init__(
             viewer,
@@ -114,7 +112,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ######################
         # TODO : better way to handle SegResNet size reqs ?
         self.model_input_size = ui.IntIncrementCounter(
-            lower=1, upper=1024, default=128, text_label="\nModel input size"
+            lower=1, upper=1024, default=64, text_label="\nModel input size"
         )
         self.model_choice.currentIndexChanged.connect(
             self._toggle_display_model_input_size
@@ -126,9 +124,9 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         self.anisotropy_wdgt = ui.AnisotropyWidgets(
             self,
-            default_x=1.5,
-            default_y=1.5,
-            default_z=5,  # TODO change default
+            default_x=1,
+            default_y=1,
+            default_z=1,
         )
 
         # self.worker_config.post_process_config.zoom.zoom_values = [
@@ -152,21 +150,14 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             parent=self,
         )
 
-        self.window_infer_box = ui.CheckBox("Use window inference")
-        self.window_infer_box.toggled.connect(self._toggle_display_window_size)
+        self.use_window_choice = ui.CheckBox("Use window inference")
+        self.use_window_choice.toggled.connect(
+            self._toggle_display_window_size
+        )
 
         sizes_window = ["8", "16", "32", "64", "128", "256", "512"]
         self._default_window_size = sizes_window.index("64")
-        # (
-        #     self.window_size_choice,
-        #     self.window_size_choice.label,
-        # ) = ui.make_combobox(sizes_window, label="Window size and overlap")
-        # self.window_overlap = ui.make_n_spinboxes(
-        #     max=1,
-        #     default=0.7,
-        #     step=0.05,
-        #     double=True,
-        # )
+        self.wnet_enabled = False
 
         self.window_size_choice = ui.DropdownMenu(
             sizes_window, text_label="Window size"
@@ -198,7 +189,28 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.window_overlap_slider.container,
             ],
         )
-
+        ##################
+        ##################
+        # auto-artifact removal widgets
+        self.attempt_artifact_removal_box = ui.CheckBox(
+            "Attempt artifact removal",
+            func=self._toggle_display_artifact_size_thresh,
+            parent=self,
+        )
+        self.remove_artifacts_label = ui.make_label(
+            "Remove labels larger than :"
+        )
+        self.artifact_removal_size = ui.IntIncrementCounter(
+            lower=1,
+            upper=10000,
+            default=500,
+            text_label="Remove larger than :",
+            step=100,
+        )
+        self.artifact_container = ui.ContainerWidget(parent=self)
+        self.attempt_artifact_removal_box.toggled.connect(
+            self._toggle_display_artifact_size_thresh
+        )
         ##################
         ##################
         # instance segmentation widgets
@@ -209,6 +221,9 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             "Run instance segmentation",
             func=self._toggle_display_instance,
             parent=self,
+        )
+        self.use_instance_choice.toggled.connect(
+            self._toggle_artifact_removal_widgets
         )
         self.use_crf = ui.CheckBox(
             "Use CRF post-processing",
@@ -242,6 +257,12 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         self._remove_unused()
 
+    def _toggle_crf_choice(self):
+        if self.model_choice.currentText() == "WNet":
+            self.use_crf.setVisible(True)
+        else:
+            self.use_crf.setVisible(False)
+
     def _set_tooltips(self):
         ##################
         ##################
@@ -266,7 +287,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         self.thresholding_checkbox.setToolTip(thresh_desc)
         self.thresholding_slider.tooltips = thresh_desc
-        self.window_infer_box.setToolTip(
+        self.use_window_choice.setToolTip(
             "Sliding window inference runs the model on parts of the image"
             "\nrather than the whole image, to reduce memory requirements."
             "\nUse this if you have large images."
@@ -288,12 +309,17 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             "Will save several statistics for each object to a csv in the results folder. Stats include : "
             "volume, centroid coordinates, sphericity"
         )
+        artifact_tooltip = "If enabled, will remove labels of objects larger than the chosen size in instance segmentation"
+        self.artifact_removal_size.setToolTip(
+            artifact_tooltip + "\nDefault is 500 pixels"
+        )
+        self.attempt_artifact_removal_box.setToolTip(artifact_tooltip)
+        self.artifact_container.setToolTip(artifact_tooltip)
         ##################
         ##################
 
     def check_ready(self):
-        """Checks if the paths to the files are properly set"""
-
+        """Checks if the paths to the files are properly set."""
         if self.layer_choice.isChecked():
             if self.image_layer_loader.layer_data() is not None:
                 return True
@@ -305,17 +331,18 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         return False
 
     def _restrict_window_size_for_model(self):
-        """Sets the window size to a value that is compatible with the chosen model"""
+        """Sets the window size to a value that is compatible with the chosen model."""
+        self.wnet_enabled = False
         if self.model_choice.currentText() == "WNet":
+            self.wnet_enabled = True
             self.window_size_choice.setCurrentIndex(self._default_window_size)
-            self.window_size_choice.setDisabled(True)
-            self.window_infer_box.setChecked(True)
-            self.window_infer_box.setDisabled(True)
-        else:
-            self.window_size_choice.setDisabled(False)
-            self.window_infer_box.setDisabled(False)
-            self.window_infer_box.setChecked(False)
-            self.window_size_choice.setCurrentIndex(self._default_window_size)
+            self.use_window_choice.setChecked(self.wnet_enabled)
+        self.window_size_choice.setDisabled(
+            self.wnet_enabled and not self.custom_weights_choice.isChecked()
+        )
+        self.use_window_choice.setDisabled(
+            self.wnet_enabled and not self.custom_weights_choice.isChecked()
+        )
 
     def _toggle_display_model_input_size(self):
         if (
@@ -329,30 +356,44 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.model_input_size.label.setVisible(False)
 
     def _toggle_display_number(self):
-        """Shows the choices for viewing results depending on whether :py:attr:`self.view_checkbox` is checked"""
+        """Shows the choices for viewing results depending on whether :py:attr:`self.view_checkbox` is checked."""
         ui.toggle_visibility(self.view_checkbox, self.view_results_container)
 
     def _toggle_display_thresh(self):
-        """Shows the choices for thresholding results depending on whether :py:attr:`self.thresholding_checkbox` is checked"""
+        """Shows the choices for thresholding results depending on whether :py:attr:`self.thresholding_checkbox` is checked."""
         ui.toggle_visibility(
             self.thresholding_checkbox, self.thresholding_slider.container
         )
 
+    def _toggle_display_artifact_size_thresh(self):
+        """Shows the choices for thresholding results depending on whether :py:attr:`self.attempt_artifact_removal_box` is checked."""
+        ui.toggle_visibility(
+            self.attempt_artifact_removal_box,
+            self.artifact_removal_size,
+        )
+        ui.toggle_visibility(
+            self.attempt_artifact_removal_box,
+            self.remove_artifacts_label,
+        )
+
     def _toggle_display_crf(self):
-        """Shows the choices for CRF post-processing depending on whether :py:attr:`self.use_crf` is checked"""
+        """Shows the choices for CRF post-processing depending on whether :py:attr:`self.use_crf` is checked."""
         ui.toggle_visibility(self.use_crf, self.crf_widgets)
 
     def _toggle_display_instance(self):
-        """Shows or hides the options for instance segmentation based on current user selection"""
+        """Shows or hides the options for instance segmentation based on current user selection."""
         ui.toggle_visibility(self.use_instance_choice, self.instance_widgets)
 
+    def _toggle_artifact_removal_widgets(self):
+        """Shows or hides the options for instance segmentation based on current user selection."""
+        ui.toggle_visibility(self.use_instance_choice, self.artifact_container)
+
     def _toggle_display_window_size(self):
-        """Show or hide window size choice depending on status of self.window_infer_box"""
-        ui.toggle_visibility(self.window_infer_box, self.window_infer_params)
+        """Show or hide window size choice depending on status of self.window_infer_box."""
+        ui.toggle_visibility(self.use_window_choice, self.window_infer_params)
 
     def _load_weights_path(self):
-        """Show file dialog to set :py:attr:`model_path`"""
-
+        """Show file dialog to set :py:attr:`model_path`."""
         # logger.debug(self._default_weights_folder)
 
         file = ui.open_file_dialog(
@@ -363,8 +404,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self._update_weights_path(file)
 
     def _build(self):
-        """Puts all widgets in a layout and adds them to the napari Viewer"""
-
+        """Puts all widgets in a layout and adds them to the napari Viewer."""
         # ui.add_blank(self.view_results_container, view_results_layout)
         ui.add_widgets(
             self.view_results_container.layout,
@@ -440,9 +480,11 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ui.add_widgets(
             inference_param_group_l,
             [
-                self.window_infer_box,
+                self.use_window_choice,
                 self.window_infer_params,
                 self.keep_data_on_cpu_box,
+                self.device_choice.label,
+                self.device_choice,
             ],
         )
         self.window_infer_params.setVisible(False)
@@ -464,6 +506,18 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.thresholding_slider.container.setVisible(False)
 
         ui.add_widgets(
+            self.artifact_container.layout,
+            [
+                self.attempt_artifact_removal_box,
+                self.remove_artifacts_label,
+                self.artifact_removal_size,
+            ],
+        )
+        # self.attempt_artifact_removal_box.setVisible(False)
+        self.remove_artifacts_label.setVisible(False)
+        self.artifact_removal_size.setVisible(False)
+
+        ui.add_widgets(
             post_proc_layout,
             [
                 self.anisotropy_wdgt,  # anisotropy
@@ -473,10 +527,13 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.crf_widgets,
                 self.use_instance_choice,
                 self.instance_widgets,
+                self.artifact_container,
                 self.save_stats_to_csv_box,
                 # self.instance_param_container,  # instance segmentation
             ],
         )
+        self._toggle_crf_choice()
+        self.model_choice.currentIndexChanged.connect(self._toggle_crf_choice)
         ModelFramework._show_io_element(
             self.save_stats_to_csv_box, self.use_instance_choice
         )
@@ -559,7 +616,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         image_id = result.image_id
         model_name = self.model_choice.currentText()
 
-        viewer.dims.ndisplay = 3
+        # viewer.dims.ndisplay = 3 # let user choose
         viewer.scale_bar.visible = True
 
         if self.config.show_original and result.original is not None:
@@ -571,17 +628,35 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 opacity=0.7,
             )
 
-        out_colormap = "twilight"
-        if self.worker_config.post_process_config.thresholding.enabled:
-            out_colormap = "turbo"
+        out_colormap = "turbo"
+        # if self.worker_config.post_process_config.thresholding.enabled:
+        # out_colormap = "twilight"
 
         viewer.add_image(
-            result.result,
+            result.semantic_segmentation,
             colormap=out_colormap,
             name=f"pred_{image_id}_{model_name}",
             opacity=0.8,
         )
-        if result.crf_results is not None:
+
+        if (
+            len(result.semantic_segmentation.shape) == 4
+        ):  # seek channel that is most likely to be foreground
+            fractions_per_channel = utils.channels_fraction_above_threshold(
+                result.semantic_segmentation, 0.5
+            )
+            index_channel_sorted = np.argsort(fractions_per_channel)
+            for channel in index_channel_sorted:
+                if result.semantic_segmentation[channel].sum() > 0:
+                    index_channel_least_labelled = channel
+                    break
+            viewer.dims.set_point(
+                0, index_channel_least_labelled
+            )  # TODO(cyril: check if this is always the right axis
+
+        if result.crf_results is not None and not isinstance(
+            result.crf_results, Exception
+        ):
             logger.debug(f"CRF results shape : {result.crf_results.shape}")
             viewer.add_image(
                 result.crf_results,
@@ -590,15 +665,41 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             )
         if (
             result.instance_labels is not None
+            and not isinstance(result.instance_labels, Exception)
             and self.worker_config.post_process_config.instance.enabled
         ):
             method_name = (
                 self.worker_config.post_process_config.instance.method.name
             )
 
-            number_cells = (
-                np.unique(result.instance_labels.flatten()).size - 1
-            )  # remove background
+            if len(result.instance_labels.shape) >= 4:
+                channels_by_labels = np.argsort(
+                    result.instance_labels.sum(axis=(1, 2, 3))
+                )
+                min_objs_channel = channels_by_labels[0]
+                # if least labeled is empty, use next least labeled channel
+                for i in range(1, len(channels_by_labels)):
+                    if (
+                        np.unique(
+                            result.instance_labels[
+                                channels_by_labels[i]
+                            ].flatten()
+                        ).size
+                        > 1
+                    ):
+                        min_objs_channel = channels_by_labels[i]
+                        break
+
+                number_cells = (
+                    np.unique(
+                        result.instance_labels[min_objs_channel].flatten()
+                    ).size
+                    - 1
+                )
+            else:
+                number_cells = (
+                    np.unique(result.instance_labels.flatten()).size - 1
+                )  # remove background with -1
 
             name = f"({number_cells} objects)_{method_name}_instance_labels_{image_id}"
 
@@ -607,28 +708,32 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             if result.stats is not None and isinstance(
                 result.stats, list
             ):  # list for several channels
-                # logger.debug(f"len stats : {len(result.stats)}")
+                logger.debug(f"len stats : {len(result.stats)}")
 
                 for i, stats in enumerate(result.stats):
                     # stats = result.stats
 
                     if self.worker_config.compute_stats and stats is not None:
-                        stats_dict = stats.get_dict()
-                        stats_df = pd.DataFrame(stats_dict)
+                        try:
+                            stats_dict = stats.get_dict()
+                            stats_df = pd.DataFrame(stats_dict)
 
-                        self.log.print_and_log(
-                            f"Number of instances in channel {i} : {stats.number_objects[0]}"
-                        )
+                            self.log.print_and_log(
+                                f"Number of instances in channel {i} : {stats.number_objects[0]}"
+                            )
 
-                        csv_name = f"/{method_name}_seg_results_{image_id}_channel_{i}_{utils.get_date_time()}.csv"
-                        stats_df.to_csv(
-                            self.worker_config.results_path + csv_name,
-                            index=False,
-                        )
+                            csv_name = f"/{model_name}_{method_name}_seg_results_{image_id}_channel_{i}_{utils.get_date_time()}.csv"
 
-                    # self.log.print_and_log(
-                    #     f"OBJECTS DETECTED : {number_cells}\n"
-                    # )
+                            stats_df.to_csv(
+                                self.worker_config.results_path + csv_name,
+                                index=False,
+                            )
+                        except ValueError as e:
+                            logger.warning(f"Error saving stats to csv : {e}")
+                            logger.debug(
+                                f"Length of stats array : {[len(s) for s in stats.get_dict().values()]}"
+                            )
+                            # logger.debug(f"Stats dict : {stats.get_dict()}")
 
     def _setup_worker(self):
         if self.folder_choice.isChecked():
@@ -643,14 +748,14 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             raise ValueError("Please select to load a layer or folder")
 
         self.worker.set_download_log(self.log)
-
         self.worker.started.connect(self.on_start)
 
         self.worker.log_signal.connect(self.log.print_and_log)
+        self.worker.log_w_replace_signal.connect(self.log.replace_last_line)
         self.worker.warn_signal.connect(self.log.warn)
         self.worker.error_signal.connect(self.log.error)
 
-        self.worker.yielded.connect(partial(self.on_yield))  #
+        self.worker.yielded.connect(partial(self.on_yield))
         self.worker.errored.connect(partial(self.on_error))
         self.worker.finished.connect(self.on_finish)
 
@@ -659,7 +764,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         return self.worker
 
     def start(self):
-        """Start the inference process, enables :py:attr:`~self.worker` and does the following:
+        """Start the inference process, enables :py:attr:`~self.worker` and does the following.
 
         * Checks if the output and input folders are correctly set
 
@@ -676,11 +781,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         * If the option has been selected, display the results in napari, up to the maximum number selected
 
         * Runs instance segmentation, thresholding, and stats computing if requested
-
-        Args:
-            on_layer: if True, will start inference on a selected layer
         """
-
         if not self.check_ready():
             err = "Aborting, please choose valid inputs"
             self.log.print_and_log(err)
@@ -737,7 +838,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             model_input_size=self.model_input_size.value(),
         )
 
-        self.weights_config.custom = self.custom_weights_choice.isChecked()
+        self.weights_config.use_custom = self.custom_weights_choice.isChecked()
 
         save_path = self.results_filewidget.text_field.text()
         if not self._check_results_path(save_path):
@@ -763,14 +864,17 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.instance_widgets.method_choice.currentText()
             ],
         )
+        self.instance_config.method.record_parameters()  # keep parameters set when Start is clicked
 
         self.post_process_config = config.PostProcessConfig(
             zoom=zoom_config,
             thresholding=thresholding_config,
             instance=self.instance_config,
+            artifact_removal=self.attempt_artifact_removal_box.isChecked(),
+            artifact_removal_size=self.artifact_removal_size.value(),
         )
 
-        if self.window_infer_box.isChecked():
+        if self.use_window_choice.isChecked():
             size = int(self.window_size_choice.currentText())
             window_config = config.SlidingWindowConfig(
                 window_size=size,
@@ -780,7 +884,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             window_config = config.SlidingWindowConfig()
 
         self.worker_config = config.InferenceWorkerConfig(
-            device=self.get_device(),
+            device=self.check_device_choice(),
             model_info=self.model_info,
             weights_config=self.weights_config,
             results_path=self.results_path,
@@ -795,7 +899,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         return self.worker_config
 
     def on_start(self):
-        """Catches start signal from worker to call :py:func:`~display_status_report`"""
+        """Catches start signal from worker to call :py:func:`~display_status_report`."""
         self.display_status_report()
         self._set_self_config()
         self.log.print_and_log(f"Worker started at {utils.get_time()}")
@@ -823,18 +927,18 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         return True  # signal clean exit
 
     def on_yield(self, result: InferenceResult):
-        """
-        Displays the inference results in napari as long as data["image_id"] is lower than nbr_to_show,
-        and updates the status report docked widget (namely the progress bar)
+        """Displays the inference results in napari.
+
+        Works as long as data["image_id"] is lower than nbr_to_show, and updates the status report docked widget (namely the progress bar).
 
         Args:
-            data (dict): dict yielded by :py:func:`~inference()`, contains : "image_id" : index of the returned image, "original" : original volume used for inference, "result" : inference result
-            widget (QWidget): widget for accessing attributes
+            result (InferenceResult): results from the worker
         """
-
         if isinstance(result, Exception):
             self.on_error(result)
             # raise result
+        if result is None:
+            self.on_error("Worker yielded None")
         # viewer, progress, show_res, show_res_number, zoon, show_original
 
         # check that viewer checkbox is on and that max number of displays has not been reached.

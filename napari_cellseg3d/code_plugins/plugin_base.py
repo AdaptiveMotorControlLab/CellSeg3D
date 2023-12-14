@@ -1,3 +1,4 @@
+"""Base classes for napari_cellseg3d plugins."""
 from functools import partial
 from pathlib import Path
 
@@ -15,7 +16,7 @@ logger = utils.LOGGER
 
 
 class BasePluginSingleImage(QTabWidget):
-    """A basic plugin template for working with **single images**"""
+    """A basic plugin template for working with **single images**."""
 
     def __init__(
         self,
@@ -25,8 +26,7 @@ class BasePluginSingleImage(QTabWidget):
         loads_labels=True,
         has_results=True,
     ):
-        """
-        Creates a Base plugin with several buttons pre-defined
+        """Creates a Base plugin with several buttons pre-defined.
 
         Args:
             viewer: napari viewer to display in
@@ -107,9 +107,9 @@ class BasePluginSingleImage(QTabWidget):
         qInstallMessageHandler(ui.handle_adjust_errors_wrapper(self))
 
     def enable_utils_menu(self):
-        """
-        Enables the usage of the CTRL+right-click shortcut to the utilities.
-        Should only be used in "high-level" widgets (provided in napari Plugins menu) to avoid multiple activation
+        """Enables the usage of the CTRL+right-click shortcut to the utilities.
+
+        Should only be used in "high-level" widgets (provided in napari Plugins menu) to avoid multiple activation.
         """
         viewer = self._viewer
 
@@ -185,10 +185,11 @@ class BasePluginSingleImage(QTabWidget):
 
     @staticmethod
     def _show_io_element(widget: QWidget, toggle: QWidget = None):
-        """
+        """Show widget and connect it to toggle if any.
+
         Args:
             widget: Widget to be shown or hidden
-            toggle: Toggle to be used to determine whether widget should be shown (Checkbox or RadioButton)
+            toggle: Toggle to be used to determine whether widget should be shown (Checkbox or RadioButton).
         """
         widget.setVisible(True)
 
@@ -199,13 +200,12 @@ class BasePluginSingleImage(QTabWidget):
 
     @staticmethod
     def _hide_io_element(widget: QWidget, toggle: QWidget = None):
-        """
-        Attempts to disconnect widget from toggle and hide it.
+        """Attempts to disconnect widget from toggle and hide it.
+
         Args:
             widget: Widget to be hidden
-            toggle: Toggle to be disconnected from widget, if any
+            toggle: Toggle to be disconnected from widget, if any.
         """
-
         if toggle is not None:
             try:
                 toggle.toggled.disconnect()
@@ -217,18 +217,11 @@ class BasePluginSingleImage(QTabWidget):
         widget.setVisible(False)
 
     def _build(self):
-        """Method to be defined by children classes"""
+        """Method to be defined by children classes."""
         raise NotImplementedError("To be defined in child classes")
 
-    # def _show_filetype_choice(self): # TODO(cyril): remove?
-    #     """Method to show/hide the filetype choice when "loading as folder" is (de)selected"""
-    #     show = self.load_as_stack_choice.isChecked()
-    #     if show is not None:
-    #         self.filetype_choice.setVisible(show)
-    #         # self.lbl_ft.setVisible(show)
-
     def _show_file_dialog(self):
-        """Open file dialog and process path for a single file"""
+        """Open file dialog and process path for a single file."""
         # if self.load_as_stack_choice.isChecked():
         # return ui.open_folder_dialog(
         #     self,
@@ -242,31 +235,37 @@ class BasePluginSingleImage(QTabWidget):
         choice = str(f_name[0])
         self.filetype = str(Path(choice).suffix)
         logger.debug(f"Filetype set to {self.filetype}")
+        self._update_default_paths()
         return choice
 
     def _show_dialog_images(self):
-        """Show file dialog and set image path"""
+        """Show file dialog and set image path."""
         f_name = self._show_file_dialog()
         if type(f_name) is str and Path(f_name).is_file():
             self.image_path = f_name
             logger.debug(f"Image path set to {self.image_path}")
             self.image_filewidget.text_field.setText(self.image_path)
-            self._update_default()
+            self._update_default_paths()
 
     def _show_dialog_labels(self):
-        """Show file dialog and set label path"""
+        """Show file dialog and set label path."""
         f_name = self._show_file_dialog()
         if isinstance(f_name, str) and Path(f_name).is_file():
             self.label_path = f_name
             logger.debug(f"Label path set to {self.label_path}")
             self.labels_filewidget.text_field.setText(self.label_path)
-            self._update_default()
+            self._update_default_paths()
 
     def _check_results_path(self, folder: str):
+        """Check if results folder exists, create it if not."""
+        logger.debug(f"Checking results folder : {folder}")
         if folder != "" and isinstance(folder, str):
             if not Path(folder).is_dir():
                 Path(folder).mkdir(parents=True, exist_ok=True)
                 if not Path(folder).is_dir():
+                    logger.info(
+                        f"Could not create missing results folder : {folder}"
+                    )
                     return False
                 logger.info(f"Created missing results folder : {folder}")
             return True
@@ -275,17 +274,18 @@ class BasePluginSingleImage(QTabWidget):
         return False
 
     def _load_results_path(self):
-        """Show file dialog to set :py:attr:`~results_path`"""
+        """Show file dialog to set :py:attr:`~results_path`."""
+        self._update_default_paths()
         folder = ui.open_folder_dialog(self, self._default_path)
 
         if self._check_results_path(folder):
-            self.results_path = folder
-            # logger.debug(f"Results path : {self.results_path}")
+            self.results_path = str(Path(folder).resolve())
+            logger.debug(f"Results path : {self.results_path}")
             self.results_filewidget.text_field.setText(self.results_path)
-            self._update_default()
+            self._update_default_paths()
 
-    def _update_default(self):
-        """Updates default path for smoother navigation when opening file dialogs"""
+    def _update_default_paths(self):
+        """Updates default path for smoother navigation when opening file dialogs."""
         self._default_path = [
             self.image_path,
             self.label_path,
@@ -311,12 +311,14 @@ class BasePluginSingleImage(QTabWidget):
 
     def remove_from_viewer(self):
         """Removes the widget from the napari window.
-        Can be re-implemented in children classes if needed"""
+
+        Must be re-implemented in children classes where needed.
+        """
         self.remove_docked_widgets()
         self._viewer.window.remove_dock_widget(self)
 
     def remove_docked_widgets(self):
-        """Removes all docked widgets from napari window"""
+        """Removes all docked widgets from napari window."""
         try:
             if len(self.docked_widgets) != 0:
                 [
@@ -332,7 +334,7 @@ class BasePluginSingleImage(QTabWidget):
 
 
 class BasePluginFolder(BasePluginSingleImage):
-    """A basic plugin template for working with **folders of images**"""
+    """A basic plugin template for working with **folders of images**."""
 
     def __init__(
         self,
@@ -342,7 +344,7 @@ class BasePluginFolder(BasePluginSingleImage):
         loads_labels=True,
         has_results=True,
     ):
-        """Creates a plugin template with the following widgets defined but not added in a layout :
+        """Creates a plugin template with the following widgets defined but not added in a layout.
 
         * A button to load a folder of images
 
@@ -360,10 +362,12 @@ class BasePluginFolder(BasePluginSingleImage):
         """array(str): paths to images for training or inference"""
         self.labels_filepaths = []
         """array(str): paths to labels for training"""
+        self.validation_filepaths = []
+        """array(str): paths to validation files (unsup. learning)"""
         self.results_path = None
         """str: path to output folder,to save results in"""
 
-        self._default_folders = [None]
+        self._default_path = [None]
         """Update defaults from PluginBaseFolder with model_path"""
 
         self.docked_widgets = []
@@ -372,24 +376,25 @@ class BasePluginFolder(BasePluginSingleImage):
 
         #######################################################
         # interface
-        # self.image_filewidget = ui.FilePathWidget(
-        #     "Images directory", self.load_image_dataset, self
-        # )
         self.image_filewidget.text_field = "Images directory"
         self.image_filewidget.button.clicked.disconnect(
             self._show_dialog_images
         )
         self.image_filewidget.button.clicked.connect(self.load_image_dataset)
 
-        # self.labels_filewidget = ui.FilePathWidget(
-        #     "Labels directory", self.load_label_dataset, self
-        # )
         self.labels_filewidget.text_field = "Labels directory"
         self.labels_filewidget.button.clicked.disconnect(
             self._show_dialog_labels
         )
         self.labels_filewidget.button.clicked.connect(self.load_label_dataset)
-
+        ################
+        # Validation images widget
+        self.unsupervised_images_filewidget = ui.FilePathWidget(
+            description="Training directory",
+            file_function=self.load_unsup_images_dataset,
+            parent=self,
+        )
+        self.unsupervised_images_filewidget.setVisible(False)
         # self.filetype_choice = ui.DropdownMenu(
         #     [".tif", ".tiff"], label="File format"
         # )
@@ -398,15 +403,15 @@ class BasePluginFolder(BasePluginSingleImage):
         # self._set_io_visibility()
 
     def load_dataset_paths(self):
-        """Loads all image paths (as str) in a given folder for which the extension matches the set filetype
+        """Loads all image paths (as str) in a given folder for which the extension matches the set filetype.
 
         Returns:
            array(str): all loaded file paths
         """
         # filetype = self.filetype_choice.currentText()
-        directory = ui.open_folder_dialog(self, self._default_folders)
+        directory = ui.open_folder_dialog(self, self._default_path)
 
-        file_paths = sorted(Path(directory).glob("*" + ".tif"))
+        file_paths = utils.get_all_matching_files(directory)
         if len(file_paths) == 0:
             logger.warning(
                 "The folder does not contain any compatible .tif files.\n"
@@ -416,45 +421,107 @@ class BasePluginFolder(BasePluginSingleImage):
         return file_paths
 
     def load_image_dataset(self):
-        """Show file dialog to set :py:attr:`~images_filepaths`"""
+        """Show file dialog to set :py:attr:`~images_filepaths`."""
         filenames = self.load_dataset_paths()
-        logger.debug(f"image filenames : {filenames}")
         if filenames:
+            logger.info("Images loaded :")
+            for f in filenames:
+                logger.info(f"{str(Path(f).name)}")
             self.images_filepaths = [str(path) for path in sorted(filenames)]
             path = str(Path(filenames[0]).parent)
             self.image_filewidget.text_field.setText(path)
             self.image_filewidget.check_ready()
-            self._update_default()
+            self._update_default_paths(path)
+
+    def load_unsup_images_dataset(self):
+        """Show file dialog to set :py:attr:`~val_images_filepaths`."""
+        filenames = self.load_dataset_paths()
+        if filenames:
+            logger.info("Images loaded (unsupervised training) :")
+            for f in filenames:
+                logger.info(f"{str(Path(f).name)}")
+            self.validation_filepaths = [
+                str(path) for path in sorted(filenames)
+            ]
+            path = str(Path(filenames[0]).parent)
+            self.unsupervised_images_filewidget.text_field.setText(path)
+            self.unsupervised_images_filewidget.check_ready()
+            self._update_default_paths(path)
 
     def load_label_dataset(self):
-        """Show file dialog to set :py:attr:`~labels_filepaths`"""
+        """Show file dialog to set :py:attr:`~labels_filepaths`."""
         filenames = self.load_dataset_paths()
-        logger.debug(f"labels filenames : {filenames}")
         if filenames:
+            logger.info("Labels loaded :")
+            for f in filenames:
+                logger.info(f"{str(Path(f).name)}")
             self.labels_filepaths = [str(path) for path in sorted(filenames)]
             path = str(Path(filenames[0]).parent)
             self.labels_filewidget.text_field.setText(path)
             self.labels_filewidget.check_ready()
-            self._update_default()
+            self._update_default_paths(path)
 
-    def _update_default(self):
-        """Update default path for smoother file dialogs"""
-        if len(self.images_filepaths) != 0:
-            from_images = str(Path(self.images_filepaths[0]).parent)
-        else:
-            from_images = None
-
-        if len(self.labels_filepaths) != 0:
-            from_labels = str(Path(self.labels_filepaths[0]).parent)
-        else:
-            from_labels = None
-
-        self._default_folders = [
-            path
-            for path in [
-                from_images,
-                from_labels,
+    def _update_default_paths(self, path=None):
+        """Update default path for smoother file dialogs."""
+        logger.debug(f"Updating default paths with {path}")
+        if path is None:
+            self._default_path = [
+                self.extract_dataset_paths(self.images_filepaths),
+                self.extract_dataset_paths(self.labels_filepaths),
+                self.extract_dataset_paths(self.validation_filepaths),
                 self.results_path,
             ]
-            if (path != [] and path is not None)
-        ]
+            return utils.parse_default_path(self._default_path)
+        if Path(path).is_dir():
+            self._default_path.append(path)
+        return utils.parse_default_path(self._default_path)
+
+    @staticmethod
+    def extract_dataset_paths(paths):
+        """Gets the parent folder name of the first image and label paths."""
+        if len(paths) == 0:
+            return None
+        if paths[0] is None:
+            return None
+        return str(Path(paths[0]).parent)
+
+    def _check_all_filepaths(self):
+        self.image_filewidget.check_ready()
+        self.labels_filewidget.check_ready()
+        self.results_filewidget.check_ready()
+        self.unsupervised_images_filewidget.check_ready()
+
+
+class BasePluginUtils(BasePluginFolder):
+    """Small subclass used to have centralized widgets layer and result path selection in utilities."""
+
+    save_path = None
+    utils_default_paths = [Path.home() / "cellseg3d"]
+
+    def __init__(
+        self,
+        viewer: napari.viewer.Viewer,
+        parent=None,
+        loads_images=True,
+        loads_labels=True,
+    ):
+        """Creates a plugin template with the following widgets defined but not added in a layout."""
+        super().__init__(
+            viewer=viewer,
+            loads_images=loads_images,
+            loads_labels=loads_labels,
+            parent=parent,
+        )
+        if parent is not None:
+            self.setParent(parent)
+        self.parent = parent
+
+        self.layer = None
+        """Should contain the layer associated with the results of the utility widget"""
+
+    def _update_default_paths(self, path=None):
+        """Override to also update utilities' pool of default paths."""
+        default_path = super()._update_default_paths(path)
+        logger.debug(f"Trying to update default with {default_path}")
+        if default_path is not None:
+            self.utils_default_paths.append(default_path)

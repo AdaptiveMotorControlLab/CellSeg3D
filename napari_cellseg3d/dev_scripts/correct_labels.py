@@ -25,13 +25,14 @@ Fixes labels and allows to auto-detect artifacts and neurons based on a simple i
 
 
 def relabel_non_unique_i(label, save_path, go_fast=False):
-    """relabel the image labelled with different label for each neuron and save it in the save_path location
+    """Relabel the image labelled with different label for each neuron and save it in the save_path location.
+
     Parameters
     ----------
     label : np.array
         the label image
     save_path : str
-        the path to save the relabeld image
+        the path to save the relabeld image.
     """
     value_label = 0
     new_labels = np.zeros_like(label)
@@ -67,7 +68,8 @@ def relabel_non_unique_i(label, save_path, go_fast=False):
 
 
 def add_label(old_label, artefact, new_label_path, i_labels_to_add):
-    """add the label to the label image
+    """Add the label to the label image.
+
     Parameters
     ----------
     old_label : np.array
@@ -75,7 +77,7 @@ def add_label(old_label, artefact, new_label_path, i_labels_to_add):
     artefact : np.array
         the artefact image that contains some neurons
     new_label_path : str
-        the path to save the new label image
+        the path to save the new label image.
     """
     new_label = old_label.copy()
     max_label = np.max(old_label)
@@ -148,7 +150,8 @@ def relabel(
     viewer=None,
     test=False,
 ):
-    """relabel the image labelled with different label for each neuron and save it in the save_path location
+    """Relabel the image labelled with different label for each neuron and save it in the save_path location.
+
     Parameters
     ----------
     image_path : str
@@ -162,7 +165,7 @@ def relabel(
     delay : float, optional
         the delay between each image for the visualization, by default 0.3
     viewer : napari.Viewer, optional
-        the napari viewer, by default None
+        the napari viewer, by default None.
     """
     global returns
 
@@ -255,7 +258,8 @@ def relabel(
 
 
 def modify_viewer(old_label, new_label, args):
-    """modify the viewer to show the relabeling
+    """Modify the viewer to show the relabeling.
+
     Parameters
     ----------
     old_label : napari.layers.Labels
@@ -263,7 +267,7 @@ def modify_viewer(old_label, new_label, args):
     new_label : napari.layers.Labels
         the layer of the new label
     args : list
-        the first element is the old label and the second element is the new label
+        the first element is the old label and the second element is the new label.
     """
     if args == "hide new label":
         new_label.visible = False
@@ -277,13 +281,14 @@ def modify_viewer(old_label, new_label, args):
 
 @thread_worker
 def to_show(map_labels_existing, delay=0.5):
-    """modify the viewer to show the relabeling
+    """Modify the viewer to show the relabeling.
+
     Parameters
     ----------
     map_labels_existing : list
         the list of the of the map between the old label and the new label
     delay : float, optional
-        the delay between each image for the visualization, by default 0.3
+        the delay between each image for the visualization, by default 0.3.
     """
     time.sleep(2)
     for i in map_labels_existing:
@@ -303,7 +308,6 @@ def create_connected_widget(
     old_label, new_label, map_labels_existing, delay=0.5
 ):
     """Builds a widget that can control a function in another thread."""
-
     worker = to_show(map_labels_existing, delay)
     worker.start()
     worker.yielded.connect(
@@ -312,11 +316,12 @@ def create_connected_widget(
 
 
 def visualize_map(map_labels_existing, label_path, relabel_path, delay=0.5):
-    """visualize the map of the relabeling
+    """Visualize the map of the relabeling.
+
     Parameters
     ----------
     map_labels_existing : list
-        the list of the relabeling
+        the list of the relabeling.
     """
     label = imread(label_path)
     relabel = imread(relabel_path)
@@ -346,13 +351,14 @@ def visualize_map(map_labels_existing, label_path, relabel_path, delay=0.5):
 
 
 def relabel_non_unique_i_folder(folder_path, end_of_new_name="relabeled"):
-    """relabel the image labelled with different label for each neuron and save it in the save_path location
+    """Relabel the image labelled with different label for each neuron and save it in the save_path location.
+
     Parameters
     ----------
     folder_path : str
         the path to the folder containing the label images
     end_of_new_name : str
-        thename to add at the end of the relabled image
+        thename to add at the end of the relabled image.
     """
     for file in Path.iterdir(folder_path):
         if file.suffix == ".tif":
@@ -364,8 +370,10 @@ def relabel_non_unique_i_folder(folder_path, end_of_new_name="relabeled"):
 
 
 if __name__ == "__main__":
-    im_path = Path("C:/Users/Cyril/Desktop/Proj_bachelor/data/somatomotor")
+    im_path = Path.home() / "Desktop/Code/CELLSEG_BENCHMARK/TPH2_DATA/visual"
 
-    image_path = str(im_path / "volumes/c1images.tif")
-    gt_labels_path = str(im_path / "labels/c1labels.tif")
-    relabel(image_path, gt_labels_path, check_for_unicity=False, go_fast=False)
+    # i = 4
+    # im_id = i+1
+    image_path = str(im_path / "visual.tif")
+    gt_labels_path = str(im_path / "visual_gt.tif")
+    relabel(image_path, gt_labels_path, check_for_unicity=True, go_fast=False)

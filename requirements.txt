@@ -3,11 +3,9 @@ coverage
 imageio-ffmpeg>=0.4.5
 isort
 itk
+jupyter-book
 pytest
 pytest-qt
-sphinx
-sphinx-autodoc-typehints
-sphinx-rtd-theme
 tox
 twine
 numpy

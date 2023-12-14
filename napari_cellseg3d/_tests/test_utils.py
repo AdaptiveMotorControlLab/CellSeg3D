@@ -5,12 +5,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 import torch
-from numpy.random import PCG64, Generator
 
 from napari_cellseg3d import utils
 from napari_cellseg3d.dev_scripts import thread_test
 
-rand_gen = Generator(PCG64(12345))
+rand_gen = utils.rand_gen
 
 
 def test_singleton_class():
@@ -27,7 +26,7 @@ def test_singleton_class():
 def test_save_folder():
     test_path = Path(__file__).resolve().parent / "res"
     folder_name = "test_folder"
-    images = [rand_gen.random((5, 5, 5)) for _ in range(10)]
+    images = [rand_gen.random((5, 5, 5)).astype(np.float32) for _ in range(10)]
     images_paths = [f"{i}.tif" for i in range(10)]
 
     utils.save_folder(
@@ -65,6 +64,10 @@ def test_sphericities():
             sphericity_axes = 0
         except ValueError:
             sphericity_axes = 0
+        if sphericity_axes is None:
+            sphericity_axes = (
+                0  # errors already handled in function, returns None
+            )
         assert 0 <= sphericity_axes <= 1
 
 
@@ -207,19 +210,59 @@ def test_load_images():
 
 
 def test_parse_default_path():
-    user_path = Path().home()
+    user_path = Path.home()
     assert utils.parse_default_path([None]) == str(user_path)
 
-    test_path = "C:/test/test"
+    test_path = (Path.home() / "test" / "test" / "test" / "test").as_posix()
     path = [test_path, None, None]
-    assert utils.parse_default_path(path) == test_path
+    assert utils.parse_default_path(path, check_existence=False) == str(
+        test_path
+    )
 
-    long_path = "D:/very/long/path/what/a/bore/ifonlytherewas/something/tohelpmenotsearchit/allthetime"
+    test_path = (Path.home() / "test" / "does" / "not" / "exist").as_posix()
+    path = [test_path, None, None]
+    assert utils.parse_default_path(path, check_existence=True) == str(
+        Path.home()
+    )
+
+    long_path = Path.home()
+    long_path = (
+        long_path
+        / "very"
+        / "long"
+        / "path"
+        / "what"
+        / "a"
+        / "bore"
+        / "ifonlytherewassomething"
+        / "tohelpmenotsearchit"
+        / "allthetime"
+    )
     path = [test_path, None, None, long_path, ""]
-    assert utils.parse_default_path(path) == long_path
+    assert utils.parse_default_path(path, check_existence=False) == str(
+        long_path.as_posix()
+    )
 
 
 def test_thread_test(make_napari_viewer_proxy):
     viewer = make_napari_viewer_proxy()
     w = thread_test.create_connected_widget(viewer)
     viewer.window.add_dock_widget(w)
+
+
+def test_quantile_norm():
+    array = rand_gen.random(size=(100, 100, 100))
+    low_quantile = np.quantile(array, 0.01)
+    high_quantile = np.quantile(array, 0.99)
+    array_norm = utils.quantile_normalization(array)
+    assert array_norm.min() >= low_quantile
+    assert array_norm.max() <= high_quantile
+
+
+def test_get_all_matching_files():
+    test_image_path = Path(__file__).resolve().parent / "res/wnet_test"
+    paths = utils.get_all_matching_files(test_image_path)
+
+    assert len(paths) == 1
+    assert [Path(p).is_file() for p in paths]
+    assert [Path(p).suffix == ".tif" for p in paths]

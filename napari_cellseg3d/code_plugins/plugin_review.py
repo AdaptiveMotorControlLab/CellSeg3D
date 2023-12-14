@@ -1,3 +1,4 @@
+"""Review plugin for 3D labeling of volumes."""
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -24,10 +25,12 @@ logger = utils.LOGGER
 
 class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
     """A plugin for selecting volumes and labels file and launching the review process.
-    Inherits from : :doc:`plugin_base`"""
+
+    Inherits from : :doc:`plugin_base`.
+    """
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
-        """Creates a Reviewer plugin with several buttons :
+        """Creates a Reviewer plugin with several buttons.
 
         * Open file prompt to select volumes directory
 
@@ -39,7 +42,6 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
 
         * A button to launch the review process
         """
-
         super().__init__(
             viewer,
             parent,
@@ -95,13 +97,12 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         print(f"{self}")
 
     def _update_results_path(self):
-        p = self.image_filewidget.text_field.text()
+        p = self.labels_filewidget.text_field.text()
         if p is not None and Path(p).is_file():
             self.results_filewidget.text_field.setText(str(Path(p).parent))
 
     def _build(self):
-        """Build buttons in a layout and add them to the napari Viewer"""
-
+        """Build buttons in a layout and add them to the napari Viewer."""
         self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.MinimumExpanding)
 
         tab = ui.ContainerWidget(0, 0, 1, 1)
@@ -144,9 +145,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         # self._show_io_element(self.results_filewidget)
 
         self.results_filewidget.text_field.setText(
-            str(
-                Path.home() / Path("cellseg3d/review")
-            )  # TODO(cyril) : check proper behaviour
+            str(Path.home() / "cellseg3d" / "review")
         )
 
         csv_param_w.setLayout(csv_param_l)
@@ -170,8 +169,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         self.results_path = self.results_filewidget.text_field.text()
 
     def check_image_data(self):
-        """Checks that images are present and that sizes match"""
-
+        """Checks that images are present and that sizes match."""
         cfg = self.config
 
         if cfg.image is None:
@@ -197,11 +195,11 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         self.check_image_data()
         self._check_results_path(self.results_filewidget.text_field.text())
 
-        self.config.csv_path = self.results_filewidget.text_field.text()
         self.config.model_name = self.csv_textbox.text()
+        self.config.csv_path = self.results_filewidget.text_field.text()
 
         self.config.new_csv = self.new_csv_choice.isChecked()
-        self.config.filetype = self.filetype
+        # self.config.filetype = self.filetype
 
         if self.anisotropy_widgets.enabled:
             zoom = self.anisotropy_widgets.scaling_zyx()
@@ -210,13 +208,12 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         self.config.zoom_factor = zoom
 
     def run_review(self):
-        """Launches review process by loading the files from the chosen folders,
-        and adds several widgets to the napari Viewer.
+        """Launches review process by loading the files from the chosen folders, and adds several widgets to the napari Viewer.
+
         If the review process has been launched once before,
         closes the window entirely and launches the review process in a fresh window.
 
-        TODO:
-
+        Todo:
         * Save work done before leaving
 
         See launch_review
@@ -224,7 +221,6 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         Returns:
             napari.viewer.Viewer: self.viewer
         """
-
         print("New review session\n" + "*" * 20)
         previous_viewer = self._viewer
         try:
@@ -242,8 +238,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         self.remove_docked_widgets()
 
     def launch_review(self):
-        """Launch the review process, loading the original image, the labels & the raw labels (from prediction)
-        in the viewer.
+        """Launch the review process, loading the original image, the labels & the raw labels (from prediction) in the viewer.
 
         Adds several widgets to the viewer :
 
@@ -331,19 +326,19 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
                 "Shift-click on image for plot \n", fontsize=8
             )
             xy_axes.imshow(np.zeros((100, 100), np.int16))
-            xy_axes.scatter(50, 50, s=10, c="green", alpha=0.25)
-            xy_axes.set_xlabel("x axis")
-            xy_axes.set_ylabel("y axis")
+            xy_axes.scatter(50, 50, s=30, c="green", alpha=0.6, marker="+")
+            xy_axes.set_xlabel("X axis")
+            xy_axes.set_ylabel("Y axis")
             yz_axes = canvas.figure.add_subplot(3, 1, 2)
             yz_axes.imshow(np.zeros((100, 100), np.int16))
-            yz_axes.scatter(50, 50, s=10, c="green", alpha=0.25)
-            yz_axes.set_xlabel("y axis")
-            yz_axes.set_ylabel("z axis")
+            yz_axes.scatter(50, 50, s=30, c="green", alpha=0.6, marker="+")
+            yz_axes.set_xlabel("Y axis")
+            yz_axes.set_ylabel("Z axis")
             zx_axes = canvas.figure.add_subplot(3, 1, 3)
             zx_axes.imshow(np.zeros((100, 100), np.int16))
-            zx_axes.scatter(50, 50, s=10, c="green", alpha=0.25)
-            zx_axes.set_xlabel("x axis")
-            zx_axes.set_ylabel("z axis")
+            zx_axes.scatter(50, 50, s=30, c="green", alpha=0.6, marker="+")
+            zx_axes.set_xlabel("X axis")
+            zx_axes.set_ylabel("Z axis")
 
             # canvas.figure.tight_layout()
             canvas.figure.subplots_adjust(
@@ -421,6 +416,13 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         viewer.dims.events.current_step.connect(update_button)
 
         def crop_volume_around_point(points, layer, zoom_factor):
+            """Crops a volume around a point.
+
+            Args:
+                points (list): list of 3 integers, the coordinates of the point to crop around
+                layer (napari.layers.Image): the layer to crop
+                zoom_factor (list): list of 3 floats, the zoom factor to apply to the layer before cropping
+            """
             if zoom_factor != [1, 1, 1]:
                 data = np.array(layer.data, dtype=np.int16)
                 volume = utils.resize(data, zoom_factor)

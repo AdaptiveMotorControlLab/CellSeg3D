@@ -1,13 +1,12 @@
 import numpy as np
-from numpy.random import PCG64, Generator
 
+from napari_cellseg3d.code_plugins.plugin_convert import StatsUtils
 from napari_cellseg3d.code_plugins.plugin_crop import Cropping
 from napari_cellseg3d.code_plugins.plugin_utilities import (
     UTILITIES_WIDGETS,
     Utilities,
 )
-
-rand_gen = Generator(PCG64(12345))
+from napari_cellseg3d.utils import rand_gen
 
 
 def test_utils_plugin(make_napari_viewer_proxy):
@@ -58,4 +57,16 @@ def test_crop_widget(make_napari_viewer_proxy):
     widget.sliders[1].setValue(2)
     widget.sliders[2].setValue(2)
 
+    widget._start()
+
+
+def test_stats_plugin(make_napari_viewer_proxy):
+    view = make_napari_viewer_proxy()
+    widget = StatsUtils(view)
+
+    labels = rand_gen.random((10, 10, 10)).astype(np.uint8)
+    view.add_labels(labels, name="labels")
+
+    view.window.add_dock_widget(widget)
+    widget.csv_name.setText("test.csv")
     widget._start()

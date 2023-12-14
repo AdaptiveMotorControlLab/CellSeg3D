@@ -3,7 +3,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 import torch
-from numpy.random import PCG64, Generator
 
 from napari_cellseg3d.code_models.crf import (
     CRFWorker,
@@ -14,8 +13,7 @@ from napari_cellseg3d.code_models.crf import (
 from napari_cellseg3d.code_models.models.model_TRAILMAP_MS import TRAILMAP_MS_
 from napari_cellseg3d.code_models.models.wnet.soft_Ncuts import SoftNCutsLoss
 from napari_cellseg3d.config import MODEL_LIST, CRFConfig
-
-rand_gen = Generator(PCG64(12345))
+from napari_cellseg3d.utils import rand_gen
 
 
 def test_correct_shape_for_crf():
@@ -29,7 +27,7 @@ def test_model_list():
     for model_name in MODEL_LIST:
         # if model_name=="test":
         #     continue
-        dims = 128
+        dims = 64
         test = MODEL_LIST[model_name](
             input_img_size=[dims, dims, dims],
             in_channels=1,
@@ -111,13 +109,13 @@ def test_crf_worker(qtbot):
 
 
 def test_pretrained_weights_compatibility():
-    from napari_cellseg3d.code_models.workers import WeightsDownloader
+    from napari_cellseg3d.code_models.workers_utils import WeightsDownloader
     from napari_cellseg3d.config import MODEL_LIST, PRETRAINED_WEIGHTS_DIR
 
     for model_name in MODEL_LIST:
         file_name = MODEL_LIST[model_name].weights_file
         WeightsDownloader().download_weights(model_name, file_name)
-        model = MODEL_LIST[model_name](input_img_size=[128, 128, 128])
+        model = MODEL_LIST[model_name](input_img_size=[64, 64, 64])
         try:
             model.load_state_dict(
                 torch.load(

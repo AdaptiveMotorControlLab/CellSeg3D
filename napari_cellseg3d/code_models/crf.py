@@ -1,17 +1,40 @@
-"""
-Implements the CRF post-processing step for the W-Net.
-Inspired by https://arxiv.org/abs/1606.00915 and https://arxiv.org/abs/1711.08506.
+"""Implements the CRF post-processing step for the W-Net.
 
+The CRF requires the following parameters:
+
+* images : Array of shape (N, C, H, W, D) containing the input images.
+* predictions: Array of shape (N, K, H, W, D) containing the predicted class probabilities for each pixel.
+* sa: alpha standard deviation, the scale of the spatial part of the appearance/bilateral kernel.
+* sb: beta standard deviation, the scale of the color part of the appearance/bilateral kernel.
+* sg: gamma standard deviation, the scale of the smoothness/gaussian kernel.
+* w1: weight of the appearance/bilateral kernel.
+* w2: weight of the smoothness/gaussian kernel.
+
+Inspired by https://arxiv.org/abs/1606.00915 and https://arxiv.org/abs/1711.08506.
 Also uses research from:
 Efficient Inference in Fully Connected CRFs with Gaussian Edge Potentials
 Philipp Krähenbühl and Vladlen Koltun
 NIPS 2011
 
-Implemented using the pydense libary available at https://github.com/kodalli/pydensecrf.
+Implemented using the pydense library available at https://github.com/lucasb-eyer/pydensecrf.
 """
-from warnings import warn
+import importlib
 
-try:
+import numpy as np
+from napari.qt.threading import GeneratorWorker
+
+from napari_cellseg3d.config import CRFConfig
+from napari_cellseg3d.utils import LOGGER as logger
+
+spec = importlib.util.find_spec("pydensecrf")
+CRF_INSTALLED = spec is not None
+if not CRF_INSTALLED:
+    logger.info(
+        "pydensecrf not installed, CRF post-processing will not be available. "
+        "Please install by running pip install cellseg3d[crf]"
+        "This is not a hard requirement, you do not need it to install it unless you want to use the CRF post-processing step."
+    )
+else:
     import pydensecrf.densecrf as dcrf
     from pydensecrf.utils import (
         create_pairwise_bilateral,
@@ -19,21 +42,23 @@ try:
         unary_from_softmax,
     )
 
-    CRF_INSTALLED = True
-except ImportError:
-    warn(
-        "pydensecrf not installed, CRF post-processing will not be available. "
-        "Please install by running pip install cellseg3d[crf]",
-        stacklevel=1,
-    )
-    CRF_INSTALLED = False
+# try:
+#     import pydensecrf.densecrf as dcrf
+#     from pydensecrf.utils import (
+#         create_pairwise_bilateral,
+#         create_pairwise_gaussian,
+#         unary_from_softmax,
+#     )
+#     CRF_INSTALLED = True
+# except (ImportError, ModuleNotFoundError):
+#     logger.info(
+#         "pydensecrf not installed, CRF post-processing will not be available. "
+#         "Please install by running pip install cellseg3d[crf]"
+#         "This is not a hard requirement, you do not need it to install it unless you want to use the CRF post-processing step."
+#     )
+#     CRF_INSTALLED = False
+# use importlib instead to check if pydensecrf is installed
 
-
-import numpy as np
-from napari.qt.threading import GeneratorWorker
-
-from napari_cellseg3d.config import CRFConfig
-from napari_cellseg3d.utils import LOGGER as logger
 
 __author__ = "Yves Paychère, Colin Hofmann, Cyril Achard"
 __credits__ = [
@@ -54,6 +79,7 @@ __credits__ = [
 
 
 def correct_shape_for_crf(image, desired_dims=4):
+    """Corrects the shape of the image to be compatible with the CRF post-processing step."""
     logger.debug(f"Correcting shape for CRF, desired_dims={desired_dims}")
     logger.debug(f"Image shape: {image.shape}")
     if len(image.shape) > desired_dims:
@@ -77,6 +103,9 @@ def crf_batch(images, probs, sa, sb, sg, w1, w2, n_iter=5):
         sa (float): alpha standard deviation, the scale of the spatial part of the appearance/bilateral kernel.
         sb (float): beta standard deviation, the scale of the color part of the appearance/bilateral kernel.
         sg (float): gamma standard deviation, the scale of the smoothness/gaussian kernel.
+        w1 (float): weight of the appearance/bilateral kernel.
+        w2 (float): weight of the smoothness/gaussian kernel.
+        n_iter (int, optional): Number of iterations for the CRF post-processing step. Defaults to 5.
 
     Returns:
         np.ndarray: Array of shape (N, K, H, W, D) containing the refined class probabilities for each pixel.
@@ -95,6 +124,7 @@ def crf_batch(images, probs, sa, sb, sg, w1, w2, n_iter=5):
 
 def crf(image, prob, sa, sb, sg, w1, w2, n_iter=5):
     """Implements the CRF post-processing step for the W-Net.
+
     Inspired by https://arxiv.org/abs/1210.5644, https://arxiv.org/abs/1606.00915 and https://arxiv.org/abs/1711.08506.
     Implemented using the pydensecrf library.
 
@@ -106,11 +136,11 @@ def crf(image, prob, sa, sb, sg, w1, w2, n_iter=5):
         sg (float): gamma standard deviation, the scale of the smoothness/gaussian kernel.
         w1 (float): weight of the appearance/bilateral kernel.
         w2 (float): weight of the smoothness/gaussian kernel.
+        n_iter (int, optional): Number of iterations for the CRF post-processing step. Defaults to 5.
 
     Returns:
         np.ndarray: Array of shape (K, H, W, D) containing the refined class probabilities for each pixel.
     """
-
     if not CRF_INSTALLED:
         return None
 
@@ -153,6 +183,14 @@ def crf(image, prob, sa, sb, sg, w1, w2, n_iter=5):
 
 
 def crf_with_config(image, prob, config: CRFConfig = None, log=logger.info):
+    """Implements the CRF post-processing step for the W-Net.
+
+    Args:
+        image (np.ndarray): Array of shape (C, H, W, D) containing the input image.
+        prob (np.ndarray): Array of shape (K, H, W, D) containing the predicted class probabilities for each pixel.
+        config (CRFConfig, optional): Configuration for the CRF post-processing step. Defaults to None.
+        log (function, optional): Logging function. Defaults to logger.info.
+    """
     if config is None:
         config = CRFConfig()
     if image.shape[-3:] != prob.shape[-3:]:
@@ -191,6 +229,14 @@ class CRFWorker(GeneratorWorker):
         config: CRFConfig = None,
         log=None,
     ):
+        """Initializes the CRFWorker.
+
+        Args:
+            images_list (list): List of images to process.
+            labels_list (list): List of labels to process.
+            config (CRFConfig, optional): Configuration for the CRF post-processing step. Defaults to None.
+            log (function, optional): Logging function. Defaults to None.
+        """
         super().__init__(self._run_crf_job)
 
         self.images = images_list
