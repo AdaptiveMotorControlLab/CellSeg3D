@@ -153,7 +153,7 @@ Unsupervised model - WNet
 .. note::
     Our provided, pre-trained model uses an input size of 64x64x64. As such, window inference is always enabled
     and set to 64. If you want to use a different size, you will have to train your own model using the options listed in :ref:`training_wnet`.
-
+    Additionally, window inference and the number of classes are for now fixed in the plugin to support our pre-trained model only (2 classes and window size 64).
 For the best inference performance, the model should be retrained on images of the same modality as the ones you want to segment.
 Please see :ref:`training_wnet` for more details on how to train your own model.
 
