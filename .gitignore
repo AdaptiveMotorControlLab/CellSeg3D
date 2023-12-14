@@ -117,6 +117,7 @@ notebooks/instance_test.ipynb
 /docs/source/code/_autosummary/*.rst
 cov.syspath.txt
 napari_cellseg3d/dev_scripts/wandb
+wandb/
 
 #include test data
 !napari_cellseg3d/_tests/res/test.tif
