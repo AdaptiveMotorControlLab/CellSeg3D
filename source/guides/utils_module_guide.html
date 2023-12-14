@@ -436,6 +436,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fragment-image">7. Fragment image</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conditional-random-field-crf">8. Conditional Random Field (CRF)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#labels-statistics">9. Labels statistics</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#clear-large-labels">10. Clear large labels</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#source-code">Source code</a></li>
@@ -499,7 +500,7 @@ The available methods for this are:</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This utility is only available if you have installed the <cite>pydensecrf</cite> package.
-You may install it by using the command <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">cellseg3d[crf]</span></code>.</p>
+You may install it by using the command <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pydensecrf&#64;git+https://github.com/lucasb-eyer/pydensecrf.git#egg=master</span></code>.</p>
 </div>
 <div class="line-block">
 <div class="line">Refines semantic predictions by pairing them with the original image.</div>
@@ -534,6 +535,13 @@ You may install it by using the command <code class="docutils literal notranslat
 <div class="admonition hint">
 <p class="admonition-title">Hint</p>
 <p>Check the <code class="docutils literal notranslate"><span class="pre">notebooks</span></code> folder for examples of plots using the statistics CSV file.</p>
+</div>
+</section>
+<section id="clear-large-labels">
+<h3>10. Clear large labels<a class="headerlink" href="#clear-large-labels" title="Permalink to this headline">#</a></h3>
+<div class="line-block">
+<div class="line">Clears labels that are larger than a given threshold.</div>
+<div class="line">This is useful for removing artifacts that are larger than the objects of interest.</div>
 </div>
 </section>
 </section>
@@ -619,6 +627,7 @@ You may install it by using the command <code class="docutils literal notranslat
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fragment-image">7. Fragment image</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conditional-random-field-crf">8. Conditional Random Field (CRF)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#labels-statistics">9. Labels statistics</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#clear-large-labels">10. Clear large labels</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#source-code">Source code</a></li>
