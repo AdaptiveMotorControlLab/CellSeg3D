@@ -46,7 +46,7 @@ dependencies = [
     "tqdm",
     "matplotlib",
 ]
-dynamic = ["version"]
+dynamic = ["version", "entry-points"]
 
 [project.urls]
 Homepage  = "https://github.com/AdaptiveMotorControlLab/CellSeg3d"
