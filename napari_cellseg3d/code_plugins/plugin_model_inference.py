@@ -387,6 +387,9 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
     def _toggle_artifact_removal_widgets(self):
         """Shows or hides the options for instance segmentation based on current user selection."""
         ui.toggle_visibility(self.use_instance_choice, self.artifact_container)
+        ui.toggle_visibility(
+            self.use_instance_choice, self.attempt_artifact_removal_box
+        )
 
     def _toggle_display_window_size(self):
         """Show or hide window size choice depending on status of self.window_infer_box."""
@@ -513,7 +516,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.artifact_removal_size,
             ],
         )
-        # self.attempt_artifact_removal_box.setVisible(False)
+        self.attempt_artifact_removal_box.setVisible(False)
         self.remove_artifacts_label.setVisible(False)
         self.artifact_removal_size.setVisible(False)
 
