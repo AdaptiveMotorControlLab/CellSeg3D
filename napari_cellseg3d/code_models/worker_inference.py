@@ -859,7 +859,7 @@ class InferenceWorker(GeneratorWorker):
                 model = model_class(
                     input_img_size=[dims, dims, dims],
                     # device=self.config.device,
-                    num_classes=self.config.model_info.num_classes,
+                    # num_classes=self.config.model_info.num_classes,
                 )
                 try:
                     model = model.to(self.config.device)
