@@ -51,7 +51,7 @@ Break down large images into smaller cubes, optimal for training.
 
 .. note::
     This utility is only available if you have installed the `pydensecrf` package.
-    You may install it by using the command ``pip install cellseg3d[crf]``.
+    You may install it by using the command ``pip install pydensecrf@git+https://github.com/lucasb-eyer/pydensecrf.git#egg=master``.
 
 | Refines semantic predictions by pairing them with the original image.
 | For a list of parameters, see the :doc:`CRF API page<../code/_autosummary/napari_cellseg3d.code_models.crf>`.
@@ -82,6 +82,11 @@ Global metrics :
 
 .. hint::
     Check the ``notebooks`` folder for examples of plots using the statistics CSV file.
+
+10. Clear large labels
+----------------------
+| Clears labels that are larger than a given threshold.
+| This is useful for removing artifacts that are larger than the objects of interest.
 
 Source code
 ___________
