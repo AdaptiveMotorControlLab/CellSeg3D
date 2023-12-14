@@ -1,1 +1,2 @@
-__version__ = "0.0.3rc1"
+"""napari-cellseg3d - napari plugin for cell segmentation."""
+__version__ = "0.1.0"
