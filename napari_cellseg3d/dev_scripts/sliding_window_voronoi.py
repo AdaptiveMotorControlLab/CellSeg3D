@@ -1,12 +1,13 @@
+"""Test script for sliding window Voronoi-Otsu segmentation.""."""
 import numpy as np
 import pyclesperanto_prototype as cle
 from tqdm import tqdm
 
 
 def sliding_window_voronoi_otsu(volume, spot_sigma, outline_sigma, patch_size):
-    """Given a volume of dimensions HxWxD, a spot_sigma and an outline_sigma,
-    perform Voronoi-Otsu segmentation on the volume using a sliding window of
-    size patch_size. If the edge has been reached, the patch size is reduced
+    """Given a volume of dimensions HxWxD, a spot_sigma and an outline_sigma, perform Voronoi-Otsu segmentation on the volume using a sliding window of size patch_size.
+
+    If the edge has been reached, the patch size is reduced
     to fit the remaining space. The result is a segmentation of the same size
     as the input volume.
 
@@ -18,7 +19,7 @@ def sliding_window_voronoi_otsu(volume, spot_sigma, outline_sigma, patch_size):
     """
     result = np.zeros(volume.shape, dtype=np.uint32)
     max_label_id = 0
-    x, y, z = volume.shape
+    x, y, z = volume.shape[-3:]
     for i in tqdm(range(0, x, patch_size)):
         for j in range(0, y, patch_size):
             for k in range(0, z, patch_size):

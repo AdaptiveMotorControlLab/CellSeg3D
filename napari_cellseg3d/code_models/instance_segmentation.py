@@ -209,7 +209,7 @@ class InstanceMethod:
         """
         result = np.zeros(volume.shape, dtype=np.uint32)
         max_label_id = 0
-        x, y, z = volume.shape
+        x, y, z = volume.shape[-3:]
         pbar_total = (x // patch_size) * (y // patch_size) * (z // patch_size)
         pbar = tqdm(total=pbar_total)
         for i in range(0, x, patch_size):
