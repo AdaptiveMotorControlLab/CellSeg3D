@@ -31,7 +31,7 @@ CRF_INSTALLED = spec is not None
 if not CRF_INSTALLED:
     logger.info(
         "pydensecrf not installed, CRF post-processing will not be available. "
-        "Please install by running pip install cellseg3d[crf]"
+        "Please install by running : pip install pydensecrf@git+https://github.com/lucasb-eyer/pydensecrf.git#egg=master"
         "This is not a hard requirement, you do not need it to install it unless you want to use the CRF post-processing step."
     )
 else:
@@ -41,24 +41,6 @@ else:
         create_pairwise_gaussian,
         unary_from_softmax,
     )
-
-# try:
-#     import pydensecrf.densecrf as dcrf
-#     from pydensecrf.utils import (
-#         create_pairwise_bilateral,
-#         create_pairwise_gaussian,
-#         unary_from_softmax,
-#     )
-#     CRF_INSTALLED = True
-# except (ImportError, ModuleNotFoundError):
-#     logger.info(
-#         "pydensecrf not installed, CRF post-processing will not be available. "
-#         "Please install by running pip install cellseg3d[crf]"
-#         "This is not a hard requirement, you do not need it to install it unless you want to use the CRF post-processing step."
-#     )
-#     CRF_INSTALLED = False
-# use importlib instead to check if pydensecrf is installed
-
 
 __author__ = "Yves Paychère, Colin Hofmann, Cyril Achard"
 __credits__ = [
