@@ -98,6 +98,8 @@ If you encounter any problems, please [file an issue] along with a detailed desc
 
 ## Testing
 
+Before testing, install all requirements using ``pip install napari-cellseg3d[test]``.
+``pydensecrf`` is also required for testing.
 To run tests locally:
 
 - Locally : run ``pytest`` in the plugin folder
