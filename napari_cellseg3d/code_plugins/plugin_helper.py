@@ -43,7 +43,7 @@ class Helper(QWidget, metaclass=ui.QWidgetSingleton):
         self.logo_label.setToolTip("Open Github page")
 
         self.info_label = ui.make_label(
-            f"You are using napari-cellseg3d v.{'0.1.1rc1'}\n\n"
+            f"You are using napari-cellseg3d v.{'0.1.1'}\n\n"
             f"Plugin for cell segmentation developed\n"
             f"by the Mathis Lab of Adaptive Motor Control\n\n"
             f"Code by :\nCyril Achard\nMaxime Vidal\nJessy Lauer\nMackenzie Mathis\n"
