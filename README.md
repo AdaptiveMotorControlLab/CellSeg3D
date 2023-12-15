@@ -39,23 +39,7 @@ Added :
 
 ## Installation
 
-**Note** : we recommend using conda to create a new environment for the plugin.
-**M1 Mac users, please see the [M1 install section](#m1-mac-users)**
-
-    conda create --name napari-cellseg3d python=3.8
-    conda activate napari-cellseg3d
-
-You can install `napari-cellseg3d` via [pip]:
-
-    pip install napari-cellseg3d[all]
-
-OR directly via [napari-hub]:
-
-- Install napari from pip with `pip install "napari[all]"`,
-then from the “Plugins” menu within the napari application, select “Install/Uninstall Package(s)...”
-- Copy `napari-cellseg3d` and paste it where it says “Install by name/url…”
-- Click “Install”
-- Restart napari
+See the [Installation page] in the documentation for detailed instructions.
 
 ### M1 Mac users
 
@@ -149,7 +133,7 @@ Distributed under the terms of the [MIT] license.
 [tox]: https://tox.readthedocs.io/en/latest/
 [pip]: https://pypi.org/project/pip/
 [PyPI]: https://pypi.org/
-
+[Installation page]: https://adaptivemotorcontrollab.github.io/CellSeg3d/source/guides/installation_guide.html
 [the PyTorch website for installation instructions]: https://pytorch.org/get-started/locally/
 [PyTorch]: https://pytorch.org/get-started/locally/
 [MONAI's optional dependencies]: https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies
