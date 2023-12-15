@@ -110,3 +110,54 @@ OR to install from source:
 .. code-block::
 
     pip install -e .
+
+Optional requirements
+---------------------
+
+Additional functionalities
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Several additional functionalities are available optionally. To install them, use the following commands:
+
+- CRF post-processing:
+
+.. code-block::
+
+    pip install pydensecrf@git+https://github.com/lucasb-eyer/pydensecrf.git#egg=master
+
+- Weights & Biases integration:
+
+.. code-block::
+
+    pip install napari-cellseg3D[wandb]
+
+
+- ONNX model support (EXPERIMENTAL):
+  Depending on your hardware, you can install the CPU or GPU version of ONNX.
+
+.. code-block::
+
+    pip install napari-cellseg3D[onnx-cpu]
+    pip install napari-cellseg3D[onnx-gpu]
+
+Development requirements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Building the documentation:
+
+.. code-block::
+
+    pip install napari-cellseg3D[docs]
+
+- Running tests locally:
+
+.. code-block::
+
+    pip install pydensecrf@git+https://github.com/lucasb-eyer/pydensecrf.git#egg=master
+    pip install napari-cellseg3D[test]
+
+- Dev utilities:
+
+.. code-block::
+
+    pip install napari-cellseg3D[dev]
