@@ -51,6 +51,13 @@ class CRFParamsWidget(ui.GroupedWidget):
 
     def _build(self):
         if not CRF_INSTALLED:
+            self.sa_choice.setVisible(False)
+            self.sb_choice.setVisible(False)
+            self.sg_choice.setVisible(False)
+            self.w1_choice.setVisible(False)
+            self.w2_choice.setVisible(False)
+            self.n_iter_choice.setVisible(False)
+            ###
             ui.add_widgets(
                 self.layout,
                 [
