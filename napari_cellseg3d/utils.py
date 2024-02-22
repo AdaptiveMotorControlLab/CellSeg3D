@@ -15,8 +15,9 @@ from tifffile import imread, imwrite
 LOGGER = logging.getLogger(__name__)
 ###############
 # Global logging level setting
-# LOGGER.setLevel(logging.DEBUG)
-LOGGER.setLevel(logging.INFO)
+# SET TO INFO FOR RELEASE
+LOGGER.setLevel(logging.DEBUG)
+# LOGGER.setLevel(logging.INFO)
 ###############
 """
 utils.py
