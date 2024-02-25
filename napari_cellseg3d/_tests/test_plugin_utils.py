@@ -13,7 +13,7 @@ def test_utils_plugin(make_napari_viewer_proxy):
     view = make_napari_viewer_proxy()
     widget = Utilities(view)
 
-    image = rand_gen.random((10, 10, 10)).astype(np.uint8)
+    image = rand_gen.random((10, 10, 10))  # .astype(np.uint8)
     image_layer = view.add_image(image, name="image")
     label_layer = view.add_labels(image.astype(np.uint8), name="labels")
 
