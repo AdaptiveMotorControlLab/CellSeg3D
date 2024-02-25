@@ -363,6 +363,12 @@ class RemoveSmallUtils(BasePluginUtils):
         self.container = self._build()
 
         self.function = clear_small_objects
+        self._set_tooltips()
+
+    def _set_tooltips(self):
+        self.size_for_removal_counter.setToolTip(
+            "Size of the objects to remove, in pixels."
+        )
 
     def _build(self):
         container = ui.ContainerWidget()
@@ -646,6 +652,15 @@ class ThresholdUtils(BasePluginUtils):
 
         self.container = self._build()
         self.function = threshold
+
+        self._set_tooltips()
+
+    def _set_tooltips(self):
+        self.binarize_counter.setToolTip(
+            "Value to use as threshold for binarization."
+            "For labels, use the highest ID you want to keep. All lower IDs will be removed."
+            "For images, use the intensity value (pixel value) to threshold the image."
+        )
 
     def _build(self):
         container = ui.ContainerWidget()
