@@ -787,7 +787,11 @@ class WNetTrainingWorker(TrainingWorkerBase):
             criterionW = None
             del criterionW
             torch.cuda.empty_cache()
+            if WANDB_INSTALLED:
+                wandb.finish()
         except Exception as e:
+            if WANDB_INSTALLED:
+                wandb.finish()
             msg = f"Training failed with exception: {e}"
             self.log(msg)
             self.raise_error(e, msg)
@@ -1726,6 +1730,9 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             )
             self.log("Saving complete, exiting")
             model.to("cpu")
+
+            if WANDB_INSTALLED:
+                wandb.finish()
             # clear (V)RAM
             model = None
             del model
@@ -1741,6 +1748,8 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 torch.cuda.empty_cache()
 
         except Exception as e:
+            if WANDB_INSTALLED:
+                wandb.finish()
             self.raise_error(e, "Error in training")
             self.quit()
         finally:
