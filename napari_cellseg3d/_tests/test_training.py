@@ -17,6 +17,8 @@ from napari_cellseg3d.code_plugins.plugin_model_training import (
 )
 from napari_cellseg3d.config import MODEL_LIST
 
+WANDB_MODE = "disabled"
+
 im_path = Path(__file__).resolve().parent / "res/test.tif"
 im_path_str = str(im_path)
 lab_path = Path(__file__).resolve().parent / "res/test_labels.tif"
