@@ -330,7 +330,9 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
                 wandb.init(
                     config=config_dict,
                     project="CellSeg3D (Colab)",
+                    name=f"{self.config.model_info.name} training - {utils.get_date_time()}",
                     mode=self.wandb_config.mode,
+                    tags=["WNet", "Colab"],
                 )
 
             set_determinism(seed=self.config.deterministic_config.seed)
