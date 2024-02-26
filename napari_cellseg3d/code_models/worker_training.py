@@ -426,7 +426,9 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 wandb.init(
                     config=config_dict,
                     project="CellSeg3D",
+                    name=f"{self.config.model_info.name}_training - {utils.get_date_time()}",
                     mode=self.wandb_config.mode,
+                    tags=[f"{self.config.model_info.name}", "training"],
                 )
 
             set_determinism(seed=self.config.deterministic_config.seed)
@@ -1117,6 +1119,8 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                     wandb.init(
                         config=config_dict,
                         project="CellSeg3D",
+                        name=f"{model_config.name}_supervised_training - {utils.get_date_time()}",
+                        tags=[f"{model_config.name}", "supervised"],
                         mode=self.wandb_config.mode,
                     )
                 except AttributeError:
