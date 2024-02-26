@@ -3,11 +3,11 @@
 <!DOCTYPE html>
 
 
-<html data-content_root="" >
+<html lang="en" data-content_root="" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Installation guide ⚙ &#8212; napari-cellseg3d Documentation</title>
   
@@ -45,6 +45,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
     <script src="../../_static/copybutton.js"></script>
@@ -67,7 +68,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="next" title="Review🔍" href="review_module_guide.html" />
     <link rel="prev" title="Welcome to CellSeg3D!" href="../../welcome.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="docsearch:language" content="None"/>
+  <meta name="docsearch:language" content="en"/>
   </head>
   
   
@@ -444,7 +445,7 @@ document.write(`
                 <article class="bd-article" role="main">
                   
   <section id="installation-guide">
-<h1>Installation guide ⚙<a class="headerlink" href="#installation-guide" title="Permalink to this headline">#</a></h1>
+<h1>Installation guide ⚙<a class="headerlink" href="#installation-guide" title="Permalink to this heading">#</a></h1>
 <p>This guide outlines the steps for installing CellSeg3D and its dependencies. The plugin is compatible with Windows, Linux, and MacOS.</p>
 <p><strong>Note for M1/M2 (ARM64) Mac Users:</strong>
 Please refer to the <a class="reference internal" href="#m1-m2-arm64-mac-installation"><span class="std std-ref">section below</span></a> for specific instructions.</p>
@@ -453,9 +454,9 @@ Please refer to the <a class="reference internal" href="#m1-m2-arm64-mac-install
 <p>If you encounter any issues during installation, feel free to open an issue on our <a class="reference external" href="https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues">GitHub repository</a>.</p>
 </div>
 <section id="installing-pre-requisites">
-<h2>Installing pre-requisites<a class="headerlink" href="#installing-pre-requisites" title="Permalink to this headline">#</a></h2>
+<h2>Installing pre-requisites<a class="headerlink" href="#installing-pre-requisites" title="Permalink to this heading">#</a></h2>
 <section id="pyqt5-or-pyside2">
-<h3>PyQt5 or PySide2<a class="headerlink" href="#pyqt5-or-pyside2" title="Permalink to this headline">#</a></h3>
+<h3>PyQt5 or PySide2<a class="headerlink" href="#pyqt5-or-pyside2" title="Permalink to this heading">#</a></h3>
 <p>CellSeg3D requires either <strong>PyQt5</strong> or <strong>PySide2</strong> as a Qt backend for napari. If you don’t have a Qt backend installed:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">napari</span><span class="p">[</span><span class="nb">all</span><span class="p">]</span>
 </pre></div>
@@ -463,7 +464,7 @@ Please refer to the <a class="reference internal" href="#m1-m2-arm64-mac-install
 <p>This command installs PyQt5 by default.</p>
 </section>
 <section id="pytorch">
-<h3>PyTorch<a class="headerlink" href="#pytorch" title="Permalink to this headline">#</a></h3>
+<h3>PyTorch<a class="headerlink" href="#pytorch" title="Permalink to this heading">#</a></h3>
 <p>For PyTorch installation, refer to <a class="reference external" href="https://pytorch.org/get-started/locally/">PyTorch’s website</a> , with or without CUDA according to your hardware.
 Select the installation criteria that match your OS and hardware (GPU or CPU).</p>
 <div class="admonition note">
@@ -476,7 +477,7 @@ Select the installation criteria that match your OS and hardware (GPU or CPU).</
 </section>
 </section>
 <section id="installing-cellseg3d">
-<h2>Installing CellSeg3D<a class="headerlink" href="#installing-cellseg3d" title="Permalink to this headline">#</a></h2>
+<h2>Installing CellSeg3D<a class="headerlink" href="#installing-cellseg3d" title="Permalink to this heading">#</a></h2>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>For M1 Mac users, please see the <a class="reference internal" href="#m1-m2-arm64-mac-installation"><span class="std std-ref">section below</span></a></p>
@@ -498,7 +499,7 @@ Navigate to the cloned CellSeg3D folder and run:</p>
 <p>Successful installation will add the napari-cellseg3D plugin to napari’s Plugins section.</p>
 </section>
 <section id="m1-m2-arm64-mac-installation">
-<h2>M1/M2 (ARM64) Mac installation<a class="headerlink" href="#m1-m2-arm64-mac-installation" title="Permalink to this headline">#</a></h2>
+<h2>M1/M2 (ARM64) Mac installation<a class="headerlink" href="#m1-m2-arm64-mac-installation" title="Permalink to this heading">#</a></h2>
 <p id="arm64-mac-installation">For ARM64 Macs, we recommend using our custom CONDA environment. This is particularly important for M1 or M2 MacBooks.</p>
 <p>Start by installing <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html">miniconda3</a>.</p>
 <ol class="arabic simple">
@@ -531,7 +532,7 @@ In the terminal, navigate to the CellSeg3D folder:</p>
 </div>
 </section>
 <section id="optional-requirements">
-<h2>Optional requirements<a class="headerlink" href="#optional-requirements" title="Permalink to this headline">#</a></h2>
+<h2>Optional requirements<a class="headerlink" href="#optional-requirements" title="Permalink to this heading">#</a></h2>
 <p>Several additional functionalities are available optionally. To install them, use the following commands:</p>
 <ul class="simple">
 <li><p>CRF post-processing:</p></li>

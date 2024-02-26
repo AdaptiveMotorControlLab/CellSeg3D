@@ -3,11 +3,11 @@
 <!DOCTYPE html>
 
 
-<html data-content_root="" >
+<html lang="en" data-content_root="" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Metrics utility guide 📈 &#8212; napari-cellseg3d Documentation</title>
   
@@ -45,6 +45,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
     <script src="../../_static/copybutton.js"></script>
@@ -67,7 +68,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="docsearch:language" content="None"/>
+  <meta name="docsearch:language" content="en"/>
   </head>
   
   
@@ -438,7 +439,7 @@ document.write(`
                 <article class="bd-article" role="main">
                   
   <section id="metrics-utility-guide">
-<span id="metrics-module-guide"></span><h1>Metrics utility guide 📈<a class="headerlink" href="#metrics-utility-guide" title="Permalink to this headline">#</a></h1>
+<span id="metrics-module-guide"></span><h1>Metrics utility guide 📈<a class="headerlink" href="#metrics-utility-guide" title="Permalink to this heading">#</a></h1>
 <figure class="align-right" id="id1">
 <a class="reference internal image-reference" href="../../_images/plot_example_metrics.png"><img alt="../../_images/plot_example_metrics.png" src="../../_images/plot_example_metrics.png" style="width: 214.2px; height: 511.7px;" /></a>
 <figcaption>
@@ -451,7 +452,7 @@ Ranges from 0 (no similarity) to 1 (perfect similarity).</p>
 <div class="math notranslate nohighlight">
 \[\frac {2|X \cap Y|} {|X|+|Y|}\]</div>
 <section id="required-parameters">
-<h2>Required parameters:<a class="headerlink" href="#required-parameters" title="Permalink to this headline">#</a></h2>
+<h2>Required parameters:<a class="headerlink" href="#required-parameters" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Ground Truth Labels folder</p></li>
 <li><p>Prediction Labels folder</p></li>
@@ -471,7 +472,7 @@ useful if your images have varied orientation.</p></li>
 Pairs below the threshold will be displayed on the viewer for verification, ground truth appears in <strong>blue</strong>, and low score predictions in <strong>red</strong>.</p>
 </section>
 <section id="source-code">
-<h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this headline">#</a></h2>
+<h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p><span class="xref std std-doc">../code/plugin_base</span></p></li>
 <li><p><span class="xref std std-doc">../code/plugin_metrics</span></p></li>

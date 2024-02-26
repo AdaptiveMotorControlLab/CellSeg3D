@@ -3,11 +3,11 @@
 <!DOCTYPE html>
 
 
-<html data-content_root="" >
+<html lang="en" data-content_root="" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Detailed walkthrough - Supervised learning &#8212; napari-cellseg3d Documentation</title>
   
@@ -45,6 +45,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
     <script src="../../_static/copybutton.js"></script>
@@ -69,7 +70,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="next" title="Advanced : WNet training" href="training_wnet.html" />
     <link rel="prev" title="Utilities 🛠" href="utils_module_guide.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="docsearch:language" content="None"/>
+  <meta name="docsearch:language" content="en"/>
   </head>
   
   
@@ -453,10 +454,10 @@ document.write(`
                 <article class="bd-article" role="main">
                   
   <section id="detailed-walkthrough-supervised-learning">
-<span id="detailed-walkthrough"></span><h1>Detailed walkthrough - Supervised learning<a class="headerlink" href="#detailed-walkthrough-supervised-learning" title="Permalink to this headline">#</a></h1>
+<span id="detailed-walkthrough"></span><h1>Detailed walkthrough - Supervised learning<a class="headerlink" href="#detailed-walkthrough-supervised-learning" title="Permalink to this heading">#</a></h1>
 <p>This guide will show you step-by-step how to use the plugin’s workflow, beginning with human annotated datasets, to generating predictions on new volumes.</p>
 <section id="setting-up-images-and-labels">
-<h2>Setting up images and labels<a class="headerlink" href="#setting-up-images-and-labels" title="Permalink to this headline">#</a></h2>
+<h2>Setting up images and labels<a class="headerlink" href="#setting-up-images-and-labels" title="Permalink to this heading">#</a></h2>
 <p>CellSeg3D is designed for cleared-brain tissue data (collected using mesoSPIM ligthsheet systems).
 Here’s what we offer:</p>
 <ul class="simple">
@@ -478,7 +479,7 @@ Here’s what we offer:</p>
 If you need to start labeling volumes from scratch or correct initial labels, we recommend consulting the sections on <a class="reference internal" href="#walkthrough-reviewing"><span class="std std-ref">Review</span></a> section right after <a class="reference internal" href="#walkthrough-cropping"><span class="std std-ref">Cropping</span></a>.</p>
 </div>
 <section id="cropping">
-<h3>Cropping<a class="headerlink" href="#cropping" title="Permalink to this headline">#</a></h3>
+<h3>Cropping<a class="headerlink" href="#cropping" title="Permalink to this heading">#</a></h3>
 <p id="walkthrough-cropping">To reduce memory requirements and build a dataset from a single, large volume,
 you can use the <strong>cropping</strong> tool to extract multiple smaller images from a large volume for training.</p>
 <ol class="arabic simple">
@@ -506,7 +507,7 @@ When running inference on multiple images in a folder, try to maintain size unif
 </figure>
 </section>
 <section id="label-conversion-utility">
-<h3>Label conversion utility<a class="headerlink" href="#label-conversion-utility" title="Permalink to this headline">#</a></h3>
+<h3>Label conversion utility<a class="headerlink" href="#label-conversion-utility" title="Permalink to this heading">#</a></h3>
 <p>Assuming you have instance labels, you’ll need to convert them to semantic labels before using them for training.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -532,9 +533,9 @@ Then, select its corresponding layer, and start the process using layer-specific
 </section>
 </section>
 <section id="models-for-object-detection">
-<h2>Models for object detection<a class="headerlink" href="#models-for-object-detection" title="Permalink to this headline">#</a></h2>
+<h2>Models for object detection<a class="headerlink" href="#models-for-object-detection" title="Permalink to this heading">#</a></h2>
 <section id="training-guide">
-<h3>Training Guide<a class="headerlink" href="#training-guide" title="Permalink to this headline">#</a></h3>
+<h3>Training Guide<a class="headerlink" href="#training-guide" title="Permalink to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p>Preparation:</p>
 <ul class="simple">
@@ -602,7 +603,7 @@ the training you can do so anytime  by pressing the <strong>Start</strong> butto
 which you can then use in inference.</p>
 </section>
 <section id="inference">
-<h3>Inference<a class="headerlink" href="#inference" title="Permalink to this headline">#</a></h3>
+<h3>Inference<a class="headerlink" href="#inference" title="Permalink to this heading">#</a></h3>
 <p>To start, choose the folder with images ready for inference, and the location you want to store your results.</p>
 <p>Then, select the model you trained (see note below for SegResNet), and load your weights from training.</p>
 <div class="admonition note">
@@ -651,9 +652,9 @@ which you can then use in inference.</p>
 </section>
 </section>
 <section id="scoring-review-analysis">
-<h2>Scoring, review, analysis<a class="headerlink" href="#scoring-review-analysis" title="Permalink to this headline">#</a></h2>
+<h2>Scoring, review, analysis<a class="headerlink" href="#scoring-review-analysis" title="Permalink to this heading">#</a></h2>
 <section id="labels-review">
-<h3>Labels review<a class="headerlink" href="#labels-review" title="Permalink to this headline">#</a></h3>
+<h3>Labels review<a class="headerlink" href="#labels-review" title="Permalink to this heading">#</a></h3>
 <p id="walkthrough-reviewing">Using the review module, you can correct the model’s predictions.
 Load your images and labels, and enter the name of the csv file, keeps tracking of the review process( it
 records which slices have been checked or not and the time taken).</p>
@@ -672,7 +673,7 @@ the  surroundings of this location for easy viewing.</p>
 <p>once satisfied with your review, press the <strong>Save</strong> button to record your work.</p>
 </section>
 <section id="analysis-jupyter-notebooks">
-<h3>Analysis : Jupyter notebooks<a class="headerlink" href="#analysis-jupyter-notebooks" title="Permalink to this headline">#</a></h3>
+<h3>Analysis : Jupyter notebooks<a class="headerlink" href="#analysis-jupyter-notebooks" title="Permalink to this heading">#</a></h3>
 <p>In the <a class="reference external" href="https://github.com/AdaptiveMotorControlLab/CellSeg3d/tree/main/notebooks">notebooks folder of the repository</a>, you can find notebooks for plotting
 labels (full_plot.ipynb), and notebooks for plotting the inference results (csv_cell_plot.ipynb).</p>
 <p>Simply enter your folder or csv file path and the notebooks will plot your results.

@@ -5,6 +5,12 @@ napari\_cellseg3d.code\_plugins.plugin\_review\_dock
 
    
    
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      logger
+   
    
 
    

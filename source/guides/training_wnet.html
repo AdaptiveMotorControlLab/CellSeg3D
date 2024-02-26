@@ -3,11 +3,11 @@
 <!DOCTYPE html>
 
 
-<html data-content_root="" >
+<html lang="en" data-content_root="" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Advanced : WNet training &#8212; napari-cellseg3d Documentation</title>
   
@@ -45,6 +45,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
     <script src="../../_static/copybutton.js"></script>
@@ -67,7 +68,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="next" title="Advanced : Custom models" href="custom_model_template.html" />
     <link rel="prev" title="Detailed walkthrough - Supervised learning" href="detailed_walkthrough.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="docsearch:language" content="None"/>
+  <meta name="docsearch:language" content="en"/>
   </head>
   
   
@@ -438,7 +439,7 @@ document.write(`
                 <article class="bd-article" role="main">
                   
   <section id="advanced-wnet-training">
-<span id="training-wnet"></span><h1>Advanced : WNet training<a class="headerlink" href="#advanced-wnet-training" title="Permalink to this headline">#</a></h1>
+<span id="training-wnet"></span><h1>Advanced : WNet training<a class="headerlink" href="#advanced-wnet-training" title="Permalink to this heading">#</a></h1>
 <p>This plugin provides a reimplemented, custom version of the WNet model from <a class="reference external" href="https://arxiv.org/abs/1711.08506">WNet, A Deep Model for Fully Unsupervised Image Segmentation</a>.
 For training your model, you can choose among:</p>
 <ul class="simple">
@@ -457,7 +458,7 @@ the model was trained on; you can retrain from our pretrained model to your imag
 </ul>
 </div>
 <section id="parameters">
-<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">#</a></h2>
+<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading">#</a></h2>
 <figure class="align-right" id="id1">
 <a class="reference internal image-reference" href="../../_images/training_tab_4.png"><img alt="../../_images/training_tab_4.png" src="../../_images/training_tab_4.png" style="width: 232.0px; height: 463.0px;" /></a>
 <figcaption>
@@ -502,7 +503,7 @@ ideally the reconstruction loss should be of the same order of magnitude as the 
 </div>
 </section>
 <section id="common-issues-troubleshooting">
-<h2>Common issues troubleshooting<a class="headerlink" href="#common-issues-troubleshooting" title="Permalink to this headline">#</a></h2>
+<h2>Common issues troubleshooting<a class="headerlink" href="#common-issues-troubleshooting" title="Permalink to this heading">#</a></h2>
 <p>If you do not find a satisfactory answer here, please do not hesitate to <a class="reference external" href="https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues">open an issue</a> on GitHub.</p>
 <ul class="simple">
 <li><p><strong>The NCuts loss explodes after a few epochs</strong> : Lower the learning rate, first by a factor of two, then ten.</p></li>

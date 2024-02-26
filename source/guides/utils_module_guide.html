@@ -3,11 +3,11 @@
 <!DOCTYPE html>
 
 
-<html data-content_root="" >
+<html lang="en" data-content_root="" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Utilities 🛠 &#8212; napari-cellseg3d Documentation</title>
   
@@ -45,6 +45,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
     <script src="../../_static/copybutton.js"></script>
@@ -69,7 +70,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="next" title="Detailed walkthrough - Supervised learning" href="detailed_walkthrough.html" />
     <link rel="prev" title="Cropping✂️" href="cropping_module_guide.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="docsearch:language" content="None"/>
+  <meta name="docsearch:language" content="en"/>
   </head>
   
   
@@ -452,7 +453,7 @@ document.write(`
                 <article class="bd-article" role="main">
                   
   <section id="utilities">
-<span id="utils-module-guide"></span><h1>Utilities 🛠<a class="headerlink" href="#utilities" title="Permalink to this headline">#</a></h1>
+<span id="utils-module-guide"></span><h1>Utilities 🛠<a class="headerlink" href="#utilities" title="Permalink to this heading">#</a></h1>
 <p>Here you will find a range of tools for image processing and analysis.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -460,13 +461,13 @@ document.write(`
 </div>
 <p>You may specify the results directory for saving; afterwards you can run each action on a folder or on the currently selected layer.</p>
 <section id="available-actions">
-<h2>Available actions<a class="headerlink" href="#available-actions" title="Permalink to this headline">#</a></h2>
+<h2>Available actions<a class="headerlink" href="#available-actions" title="Permalink to this heading">#</a></h2>
 <section id="crop-3d-volumes">
-<h3>1. Crop 3D volumes<a class="headerlink" href="#crop-3d-volumes" title="Permalink to this headline">#</a></h3>
+<h3>1. Crop 3D volumes<a class="headerlink" href="#crop-3d-volumes" title="Permalink to this heading">#</a></h3>
 <p>Please refer to <a class="reference internal" href="cropping_module_guide.html#cropping-module-guide"><span class="std std-ref">Cropping✂️</span></a> for a guide on using the cropping utility.</p>
 </section>
 <section id="convert-to-instance-labels">
-<h3>2. Convert to instance labels<a class="headerlink" href="#convert-to-instance-labels" title="Permalink to this headline">#</a></h3>
+<h3>2. Convert to instance labels<a class="headerlink" href="#convert-to-instance-labels" title="Permalink to this heading">#</a></h3>
 <p>This will convert semantic (binary) labels to instance labels (with a unique ID for each object).
 The available methods for this are:</p>
 <ul class="simple">
@@ -476,27 +477,27 @@ The available methods for this are:</p>
 </ul>
 </section>
 <section id="convert-to-semantic-labels">
-<h3>3. Convert to semantic labels<a class="headerlink" href="#convert-to-semantic-labels" title="Permalink to this headline">#</a></h3>
+<h3>3. Convert to semantic labels<a class="headerlink" href="#convert-to-semantic-labels" title="Permalink to this heading">#</a></h3>
 <p>Transforms instance labels into 0/1 semantic labels, useful for training purposes.</p>
 </section>
 <section id="remove-small-objects">
-<h3>4. Remove small objects<a class="headerlink" href="#remove-small-objects" title="Permalink to this headline">#</a></h3>
+<h3>4. Remove small objects<a class="headerlink" href="#remove-small-objects" title="Permalink to this heading">#</a></h3>
 <p>Input a size threshold (in pixels) to eliminate objects below this size.</p>
 </section>
 <section id="resize-anisotropic-images">
-<h3>5. Resize anisotropic images<a class="headerlink" href="#resize-anisotropic-images" title="Permalink to this headline">#</a></h3>
+<h3>5. Resize anisotropic images<a class="headerlink" href="#resize-anisotropic-images" title="Permalink to this heading">#</a></h3>
 <p>Input your microscope’s resolution to remove anisotropy in images.</p>
 </section>
 <section id="threshold-images">
-<h3>6. Threshold images<a class="headerlink" href="#threshold-images" title="Permalink to this headline">#</a></h3>
+<h3>6. Threshold images<a class="headerlink" href="#threshold-images" title="Permalink to this heading">#</a></h3>
 <p>Removes values beneath a certain threshold.</p>
 </section>
 <section id="fragment-image">
-<h3>7. Fragment image<a class="headerlink" href="#fragment-image" title="Permalink to this headline">#</a></h3>
+<h3>7. Fragment image<a class="headerlink" href="#fragment-image" title="Permalink to this heading">#</a></h3>
 <p>Break down large images into smaller cubes, optimal for training.</p>
 </section>
 <section id="conditional-random-field-crf">
-<h3>8. Conditional Random Field (CRF)<a class="headerlink" href="#conditional-random-field-crf" title="Permalink to this headline">#</a></h3>
+<h3>8. Conditional Random Field (CRF)<a class="headerlink" href="#conditional-random-field-crf" title="Permalink to this heading">#</a></h3>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This utility is only available if you have installed the <cite>pydensecrf</cite> package.
@@ -508,7 +509,7 @@ You may install it by using the command <code class="docutils literal notranslat
 </div>
 </section>
 <section id="labels-statistics">
-<h3>9. Labels statistics<a class="headerlink" href="#labels-statistics" title="Permalink to this headline">#</a></h3>
+<h3>9. Labels statistics<a class="headerlink" href="#labels-statistics" title="Permalink to this heading">#</a></h3>
 <div class="line-block">
 <div class="line">Computes statistics for each object in the image.</div>
 <div class="line">Enter the name of the csv file to save the results, then select your layer or folder of labels to compute the statistics.</div>
@@ -538,7 +539,7 @@ You may install it by using the command <code class="docutils literal notranslat
 </div>
 </section>
 <section id="clear-large-labels">
-<h3>10. Clear large labels<a class="headerlink" href="#clear-large-labels" title="Permalink to this headline">#</a></h3>
+<h3>10. Clear large labels<a class="headerlink" href="#clear-large-labels" title="Permalink to this heading">#</a></h3>
 <div class="line-block">
 <div class="line">Clears labels that are larger than a given threshold.</div>
 <div class="line">This is useful for removing artifacts that are larger than the objects of interest.</div>
@@ -546,7 +547,7 @@ You may install it by using the command <code class="docutils literal notranslat
 </section>
 </section>
 <section id="source-code">
-<h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this headline">#</a></h2>
+<h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.plugin_convert.html"><span class="doc">napari_cellseg3d.code_plugins.plugin_convert</span></a></p></li>
 <li><p><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.plugin_crf.html"><span class="doc">napari_cellseg3d.code_plugins.plugin_crf</span></a></p></li>

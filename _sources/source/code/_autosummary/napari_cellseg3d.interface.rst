@@ -5,6 +5,18 @@
 
    
    
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      LEFT_AL
+      RIGHT_AL
+      HCENTER_AL
+      CENTER_AL
+      ABS_AL
+      BOTT_AL
+      TOP_AL
+   
    
 
    

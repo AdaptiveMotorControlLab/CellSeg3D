@@ -3,11 +3,11 @@
 <!DOCTYPE html>
 
 
-<html data-content_root="" >
+<html lang="en" data-content_root="" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Inference📊 &#8212; napari-cellseg3d Documentation</title>
   
@@ -45,6 +45,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
     <script src="../../_static/copybutton.js"></script>
@@ -69,7 +70,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="next" title="Cropping✂️" href="cropping_module_guide.html" />
     <link rel="prev" title="Training📉" href="training_module_guide.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="docsearch:language" content="None"/>
+  <meta name="docsearch:language" content="en"/>
   </head>
   
   
@@ -442,7 +443,7 @@ document.write(`
                 <article class="bd-article" role="main">
                   
   <section id="inference">
-<span id="inference-module-guide"></span><h1>Inference📊<a class="headerlink" href="#inference" title="Permalink to this headline">#</a></h1>
+<span id="inference-module-guide"></span><h1>Inference📊<a class="headerlink" href="#inference" title="Permalink to this heading">#</a></h1>
 <figure class="align-center" id="id1">
 <img alt="../../_images/plugin_inference.png" src="../../_images/plugin_inference.png" />
 <figcaption>
@@ -459,10 +460,6 @@ Otherwise you can run inference directly on layers within napari. Stacks of 2D f
 </div>
 <p>At present, the following pre-trained models are available :</p>
 <table class="table">
-<colgroup>
-<col style="width: 13%" />
-<col style="width: 87%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Model</p></th>
 <th class="head"><p>Link to original paper</p></th>
@@ -491,7 +488,7 @@ Otherwise you can run inference directly on layers within napari. Stacks of 2D f
 <p>For WNet-specific instruction please refer to the appropriate section below.</p>
 </div>
 <section id="interface-and-functionalities">
-<h2>Interface and functionalities<a class="headerlink" href="#interface-and-functionalities" title="Permalink to this headline">#</a></h2>
+<h2>Interface and functionalities<a class="headerlink" href="#interface-and-functionalities" title="Permalink to this heading">#</a></h2>
 <figure class="align-right" id="id2">
 <img alt="../../_images/inference_plugin_layout.png" src="../../_images/inference_plugin_layout.png" />
 <figcaption>
@@ -597,12 +594,12 @@ The log will keep you updated on the progress.</p>
 </div>
 </section>
 <section id="plotting-results">
-<h2>Plotting results<a class="headerlink" href="#plotting-results" title="Permalink to this headline">#</a></h2>
+<h2>Plotting results<a class="headerlink" href="#plotting-results" title="Permalink to this heading">#</a></h2>
 <p>In the <code class="docutils literal notranslate"><span class="pre">notebooks</span></code> folder you will find a plotting guide for cell statistics derived from the inference module.
 Simply load the csv file in the notebook and use the provided functions to plot the desired statistics.</p>
 </section>
 <section id="unsupervised-model-wnet">
-<h2>Unsupervised model - WNet<a class="headerlink" href="#unsupervised-model-wnet" title="Permalink to this headline">#</a></h2>
+<h2>Unsupervised model - WNet<a class="headerlink" href="#unsupervised-model-wnet" title="Permalink to this heading">#</a></h2>
 <div class="line-block">
 <div class="line">The <cite>WNet model</cite> is a fully unsupervised model used to segment images without any labels.</div>
 <div class="line">It functions similarly to the above models, with a few notable differences.</div>
@@ -626,7 +623,7 @@ Please see <a class="reference internal" href="training_wnet.html#training-wnet"
 </div>
 </section>
 <section id="source-code">
-<h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this headline">#</a></h2>
+<h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.plugin_model_inference.html"><span class="doc">napari_cellseg3d.code_plugins.plugin_model_inference</span></a></p></li>
 <li><p><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.worker_inference.html"><span class="doc">napari_cellseg3d.code_models.worker_inference</span></a></p></li>
