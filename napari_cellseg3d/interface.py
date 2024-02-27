@@ -844,9 +844,9 @@ class LayerSelecter(ContainerWidget):
                 # add new layers of correct type
                 self.layer_list.addItem(layer.name)
                 logger.debug(f"Layer {layer.name} has been added to the menu")
-                break
+                # break
                 # once added, check again for previously renamed layers
-                # self._check_for_removed_layer(layer)
+                self._check_for_removed_layer(layer)
 
             if layer.name in self._get_all_layers() and not isinstance(
                 layer, self.layer_type
