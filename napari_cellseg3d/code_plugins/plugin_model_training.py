@@ -1246,8 +1246,9 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.log.print_and_log("Done")
         self.log.print_and_log("*" * 10)
         try:
-            self._make_csv()
-        except ValueError as e:
+            pass  # FIXME
+            # self._make_csv()
+        except (ValueError, KeyError) as e:
             logger.warning(f"Error while saving CSV report: {e}")
 
         self.start_btn.setText("Start")
@@ -1375,11 +1376,11 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         try:
             self.loss_1_values["Loss"]
             supervised = True
-        except KeyError("Loss"):
+        except KeyError:
             try:
                 self.loss_1_values["SoftNCuts"]
                 supervised = False
-            except KeyError("SoftNCuts") as e:
+            except KeyError as e:
                 raise KeyError(
                     "Error when making csv. Check loss dict keys ?"
                 ) from e
