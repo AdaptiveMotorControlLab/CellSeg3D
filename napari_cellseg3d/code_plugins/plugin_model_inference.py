@@ -655,6 +655,8 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 if result.semantic_segmentation[channel].sum() > 0:
                     index_channel_least_labelled = channel
                     break
+                # if no channel has any label, use the first one
+                index_channel_least_labelled = 0
             viewer.dims.set_point(
                 0, index_channel_least_labelled
             )  # TODO(cyril: check if this is always the right axis
