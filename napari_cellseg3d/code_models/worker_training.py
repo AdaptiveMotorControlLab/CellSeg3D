@@ -425,7 +425,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 logger.debug(f"wandb config : {config_dict}")
                 wandb.init(
                     config=config_dict,
-                    project="CellSeg3D",
+                    project="CellSeg3D - WNet",
                     name=f"WNet_training - {utils.get_date_time()}",
                     mode=self.wandb_config.mode,
                     tags=["WNet", "training"],
