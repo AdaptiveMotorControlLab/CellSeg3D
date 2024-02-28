@@ -425,10 +425,10 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 logger.debug(f"wandb config : {config_dict}")
                 wandb.init(
                     config=config_dict,
-                    project="CellSeg3D",
-                    name=f"{self.config.model_info.name}_training - {utils.get_date_time()}",
+                    project="CellSeg3D - WNet",
+                    name=f"WNet_training - {utils.get_date_time()}",
                     mode=self.wandb_config.mode,
-                    tags=[f"{self.config.model_info.name}", "training"],
+                    tags=["WNet", "training"],
                 )
 
             set_determinism(seed=self.config.deterministic_config.seed)
