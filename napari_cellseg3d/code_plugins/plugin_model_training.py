@@ -1246,8 +1246,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.log.print_and_log("Done")
         self.log.print_and_log("*" * 10)
         try:
-            pass  # FIXME
-            # self._make_csv()
+            self._make_csv()
         except (ValueError, KeyError) as e:
             logger.warning(f"Error while saving CSV report: {e}")
 
@@ -1386,12 +1385,6 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 ) from e
 
         if supervised:
-            try:
-                logger.debug(self.loss_1_values["Loss"])
-                logger.debug(self.loss_2_values)
-            except Exception:
-                logger.error("Error when making csv. Check loss dict keys ?")
-
             val = utils.fill_list_in_between(
                 self.loss_2_values,
                 self.worker_config.validation_interval - 1,
@@ -1405,8 +1398,8 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                     "validation": val,
                 }
             )
-            if len(val) != len(self.loss_1_values):
-                err = f"Validation and loss values don't have the same length ! Got {len(val)} and {len(self.loss_1_values)}"
+            if len(val) != len(self.loss_1_values["Loss"]):
+                err = f"Validation and loss values don't have the same length ! Got {len(val)} and {len(self.loss_1_values['Loss'])}"
                 logger.error(err)
                 raise ValueError(err)
         else:
