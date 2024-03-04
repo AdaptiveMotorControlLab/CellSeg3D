@@ -1054,7 +1054,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         logger.debug("Loading config...")
         model_config = config.ModelInfo(name=self.model_choice.currentText())
 
-        self.weights_config.path = self.weights_config.path
+        # self.weights_config.path = self.weights_config.path
         self.weights_config.use_custom = self.custom_weights_choice.isChecked()
 
         self.weights_config.use_pretrained = (
@@ -1641,7 +1641,7 @@ class WNetWidgets:
             text_label="Number of classes",
         )
         self.intensity_sigma_choice = ui.DoubleIncrementCounter(
-            lower=1.0,
+            lower=0.01,
             upper=100.0,
             default=self.default_config.intensity_sigma,
             parent=parent,
@@ -1649,7 +1649,7 @@ class WNetWidgets:
         )
         self.intensity_sigma_choice.setMaximumWidth(20)
         self.spatial_sigma_choice = ui.DoubleIncrementCounter(
-            lower=1.0,
+            lower=0.01,
             upper=100.0,
             default=self.default_config.spatial_sigma,
             parent=parent,
