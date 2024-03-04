@@ -1386,6 +1386,12 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 ) from e
 
         if supervised:
+            try:
+                logger.debug(self.loss_1_values["Loss"])
+                logger.debug(self.loss_2_values)
+            except Exception:
+                logger.error("Error when making csv. Check loss dict keys ?")
+
             val = utils.fill_list_in_between(
                 self.loss_2_values,
                 self.worker_config.validation_interval - 1,
