@@ -423,6 +423,11 @@ class WNetTrainingWorker(TrainingWorkerBase):
             if WANDB_INSTALLED:
                 config_dict = self.config.__dict__
                 logger.debug(f"wandb config : {config_dict}")
+                if wandb.run is not None:
+                    logger.warning(
+                        "A previous wandb run is still active. It will be stoppe before starting a new one."
+                    )
+                    wandb.finish()
                 wandb.init(
                     config=config_dict,
                     project="CellSeg3D - WNet",
@@ -1132,6 +1137,11 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 config_dict = self.config.__dict__
                 logger.debug(f"wandb config : {config_dict}")
                 try:
+                    if wandb.run is not None:
+                        logger.warning(
+                            "A previous wandb run is still active. It will be stoppe before starting a new one."
+                        )
+                        wandb.finish()
                     wandb.init(
                         config=config_dict,
                         project="CellSeg3D",
