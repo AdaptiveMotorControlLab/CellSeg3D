@@ -1404,8 +1404,12 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 raise ValueError(err)
         else:
             ncuts_loss = self.loss_1_values["SoftNCuts"]
+
+            logger.debug(f"Loss 1 values : {ncuts_loss}")
+            logger.debug(f"Loss 2 values : {self.loss_2_values}")
             try:
                 dice_metric = self.loss_1_values["Dice metric"]
+                logger.debug(f"Dice metric : {dice_metric}")
                 self.df = pd.DataFrame(
                     {
                         "Epoch": size_column,
