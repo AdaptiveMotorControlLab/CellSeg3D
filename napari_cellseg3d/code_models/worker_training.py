@@ -388,7 +388,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
         self.log("-- Data --")
         self.log("Training data :\n")
         [
-            self.log(f"{v}")
+            self.log(f"{Path(v).stem}")
             for d in self.config.train_data_dict
             for k, v in d.items()
         ]
