@@ -477,7 +477,11 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 or self.config.weights_info.use_custom
             ):
                 if self.config.weights_info.use_pretrained:
-                    weights_file = "wnet.pth"
+                    from napari_cellseg3d.code_models.models.model_WNet import (
+                        WNet_,
+                    )
+
+                    weights_file = WNet_.weights_file
                     self.downloader.download_weights("WNet", weights_file)
                     weights = PRETRAINED_WEIGHTS_DIR / Path(weights_file)
                     self.config.weights_info.path = weights
