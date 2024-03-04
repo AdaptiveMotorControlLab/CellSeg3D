@@ -472,13 +472,17 @@ class WNetTrainingWorker(TrainingWorkerBase):
             if WANDB_INSTALLED:
                 wandb.watch(model, log_freq=100)
 
-            if self.config.weights_info.use_custom:
+            if (
+                self.config.weights_info.use_pretrained
+                or self.config.weights_info.use_custom
+            ):
                 if self.config.weights_info.use_pretrained:
                     weights_file = "wnet.pth"
                     self.downloader.download_weights("WNet", weights_file)
                     weights = PRETRAINED_WEIGHTS_DIR / Path(weights_file)
                     self.config.weights_info.path = weights
-                else:
+
+                if self.config.weights_info.use_custom:
                     weights = str(Path(self.config.weights_info.path))
 
                 try:
