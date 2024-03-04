@@ -1,7 +1,9 @@
 """User interface functions and aliases."""
+import contextlib
 import threading
 from functools import partial
 from typing import List, Optional
+from warnings import warn
 
 import napari
 
@@ -804,9 +806,12 @@ class LayerSelecter(ContainerWidget):
         self.layer_description.setVisible(False)
         # self.layer_list.setSizeAdjustPolicy(QComboBox.AdjustToContents) # use tooltip instead ?
 
+        # connect to LayerList events
         self._viewer.layers.events.inserted.connect(partial(self._add_layer))
         self._viewer.layers.events.removed.connect(partial(self._remove_layer))
+        self._viewer.layers.events.changed.connect(self._check_for_layers)
 
+        # update self.layer_list when layers are added or removed
         self.layer_list.currentIndexChanged.connect(self._update_tooltip)
         self.layer_list.currentTextChanged.connect(self._update_description)
 
@@ -816,10 +821,68 @@ class LayerSelecter(ContainerWidget):
         )
         self._check_for_layers()
 
+    def _get_all_layers(self):
+        return [
+            self.layer_list.itemText(i) for i in range(self.layer_list.count())
+        ]
+
     def _check_for_layers(self):
+        """Check for layers of the correct type and update the dropdown menu.
+
+        Also removes layers that have been removed from the viewer.
+        """
         for layer in self._viewer.layers:
-            if isinstance(layer, self.layer_type):
+            layer.events.name.connect(self._rename_layer)
+
+            if (
+                isinstance(layer, self.layer_type)
+                and layer.name not in self._get_all_layers()
+            ):
+                logger.debug(
+                    f"Layer {layer.name} - List : {self._get_all_layers()}"
+                )
+                # add new layers of correct type
                 self.layer_list.addItem(layer.name)
+                logger.debug(f"Layer {layer.name} has been added to the menu")
+                # break
+                # once added, check again for previously renamed layers
+                self._check_for_removed_layer(layer)
+
+            if layer.name in self._get_all_layers() and not isinstance(
+                layer, self.layer_type
+            ):
+                # remove layers of incorrect type
+                index = self.layer_list.findText(layer.name)
+                self.layer_list.removeItem(index)
+                logger.debug(
+                    f"Layer {layer.name} has been removed from the menu"
+                )
+
+        self._check_for_removed_layers()
+        self._update_tooltip()
+        self._update_description()
+
+    def _check_for_removed_layer(self, layer):
+        """Check if a specific layer has been removed from the viewer and must be removed from the menu."""
+        if isinstance(layer, str):
+            name = layer
+        elif isinstance(layer, self.layer_type):
+            name = layer.name
+        else:
+            logger.warning("Layer is not a string or a valid napari layer")
+            return
+
+        if name in self._get_all_layers() and name not in [
+            l.name for l in self._viewer.layers
+        ]:
+            index = self.layer_list.findText(name)
+            self.layer_list.removeItem(index)
+            logger.debug(f"Layer {name} has been removed from the menu")
+
+    def _check_for_removed_layers(self):
+        """Check for layers that have been removed from the viewer and must be removed from the menu."""
+        for layer in self._get_all_layers():
+            self._check_for_removed_layer(layer)
 
     def _update_tooltip(self):
         self.layer_list.setToolTip(self.layer_list.currentText())
@@ -827,9 +890,12 @@ class LayerSelecter(ContainerWidget):
     def _update_description(self):
         try:
             if self.layer_list.currentText() != "":
-                self.layer_description.setVisible(True)
-                shape_desc = f"Shape : {self.layer_data().shape}"
-                self.layer_description.setText(shape_desc)
+                try:
+                    shape_desc = f"Shape : {self.layer_data().shape}"
+                    self.layer_description.setText(shape_desc)
+                    self.layer_description.setVisible(True)
+                except AttributeError:
+                    self.layer_description.setVisible(False)
             else:
                 self.layer_description.setVisible(False)
         except KeyError:
@@ -840,6 +906,13 @@ class LayerSelecter(ContainerWidget):
 
         if isinstance(inserted_layer, self.layer_type):
             self.layer_list.addItem(inserted_layer.name)
+
+        # check for renaming
+        inserted_layer.events.name.connect(self._rename_layer)
+
+    def _rename_layer(self, _):
+        # on layer rename, check for removed/new layers
+        self._check_for_layers()
 
     def _remove_layer(self, event):
         removed_layer = event.value
@@ -867,15 +940,24 @@ class LayerSelecter(ContainerWidget):
 
     def layer_name(self):
         """Returns the name of the layer selected in the dropdown menu."""
-        return self.layer_list.currentText()
+        try:
+            return self.layer_list.currentText()
+        except (KeyError, ValueError):
+            logger.warning("Layer list is empty")
+            return None
 
     def layer_data(self):
         """Returns the data of the layer selected in the dropdown menu."""
         if self.layer_list.count() < 1:
             logger.debug("Layer list is empty")
             return None
-
-        return self.layer().data
+        try:
+            return self.layer().data
+        except (KeyError, ValueError):
+            msg = f"Layer {self.layer_name()} has no data. Layer might have been renamed or removed."
+            logger.warning(msg)
+            warn(msg, stacklevel=1)
+            return None
 
 
 class FilePathWidget(QWidget):  # TODO include load as folder

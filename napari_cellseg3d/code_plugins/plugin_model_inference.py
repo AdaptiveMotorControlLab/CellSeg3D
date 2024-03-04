@@ -281,6 +281,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         )
 
         thresh_desc = (
+            "NOT RECOMMENDED ON FIRST RUN - check results without first!\n"
             "Thresholding : all values in the image below the chosen probability"
             " threshold will be set to 0, and all others to 1."
         )
@@ -301,6 +302,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             "If enabled, data will be kept on the RAM rather than the VRAM.\nCan avoid out of memory issues with CUDA"
         )
         self.use_instance_choice.setToolTip(
+            "NOT RECOMMENDED ON FIRST RUN - check results without first!\n"
             "Instance segmentation will convert instance (0/1) labels to labels"
             " that attempt to assign an unique ID to each cell."
         )
@@ -653,6 +655,8 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 if result.semantic_segmentation[channel].sum() > 0:
                     index_channel_least_labelled = channel
                     break
+                # if no channel has any label, use the first one
+                index_channel_least_labelled = 0
             viewer.dims.set_point(
                 0, index_channel_least_labelled
             )  # TODO(cyril: check if this is always the right axis
