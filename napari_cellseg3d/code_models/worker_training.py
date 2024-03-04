@@ -425,7 +425,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 logger.debug(f"wandb config : {config_dict}")
                 if wandb.run is not None:
                     logger.warning(
-                        "A previous wandb run is still active. It will be stoppe before starting a new one."
+                        "A previous wandb run is still active. It will be stopped before starting a new one."
                     )
                     wandb.finish()
                 wandb.init(
@@ -1139,7 +1139,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 try:
                     if wandb.run is not None:
                         logger.warning(
-                            "A previous wandb run is still active. It will be stoppe before starting a new one."
+                            "A previous wandb run is still active. It will be stopped before starting a new one."
                         )
                         wandb.finish()
                     wandb.init(
