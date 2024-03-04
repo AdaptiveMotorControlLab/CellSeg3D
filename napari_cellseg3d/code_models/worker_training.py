@@ -624,6 +624,9 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         del criterionW
                         torch.cuda.empty_cache()
 
+                        if WANDB_INSTALLED:
+                            wandb.finish()
+
                 self.ncuts_losses.append(
                     epoch_ncuts_loss / len(self.dataloader)
                 )
@@ -736,7 +739,8 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 if epoch % 5 == 0:
                     torch.save(
                         model.state_dict(),
-                        self.config.results_path_folder + "/wnet_.pth",
+                        self.config.results_path_folder
+                        + "/wnet_checkpoint.pth",
                     )
 
             self.log("Training finished")
@@ -1522,6 +1526,9 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                         del scheduler
                         if device.type == "cuda":
                             torch.cuda.empty_cache()
+
+                        if WANDB_INSTALLED:
+                            wandb.finish()
 
                     yield TrainingReport(
                         show_plot=False,
