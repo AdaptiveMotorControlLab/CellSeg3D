@@ -1370,8 +1370,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         # this assumption does not hold when training is stopped
         if len(size_column) != len(self.loss_2_values):
             logger.info(
-                "Training was stopped, setting epochs for csv to",
-                len(self.loss_2_values),
+                f"Training was stopped, setting epochs for csv to {len(self.loss_2_values)}"
             )
             size_column = range(1, len(self.loss_2_values) + 1)
 
