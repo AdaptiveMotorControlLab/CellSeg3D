@@ -488,7 +488,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
 
                     weights_file = WNet_.weights_file
                     self.downloader.download_weights("WNet", weights_file)
-                    weights = PRETRAINED_WEIGHTS_DIR / Path(weights_file)
+                    weights = str(PRETRAINED_WEIGHTS_DIR / Path(weights_file))
                     self.config.weights_info.path = weights
 
                 if self.config.weights_info.use_custom:
@@ -1432,13 +1432,13 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             # time = utils.get_date_time()
             logger.debug("Weights")
 
-            if weights_config.use_custom:
+            if weights_config.use_custom or weights_config.use_pretrained:
                 if weights_config.use_pretrained:
                     weights_file = model_class.weights_file
                     self.downloader.download_weights(model_name, weights_file)
-                    weights = PRETRAINED_WEIGHTS_DIR / Path(weights_file)
+                    weights = str(PRETRAINED_WEIGHTS_DIR / Path(weights_file))
                     weights_config.path = weights
-                else:
+                elif weights_config.use_custom:
                     weights = str(Path(weights_config.path))
 
                 try:
