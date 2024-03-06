@@ -873,8 +873,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 self.dice_metric(
                     y_pred=val_outputs[
                         :,
-                        max_dice_channel : (max_dice_channel + 1),
-                        :,
+                        max_dice_channel:,  # : (max_dice_channel + 1),
                         :,
                         :,
                     ],

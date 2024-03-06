@@ -1687,8 +1687,8 @@ class WNetWidgets:
         self.reconstruction_weight_divide_factor_choice = (
             ui.DoubleIncrementCounter(
                 lower=0.01,
-                upper=10000,
-                default=100,
+                upper=10000.0,
+                default=100.0,
                 parent=parent,
                 text_label="Reconstruction weight divide factor",
             )
