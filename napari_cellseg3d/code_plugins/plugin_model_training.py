@@ -1368,11 +1368,11 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
     def _make_csv(self):
         size_column = range(1, self.worker_config.max_epochs + 1)
         # this assumption does not hold when training is stopped
-        if len(size_column) != len(self.loss_2_values):
+        if len(size_column) != len(self.loss_1_values):
             logger.info(
-                f"Training was stopped, setting epochs for csv to {len(self.loss_2_values)}"
+                f"Training was stopped, setting epochs for csv to {len(self.loss_1_values)}"
             )
-            size_column = range(1, len(self.loss_2_values) + 1)
+            size_column = range(1, len(self.loss_1_values) + 1)
 
         if len(self.loss_1_values) == 0 or self.loss_1_values is None:
             logger.warning("No loss values to add to csv !")
