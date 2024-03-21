@@ -4,42 +4,50 @@ Advanced : WNet training
 ========================
 
 This plugin provides a reimplemented, custom version of the WNet model from `WNet, A Deep Model for Fully Unsupervised Image Segmentation`_.
+
 For training your model, you can choose among:
 
 * Directly within the plugin
 * The provided Jupyter notebook (locally)
-* Our Colab notebook (inspired by ZeroCostDL4Mic)
+* Our Colab notebook (inspired by https://github.com/HenriquesLab/ZeroCostDL4Mic)
 
 Selecting training data
------------------------
+-------------------------
 
 The WNet **does not require a large amount of data to train**, but **choosing the right data** to train this unsupervised model **is crucial**.
+
 You may find below some guidelines, based on our own data and testing.
+
 The WNet is designed to segment objects based on their brightness, and is particularly well-suited for images with a clear contrast between objects and background.
 
 The WNet is not suitable for images with artifacts, therefore care should be taken that the images are clean and that the objects are at least somewhat distinguishable from the background.
 
-For optimal performance, the following should be avoided for training:
-- Images with very large, bright regions
-- Almost-empty and empty images
-- Images with large empty regions or "holes"
 
-However, the model may be accomodate:
-- Uneven brightness distribution
-- Varied object shapes and radius
-- Noisy images
-- Uneven illumination across the image
+.. important::
+    For optimal performance, the following should be avoided for training:
+
+    - Images with very large, bright regions
+    - Almost-empty and empty images
+    - Images with large empty regions or "holes"
+
+    However, the model may be accomodate:
+
+    - Uneven brightness distribution
+    - Varied object shapes and radius
+    - Noisy images
+    - Uneven illumination across the image
 
 For optimal results, during inference, images should be similar to those the model was trained on; however this is not a strict requirement.
-You can retrain from our pretrained model to your image dataset to quickly reach good performance, simply check "Use pre-trained weights" in the training module, and lower the learning rate.
+
+You may also retrain from our pretrained model to your image dataset to help quickly reach good performance if, simply check "Use pre-trained weights" in the training module, and lower the learning rate.
 
 .. note::
         - The WNet relies on brightness to distinguish objects from the background. For better results, use image regions with minimal artifacts. If you notice many artifacts, consider trying one of our supervised models (for lightsheet microscopy).
         - The model has two losses, the **`SoftNCut loss`**, which clusters pixels according to brightness, and a reconstruction loss, either **`Mean Square Error (MSE)`** or **`Binary Cross Entropy (BCE)`**.
         - For good performance, wait for the SoftNCut to reach a plateau; the reconstruction loss should also be decreasing overall, but this is generally less critical for segmentation performance.
 
-Parameterss
-----------
+Parameters
+-------------
 
 .. figure:: ../images/training_tab_4.png
     :scale: 100 %
@@ -66,9 +74,11 @@ _`When using the WNet training module`, the **Advanced** tab contains a set of a
     - **Reconstruction weight** : Sets the weight for the reconstruction loss (default is 5*1e-3).
 
 .. important::
-    The weight of the reconstruction loss should be adjusted to ensure that both losses are balanced;
-    this balance can be assessed using the live view of training outputs :
+    The weight of the reconstruction loss should be adjusted to ensure that both losses are balanced.
+
+    This balance can be assessed using the live view of training outputs :
     if the NCuts loss is "taking over", causing the segmentation to only label very large, brighter versus dimmer regions, the reconstruction loss should be increased.
+
     This will help the model to focus on the details of the objects, rather than just the overall brightness of the volume.
 
 Common issues troubleshooting
