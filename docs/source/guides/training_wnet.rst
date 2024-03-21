@@ -10,15 +10,35 @@ For training your model, you can choose among:
 * The provided Jupyter notebook (locally)
 * Our Colab notebook (inspired by ZeroCostDL4Mic)
 
-The WNet does not require a large amount of data to train, but during inference images should be similar to those
-the model was trained on; you can retrain from our pretrained model to your image dataset to quickly reach good performance.
+Selecting training data
+-----------------------
+
+The WNet **does not require a large amount of data to train**, but **choosing the right data** to train this unsupervised model **is crucial**.
+You may find below some guidelines, based on our own data and testing.
+The WNet is designed to segment objects based on their brightness, and is particularly well-suited for images with a clear contrast between objects and background.
+
+The WNet is not suitable for images with artifacts, therefore care should be taken that the images are clean and that the objects are at least somewhat distinguishable from the background.
+
+For optimal performance, the following should be avoided for training:
+- Images with very large, bright regions
+- Almost-empty and empty images
+- Images with large empty regions or "holes"
+
+However, the model may be accomodate:
+- Uneven brightness distribution
+- Varied object shapes and radius
+- Noisy images
+- Uneven illumination across the image
+
+For optimal results, during inference, images should be similar to those the model was trained on; however this is not a strict requirement.
+You can retrain from our pretrained model to your image dataset to quickly reach good performance, simply check "Use pre-trained weights" in the training module, and lower the learning rate.
 
 .. note::
-        - The WNet relies on brightness to distinguish objects from the background. For better results, use image regions with minimal artifacts. If you notice many artifacts, consider training on one of the supervised models.
-        - The model has two losses, the **`SoftNCut loss`**, which clusters pixels according to brightness, and a reconstruction loss, either **`Mean Square Error (MSE)`** or **`Binary Cross Entropy (BCE)`**. Unlike the method described in the original paper, these losses are added in a weighted sum and the backward pass is performed for the whole model at once. The SoftNcuts and BCE are bounded between 0 and 1; the MSE may take large positive values. It is recommended to watch for the weighted sum of losses to be **close to one on the first epoch**, for training stability.
-        - For good performance, you should wait for the SoftNCut to reach a plateau; the reconstruction loss must also decrease but is generally less critical.
+        - The WNet relies on brightness to distinguish objects from the background. For better results, use image regions with minimal artifacts. If you notice many artifacts, consider trying one of our supervised models (for lightsheet microscopy).
+        - The model has two losses, the **`SoftNCut loss`**, which clusters pixels according to brightness, and a reconstruction loss, either **`Mean Square Error (MSE)`** or **`Binary Cross Entropy (BCE)`**.
+        - For good performance, wait for the SoftNCut to reach a plateau; the reconstruction loss should also be decreasing overall, but this is generally less critical for segmentation performance.
 
-Parameters
+Parameterss
 ----------
 
 .. figure:: ../images/training_tab_4.png
@@ -29,7 +49,7 @@ Parameters
 
 _`When using the WNet training module`, the **Advanced** tab contains a set of additional options:
 
-- **Number of classes** : Dictates the segmentation classes (default is 2). Increasing the number of classes will result in a more progressive segmentation according to brightness; can be useful if you have "halos" around your objects or artifacts with a significantly different brightness.
+- **Number of classes** : Dictates the segmentation classes (default is 2). Increasing the number of classes will result in a more progressive segmentation according to brightness; can be useful if you have "halos" around your objects, or to approximate boundary labels.
 - **Reconstruction loss** : Choose between MSE or BCE (default is MSE). MSE is more precise but also sensitive to outliers; BCE is more robust against outliers at the cost of precision.
 
 - NCuts parameters:
@@ -43,22 +63,26 @@ _`When using the WNet training module`, the **Advanced** tab contains a set of a
 
 - Weights for the sum of losses :
     - **NCuts weight** : Sets the weight of the NCuts loss (default is 0.5).
-    - **Reconstruction weight** : Sets the weight for the reconstruction loss (default is 0.5*1e-2).
+    - **Reconstruction weight** : Sets the weight for the reconstruction loss (default is 5*1e-3).
 
-.. note::
-    The weight of the reconstruction loss should be adjusted to ensure the weighted sum is around one during the first epoch;
-    ideally the reconstruction loss should be of the same order of magnitude as the NCuts loss after being multiplied by its weight.
+.. important::
+    The weight of the reconstruction loss should be adjusted to ensure that both losses are balanced;
+    this balance can be assessed using the live view of training outputs :
+    if the NCuts loss is "taking over", causing the segmentation to only label very large, brighter versus dimmer regions, the reconstruction loss should be increased.
+    This will help the model to focus on the details of the objects, rather than just the overall brightness of the volume.
 
 Common issues troubleshooting
 ------------------------------
-If you do not find a satisfactory answer here, please do not hesitate to `open an issue`_ on GitHub.
 
-- **The NCuts loss explodes after a few epochs** : Lower the learning rate, first by a factor of two, then ten.
+.. important::
+    If you do not find a satisfactory answer here, please do not hesitate to `open an issue`_ on GitHub.
 
-- **The NCuts loss does not converge and is unstable** :
-  The normalization step might not be adapted to your images. Disable normalization and change intensity_sigma according to the distribution of values in your image. For reference, by default images are remapped to values between 0 and 100, and intensity_sigma=1.
 
-- **Reconstruction (decoder) performance is poor** : switch to BCE and set the scaling factor of the reconstruction loss to 0.5, OR adjust the weight of the MSE loss to make it closer to 1 in the weighted sum.
+- **The NCuts loss "explodes" after a few epochs** : Lower the learning rate, for example start with a factor of two, then ten.
+
+- **Reconstruction (decoder) performance is poor** : First, try increasing the weight of the reconstruction loss. If this is ineffective, switch to BCE loss and set the scaling factor of the reconstruction loss to 0.5, OR adjust the weight of the MSE loss.
+
+- **Segmentation only separates the brighter versus dimmer regions** : Increase the weight of the reconstruction loss.
 
 
 .. _WNet, A Deep Model for Fully Unsupervised Image Segmentation: https://arxiv.org/abs/1711.08506
