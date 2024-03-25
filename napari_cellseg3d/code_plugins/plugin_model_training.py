@@ -1365,54 +1365,44 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.on_stop()
             self._stop_requested = False
 
-    def _make_csv(self):
+    def _check_lens(self, size_column, loss_values):
+        if len(size_column) != len(loss_values):
+            logger.info(
+                f"Training was stopped, setting epochs for csv to {len(loss_values)}"
+            )
+            return range(1, len(loss_values) + 1)
+        return size_column
+
+    def _handle_loss_values(self, size_column, key):
+        loss_values = self.loss_1_values.get(key)
+        if loss_values is None:
+            return None
+
+        if len(loss_values) == 0:
+            logger.warning("No loss values to add to csv !")
+            return None
+
+        return self._check_lens(size_column, loss_values)
+
+    def _make_csv(self):  # TDOD(cyril) design could use a good rework
         size_column = range(1, self.worker_config.max_epochs + 1)
-        # this assumption does not hold when training is stopped
 
-        try:
-            self.loss_1_values["Loss"]
+        supervised = False
+        size_column = self._handle_loss_values(size_column, "Loss")
+        if size_column is None:
+            size_column = self._handle_loss_values(size_column, "SoftNCuts")
+            if size_column is None:
+                raise KeyError("Error when making csv. Check loss dict keys ?")
             supervised = True
-            if len(size_column) != len(self.loss_1_values["Loss"]):
-                logger.info(
-                    f"Training was stopped, setting epochs for csv to {len(self.loss_1_values['Loss'])}"
-                )
-                size_column = range(1, len(self.loss_1_values["Loss"]) + 1)
-
-            if (
-                len(self.loss_1_values["Loss"]) == 0
-                or self.loss_1_values["Loss"] is None
-            ):
-                logger.warning("No loss values to add to csv !")
-                return
-        except KeyError:
-            try:
-                self.loss_1_values["SoftNCuts"]
-                supervised = False
-                if len(size_column) != len(self.loss_1_values["SoftNCuts"]):
-                    logger.info(
-                        f"Training was stopped, setting epochs for csv to {len(self.loss_1_values['SoftNCuts'])}"
-                    )
-                    size_column = range(
-                        1, len(self.loss_1_values["SoftNCuts"]) + 1
-                    )
-
-                if (
-                    len(self.loss_1_values["SoftNCuts"]) == 0
-                    or self.loss_1_values["SoftNCuts"] is None
-                ):
-                    logger.warning("No loss values to add to csv !")
-                    return
-            except KeyError as e:
-                raise KeyError(
-                    "Error when making csv. Check loss dict keys ?"
-                ) from e
 
         if supervised:
-            val = utils.fill_list_in_between(
+            val = utils.fill_list_in_between(  # fills the validation list based on validation interval
                 self.loss_2_values,
                 self.worker_config.validation_interval - 1,
                 "",
-            )[: len(size_column)]
+            )[
+                : len(size_column)
+            ]
 
             self.df = pd.DataFrame(
                 {
