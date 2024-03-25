@@ -658,9 +658,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                                 "cmap": "turbo",
                             },
                             "Encoder output (discrete)": {
-                                "data": AsDiscrete(threshold=0.5)(
-                                    enc_out
-                                ).numpy(),
+                                "data": np.where(enc_out > 0.5, enc_out, 0),
                                 "cmap": "bop blue",
                             },
                             "Decoder output": {
