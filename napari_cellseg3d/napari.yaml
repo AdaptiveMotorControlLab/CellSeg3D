@@ -1,42 +1,42 @@
-name: napari-cellseg3d
+name: napari_cellseg3d
 display_name: CellSeg3D
 schema_version: 0.0.4
 
 contributions:
   commands:
-  - id: napari-cellseg3d.load
+  - id: napari_cellseg3d.load
     title: Create reviewer
     python_name: napari_cellseg3d.plugins:Reviewer
 
-  - id: napari-cellseg3d.help
+  - id: napari_cellseg3d.help
     title: Create Help
     python_name: napari_cellseg3d.plugins:Helper
 
-  - id: napari-cellseg3d.utils
+  - id: napari_cellseg3d.utils
     title:  Create utilities
     python_name: napari_cellseg3d.plugins:Utilities
 
-  - id: napari-cellseg3d.infer
+  - id: napari_cellseg3d.infer
     title: Create Inference widget
     python_name: napari_cellseg3d.plugins:Inferer
 
-  - id: napari-cellseg3d.train
+  - id: napari_cellseg3d.train
     title: Create Trainer widget
     python_name: napari_cellseg3d.plugins:Trainer
 
 
   widgets:
-  - command: napari-cellseg3d.load
+  - command: napari_cellseg3d.load
     display_name: Review
 
-  - command: napari-cellseg3d.infer
+  - command: napari_cellseg3d.infer
     display_name: Inference
 
-  - command: napari-cellseg3d.train
+  - command: napari_cellseg3d.train
     display_name: Training
 
-  - command: napari-cellseg3d.utils
+  - command: napari_cellseg3d.utils
     display_name: Utilities
 
-  - command: napari-cellseg3d.help
+  - command: napari_cellseg3d.help
     display_name: Help/About...
