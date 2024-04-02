@@ -17,9 +17,11 @@ A napari plugin for 3D cell segmentation: training, inference, and data review. 
 
 ## News
 
-**New version : v0.1.1**
+**New version : v0.1.2**
 
-Added :
+- Fixed manifest issue for PyPi
+
+Previous additions :
 
 - Improved training interface
 - Unsupervised model : WNet
