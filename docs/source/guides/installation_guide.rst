@@ -112,7 +112,7 @@ OR to install from source:
     pip install -e .
 
 Optional requirements
---------------------------------------------
+------------------------------
 
 Additional functionalities
 ______________________________
