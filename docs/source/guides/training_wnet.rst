@@ -1,7 +1,7 @@
 .. _training_wnet:
 
-Advanced : WNet3D training
-========================
+Walkthrough - WNet3D training
+===============================
 
 This plugin provides a reimplemented, custom version of the WNet3D model from `WNet, A Deep Model for Fully Unsupervised Image Segmentation`_.
 For training your model, you can choose among:

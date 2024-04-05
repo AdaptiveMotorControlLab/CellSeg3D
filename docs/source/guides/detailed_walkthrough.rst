@@ -1,6 +1,6 @@
 .. _detailed_walkthrough:
 
-Detailed walkthrough - Supervised learning
+Walkthrough - Supervised learning
 ==========================================
 
 This guide will show you step-by-step how to use the plugin's workflow, beginning with human annotated datasets, to generating predictions on new volumes.
