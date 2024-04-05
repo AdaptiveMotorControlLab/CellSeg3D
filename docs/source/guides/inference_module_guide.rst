@@ -23,7 +23,7 @@ Model            Link to original paper
 ==============   ================================================================================================
 SwinUNetR        `Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images`_
 SegResNet        `3D MRI brain tumor segmentation using autoencoder regularization`_
-WNet             `WNet, A Deep Model for Fully Unsupervised Image Segmentation`_
+WNet3D             `WNet3D, A Deep Model for Fully Unsupervised Image Segmentation`_
 TRAILMAP_MS       An implementation of the `TRAILMAP project on GitHub`_ using `3DUNet for PyTorch`_
 VNet             `Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation`_
 ==============   ================================================================================================
@@ -33,10 +33,10 @@ VNet             `Fully Convolutional Neural Networks for Volumetric Medical Ima
 .. _TRAILMAP project on GitHub: https://github.com/AlbertPun/TRAILMAP
 .. _3DUnet for Pytorch: https://github.com/wolny/pytorch-3dunet
 .. _Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images: https://arxiv.org/abs/2201.01266
-.. _WNet, A Deep Model for Fully Unsupervised Image Segmentation: https://arxiv.org/abs/1711.08506
+.. _WNet3D, A Deep Model for Fully Unsupervised Image Segmentation: https://arxiv.org/abs/1711.08506
 
 .. note::
-    For WNet-specific instruction please refer to the appropriate section below.
+    For WNet3D-specific instruction please refer to the appropriate section below.
 
 
 Interface and functionalities
@@ -142,13 +142,13 @@ In the ``notebooks`` folder you will find a plotting guide for cell statistics d
 Simply load the csv file in the notebook and use the provided functions to plot the desired statistics.
 
 
-Unsupervised model - WNet
+Unsupervised model - WNet3D
 -------------------------
 
-| The `WNet model` is a fully unsupervised model used to segment images without any labels.
+| The `WNet3D model` is a fully unsupervised model used to segment images without any labels.
 | It functions similarly to the above models, with a few notable differences.
 
-.. _WNet model: https://arxiv.org/abs/1711.08506
+.. _WNet3D model: https://arxiv.org/abs/1711.08506
 
 .. note::
     Our provided, pre-trained model uses an input size of 64x64x64. As such, window inference is always enabled
@@ -158,7 +158,7 @@ For the best inference performance, the model should be retrained on images of t
 Please see :ref:`training_wnet` for more details on how to train your own model.
 
 .. hint::
-  | WNet, as an unsupervised model, may not always output the background class in the same dimension.
+  | WNet3D, as an unsupervised model, may not always output the background class in the same dimension.
   | This might cause the result from inference to appear densely populated.
   | The plugin will automatically attempt to show the foreground class, but this might not always succeed.
   | If the displayed output seems dominated by the background, you can manually adjust the visible class. To do this, **use the slider positioned at the bottom of the napari window**.

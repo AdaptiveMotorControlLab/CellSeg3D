@@ -1,20 +1,20 @@
 .. _training_wnet:
 
-Advanced : WNet training
+Advanced : WNet3D training
 ========================
 
-This plugin provides a reimplemented, custom version of the WNet model from `WNet, A Deep Model for Fully Unsupervised Image Segmentation`_.
+This plugin provides a reimplemented, custom version of the WNet3D model from `WNet3D, A Deep Model for Fully Unsupervised Image Segmentation`_.
 For training your model, you can choose among:
 
 * Directly within the plugin
 * The provided Jupyter notebook (locally)
 * Our Colab notebook (inspired by ZeroCostDL4Mic)
 
-The WNet does not require a large amount of data to train, but during inference images should be similar to those
+The WNet3D does not require a large amount of data to train, but during inference images should be similar to those
 the model was trained on; you can retrain from our pretrained model to your image dataset to quickly reach good performance.
 
 .. note::
-        - The WNet relies on brightness to distinguish objects from the background. For better results, use image regions with minimal artifacts. If you notice many artifacts, consider training on one of the supervised models.
+        - The WNet3D relies on brightness to distinguish objects from the background. For better results, use image regions with minimal artifacts. If you notice many artifacts, consider training on one of the supervised models.
         - The model has two losses, the **`SoftNCut loss`**, which clusters pixels according to brightness, and a reconstruction loss, either **`Mean Square Error (MSE)`** or **`Binary Cross Entropy (BCE)`**. Unlike the method described in the original paper, these losses are added in a weighted sum and the backward pass is performed for the whole model at once. The SoftNcuts and BCE are bounded between 0 and 1; the MSE may take large positive values. It is recommended to watch for the weighted sum of losses to be **close to one on the first epoch**, for training stability.
         - For good performance, you should wait for the SoftNCut to reach a plateau; the reconstruction loss must also decrease but is generally less critical.
 
@@ -27,7 +27,7 @@ Parameters
 
     Advanced tab
 
-_`When using the WNet training module`, the **Advanced** tab contains a set of additional options:
+_`When using the WNet3D training module`, the **Advanced** tab contains a set of additional options:
 
 - **Number of classes** : Dictates the segmentation classes (default is 2). Increasing the number of classes will result in a more progressive segmentation according to brightness; can be useful if you have "halos" around your objects or artifacts with a significantly different brightness.
 - **Reconstruction loss** : Choose between MSE or BCE (default is MSE). MSE is more precise but also sensitive to outliers; BCE is more robust against outliers at the cost of precision.
@@ -61,5 +61,5 @@ If you do not find a satisfactory answer here, please do not hesitate to `open a
 - **Reconstruction (decoder) performance is poor** : switch to BCE and set the scaling factor of the reconstruction loss to 0.5, OR adjust the weight of the MSE loss to make it closer to 1 in the weighted sum.
 
 
-.. _WNet, A Deep Model for Fully Unsupervised Image Segmentation: https://arxiv.org/abs/1711.08506
+.. _WNet3D, A Deep Model for Fully Unsupervised Image Segmentation: https://arxiv.org/abs/1711.08506
 .. _open an issue: https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues
