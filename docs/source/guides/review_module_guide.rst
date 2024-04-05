@@ -1,6 +1,6 @@
 .. _review_module_guide:
 
-Review🔍
+Labeling🔍
 =================================
 
 .. figure:: ../images/plugin_review.png
@@ -8,7 +8,7 @@ Review🔍
 
     Layout of the review module
 
-**Review** allows you to inspect your labels, which may be manually created or predicted by a model, and make necessary corrections.
+**Labeling** allows you to inspect your labels, which may be manually created or predicted by a model, and make necessary corrections.
 The system will save the updated status of each file in a csv file.
 Additionally, the time taken per slice review is logged, enabling efficient monitoring.
 
@@ -38,7 +38,7 @@ Launching the review process
         - If an identical CSV file already exists, it will be used. If not, a new one will be generated.
         - If you choose to create a new dataset, a new CSV will always be created. If multiple copies already exist, a sequential number will be appended to the new file's name.
 
-4. **Beginning the Review:**
+4. **Beginning the labeling:**
     Press **`Start reviewing`** once you are ready to start the review process.
 
 .. warning::
@@ -51,9 +51,9 @@ Interface & functionalities
 .. figure:: ../images/review_process_example.png
     :align: center
 
-    Interface of the review process.
+    Interface for the labeling process.
 
-Once you have launched the review process, you will have access to the following functionalities:
+Once you have launched the labeling process, you will have access to the following functionalities:
 
 .. hlist::
    :columns: 1
