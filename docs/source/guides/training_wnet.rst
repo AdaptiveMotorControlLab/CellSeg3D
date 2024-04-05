@@ -3,7 +3,7 @@
 Advanced : WNet3D training
 ========================
 
-This plugin provides a reimplemented, custom version of the WNet3D model from `WNet3D, A Deep Model for Fully Unsupervised Image Segmentation`_.
+This plugin provides a reimplemented, custom version of the WNet3D model from `WNet, A Deep Model for Fully Unsupervised Image Segmentation`_.
 For training your model, you can choose among:
 
 * Directly within the plugin
@@ -61,5 +61,5 @@ If you do not find a satisfactory answer here, please do not hesitate to `open a
 - **Reconstruction (decoder) performance is poor** : switch to BCE and set the scaling factor of the reconstruction loss to 0.5, OR adjust the weight of the MSE loss to make it closer to 1 in the weighted sum.
 
 
-.. _WNet3D, A Deep Model for Fully Unsupervised Image Segmentation: https://arxiv.org/abs/1711.08506
+.. _WNet, A Deep Model for Fully Unsupervised Image Segmentation: https://arxiv.org/abs/1711.08506
 .. _open an issue: https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues

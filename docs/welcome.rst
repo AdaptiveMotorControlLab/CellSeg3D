@@ -160,7 +160,7 @@ This plugin mainly uses the following libraries and software:
 
 * `pyclEsperanto`_ (for the Voronoi Otsu labeling) by Robert Haase
 
-* A custom re-implementation of the `WNet3D`_ by Xia and Kulis [3]_
+* A new unsupervised 3D model based on the `WNet`_ by Xia and Kulis [3]_
 
 .. _Mathis Laboratory of Adaptive Motor Control: http://www.mackenziemathislab.org/
 .. _Wyss Center: https://wysscenter.ch/
@@ -170,7 +170,7 @@ This plugin mainly uses the following libraries and software:
 .. _MONAI project: https://monai.io/
 .. _on their website: https://docs.monai.io/en/stable/networks.html#nets
 .. _pyclEsperanto: https://github.com/clEsperanto/pyclesperanto_prototype
-.. _WNet3D: https://arxiv.org/abs/1711.08506
+.. _WNet: https://arxiv.org/abs/1711.08506
 
 .. rubric:: References
 
