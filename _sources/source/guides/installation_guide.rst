@@ -70,7 +70,7 @@ Successful installation will add the napari-cellseg3D plugin to napari’s Plugi
 
 
 M1/M2 (ARM64) Mac installation
--------------------------------
+--------------------------------------------
 .. _ARM64_Mac_installation:
 
 For ARM64 Macs, we recommend using our custom CONDA environment. This is particularly important for M1 or M2 MacBooks.
@@ -112,10 +112,10 @@ OR to install from source:
     pip install -e .
 
 Optional requirements
----------------------
+------------------------------
 
 Additional functionalities
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+______________________________
 
 Several additional functionalities are available optionally. To install them, use the following commands:
 
@@ -141,7 +141,7 @@ Several additional functionalities are available optionally. To install them, us
     pip install napari-cellseg3D[onnx-gpu]
 
 Development requirements
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+______________________________
 
 - Building the documentation:
 

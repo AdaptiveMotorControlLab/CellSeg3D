@@ -63,7 +63,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Inference📊" href="inference_module_guide.html" />
-    <link rel="prev" title="Review🔍" href="review_module_guide.html" />
+    <link rel="prev" title="Labeling🔍" href="review_module_guide.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -168,7 +168,7 @@ const thebe_selector_output = ".output, .cell_output"
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">User guides</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="installation_guide.html">Installation guide ⚙</a></li>
-<li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Review🔍</a></li>
+<li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Labeling🔍</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Training📉</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inference_module_guide.html">Inference📊</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cropping_module_guide.html">Cropping✂️</a></li>
@@ -176,11 +176,11 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Walkthroughs</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Detailed walkthrough - Supervised learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Walkthrough - Supervised learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training_wnet.html">Walkthrough - WNet3D training</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced guides</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="training_wnet.html">Advanced : WNet training</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Custom models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Code</span></p>
@@ -481,8 +481,8 @@ you use napari to load the stack as a 3D image, and save it as a 3D image file.<
 <tr class="row-odd"><td><p>SwinUNetR</p></td>
 <td><p><a class="reference external" href="https://arxiv.org/abs/2201.01266">Swin UNETR, Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images</a></p></td>
 </tr>
-<tr class="row-even"><td><p>WNet</p></td>
-<td><p><a class="reference external" href="https://arxiv.org/abs/1711.08506">WNet, A Deep Model for Fully Unsupervised Image Segmentation</a></p></td>
+<tr class="row-even"><td><p>WNet3D</p></td>
+<td><p><a class="reference external" href="https://arxiv.org/abs/1711.08506">WNet3D, A Deep Model for Fully Unsupervised Image Segmentation</a></p></td>
 </tr>
 <tr class="row-odd"><td><p>TRAILMAP_MS</p></td>
 <td><p>An implementation of the <a class="reference external" href="https://github.com/AlbertPun/TRAILMAP">TRAILMAP project on GitHub</a> using <a class="reference external" href="https://github.com/wolny/pytorch-3dunet">3DUNet for PyTorch</a></p></td>
@@ -671,7 +671,7 @@ For instance, if set to two, the module will assess the model’s performance us
 </section>
 <section id="advanced-tab">
 <h3>1) <strong>Advanced</strong> tab<a class="headerlink" href="#advanced-tab" title="Permalink to this heading">#</a></h3>
-<p>This tab is only available with WNet training. For more information please see the <a class="reference internal" href="training_wnet.html#when-using-the-wnet-training-module"><span class="std std-ref">WNet parameters list</span></a> section.</p>
+<p>This tab is only available with WNet3D training. For more information please see the <a class="reference internal" href="training_wnet.html#when-using-the-wnet3d-training-module"><span class="std std-ref">WNet3D parameters list</span></a> section.</p>
 </section>
 <section id="running-the-training">
 <h3>Running the training<a class="headerlink" href="#running-the-training" title="Permalink to this heading">#</a></h3>
@@ -700,8 +700,8 @@ The model’s inputs (image, label) and outputs (raw &amp; binarized) will also 
 </section>
 <section id="unsupervised-model">
 <h2>Unsupervised model<a class="headerlink" href="#unsupervised-model" title="Permalink to this heading">#</a></h2>
-<p>The training of our custom WNet implementation is now available as part of the Training module.</p>
-<p>Please see the <a class="reference internal" href="training_wnet.html#training-wnet"><span class="std std-ref">Advanced : WNet training</span></a> section for more information.</p>
+<p>The training of our custom WNet3D implementation is now available as part of the Training module.</p>
+<p>Please see the <a class="reference internal" href="training_wnet.html#training-wnet"><span class="std std-ref">Walkthrough - WNet3D training</span></a> section for more information.</p>
 </section>
 <section id="wandb-integration-optional">
 <h2>WandB integration (optional)<a class="headerlink" href="#wandb-integration-optional" title="Permalink to this heading">#</a></h2>
@@ -783,7 +783,7 @@ You can find them under <strong>CellSeg3D {MODEL NAME}</strong> on your project 
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Review🔍</p>
+        <p class="prev-next-title">Labeling🔍</p>
       </div>
     </a>
     <a class="right-next"

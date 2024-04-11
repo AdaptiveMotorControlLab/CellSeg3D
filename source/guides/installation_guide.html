@@ -62,7 +62,7 @@ const thebe_selector_output = ".output, .cell_output"
     <script>DOCUMENTATION_OPTIONS.pagename = 'source/guides/installation_guide';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Review🔍" href="review_module_guide.html" />
+    <link rel="next" title="Labeling🔍" href="review_module_guide.html" />
     <link rel="prev" title="Welcome to CellSeg3D!" href="../../welcome.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -168,7 +168,7 @@ const thebe_selector_output = ".output, .cell_output"
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">User guides</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Installation guide ⚙</a></li>
-<li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Review🔍</a></li>
+<li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Labeling🔍</a></li>
 <li class="toctree-l1"><a class="reference internal" href="training_module_guide.html">Training📉</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inference_module_guide.html">Inference📊</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cropping_module_guide.html">Cropping✂️</a></li>
@@ -176,11 +176,11 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Walkthroughs</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Detailed walkthrough - Supervised learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Walkthrough - Supervised learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training_wnet.html">Walkthrough - WNet3D training</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced guides</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="training_wnet.html">Advanced : WNet training</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Custom models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Code</span></p>
@@ -429,7 +429,11 @@ document.write(`
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-cellseg3d">Installing CellSeg3D</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#m1-m2-arm64-mac-installation">M1/M2 (ARM64) Mac installation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-requirements">Optional requirements</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-requirements">Optional requirements</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#additional-functionalities">Additional functionalities</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#development-requirements">Development requirements</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -530,6 +534,8 @@ In the terminal, navigate to the CellSeg3D folder:</p>
 </section>
 <section id="optional-requirements">
 <h2>Optional requirements<a class="headerlink" href="#optional-requirements" title="Permalink to this heading">#</a></h2>
+<section id="additional-functionalities">
+<h3>Additional functionalities<a class="headerlink" href="#additional-functionalities" title="Permalink to this heading">#</a></h3>
 <p>Several additional functionalities are available optionally. To install them, use the following commands:</p>
 <ul class="simple">
 <li><p>CRF post-processing:</p></li>
@@ -551,6 +557,9 @@ Depending on your hardware, you can install the CPU or GPU version of ONNX.</p><
 <span class="n">pip</span> <span class="n">install</span> <span class="n">napari</span><span class="o">-</span><span class="n">cellseg3D</span><span class="p">[</span><span class="n">onnx</span><span class="o">-</span><span class="n">gpu</span><span class="p">]</span>
 </pre></div>
 </div>
+</section>
+<section id="development-requirements">
+<h3>Development requirements<a class="headerlink" href="#development-requirements" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Building the documentation:</p></li>
 </ul>
@@ -570,6 +579,7 @@ Depending on your hardware, you can install the CPU or GPU version of ONNX.</p><
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">napari</span><span class="o">-</span><span class="n">cellseg3D</span><span class="p">[</span><span class="n">dev</span><span class="p">]</span>
 </pre></div>
 </div>
+</section>
 </section>
 </section>
 
@@ -617,7 +627,7 @@ Depending on your hardware, you can install the CPU or GPU version of ONNX.</p><
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Review🔍</p>
+        <p class="prev-next-title">Labeling🔍</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -643,7 +653,11 @@ Depending on your hardware, you can install the CPU or GPU version of ONNX.</p><
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-cellseg3d">Installing CellSeg3D</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#m1-m2-arm64-mac-installation">M1/M2 (ARM64) Mac installation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-requirements">Optional requirements</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-requirements">Optional requirements</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#additional-functionalities">Additional functionalities</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#development-requirements">Development requirements</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Review🔍 &#8212; napari-cellseg3d Documentation</title>
+    <title>Labeling🔍 &#8212; napari-cellseg3d Documentation</title>
   
   
   
@@ -168,7 +168,7 @@ const thebe_selector_output = ".output, .cell_output"
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">User guides</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="installation_guide.html">Installation guide ⚙</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Review🔍</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Labeling🔍</a></li>
 <li class="toctree-l1"><a class="reference internal" href="training_module_guide.html">Training📉</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inference_module_guide.html">Inference📊</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cropping_module_guide.html">Cropping✂️</a></li>
@@ -176,11 +176,11 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Walkthroughs</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Detailed walkthrough - Supervised learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Walkthrough - Supervised learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training_wnet.html">Walkthrough - WNet3D training</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced guides</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="training_wnet.html">Advanced : WNet training</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Custom models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Code</span></p>
@@ -412,7 +412,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Review🔍</h1>
+    <h1>Labeling🔍</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -436,15 +436,15 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="review">
-<span id="review-module-guide"></span><h1>Review🔍<a class="headerlink" href="#review" title="Permalink to this heading">#</a></h1>
+  <section id="labeling">
+<span id="review-module-guide"></span><h1>Labeling🔍<a class="headerlink" href="#labeling" title="Permalink to this heading">#</a></h1>
 <figure class="align-center" id="id1">
 <img alt="../../_images/plugin_review.png" src="../../_images/plugin_review.png" />
 <figcaption>
 <p><span class="caption-number">Fig. 2 </span><span class="caption-text">Layout of the review module</span><a class="headerlink" href="#id1" title="Permalink to this image">#</a></p>
 </figcaption>
 </figure>
-<p><strong>Review</strong> allows you to inspect your labels, which may be manually created or predicted by a model, and make necessary corrections.
+<p><strong>Labeling</strong> allows you to inspect your labels, which may be manually created or predicted by a model, and make necessary corrections.
 The system will save the updated status of each file in a csv file.
 Additionally, the time taken per slice review is logged, enabling efficient monitoring.</p>
 <section id="launching-the-review-process">
@@ -489,7 +489,7 @@ If you have a stack, open it as a folder in Napari, then save it as a single <st
 </dl>
 </li>
 <li><dl class="simple">
-<dt><strong>Beginning the Review:</strong></dt><dd><p>Press <strong>`Start reviewing`</strong> once you are ready to start the review process.</p>
+<dt><strong>Beginning the labeling:</strong></dt><dd><p>Press <strong>`Start reviewing`</strong> once you are ready to start the review process.</p>
 </dd>
 </dl>
 </li>
@@ -505,10 +505,10 @@ Make sure you have saved your work before starting the review session.</p>
 <figure class="align-center" id="id2">
 <img alt="../../_images/review_process_example.png" src="../../_images/review_process_example.png" />
 <figcaption>
-<p><span class="caption-number">Fig. 3 </span><span class="caption-text">Interface of the review process.</span><a class="headerlink" href="#id2" title="Permalink to this image">#</a></p>
+<p><span class="caption-number">Fig. 3 </span><span class="caption-text">Interface for the labeling process.</span><a class="headerlink" href="#id2" title="Permalink to this image">#</a></p>
 </figcaption>
 </figure>
-<p>Once you have launched the review process, you will have access to the following functionalities:</p>
+<p>Once you have launched the labeling process, you will have access to the following functionalities:</p>
 <table class="hlist"><tr><td><ul class="simple">
 <li><p>A dialog to choose where to save the verified and/or corrected annotations, and a button to save the labels. They will be using the provided file format.</p></li>
 <li><p>A button to update the status of the slice in the csv file (in this case : checked/not checked)</p></li>

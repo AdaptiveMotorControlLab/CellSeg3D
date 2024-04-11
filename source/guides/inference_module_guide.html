@@ -170,7 +170,7 @@ const thebe_selector_output = ".output, .cell_output"
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">User guides</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="installation_guide.html">Installation guide ⚙</a></li>
-<li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Review🔍</a></li>
+<li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Labeling🔍</a></li>
 <li class="toctree-l1"><a class="reference internal" href="training_module_guide.html">Training📉</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Inference📊</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cropping_module_guide.html">Cropping✂️</a></li>
@@ -178,11 +178,11 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Walkthroughs</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Detailed walkthrough - Supervised learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Walkthrough - Supervised learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training_wnet.html">Walkthrough - WNet3D training</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced guides</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="training_wnet.html">Advanced : WNet training</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Custom models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Code</span></p>
@@ -426,7 +426,7 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interface-and-functionalities">Interface and functionalities</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting-results">Plotting results</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#unsupervised-model-wnet">Unsupervised model - WNet</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#unsupervised-model-wnet3d">Unsupervised model - WNet3D</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#source-code">Source code</a></li>
 </ul>
             </nav>
@@ -469,8 +469,8 @@ Otherwise you can run inference directly on layers within napari. Stacks of 2D f
 <tr class="row-odd"><td><p>SegResNet</p></td>
 <td><p><a class="reference external" href="https://arxiv.org/pdf/1810.11654.pdf">3D MRI brain tumor segmentation using autoencoder regularization</a></p></td>
 </tr>
-<tr class="row-even"><td><p>WNet</p></td>
-<td><p><a class="reference external" href="https://arxiv.org/abs/1711.08506">WNet, A Deep Model for Fully Unsupervised Image Segmentation</a></p></td>
+<tr class="row-even"><td><p>WNet3D</p></td>
+<td><p><a class="reference external" href="https://arxiv.org/abs/1711.08506">WNet3D, A Deep Model for Fully Unsupervised Image Segmentation</a></p></td>
 </tr>
 <tr class="row-odd"><td><p>TRAILMAP_MS</p></td>
 <td><p>An implementation of the <a class="reference external" href="https://github.com/AlbertPun/TRAILMAP">TRAILMAP project on GitHub</a> using <a class="reference external" href="https://github.com/wolny/pytorch-3dunet">3DUNet for PyTorch</a></p></td>
@@ -482,7 +482,7 @@ Otherwise you can run inference directly on layers within napari. Stacks of 2D f
 </table>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>For WNet-specific instruction please refer to the appropriate section below.</p>
+<p>For WNet3D-specific instruction please refer to the appropriate section below.</p>
 </div>
 <section id="interface-and-functionalities">
 <h2>Interface and functionalities<a class="headerlink" href="#interface-and-functionalities" title="Permalink to this heading">#</a></h2>
@@ -595,24 +595,24 @@ The log will keep you updated on the progress.</p>
 <p>In the <code class="docutils literal notranslate"><span class="pre">notebooks</span></code> folder you will find a plotting guide for cell statistics derived from the inference module.
 Simply load the csv file in the notebook and use the provided functions to plot the desired statistics.</p>
 </section>
-<section id="unsupervised-model-wnet">
-<h2>Unsupervised model - WNet<a class="headerlink" href="#unsupervised-model-wnet" title="Permalink to this heading">#</a></h2>
+<section id="unsupervised-model-wnet3d">
+<h2>Unsupervised model - WNet3D<a class="headerlink" href="#unsupervised-model-wnet3d" title="Permalink to this heading">#</a></h2>
 <div class="line-block">
-<div class="line">The <cite>WNet model</cite> is a fully unsupervised model used to segment images without any labels.</div>
+<div class="line">The <cite>WNet3D model</cite> is a fully unsupervised model used to segment images without any labels.</div>
 <div class="line">It functions similarly to the above models, with a few notable differences.</div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Our provided, pre-trained model uses an input size of 64x64x64. As such, window inference is always enabled
-and set to 64. If you want to use a different size, you will have to train your own model using the options listed in <a class="reference internal" href="training_wnet.html#training-wnet"><span class="std std-ref">Advanced : WNet training</span></a>.
+and set to 64. If you want to use a different size, you will have to train your own model using the options listed in <a class="reference internal" href="training_wnet.html#training-wnet"><span class="std std-ref">Walkthrough - WNet3D training</span></a>.
 Additionally, window inference and the number of classes are for now fixed in the plugin to support our pre-trained model only (2 classes and window size 64).</p>
 </div>
 <p>For the best inference performance, the model should be retrained on images of the same modality as the ones you want to segment.
-Please see <a class="reference internal" href="training_wnet.html#training-wnet"><span class="std std-ref">Advanced : WNet training</span></a> for more details on how to train your own model.</p>
+Please see <a class="reference internal" href="training_wnet.html#training-wnet"><span class="std std-ref">Walkthrough - WNet3D training</span></a> for more details on how to train your own model.</p>
 <div class="admonition hint">
 <p class="admonition-title">Hint</p>
 <div class="line-block">
-<div class="line">WNet, as an unsupervised model, may not always output the background class in the same dimension.</div>
+<div class="line">WNet3D, as an unsupervised model, may not always output the background class in the same dimension.</div>
 <div class="line">This might cause the result from inference to appear densely populated.</div>
 <div class="line">The plugin will automatically attempt to show the foreground class, but this might not always succeed.</div>
 <div class="line">If the displayed output seems dominated by the background, you can manually adjust the visible class. To do this, <strong>use the slider positioned at the bottom of the napari window</strong>.</div>
@@ -694,7 +694,7 @@ Please see <a class="reference internal" href="training_wnet.html#training-wnet"
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interface-and-functionalities">Interface and functionalities</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting-results">Plotting results</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#unsupervised-model-wnet">Unsupervised model - WNet</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#unsupervised-model-wnet3d">Unsupervised model - WNet3D</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#source-code">Source code</a></li>
 </ul>
   </nav></div>

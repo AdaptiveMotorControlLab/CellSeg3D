@@ -167,7 +167,7 @@ const thebe_selector_output = ".output, .cell_output"
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">User guides</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="source/guides/installation_guide.html">Installation guide ⚙</a></li>
-<li class="toctree-l1"><a class="reference internal" href="source/guides/review_module_guide.html">Review🔍</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/guides/review_module_guide.html">Labeling🔍</a></li>
 <li class="toctree-l1"><a class="reference internal" href="source/guides/training_module_guide.html">Training📉</a></li>
 <li class="toctree-l1"><a class="reference internal" href="source/guides/inference_module_guide.html">Inference📊</a></li>
 <li class="toctree-l1"><a class="reference internal" href="source/guides/cropping_module_guide.html">Cropping✂️</a></li>
@@ -175,11 +175,11 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Walkthroughs</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="source/guides/detailed_walkthrough.html">Detailed walkthrough - Supervised learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/guides/detailed_walkthrough.html">Walkthrough - Supervised learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/guides/training_wnet.html">Walkthrough - WNet3D training</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced guides</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="source/guides/training_wnet.html">Advanced : WNet training</a></li>
 <li class="toctree-l1"><a class="reference internal" href="source/guides/custom_model_template.html">Advanced : Custom models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Code</span></p>
@@ -511,7 +511,7 @@ please see <a class="reference internal" href="source/guides/installation_guide.
 </figure>
 <p>and choose the correct tool to use:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="source/guides/review_module_guide.html#review-module-guide"><span class="std std-ref">Review🔍</span></a>: Examine and refine your labels, whether manually annotated or predicted by a pre-trained model.</p></li>
+<li><p><a class="reference internal" href="source/guides/review_module_guide.html#review-module-guide"><span class="std std-ref">Labeling🔍</span></a>: Examine and refine your labels, whether manually annotated or predicted by a pre-trained model.</p></li>
 <li><p><a class="reference internal" href="source/guides/training_module_guide.html#training-module-guide"><span class="std std-ref">Training📉</span></a>:  Train segmentation algorithms on your own data.</p></li>
 <li><p><a class="reference internal" href="source/guides/inference_module_guide.html#inference-module-guide"><span class="std std-ref">Inference📊</span></a>: Use pre-trained segmentation algorithms on volumes to automate cell labelling.</p></li>
 <li><p><a class="reference internal" href="source/guides/utils_module_guide.html#utils-module-guide"><span class="std std-ref">Utilities 🛠</span></a>: Leverage various utilities, including cropping your volumes and labels, converting semantic to instance labels, and more.</p></li>
@@ -529,7 +529,7 @@ Simply hover over them to see the tooltip.</p>
 <ul class="simple">
 <li><dl class="simple">
 <dt>Main modules :</dt><dd><ul>
-<li><p><a class="reference internal" href="source/guides/review_module_guide.html#review-module-guide"><span class="std std-ref">Review🔍</span></a></p></li>
+<li><p><a class="reference internal" href="source/guides/review_module_guide.html#review-module-guide"><span class="std std-ref">Labeling🔍</span></a></p></li>
 <li><p><a class="reference internal" href="source/guides/training_module_guide.html#training-module-guide"><span class="std std-ref">Training📉</span></a></p></li>
 <li><p><a class="reference internal" href="source/guides/inference_module_guide.html#inference-module-guide"><span class="std std-ref">Inference📊</span></a></p></li>
 </ul>
@@ -548,7 +548,7 @@ Simply hover over them to see the tooltip.</p>
 <ul class="simple">
 <li><dl class="simple">
 <dt>Advanced :</dt><dd><ul>
-<li><p><a class="reference internal" href="source/guides/training_wnet.html#training-wnet"><span class="std std-ref">Advanced : WNet training</span></a></p></li>
+<li><p><a class="reference internal" href="source/guides/training_wnet.html#training-wnet"><span class="std std-ref">Walkthrough - WNet3D training</span></a></p></li>
 <li><p><a class="reference internal" href="source/guides/custom_model_template.html#custom-model-guide"><span class="std std-ref">Advanced : Custom models</span></a> <strong>(WIP)</strong></p></li>
 </ul>
 </dd>
@@ -584,7 +584,7 @@ We also provide a model that was trained in-house on mesoSPIM nuclei data in col
 <li><p><a class="reference external" href="https://pytorch.org/">PyTorch</a></p></li>
 <li><p><a class="reference external" href="https://monai.io/">MONAI project</a> (various models used here are credited <a class="reference external" href="https://docs.monai.io/en/stable/networks.html#nets">on their website</a>)</p></li>
 <li><p><a class="reference external" href="https://github.com/clEsperanto/pyclesperanto_prototype">pyclEsperanto</a> (for the Voronoi Otsu labeling) by Robert Haase</p></li>
-<li><p>A custom re-implementation of the <a class="reference external" href="https://arxiv.org/abs/1711.08506">WNet</a> by Xia and Kulis <a class="footnote-reference brackets" href="#id6" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a></p></li>
+<li><p>A new unsupervised 3D model based on the <a class="reference external" href="https://arxiv.org/abs/1711.08506">WNet</a> by Xia and Kulis <a class="footnote-reference brackets" href="#id6" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a></p></li>
 </ul>
 <p class="rubric">References</p>
 <aside class="footnote-list brackets">

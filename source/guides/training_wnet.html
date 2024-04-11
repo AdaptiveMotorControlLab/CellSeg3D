@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Advanced : WNet training &#8212; napari-cellseg3d Documentation</title>
+    <title>Walkthrough - WNet3D training &#8212; napari-cellseg3d Documentation</title>
   
   
   
@@ -63,7 +63,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Advanced : Custom models" href="custom_model_template.html" />
-    <link rel="prev" title="Detailed walkthrough - Supervised learning" href="detailed_walkthrough.html" />
+    <link rel="prev" title="Walkthrough - Supervised learning" href="detailed_walkthrough.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -168,19 +168,19 @@ const thebe_selector_output = ".output, .cell_output"
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">User guides</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="installation_guide.html">Installation guide ⚙</a></li>
-<li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Review🔍</a></li>
+<li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Labeling🔍</a></li>
 <li class="toctree-l1"><a class="reference internal" href="training_module_guide.html">Training📉</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inference_module_guide.html">Inference📊</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cropping_module_guide.html">Cropping✂️</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils_module_guide.html">Utilities 🛠</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Walkthroughs</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Detailed walkthrough - Supervised learning</a></li>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="detailed_walkthrough.html">Walkthrough - Supervised learning</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Walkthrough - WNet3D training</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced guides</span></p>
-<ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Advanced : WNet training</a></li>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Custom models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Code</span></p>
@@ -412,7 +412,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Advanced : WNet training</h1>
+    <h1>Walkthrough - WNet3D training</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -435,21 +435,21 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="advanced-wnet-training">
-<span id="training-wnet"></span><h1>Advanced : WNet training<a class="headerlink" href="#advanced-wnet-training" title="Permalink to this heading">#</a></h1>
-<p>This plugin provides a reimplemented, custom version of the WNet model from <a class="reference external" href="https://arxiv.org/abs/1711.08506">WNet, A Deep Model for Fully Unsupervised Image Segmentation</a>.
+  <section id="walkthrough-wnet3d-training">
+<span id="training-wnet"></span><h1>Walkthrough - WNet3D training<a class="headerlink" href="#walkthrough-wnet3d-training" title="Permalink to this heading">#</a></h1>
+<p>This plugin provides a reimplemented, custom version of the WNet3D model from <a class="reference external" href="https://arxiv.org/abs/1711.08506">WNet, A Deep Model for Fully Unsupervised Image Segmentation</a>.
 For training your model, you can choose among:</p>
 <ul class="simple">
 <li><p>Directly within the plugin</p></li>
 <li><p>The provided Jupyter notebook (locally)</p></li>
 <li><p>Our Colab notebook (inspired by ZeroCostDL4Mic)</p></li>
 </ul>
-<p>The WNet does not require a large amount of data to train, but during inference images should be similar to those
+<p>The WNet3D does not require a large amount of data to train, but during inference images should be similar to those
 the model was trained on; you can retrain from our pretrained model to your image dataset to quickly reach good performance.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>The WNet relies on brightness to distinguish objects from the background. For better results, use image regions with minimal artifacts. If you notice many artifacts, consider training on one of the supervised models.</p></li>
+<li><p>The WNet3D relies on brightness to distinguish objects from the background. For better results, use image regions with minimal artifacts. If you notice many artifacts, consider training on one of the supervised models.</p></li>
 <li><p>The model has two losses, the <strong>`SoftNCut loss`</strong>, which clusters pixels according to brightness, and a reconstruction loss, either <strong>`Mean Square Error (MSE)`</strong> or <strong>`Binary Cross Entropy (BCE)`</strong>. Unlike the method described in the original paper, these losses are added in a weighted sum and the backward pass is performed for the whole model at once. The SoftNcuts and BCE are bounded between 0 and 1; the MSE may take large positive values. It is recommended to watch for the weighted sum of losses to be <strong>close to one on the first epoch</strong>, for training stability.</p></li>
 <li><p>For good performance, you should wait for the SoftNCut to reach a plateau; the reconstruction loss must also decrease but is generally less critical.</p></li>
 </ul>
@@ -462,7 +462,7 @@ the model was trained on; you can retrain from our pretrained model to your imag
 <p><span class="caption-number">Fig. 19 </span><span class="caption-text">Advanced tab</span><a class="headerlink" href="#id1" title="Permalink to this image">#</a></p>
 </figcaption>
 </figure>
-<p><span class="target" id="when-using-the-wnet-training-module">When using the WNet training module</span>, the <strong>Advanced</strong> tab contains a set of additional options:</p>
+<p><span class="target" id="when-using-the-wnet3d-training-module">When using the WNet3D training module</span>, the <strong>Advanced</strong> tab contains a set of additional options:</p>
 <ul class="simple">
 <li><p><strong>Number of classes</strong> : Dictates the segmentation classes (default is 2). Increasing the number of classes will result in a more progressive segmentation according to brightness; can be useful if you have “halos” around your objects or artifacts with a significantly different brightness.</p></li>
 <li><p><strong>Reconstruction loss</strong> : Choose between MSE or BCE (default is MSE). MSE is more precise but also sensitive to outliers; BCE is more robust against outliers at the cost of precision.</p></li>
@@ -547,7 +547,7 @@ The normalization step might not be adapted to your images. Disable normalizatio
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Detailed walkthrough - Supervised learning</p>
+        <p class="prev-next-title">Walkthrough - Supervised learning</p>
       </div>
     </a>
     <a class="right-next"

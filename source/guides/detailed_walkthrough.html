@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Detailed walkthrough - Supervised learning &#8212; napari-cellseg3d Documentation</title>
+    <title>Walkthrough - Supervised learning &#8212; napari-cellseg3d Documentation</title>
   
   
   
@@ -64,7 +64,7 @@ const thebe_selector_output = ".output, .cell_output"
     <script>DOCUMENTATION_OPTIONS.pagename = 'source/guides/detailed_walkthrough';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Advanced : WNet training" href="training_wnet.html" />
+    <link rel="next" title="Walkthrough - WNet3D training" href="training_wnet.html" />
     <link rel="prev" title="Utilities 🛠" href="utils_module_guide.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -170,7 +170,7 @@ const thebe_selector_output = ".output, .cell_output"
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">User guides</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="installation_guide.html">Installation guide ⚙</a></li>
-<li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Review🔍</a></li>
+<li class="toctree-l1"><a class="reference internal" href="review_module_guide.html">Labeling🔍</a></li>
 <li class="toctree-l1"><a class="reference internal" href="training_module_guide.html">Training📉</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inference_module_guide.html">Inference📊</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cropping_module_guide.html">Cropping✂️</a></li>
@@ -178,11 +178,11 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Walkthroughs</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Detailed walkthrough - Supervised learning</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Walkthrough - Supervised learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training_wnet.html">Walkthrough - WNet3D training</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced guides</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="training_wnet.html">Advanced : WNet training</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_model_template.html">Advanced : Custom models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Code</span></p>
@@ -414,7 +414,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Detailed walkthrough - Supervised learning</h1>
+    <h1>Walkthrough - Supervised learning</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -450,8 +450,8 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="detailed-walkthrough-supervised-learning">
-<span id="detailed-walkthrough"></span><h1>Detailed walkthrough - Supervised learning<a class="headerlink" href="#detailed-walkthrough-supervised-learning" title="Permalink to this heading">#</a></h1>
+  <section id="walkthrough-supervised-learning">
+<span id="detailed-walkthrough"></span><h1>Walkthrough - Supervised learning<a class="headerlink" href="#walkthrough-supervised-learning" title="Permalink to this heading">#</a></h1>
 <p>This guide will show you step-by-step how to use the plugin’s workflow, beginning with human annotated datasets, to generating predictions on new volumes.</p>
 <section id="setting-up-images-and-labels">
 <h2>Setting up images and labels<a class="headerlink" href="#setting-up-images-and-labels" title="Permalink to this heading">#</a></h2>
@@ -567,7 +567,7 @@ In most cases this should left enabled.</p>
 <li><p><strong>VNet</strong> is a larger (than SegResNet) CNN from MONAI designed for medical image segmentation.</p></li>
 <li><p><strong>TRAILMAP</strong> is our implementation in PyTorch additionally trained on mouse cortical neural nuclei from mesoSPIM data.</p></li>
 <li><p><strong>SwinUNetR</strong> is a MONAI implementation of the SwinUNetR model. It is costly in compute and memory, but can achieve high performance.</p></li>
-<li><p><strong>WNet</strong> is our reimplementation of an unsupervised model, which can be used to produce segmentation without labels.</p></li>
+<li><p><strong>WNet3D</strong> is our extension of an unsupervised model, which can be used to produce segmentation without labels. See <a class="reference internal" href="training_wnet.html#training-wnet"><span class="std std-ref">Walkthrough - WNet3D training</span></a> for more information.</p></li>
 </ul>
 </li>
 </ol>
@@ -732,7 +732,7 @@ Coordinates are based on centroids, the size represents the volume, the color, a
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Advanced : WNet training</p>
+        <p class="prev-next-title">Walkthrough - WNet3D training</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
