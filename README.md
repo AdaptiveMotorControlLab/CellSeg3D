@@ -1,4 +1,4 @@
-# CellSeg3D: self-supervised (and supervised) 3D cell segmentation for lightsheet microscopy
+# CellSeg3D: self-supervised (and supervised) 3D cell segmentation
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/838605d0-9723-4e43-83cd-6dbfe4adf36b/cellseg-logo.png?format=1500w" title="cellseg3d" alt="cellseg3d logo" width="350" align="right" vspace = "80"/>
 
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
