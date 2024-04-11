@@ -26,7 +26,7 @@ Model            Link to original paper
 ==============   ================================================================================================
 SegResNet        `3D MRI brain tumor segmentation using autoencoder regularization`_
 SwinUNetR         `Swin UNETR, Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images`_
-WNet             `WNet, A Deep Model for Fully Unsupervised Image Segmentation`_
+WNet3D             `WNet3D, A Deep Model for Fully Unsupervised Image Segmentation`_
 TRAILMAP_MS       An implementation of the `TRAILMAP project on GitHub`_ using `3DUNet for PyTorch`_
 VNet             `Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation`_
 ==============   ================================================================================================
@@ -36,7 +36,7 @@ VNet             `Fully Convolutional Neural Networks for Volumetric Medical Ima
 .. _TRAILMAP project on GitHub: https://github.com/AlbertPun/TRAILMAP
 .. _3DUnet for Pytorch: https://github.com/wolny/pytorch-3dunet
 .. _Swin UNETR, Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images: https://arxiv.org/abs/2201.01266
-.. _WNet, A Deep Model for Fully Unsupervised Image Segmentation: https://arxiv.org/abs/1711.08506
+.. _WNet3D, A Deep Model for Fully Unsupervised Image Segmentation: https://arxiv.org/abs/1711.08506
 
 Training
 ===================
@@ -167,7 +167,7 @@ ____________________
 1) **Advanced** tab
 ___________________
 
-This tab is only available with WNet training. For more information please see the :ref:`WNet parameters list <When using the WNet training module>` section.
+This tab is only available with WNet3D training. For more information please see the :ref:`WNet3D parameters list <When using the WNet3D training module>` section.
 
 Running the training
 ____________________
@@ -195,7 +195,7 @@ The model's inputs (image, label) and outputs (raw & binarized) will also be dis
 Unsupervised model
 ==============================================
 
-The training of our custom WNet implementation is now available as part of the Training module.
+The training of our custom WNet3D implementation is now available as part of the Training module.
 
 Please see the :ref:`training_wnet` section for more information.
 
