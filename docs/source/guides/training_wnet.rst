@@ -1,9 +1,9 @@
 .. _training_wnet:
 
-Advanced : WNet training
-========================
+Walkthrough - WNet3D training
+===============================
 
-This plugin provides a reimplemented, custom version of the WNet model from `WNet, A Deep Model for Fully Unsupervised Image Segmentation`_.
+This plugin provides a reimplemented, custom version of the WNet3D model from `WNet, A Deep Model for Fully Unsupervised Image Segmentation`_.
 
 For training your model, you can choose among:
 
@@ -14,13 +14,13 @@ For training your model, you can choose among:
 Selecting training data
 -------------------------
 
-The WNet **does not require a large amount of data to train**, but **choosing the right data** to train this unsupervised model **is crucial**.
+The WNet3D **does not require a large amount of data to train**, but **choosing the right data** to train this unsupervised model **is crucial**.
 
 You may find below some guidelines, based on our own data and testing.
 
-The WNet is designed to segment objects based on their brightness, and is particularly well-suited for images with a clear contrast between objects and background.
+The WNet3D is designed to segment objects based on their brightness, and is particularly well-suited for images with a clear contrast between objects and background.
 
-The WNet is not suitable for images with artifacts, therefore care should be taken that the images are clean and that the objects are at least somewhat distinguishable from the background.
+The WNet3D is not suitable for images with artifacts, therefore care should be taken that the images are clean and that the objects are at least somewhat distinguishable from the background.
 
 
 .. important::
@@ -42,7 +42,7 @@ For optimal results, during inference, images should be similar to those the mod
 You may also retrain from our pretrained model to your image dataset to help quickly reach good performance if, simply check "Use pre-trained weights" in the training module, and lower the learning rate.
 
 .. note::
-        - The WNet relies on brightness to distinguish objects from the background. For better results, use image regions with minimal artifacts. If you notice many artifacts, consider trying one of our supervised models (for lightsheet microscopy).
+        - The WNet3D relies on brightness to distinguish objects from the background. For better results, use image regions with minimal artifacts. If you notice many artifacts, consider trying one of our supervised models (for lightsheet microscopy).
         - The model has two losses, the **`SoftNCut loss`**, which clusters pixels according to brightness, and a reconstruction loss, either **`Mean Square Error (MSE)`** or **`Binary Cross Entropy (BCE)`**.
         - For good performance, wait for the SoftNCut to reach a plateau; the reconstruction loss should also be decreasing overall, but this is generally less critical for segmentation performance.
 
@@ -55,7 +55,7 @@ Parameters
 
     Advanced tab
 
-_`When using the WNet training module`, the **Advanced** tab contains a set of additional options:
+_`When using the WNet3D training module`, the **Advanced** tab contains a set of additional options:
 
 - **Number of classes** : Dictates the segmentation classes (default is 2). Increasing the number of classes will result in a more progressive segmentation according to brightness; can be useful if you have "halos" around your objects, or to approximate boundary labels.
 - **Reconstruction loss** : Choose between MSE or BCE (default is MSE). MSE is more precise but also sensitive to outliers; BCE is more robust against outliers at the cost of precision.

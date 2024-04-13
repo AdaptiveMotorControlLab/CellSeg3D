@@ -27,7 +27,7 @@ contributions:
 
   widgets:
   - command: napari_cellseg3d.load
-    display_name: Review
+    display_name: Labeling
 
   - command: napari_cellseg3d.infer
     display_name: Inference
