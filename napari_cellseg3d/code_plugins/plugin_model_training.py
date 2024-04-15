@@ -1387,13 +1387,13 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
     def _make_csv(self):  # TDOD(cyril) design could use a good rework
         size_column = range(1, self.worker_config.max_epochs + 1)
 
-        supervised = False
+        supervised = True
         size_column = self._handle_loss_values(size_column, "Loss")
         if size_column is None:
             size_column = self._handle_loss_values(size_column, "SoftNCuts")
             if size_column is None:
                 raise KeyError("Error when making csv. Check loss dict keys ?")
-            supervised = True
+            supervised = False
 
         if supervised:
             val = utils.fill_list_in_between(  # fills the validation list based on validation interval
