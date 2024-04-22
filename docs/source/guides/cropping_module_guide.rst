@@ -59,7 +59,7 @@ Once you have launched the review process, you will gain control over three slid
 you to **adjust the position** of the cropped volumes and labels in the x,y and z positions.
 
 .. note::
-    * If your **cropped volume isnt visible**, consider changing the **colormap** of the image and the cropped
+    * If your **cropped volume isn't visible**, consider changing the **colormap** of the image and the cropped
       volume to improve their visibility.
     * You may want to adjust the **opacity** and **contrast thresholds** depending on your image.
     * If the image appears empty:
