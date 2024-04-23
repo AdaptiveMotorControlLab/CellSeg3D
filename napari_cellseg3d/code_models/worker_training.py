@@ -1203,7 +1203,10 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             epoch_loss_values = []
             val_metric_values = []
 
-            if len(self.config.train_data_dict) > 1:
+            if (
+                len(self.config.train_data_dict) > 1
+                and self.config.eval_data_dict is None
+            ):
                 self.train_files, self.val_files = (
                     self.config.train_data_dict[
                         0 : int(
@@ -1218,6 +1221,11 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                         ) :
                     ],
                 )
+            elif self.config.eval_data_dict is not None:
+                # train files are used as is, validation files are from eval_data_dict
+                # not used in the plugin yet, only for training via the API
+                self.train_files = self.config.train_data_dict
+                self.val_files = self.config.eval_data_dict
             else:
                 self.train_files = self.val_files = self.config.train_data_dict
                 msg = f"Only one image file was provided : {self.config.train_data_dict[0]['image']}.\n"
@@ -1591,6 +1599,10 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                                 val_data["image"].to(device),
                                 val_data["label"].to(device),
                             )
+                            if self.labels_not_semantic:
+                                val_labels = torch.where(
+                                    val_labels > 1, 1, val_labels
+                                )
 
                             try:
                                 with torch.no_grad():
@@ -1624,7 +1636,11 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                                     EnsureType(),
                                 ]
                             )  #
-                            post_label = EnsureType()
+                            post_label = Compose(
+                                [
+                                    EnsureType(),
+                                ]
+                            )
 
                             output_raw = [
                                 RemapTensor(new_max=1, new_min=0)(t)
