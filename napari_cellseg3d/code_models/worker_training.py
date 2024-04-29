@@ -402,7 +402,11 @@ class WNetTrainingWorker(TrainingWorkerBase):
         self.log("*" * 20)
 
     def train(
-        self, provided_model=None, provided_optimizer=None, provided_loss=None
+        self,
+        provided_model=None,
+        provided_optimizer=None,
+        provided_loss=None,
+        wandb_name_override=None,
     ):
         """Main training function.
 
@@ -412,6 +416,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
             provided_model (WNet, optional): A model to use for training. Defaults to None.
             provided_optimizer (torch.optim.Optimizer, optional): An optimizer to use for training. Defaults to None.
             provided_loss (torch.nn.Module, optional): A loss function to use for training. Defaults to None.
+            wandb_name_override (str, optional): A name to override the wandb run name. Defaults to None.
         """
         try:
             if self.config is None:
@@ -431,7 +436,9 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 wandb.init(
                     config=config_dict,
                     project="CellSeg3D - WNet",
-                    name=f"WNet_training - {utils.get_date_time()}",
+                    name=f"WNet_training - {utils.get_date_time()}"
+                    if wandb_name_override is None
+                    else wandb_name_override,
                     mode=self.wandb_config.mode,
                     tags=["WNet", "training"],
                 )
@@ -1079,6 +1086,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
         provided_optimizer=None,
         provided_loss=None,
         provided_scheduler=None,
+        wandb_name_override=None,
     ):
         """Trains the PyTorch model for the given number of epochs.
 
@@ -1142,7 +1150,9 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                     wandb.init(
                         config=config_dict,
                         project="CellSeg3D",
-                        name=f"{model_config.name}_supervised_training - {utils.get_date_time()}",
+                        name=f"{model_config.name}_supervised_training - {utils.get_date_time()}"
+                        if wandb_name_override is None
+                        else wandb_name_override,
                         tags=[f"{model_config.name}", "supervised"],
                         mode=self.wandb_config.mode,
                     )
