@@ -598,7 +598,7 @@ Simply load the csv file in the notebook and use the provided functions to plot 
 <section id="unsupervised-model-wnet3d">
 <h2>Unsupervised model - WNet3D<a class="headerlink" href="#unsupervised-model-wnet3d" title="Permalink to this heading">#</a></h2>
 <div class="line-block">
-<div class="line">The <cite>WNet3D model</cite> is a fully unsupervised model used to segment images without any labels.</div>
+<div class="line">The <cite>WNet3D model</cite> is a fully self-supervised model used to segment images without any labels.</div>
 <div class="line">It functions similarly to the above models, with a few notable differences.</div>
 </div>
 <div class="admonition note">
@@ -612,12 +612,18 @@ Please see <a class="reference internal" href="training_wnet.html#training-wnet"
 <div class="admonition hint">
 <p class="admonition-title">Hint</p>
 <div class="line-block">
-<div class="line">WNet3D, as an unsupervised model, may not always output the background class in the same dimension.</div>
-<div class="line">This might cause the result from inference to appear densely populated.</div>
+<div class="line">WNet3D, as an unsupervised model, may not always output the background and foreground class in the same dimension, as this depends on initial conditions.</div>
+<div class="line">This might cause the result from inference to appear densely populated or empty.</div>
 <div class="line">The plugin will automatically attempt to show the foreground class, but this might not always succeed.</div>
 <div class="line">If the displayed output seems dominated by the background, you can manually adjust the visible class. To do this, <strong>use the slider positioned at the bottom of the napari window</strong>.</div>
 </div>
 </div>
+<figure class="align-center" id="id3">
+<img alt="An example of inference with WNet3D on a 3D volume" src="../../_images/inference_results_example.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 11 </span><span class="caption-text">Example of inference with WNet3D on a 3D volume</span><a class="headerlink" href="#id3" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
 </section>
 <section id="source-code">
 <h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this heading">#</a></h2>
