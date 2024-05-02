@@ -145,7 +145,7 @@ Simply load the csv file in the notebook and use the provided functions to plot 
 Unsupervised model - WNet3D
 --------------------------------
 
-| The `WNet3D model` is a fully unsupervised model used to segment images without any labels.
+| The `WNet3D model` is a fully self-supervised model used to segment images without any labels.
 | It functions similarly to the above models, with a few notable differences.
 
 .. _WNet3D model: https://arxiv.org/abs/1711.08506
@@ -159,10 +159,16 @@ For the best inference performance, the model should be retrained on images of t
 Please see :ref:`training_wnet` for more details on how to train your own model.
 
 .. hint::
-  | WNet3D, as an unsupervised model, may not always output the background class in the same dimension.
-  | This might cause the result from inference to appear densely populated.
+  | WNet3D, as an unsupervised model, may not always output the background and foreground class in the same dimension, as this depends on initial conditions.
+  | This might cause the result from inference to appear densely populated or empty.
   | The plugin will automatically attempt to show the foreground class, but this might not always succeed.
   | If the displayed output seems dominated by the background, you can manually adjust the visible class. To do this, **use the slider positioned at the bottom of the napari window**.
+
+.. figure:: ../images/inference_results_example.png
+    :alt: An example of inference with WNet3D on a 3D volume
+    :align: center
+
+    Example of inference with WNet3D on a 3D volume
 
 Source code
 --------------------------------
