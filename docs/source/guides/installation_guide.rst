@@ -93,23 +93,34 @@ In the terminal, navigate to the CellSeg3D folder:
     cd CellSeg3D
     conda env create -f conda/napari_cellseg3d_ARM64.yml
 
+This will also install the necessary dependencies as well as the plugin.
+
 3. **Activate the environment** :
 
 .. code-block::
 
-    conda activate napari_cellseg3d_m1
+    conda activate napari_cellseg3d_ARM64
 
-4. **Install the plugin** :
-
-.. code-block::
-
-    pip install napari-cellseg3d
-
-OR to install from source:
+4. **Install a Qt backend** :
+Important : you only need to install one of the following backends.
+PyQt5:
 
 .. code-block::
 
-    pip install -e .
+        pip install PyQt5
+
+OR
+PySide2:
+
+.. code-block::
+
+        pip install PySide2
+
+5. **Install PyTorch** :
+Refer to `PyTorch's website`_ for installation instructions.
+
+6. **Launch napari** :
+You should now see the CellSeg3D plugin in the Plugins section of napari.
 
 Optional requirements
 ------------------------------
