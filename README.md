@@ -68,17 +68,11 @@ To avoid issues when installing on the ARM64 architecture, please follow these s
         git clone https://github.com/AdaptiveMotorControlLab/CellSeg3d.git
         cd CellSeg3d
         conda env create -f conda/napari_cellseg3d_ARM64.yml
-        conda activate napari_cellseg3d_m1
+        conda activate napari_cellseg3d_ARM64
 
-2) Install the plugin.
-   From repository root folder, run :
+2) Install a Qt backend (PySide or PyQt5)
+3) Launch napari, the plugin should be available in the plugins menu.
 
-        pip install -e .
-   OR directly via PyPi :
-
-        pip install napari-cellseg3d
-
-   OR directly via [napari-hub] (see Installation section above)
 
 
 ## Requirements
