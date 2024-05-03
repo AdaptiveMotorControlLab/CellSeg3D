@@ -100,6 +100,9 @@ class ModelFramework(BasePluginFolder):
 
         try:
             if _is_mps_available(torch):
+                from os import environ
+
+                environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
                 available_devices.append("MPS (beta)")
         except Exception as e:
             logger.error(f"Error while checking MPS availability : {e}")
