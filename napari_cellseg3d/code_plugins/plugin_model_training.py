@@ -1054,7 +1054,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         logger.debug("Loading config...")
         model_config = config.ModelInfo(name=self.model_choice.currentText())
 
-        self.weights_config.path = self.weights_config.path
+        # self.weights_config.path = self.weights_config.path
         self.weights_config.use_custom = self.custom_weights_choice.isChecked()
 
         self.weights_config.use_pretrained = (
@@ -1365,31 +1365,44 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.on_stop()
             self._stop_requested = False
 
-    def _make_csv(self):
+    def _check_lens(self, size_column, loss_values):
+        if len(size_column) != len(loss_values):
+            logger.info(
+                f"Training was stopped, setting epochs for csv to {len(loss_values)}"
+            )
+            return range(1, len(loss_values) + 1)
+        return size_column
+
+    def _handle_loss_values(self, size_column, key):
+        loss_values = self.loss_1_values.get(key)
+        if loss_values is None:
+            return None
+
+        if len(loss_values) == 0:
+            logger.warning("No loss values to add to csv !")
+            return None
+
+        return self._check_lens(size_column, loss_values)
+
+    def _make_csv(self):  # TDOD(cyril) design could use a good rework
         size_column = range(1, self.worker_config.max_epochs + 1)
 
-        if len(self.loss_1_values) == 0 or self.loss_1_values is None:
-            logger.warning("No loss values to add to csv !")
-            return
-
-        try:
-            self.loss_1_values["Loss"]
-            supervised = True
-        except KeyError:
-            try:
-                self.loss_1_values["SoftNCuts"]
-                supervised = False
-            except KeyError as e:
-                raise KeyError(
-                    "Error when making csv. Check loss dict keys ?"
-                ) from e
+        supervised = True
+        size_column = self._handle_loss_values(size_column, "Loss")
+        if size_column is None:
+            size_column = self._handle_loss_values(size_column, "SoftNCuts")
+            if size_column is None:
+                raise KeyError("Error when making csv. Check loss dict keys ?")
+            supervised = False
 
         if supervised:
-            val = utils.fill_list_in_between(
+            val = utils.fill_list_in_between(  # fills the validation list based on validation interval
                 self.loss_2_values,
                 self.worker_config.validation_interval - 1,
                 "",
-            )[: len(size_column)]
+            )[
+                : len(size_column)
+            ]
 
             self.df = pd.DataFrame(
                 {
@@ -1404,8 +1417,13 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 raise ValueError(err)
         else:
             ncuts_loss = self.loss_1_values["SoftNCuts"]
+
+            logger.debug(f"Epochs : {len(size_column)}")
+            logger.debug(f"Loss 1 values : {len(ncuts_loss)}")
+            logger.debug(f"Loss 2 values : {len(self.loss_2_values)}")
             try:
                 dice_metric = self.loss_1_values["Dice metric"]
+                logger.debug(f"Dice metric : {dice_metric}")
                 self.df = pd.DataFrame(
                     {
                         "Epoch": size_column,
@@ -1630,7 +1648,7 @@ class WNetWidgets:
             text_label="Number of classes",
         )
         self.intensity_sigma_choice = ui.DoubleIncrementCounter(
-            lower=1.0,
+            lower=0.01,
             upper=100.0,
             default=self.default_config.intensity_sigma,
             parent=parent,
@@ -1638,7 +1656,7 @@ class WNetWidgets:
         )
         self.intensity_sigma_choice.setMaximumWidth(20)
         self.spatial_sigma_choice = ui.DoubleIncrementCounter(
-            lower=1.0,
+            lower=0.01,
             upper=100.0,
             default=self.default_config.spatial_sigma,
             parent=parent,
@@ -1674,10 +1692,10 @@ class WNetWidgets:
         )
         self.reconstruction_weight_choice.setMaximumWidth(20)
         self.reconstruction_weight_divide_factor_choice = (
-            ui.IntIncrementCounter(
-                lower=1,
-                upper=10000,
-                default=100,
+            ui.DoubleIncrementCounter(
+                lower=0.01,
+                upper=10000.0,
+                default=1.0,
                 parent=parent,
                 text_label="Reconstruction weight divide factor",
             )
