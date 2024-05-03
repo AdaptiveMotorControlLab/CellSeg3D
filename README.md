@@ -85,12 +85,24 @@ To avoid issues when installing on the ARM64 architecture, please follow these s
 
 **Python 3.8 or 3.9 required.**
 Requires **[napari]**, **[PyTorch]** and **[MONAI]**.
+Compatible with Windows, MacOS and Linux.
+Installation should not take more than 30 minutes, depending on your internet connection.
 
 For PyTorch, please see [the PyTorch website for installation instructions].
 
 A CUDA-capable GPU is not needed but very strongly recommended, especially for training.
 
 If you get errors from MONAI regarding missing readers, please see [MONAI's optional dependencies] page for instructions on getting the readers required by your images.
+
+## Quick demo
+
+After installation, you can run the plugin by running:
+
+        napari
+
+and launching the plugin from the Plugins menu.
+You may use the test volume in the `examples` folder to test the inference and review tools.
+This should run in far less than five minutes on a modern computer.
 
 ## Issues
 
