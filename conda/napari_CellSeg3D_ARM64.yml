@@ -21,4 +21,4 @@ dependencies:
         - pyclesperanto-prototype
         - tqdm
         - matplotlib
-        - napari_cellseg3d[pyqt5]
+        - napari_cellseg3d
