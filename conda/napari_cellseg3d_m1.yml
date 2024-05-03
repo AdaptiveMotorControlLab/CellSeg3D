@@ -1,3 +1,4 @@
+%can be used for m-chip macooks; i..e, m2 and m3 chips are also supported
 name: napari_cellseg3d_m1
 channels:
   - anaconda
