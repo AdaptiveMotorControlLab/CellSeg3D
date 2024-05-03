@@ -17,12 +17,15 @@ A napari plugin for 3D cell segmentation: training, inference, and data review. 
 
 ## News
 
-**New version : v0.1.2**
+**New version : v0.1.3**
 
-- Fixed manifest issue for PyPi
+- Small API changes for training/inference from a script
+- Changed project name to "napari_cellseg3d" to avoid setuptools deprecation
+- Some fixes to WandB integration ad csv saving after training
 
 Previous additions :
 
+- v0.1.2 :Fixed manifest issue for PyPi
 - Improved training interface
 - Unsupervised model : WNet
   - Generate labels directly from raw data !
