@@ -3,6 +3,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import torch
+import torch.backends
+import torch.backends.mps
 
 if TYPE_CHECKING:
     import napari
@@ -94,6 +96,18 @@ class ModelFramework(BasePluginFolder):
         available_devices = ["CPU"] + [
             f"GPU {i}" for i in range(torch.cuda.device_count())
         ]
+        from napari_cellseg3d.utils import _is_mps_available
+
+        try:
+            if (
+                _is_mps_available()
+                and torch.backends.mps.is_available()
+                and torch.backends.mps.is_built()
+            ):
+                available_devices.append("MPS")
+        except Exception as e:
+            logger.error(f"Error while checking MPS availability : {e}")
+
         self.device_choice = ui.DropdownMenu(
             available_devices,
             parent=self,
@@ -345,6 +359,8 @@ class ModelFramework(BasePluginFolder):
         elif "GPU" in choice:
             i = int(choice.split(" ")[1])
             device = f"cuda:{i}"
+        elif choice == "MPS":
+            device = "mps"
         else:
             device = self.get_device()
         logger.debug(f"DEVICE choice : {device}")
