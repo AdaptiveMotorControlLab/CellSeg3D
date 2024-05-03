@@ -1,4 +1,4 @@
-name: napari_cellseg3d_ARM64
+name: napari_CellSeg3D_ARM64
 channels:
   - anaconda
   - conda-forge
