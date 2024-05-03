@@ -35,7 +35,7 @@ For quick model checks, check the "Inference" sections in our docs.
 Launching the plugin
 ************************
 
-See `Usage section <https://adaptivemotorcontrollab.github.io/CellSeg3d/welcome.html#usage>`_ for instructions on launching the plugin.
+See `Usage section <https://adaptivemotorcontrollab.github.io/CellSeg3D/welcome.html#usage>`_ for instructions on launching the plugin.
 
 Cropping
 *********

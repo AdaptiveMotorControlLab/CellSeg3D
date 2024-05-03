@@ -1,4 +1,4 @@
-name: napari_cellseg3d_ARM64
+name: napari_CellSeg3D_ARM64
 channels:
   - anaconda
   - conda-forge
@@ -21,4 +21,4 @@ dependencies:
         - pyclesperanto-prototype
         - tqdm
         - matplotlib
-        - napari_cellseg3d
+        - napari_cellseg3d[pyqt5]
