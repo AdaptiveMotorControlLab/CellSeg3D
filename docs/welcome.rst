@@ -58,7 +58,7 @@ For detailed installation instructions, including installing pre-requisites,
 please see :ref:`source/guides/installation_guide:Installation guide ⚙`
 
 .. warning::
-    **M1/M2 MacOS users**, please refer to the :ref:`dedicated section <source/guides/installation_guide:M1/M2 (ARM64) Mac installation>`
+    **ARM64 MacOS users**, please refer to the :ref:`dedicated section <source/guides/installation_guide:ARM64 Mac installation>`
 
 You can install ``napari-cellseg3d`` via pip:
 

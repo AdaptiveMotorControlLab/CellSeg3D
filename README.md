@@ -59,15 +59,15 @@ Previous additions :
 
 
 
-### Install note for M1/M2 Mac users
+### Install note for ARM64 (Silicon) Mac users
 
 To avoid issues when installing on the ARM64 architecture, please follow these steps.
 
-1) Create a new conda env using the provided conda/napari_cellseg3d_m1.yml file :
+1) Create a new conda env using the provided conda/napari_cellseg3d_ARM64.yml file :
 
         git clone https://github.com/AdaptiveMotorControlLab/CellSeg3d.git
         cd CellSeg3d
-        conda env create -f conda/napari_cellseg3d_m1.yml
+        conda env create -f conda/napari_cellseg3d_ARM64.yml
         conda activate napari_cellseg3d_m1
 
 2) Install the plugin.

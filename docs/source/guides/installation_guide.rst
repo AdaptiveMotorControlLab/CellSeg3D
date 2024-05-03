@@ -2,8 +2,8 @@ Installation guide ⚙
 ======================
 This guide outlines the steps for installing CellSeg3D and its dependencies. The plugin is compatible with Windows, Linux, and MacOS.
 
-**Note for M1/M2 (ARM64) Mac Users:**
-Please refer to the :ref:`section below <source/guides/installation_guide:M1/M2 (ARM64) Mac installation>` for specific instructions.
+**Note for ARM64 Mac Users:**
+Please refer to the :ref:`section below <source/guides/installation_guide:ARM64 Mac installation>` for specific instructions.
 
 .. warning::
     If you encounter any issues during installation, feel free to open an issue on our `GitHub repository`_.
@@ -46,7 +46,7 @@ Installing CellSeg3D
 --------------------------------------------
 
 .. warning::
-    For M1 Mac users, please see the :ref:`section below <source/guides/installation_guide:M1/M2 (ARM64) Mac installation>`
+    For ARM64 Mac users, please see the :ref:`section below <source/guides/installation_guide:ARM64 Mac installation>`
 
 **Via pip**:
 
@@ -69,11 +69,11 @@ Navigate to the cloned CellSeg3D folder and run:
 Successful installation will add the napari-cellseg3D plugin to napari’s Plugins section.
 
 
-M1/M2 (ARM64) Mac installation
+ARM64 Mac installation
 --------------------------------------------
 .. _ARM64_Mac_installation:
 
-For ARM64 Macs, we recommend using our custom CONDA environment. This is particularly important for M1 or M2 MacBooks.
+For ARM64 Macs, we recommend using our custom CONDA environment. This is particularly important for ARM64 (Silicon chips) MacBooks.
 
 Start by installing `miniconda3`_.
 
@@ -91,7 +91,7 @@ In the terminal, navigate to the CellSeg3D folder:
 .. code-block::
 
     cd CellSeg3D
-    conda env create -f conda/napari_cellseg3d_m1.yml
+    conda env create -f conda/napari_cellseg3d_ARM64.yml
 
 3. **Activate the environment** :
 
