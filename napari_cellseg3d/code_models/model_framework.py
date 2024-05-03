@@ -99,11 +99,7 @@ class ModelFramework(BasePluginFolder):
         from napari_cellseg3d.utils import _is_mps_available
 
         try:
-            if (
-                _is_mps_available()
-                and torch.backends.mps.is_available()
-                and torch.backends.mps.is_built()
-            ):
+            if _is_mps_available(torch):
                 available_devices.append("MPS")
         except Exception as e:
             logger.error(f"Error while checking MPS availability : {e}")
