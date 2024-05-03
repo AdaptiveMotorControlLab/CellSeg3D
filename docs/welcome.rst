@@ -74,8 +74,10 @@ For local installation after cloning from GitHub, please run the following in th
 
 If the installation was successful, you will find the napari-cellseg3D plugin in the Plugins section of napari.
 
+
 Usage
 --------------------------------------------
+
 
 To use the plugin, please run:
 

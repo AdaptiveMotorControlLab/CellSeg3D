@@ -32,6 +32,11 @@ For quick model checks, check the "Inference" sections in our docs.
   If you need to start labeling volumes from scratch or correct initial labels, we recommend consulting the sections on :ref:`Review<walkthrough_reviewing>` section right after :ref:`Cropping <walkthrough_cropping>`.
 
 
+Launching the plugin
+************************
+
+See `Usage section <https://adaptivemotorcontrollab.github.io/CellSeg3d/welcome.html#usage>`_ for instructions on launching the plugin.
+
 Cropping
 *********
 .. _walkthrough_cropping:

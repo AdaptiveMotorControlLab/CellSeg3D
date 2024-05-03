@@ -121,6 +121,7 @@ Refer to `PyTorch's website`_ for installation instructions.
 
 6. **Launch napari** :
 You should now see the CellSeg3D plugin in the Plugins section of napari.
+See `Usage section <https://adaptivemotorcontrollab.github.io/CellSeg3d/welcome.html#usage>`_ for a guide on how to use the plugin.
 
 Optional requirements
 ------------------------------
