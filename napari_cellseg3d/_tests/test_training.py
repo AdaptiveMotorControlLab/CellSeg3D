@@ -86,7 +86,6 @@ def test_unsupervised_training(make_napari_viewer_proxy):
     widget = Trainer(viewer)
     widget.log = LogFixture()
     widget.worker = None
-    widget._toggle_unsupervised_mode(enabled=True)
     widget.model_choice.setCurrentText("WNet3D")
     widget._toggle_unsupervised_mode(enabled=True)
 
