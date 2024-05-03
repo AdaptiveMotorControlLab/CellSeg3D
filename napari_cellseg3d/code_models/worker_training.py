@@ -388,7 +388,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
         self.log("-- Data --")
         self.log("Training data :\n")
         [
-            self.log(f"{v}")
+            self.log(f"{Path(v).stem}")
             for d in self.config.train_data_dict
             for k, v in d.items()
         ]
@@ -423,6 +423,11 @@ class WNetTrainingWorker(TrainingWorkerBase):
             if WANDB_INSTALLED:
                 config_dict = self.config.__dict__
                 logger.debug(f"wandb config : {config_dict}")
+                if wandb.run is not None:
+                    logger.warning(
+                        "A previous wandb run is still active. It will be stopped before starting a new one."
+                    )
+                    wandb.finish()
                 wandb.init(
                     config=config_dict,
                     project="CellSeg3D - WNet",
@@ -472,13 +477,21 @@ class WNetTrainingWorker(TrainingWorkerBase):
             if WANDB_INSTALLED:
                 wandb.watch(model, log_freq=100)
 
-            if self.config.weights_info.use_custom:
+            if (
+                self.config.weights_info.use_pretrained
+                or self.config.weights_info.use_custom
+            ):
                 if self.config.weights_info.use_pretrained:
-                    weights_file = "wnet.pth"
+                    from napari_cellseg3d.code_models.models.model_WNet import (
+                        WNet_,
+                    )
+
+                    weights_file = WNet_.weights_file
                     self.downloader.download_weights("WNet", weights_file)
-                    weights = PRETRAINED_WEIGHTS_DIR / Path(weights_file)
+                    weights = str(PRETRAINED_WEIGHTS_DIR / Path(weights_file))
                     self.config.weights_info.path = weights
-                else:
+
+                if self.config.weights_info.use_custom:
                     weights = str(Path(self.config.weights_info.path))
 
                 try:
@@ -624,6 +637,9 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         del criterionW
                         torch.cuda.empty_cache()
 
+                        if WANDB_INSTALLED:
+                            wandb.finish()
+
                 self.ncuts_losses.append(
                     epoch_ncuts_loss / len(self.dataloader)
                 )
@@ -642,9 +658,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                                 "cmap": "turbo",
                             },
                             "Encoder output (discrete)": {
-                                "data": AsDiscrete(threshold=0.5)(
-                                    enc_out
-                                ).numpy(),
+                                "data": np.where(enc_out > 0.5, enc_out, 0),
                                 "cmap": "bop blue",
                             },
                             "Decoder output": {
@@ -736,7 +750,8 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 if epoch % 5 == 0:
                     torch.save(
                         model.state_dict(),
-                        self.config.results_path_folder + "/wnet_.pth",
+                        self.config.results_path_folder
+                        + "/wnet_checkpoint.pth",
                     )
 
             self.log("Training finished")
@@ -856,8 +871,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 self.dice_metric(
                     y_pred=val_outputs[
                         :,
-                        max_dice_channel : (max_dice_channel + 1),
-                        :,
+                        max_dice_channel:,  # : (max_dice_channel + 1),
                         :,
                         :,
                     ],
@@ -1120,6 +1134,11 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 config_dict = self.config.__dict__
                 logger.debug(f"wandb config : {config_dict}")
                 try:
+                    if wandb.run is not None:
+                        logger.warning(
+                            "A previous wandb run is still active. It will be stopped before starting a new one."
+                        )
+                        wandb.finish()
                     wandb.init(
                         config=config_dict,
                         project="CellSeg3D",
@@ -1410,13 +1429,13 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             # time = utils.get_date_time()
             logger.debug("Weights")
 
-            if weights_config.use_custom:
+            if weights_config.use_custom or weights_config.use_pretrained:
                 if weights_config.use_pretrained:
                     weights_file = model_class.weights_file
                     self.downloader.download_weights(model_name, weights_file)
-                    weights = PRETRAINED_WEIGHTS_DIR / Path(weights_file)
+                    weights = str(PRETRAINED_WEIGHTS_DIR / Path(weights_file))
                     weights_config.path = weights
-                else:
+                elif weights_config.use_custom:
                     weights = str(Path(weights_config.path))
 
                 try:
@@ -1522,6 +1541,9 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                         del scheduler
                         if device.type == "cuda":
                             torch.cuda.empty_cache()
+
+                        if WANDB_INSTALLED:
+                            wandb.finish()
 
                     yield TrainingReport(
                         show_plot=False,

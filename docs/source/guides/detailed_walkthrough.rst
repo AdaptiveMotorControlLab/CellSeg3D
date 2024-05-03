@@ -1,6 +1,6 @@
 .. _detailed_walkthrough:
 
-Detailed walkthrough - Supervised learning
+Walkthrough - Supervised learning
 ==========================================
 
 This guide will show you step-by-step how to use the plugin's workflow, beginning with human annotated datasets, to generating predictions on new volumes.
@@ -116,7 +116,7 @@ In most cases this should left enabled.
    * **VNet** is a larger (than SegResNet) CNN from MONAI designed for medical image segmentation.
    * **TRAILMAP** is our implementation in PyTorch additionally trained on mouse cortical neural nuclei from mesoSPIM data.
    * **SwinUNetR** is a MONAI implementation of the SwinUNetR model. It is costly in compute and memory, but can achieve high performance.
-   * **WNet** is our reimplementation of an unsupervised model, which can be used to produce segmentation without labels.
+   * **WNet3D** is our extension of an unsupervised model, which can be used to produce segmentation without labels. See :ref:`training_wnet` for more information.
 
 
 * **The loss** : For 3D volume object detection, the Dice or Dice-focal Loss is the most efficient.

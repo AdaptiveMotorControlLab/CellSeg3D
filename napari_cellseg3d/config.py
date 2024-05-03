@@ -399,7 +399,7 @@ class WNetTrainingWorkerConfig(TrainingWorkerConfig):
     reconstruction_loss: str = "MSE"  # or "BCE"
     # summed losses weights
     n_cuts_weight: float = 0.5
-    rec_loss_weight: float = 0.5 / 100
+    rec_loss_weight: float = 0.5 / 1.0  # 0.5 / 100
     # normalization params
     # normalizing_function: callable = remap_image # FIXME: call directly in worker, not a param
     # data params
