@@ -126,6 +126,7 @@ wandb/
 !napari_cellseg3d/_tests/res/wnet_test/*.tif
 !napari_cellseg3d/_tests/res/wnet_test/lab/*.tif
 !napari_cellseg3d/_tests/res/wnet_test/vol/*.tif
+!examples/*
 
 #include docs images
 !docs/source/logo/*
