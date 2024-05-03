@@ -402,11 +402,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
         self.log("*" * 20)
 
     def train(
-        self,
-        provided_model=None,
-        provided_optimizer=None,
-        provided_loss=None,
-        wandb_name_override=None,
+        self, provided_model=None, provided_optimizer=None, provided_loss=None
     ):
         """Main training function.
 
@@ -416,7 +412,6 @@ class WNetTrainingWorker(TrainingWorkerBase):
             provided_model (WNet, optional): A model to use for training. Defaults to None.
             provided_optimizer (torch.optim.Optimizer, optional): An optimizer to use for training. Defaults to None.
             provided_loss (torch.nn.Module, optional): A loss function to use for training. Defaults to None.
-            wandb_name_override (str, optional): A name to override the wandb run name. Defaults to None.
         """
         try:
             if self.config is None:
@@ -436,11 +431,9 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 wandb.init(
                     config=config_dict,
                     project="CellSeg3D - WNet",
-                    name=f"WNet_training - {utils.get_date_time()}"
-                    if wandb_name_override is None
-                    else wandb_name_override,
+                    name=f"WNet3D_training - {utils.get_date_time()}",
                     mode=self.wandb_config.mode,
-                    tags=["WNet", "training"],
+                    tags=["WNet3D", "training"],
                 )
 
             set_determinism(seed=self.config.deterministic_config.seed)
@@ -494,7 +487,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     )
 
                     weights_file = WNet_.weights_file
-                    self.downloader.download_weights("WNet", weights_file)
+                    self.downloader.download_weights("WNet3D", weights_file)
                     weights = str(PRETRAINED_WEIGHTS_DIR / Path(weights_file))
                     self.config.weights_info.path = weights
 
@@ -788,7 +781,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
 
             if WANDB_INSTALLED and self.wandb_config.save_model_artifact:
                 model_artifact = wandb.Artifact(
-                    "WNet",
+                    "WNet3D",
                     type="model",
                     description="CellSeg3D WNet",
                     metadata=self.config.__dict__,
@@ -1086,7 +1079,6 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
         provided_optimizer=None,
         provided_loss=None,
         provided_scheduler=None,
-        wandb_name_override=None,
     ):
         """Trains the PyTorch model for the given number of epochs.
 
@@ -1135,6 +1127,11 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
         weights_config = self.config.weights_info
         deterministic_config = self.config.deterministic_config
 
+        if self.config.device == "mps":
+            from os import environ
+
+            environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+
         start_time = time.time()
 
         try:
@@ -1150,9 +1147,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                     wandb.init(
                         config=config_dict,
                         project="CellSeg3D",
-                        name=f"{model_config.name}_supervised_training - {utils.get_date_time()}"
-                        if wandb_name_override is None
-                        else wandb_name_override,
+                        name=f"{model_config.name}_supervised_training - {utils.get_date_time()}",
                         tags=[f"{model_config.name}", "supervised"],
                         mode=self.wandb_config.mode,
                     )
@@ -1213,10 +1208,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             epoch_loss_values = []
             val_metric_values = []
 
-            if (
-                len(self.config.train_data_dict) > 1
-                and self.config.eval_data_dict is None
-            ):
+            if len(self.config.train_data_dict) > 1:
                 self.train_files, self.val_files = (
                     self.config.train_data_dict[
                         0 : int(
@@ -1231,11 +1223,6 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                         ) :
                     ],
                 )
-            elif self.config.eval_data_dict is not None:
-                # train files are used as is, validation files are from eval_data_dict
-                # not used in the plugin yet, only for training via the API
-                self.train_files = self.config.train_data_dict
-                self.val_files = self.config.eval_data_dict
             else:
                 self.train_files = self.val_files = self.config.train_data_dict
                 msg = f"Only one image file was provided : {self.config.train_data_dict[0]['image']}.\n"
@@ -1609,10 +1596,6 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                                 val_data["image"].to(device),
                                 val_data["label"].to(device),
                             )
-                            if self.labels_not_semantic:
-                                val_labels = torch.where(
-                                    val_labels > 1, 1, val_labels
-                                )
 
                             try:
                                 with torch.no_grad():
@@ -1646,11 +1629,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                                     EnsureType(),
                                 ]
                             )  #
-                            post_label = Compose(
-                                [
-                                    EnsureType(),
-                                ]
-                            )
+                            post_label = EnsureType()
 
                             output_raw = [
                                 RemapTensor(new_max=1, new_min=0)(t)
