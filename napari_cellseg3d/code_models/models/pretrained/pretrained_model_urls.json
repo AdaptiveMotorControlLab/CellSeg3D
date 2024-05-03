@@ -4,6 +4,7 @@
   "VNet": "https://huggingface.co/C-Achard/cellseg3d/resolve/main/VNet_latest.tar.gz",
   "SwinUNetR": "https://huggingface.co/C-Achard/cellseg3d/resolve/main/SwinUNetR_latest.tar.gz",
   "WNet": "https://huggingface.co/C-Achard/cellseg3d/resolve/main/wnet_latest.tar.gz",
+  "WNet3D": "https://huggingface.co/C-Achard/cellseg3d/resolve/main/wnet_latest.tar.gz",
   "WNet_ONNX": "https://huggingface.co/C-Achard/cellseg3d/resolve/main/wnet_onnx.tar.gz",
   "test": "https://huggingface.co/C-Achard/cellseg3d/resolve/main/test.tar.gz"
 }
