@@ -1127,6 +1127,11 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
         weights_config = self.config.weights_info
         deterministic_config = self.config.deterministic_config
 
+        if self.config.device == "mps":
+            from os import environ
+
+            environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+
         start_time = time.time()
 
         try:
