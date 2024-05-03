@@ -49,9 +49,9 @@ dependencies = [
 dynamic = ["version", "entry-points"]
 
 [project.urls]
-Homepage  = "https://github.com/AdaptiveMotorControlLab/CellSeg3d"
+Homepage  = "https://github.com/AdaptiveMotorControlLab/CellSeg3D"
 Documentation = "https://adaptivemotorcontrollab.github.io/cellseg3d-docs/res/welcome.html"
-Issues = "https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues"
+Issues = "https://github.com/AdaptiveMotorControlLab/CellSeg3D/issues"
 
 [build-system]
 requires = ["setuptools", "wheel"]

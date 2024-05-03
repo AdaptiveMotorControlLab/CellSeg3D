@@ -8,7 +8,7 @@ Please refer to the :ref:`section below <source/guides/installation_guide:M1/M2 
 .. warning::
     If you encounter any issues during installation, feel free to open an issue on our `GitHub repository`_.
 
-.. _GitHub repository: https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues
+.. _GitHub repository: https://github.com/AdaptiveMotorControlLab/CellSeg3D/issues
 
 
 Installing pre-requisites
@@ -79,11 +79,11 @@ Start by installing `miniconda3`_.
 
 .. _miniconda3: https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html
 
-1. **Clone the repository** (`link <https://github.com/AdaptiveMotorControlLab/CellSeg3d>`_):
+1. **Clone the repository** (`link <https://github.com/AdaptiveMotorControlLab/CellSeg3D>`_):
 
 .. code-block::
 
-    git clone https://github.com/AdaptiveMotorControlLab/CellSeg3d.git
+    git clone https://github.com/AdaptiveMotorControlLab/CellSeg3D.git
 
 2. **Create the Conda Environment** :
 In the terminal, navigate to the CellSeg3D folder:
