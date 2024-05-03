@@ -39,10 +39,10 @@ Then go into Plugins > napari-cellseg3d, and choose which tool to use.
 
 ## News
 
-**New version : v0.1.3**
+**New version : v0.2.0**
 
-- Small API changes for training/inference from a script
 - Changed project name to "napari_cellseg3d" to avoid setuptools deprecation
+- Small API changes for training/inference from a script
 - Some fixes to WandB integration ad csv saving after training
 
 Previous additions :
