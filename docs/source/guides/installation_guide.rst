@@ -77,6 +77,9 @@ For ARM64 Macs, we recommend using our custom CONDA environment. This is particu
 
 Start by installing `miniconda3`_.
 
+Creating the environment
+______________________________
+
 .. _miniconda3: https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html
 
 1. **Clone the repository** (`link <https://github.com/AdaptiveMotorControlLab/CellSeg3d>`_):
@@ -122,6 +125,16 @@ Refer to `PyTorch's website`_ for installation instructions.
 6. **Launch napari** :
 You should now see the CellSeg3D plugin in the Plugins section of napari.
 See `Usage section <https://adaptivemotorcontrollab.github.io/CellSeg3d/welcome.html#usage>`_ for a guide on how to use the plugin.
+
+Updating the environment
+______________________________
+
+In order to update the environment, navigate to the CellSeg3D folder and run:
+
+.. code-block::
+
+    conda deactivate
+    conda env update -f conda/napari_cellseg3d_ARM64.yml
 
 Optional requirements
 ------------------------------
