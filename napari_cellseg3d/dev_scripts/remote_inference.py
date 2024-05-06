@@ -71,8 +71,8 @@ class PostProcessConfig:
     """Config for post-processing."""
 
     threshold: float = 0.4
-    spot_sigma: float = 0.65
-    outline_sigma: float = 0.65
+    spot_sigma: float = 0.55
+    outline_sigma: float = 0.55
     isotropic_spot_sigma: float = 0.2
     isotropic_outline_sigma: float = 0.2
     anisotropy_correction: List[
