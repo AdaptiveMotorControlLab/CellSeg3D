@@ -277,7 +277,7 @@ class InferenceWorker(GeneratorWorker):
 
         normalization = (
             QuantileNormalization()
-            if self.config.model_info.name != "WNet"
+            if self.config.model_info.name != "WNet3D"
             else lambda x: x
         )
         volume = np.reshape(volume, newshape=(1, *volume.shape))

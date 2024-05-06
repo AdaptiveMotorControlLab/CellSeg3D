@@ -4,4 +4,5 @@ Here is a very small volume (from [IDR project 853](https://idr.openmicroscopy.o
 You can install, launch `napari`, activate the CellSeg3D plugin app, and drag & drop this volume into the canvas.
 Then, for example, run `inference` with one of our models.
 
-See [CellSeg3D documentation](https://adaptivemotorcontrollab.github.io/CellSeg3d/welcome.html) for more details.
+See [CellSeg3D documentation](https://adaptivemotorcontrollab.github.io/CellSeg3D/welcome.html) for more details.
+
