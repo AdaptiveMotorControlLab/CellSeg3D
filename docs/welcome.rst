@@ -58,7 +58,7 @@ For detailed installation instructions, including installing pre-requisites,
 please see :ref:`source/guides/installation_guide:Installation guide ⚙`
 
 .. warning::
-    **M1/M2 MacOS users**, please refer to the :ref:`dedicated section <source/guides/installation_guide:M1/M2 (ARM64) Mac installation>`
+    **ARM64 MacOS users**, please refer to the :ref:`dedicated section <source/guides/installation_guide:ARM64 Mac installation>`
 
 You can install ``napari-cellseg3d`` via pip:
 
@@ -74,8 +74,10 @@ For local installation after cloning from GitHub, please run the following in th
 
 If the installation was successful, you will find the napari-cellseg3D plugin in the Plugins section of napari.
 
+
 Usage
 --------------------------------------------
+
 
 To use the plugin, please run:
 

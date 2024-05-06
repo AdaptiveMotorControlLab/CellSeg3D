@@ -11,6 +11,9 @@ Inference📊
 **Inference** allows you to use pre-trained segmentation algorithms, written in Pytorch,
 to automatically label cells in 3D volumes.
 
+See `Usage section <https://adaptivemotorcontrollab.github.io/CellSeg3d/welcome.html#usage>`_ for instructions on launching the plugin.
+See :ref:`training_module_guide` for instructions on training your own models before inference.
+
 .. important::
     Currently, the module supports inference on **3D volumes**. When running on folders, make sure that your image folder
     only contains a set of **3D image files** saved with the **`.tif`** extension.
