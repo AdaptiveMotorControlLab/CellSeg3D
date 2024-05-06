@@ -98,6 +98,8 @@ and launching the plugin from the Plugins menu.
 You may use the test volume in the `examples` folder to test the inference and review tools.
 This should run in far less than five minutes on a modern computer.
 
+You may also find a demo Colab notebook in the `notebooks` folder.
+
 ## Issues
 
 **Help us make the code better by reporting issues and adding your feature requests!**
