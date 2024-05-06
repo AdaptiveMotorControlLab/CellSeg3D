@@ -5,3 +5,4 @@ You can install, launch `napari`, activate the CellSeg3D plugin app, and drag & 
 Then, for example, run `inference` with one of our models.
 
 See [CellSeg3D documentation](https://adaptivemotorcontrollab.github.io/CellSeg3D/welcome.html) for more details.
+

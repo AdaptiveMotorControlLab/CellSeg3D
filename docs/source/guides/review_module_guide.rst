@@ -12,6 +12,8 @@ Labeling🔍
 The system will save the updated status of each file in a csv file.
 Additionally, the time taken per slice review is logged, enabling efficient monitoring.
 
+See `Usage section <https://adaptivemotorcontrollab.github.io/CellSeg3d/welcome.html#usage>`_ for instructions on launching the plugin.
+
 Launching the review process
 ---------------------------------
 .. figure:: ../images/Review_Parameters.png
