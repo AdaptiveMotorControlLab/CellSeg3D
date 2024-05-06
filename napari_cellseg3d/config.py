@@ -26,7 +26,7 @@ MODEL_LIST = {
     "VNet": VNet_,
     "TRAILMAP_MS": TRAILMAP_MS_,
     "SwinUNetR": SwinUNETR_,
-    "WNet": WNet_,
+    "WNet3D": WNet_,
     # "TRAILMAP": TRAILMAP,
     # "test" : DO NOT USE, reserved for testing
 }
@@ -348,13 +348,11 @@ class SupervisedTrainingWorkerConfig(TrainingWorkerConfig):
     """Class to record config for Trainer plugin.
 
     Args:
-        eval_data_dict (dict): dict of eval data as {"image": np.array, "labels": np.array}. Optional.
         model_info (ModelInfo): model info
         loss_function (callable): loss function
         validation_percent (float): validation percent
     """
 
-    eval_data_dict: dict = None
     model_info: ModelInfo = None
     loss_function: callable = None
     training_percent: float = 0.8
