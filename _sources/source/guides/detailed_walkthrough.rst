@@ -207,7 +207,7 @@ To visualise some of the results when running on a folder, you can leave the **V
 .. note::
     Too plot your results, check out the `provided notebooks`_
 
-.. _provided notebooks: https://github.com/AdaptiveMotorControlLab/CellSeg3d/tree/main/notebooks
+.. _provided notebooks: https://github.com/AdaptiveMotorControlLab/CellSeg3D/tree/main/notebooks
 
 
 You can then launch inference and the results will be saved in your specified folder.
@@ -271,6 +271,6 @@ for the plots to work.
    Example of the plot present in the notebooks.
    Coordinates are based on centroids, the size represents the volume, the color, and the sphericity.
 
-.. _notebooks folder of the repository: https://github.com/AdaptiveMotorControlLab/CellSeg3d/tree/main/notebooks
+.. _notebooks folder of the repository: https://github.com/AdaptiveMotorControlLab/CellSeg3D/tree/main/notebooks
 
 With this complete, you can repeat the workflow as needed.
