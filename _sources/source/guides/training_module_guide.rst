@@ -12,6 +12,8 @@ Training📉
 **Training** allows you to train models for cell segmentation.
 Whenever necessary, pre-trained weights will be automatically downloaded and integrated.
 
+See `Usage section <https://adaptivemotorcontrollab.github.io/CellSeg3d/welcome.html#usage>`_ for instructions on launching the plugin.
+
 .. important::
     At present, only inference on **3D volumes is supported**. Ensure that both your image and label folders contain a set of
     **3D image files**, in either **`.tif`** or **`.tiff`** format. Loading a folder of 2D images as a stack is supported only if

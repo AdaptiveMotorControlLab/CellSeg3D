@@ -428,7 +428,11 @@ document.write(`
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-cellseg3d">Installing CellSeg3D</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#m1-m2-arm64-mac-installation">M1/M2 (ARM64) Mac installation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#arm64-mac-installation">ARM64 Mac installation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-the-environment">Creating the environment</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#updating-the-environment">Updating the environment</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-requirements">Optional requirements</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#additional-functionalities">Additional functionalities</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#development-requirements">Development requirements</a></li>
@@ -448,8 +452,8 @@ document.write(`
   <section id="installation-guide">
 <h1>Installation guide ⚙<a class="headerlink" href="#installation-guide" title="Permalink to this heading">#</a></h1>
 <p>This guide outlines the steps for installing CellSeg3D and its dependencies. The plugin is compatible with Windows, Linux, and MacOS.</p>
-<p><strong>Note for M1/M2 (ARM64) Mac Users:</strong>
-Please refer to the <a class="reference internal" href="#m1-m2-arm64-mac-installation"><span class="std std-ref">section below</span></a> for specific instructions.</p>
+<p><strong>Note for ARM64 Mac Users:</strong>
+Please refer to the <a class="reference internal" href="#arm64-mac-installation"><span class="std std-ref">section below</span></a> for specific instructions.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>If you encounter any issues during installation, feel free to open an issue on our <a class="reference external" href="https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues">GitHub repository</a>.</p>
@@ -481,7 +485,7 @@ Select the installation criteria that match your OS and hardware (GPU or CPU).</
 <h2>Installing CellSeg3D<a class="headerlink" href="#installing-cellseg3d" title="Permalink to this heading">#</a></h2>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>For M1 Mac users, please see the <a class="reference internal" href="#m1-m2-arm64-mac-installation"><span class="std std-ref">section below</span></a></p>
+<p>For ARM64 Mac users, please see the <a class="reference internal" href="#arm64-mac-installation"><span class="std std-ref">section below</span></a></p>
 </div>
 <p><strong>Via pip</strong>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">napari</span><span class="o">-</span><span class="n">cellseg3d</span>
@@ -499,10 +503,12 @@ Navigate to the cloned CellSeg3D folder and run:</p>
 </div>
 <p>Successful installation will add the napari-cellseg3D plugin to napari’s Plugins section.</p>
 </section>
-<section id="m1-m2-arm64-mac-installation">
-<h2>M1/M2 (ARM64) Mac installation<a class="headerlink" href="#m1-m2-arm64-mac-installation" title="Permalink to this heading">#</a></h2>
-<p id="arm64-mac-installation">For ARM64 Macs, we recommend using our custom CONDA environment. This is particularly important for M1 or M2 MacBooks.</p>
+<section id="arm64-mac-installation">
+<h2>ARM64 Mac installation<a class="headerlink" href="#arm64-mac-installation" title="Permalink to this heading">#</a></h2>
+<p id="id1">For ARM64 Macs, we recommend using our custom CONDA environment. This is particularly important for ARM64 (Silicon chips) MacBooks.</p>
 <p>Start by installing <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html">miniconda3</a>.</p>
+<section id="creating-the-environment">
+<h3>Creating the environment<a class="headerlink" href="#creating-the-environment" title="Permalink to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p><strong>Clone the repository</strong> (<a class="reference external" href="https://github.com/AdaptiveMotorControlLab/CellSeg3d">link</a>):</p></li>
 </ol>
@@ -512,25 +518,41 @@ Navigate to the cloned CellSeg3D folder and run:</p>
 <p>2. <strong>Create the Conda Environment</strong> :
 In the terminal, navigate to the CellSeg3D folder:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">CellSeg3D</span>
-<span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">conda</span><span class="o">/</span><span class="n">napari_cellseg3d_m1</span><span class="o">.</span><span class="n">yml</span>
+<span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">conda</span><span class="o">/</span><span class="n">napari_cellseg3d_ARM64</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
+<p>This will also install the necessary dependencies as well as the plugin.</p>
 <ol class="arabic simple" start="3">
 <li><p><strong>Activate the environment</strong> :</p></li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">napari_cellseg3d_m1</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">napari_cellseg3d_ARM64</span>
 </pre></div>
 </div>
-<ol class="arabic simple" start="4">
-<li><p><strong>Install the plugin</strong> :</p></li>
-</ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">napari</span><span class="o">-</span><span class="n">cellseg3d</span>
+<p>4. <strong>Install a Qt backend</strong> :
+Important : you only need to install one of the following backends.
+PyQt5:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">PyQt5</span>
 </pre></div>
 </div>
-<p>OR to install from source:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
+<p>OR
+PySide2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">PySide2</span>
 </pre></div>
 </div>
+<p>5. <strong>Install PyTorch</strong> :
+Refer to <a class="reference external" href="https://pytorch.org/get-started/locally/">PyTorch’s website</a> for installation instructions.</p>
+<p>6. <strong>Launch napari</strong> :
+You should now see the CellSeg3D plugin in the Plugins section of napari.
+See <a class="reference external" href="https://adaptivemotorcontrollab.github.io/CellSeg3d/welcome.html#usage">Usage section</a> for a guide on how to use the plugin.</p>
+</section>
+<section id="updating-the-environment">
+<h3>Updating the environment<a class="headerlink" href="#updating-the-environment" title="Permalink to this heading">#</a></h3>
+<p>In order to update the environment, navigate to the CellSeg3D folder and run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">deactivate</span>
+<span class="n">conda</span> <span class="n">env</span> <span class="n">update</span> <span class="o">-</span><span class="n">f</span> <span class="n">conda</span><span class="o">/</span><span class="n">napari_cellseg3d_ARM64</span><span class="o">.</span><span class="n">yml</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="optional-requirements">
 <h2>Optional requirements<a class="headerlink" href="#optional-requirements" title="Permalink to this heading">#</a></h2>
@@ -652,7 +674,11 @@ Depending on your hardware, you can install the CPU or GPU version of ONNX.</p><
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-cellseg3d">Installing CellSeg3D</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#m1-m2-arm64-mac-installation">M1/M2 (ARM64) Mac installation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#arm64-mac-installation">ARM64 Mac installation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-the-environment">Creating the environment</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#updating-the-environment">Updating the environment</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-requirements">Optional requirements</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#additional-functionalities">Additional functionalities</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#development-requirements">Development requirements</a></li>
