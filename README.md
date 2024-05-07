@@ -5,9 +5,9 @@
 [![PyPI](https://img.shields.io/pypi/v/napari-cellseg3d.svg?color=green)](https://pypi.org/project/napari-cellseg3d)
 [![Downloads](https://static.pepy.tech/badge/napari-cellseg3d)](https://pepy.tech/project/napari-cellseg3d)
 [![Downloads](https://static.pepy.tech/badge/napari-cellseg3d/month)](https://pepy.tech/project/napari-cellseg3d)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/AdaptiveMotorControlLab/CellSeg3d/raw/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/AdaptiveMotorControlLab/CellSeg3D/raw/main/LICENSE)
 [![Python Version](https://img.shields.io/pypi/pyversions/napari-cellseg-annotator.svg?color=green)](https://python.org)
-[![codecov](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3d/branch/main/graph/badge.svg?token=hzUcn3XN8F)](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3d)
+[![codecov](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3D/branch/main/graph/badge.svg?token=hzUcn3XN8F)](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3D)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-cellseg3d)](https://www.napari-hub.org/plugins/napari-cellseg3d)
 
 - A napari plugin for 3D cell segmentation: training, inference, and data review. In particular, this project was developed for analysis of mesoSPIM-acquired (cleared tissue + lightsheet) datasets.
@@ -20,7 +20,7 @@
 
 ## Documentation
 
-📚 A lot of documentation is available at https://AdaptiveMotorControlLab.github.io/CellSeg3d
+📚 A lot of documentation is available at https://AdaptiveMotorControlLab.github.io/CellSeg3D
 
 You can also generate docs by running ``make html`` in the docs/ folder.
 
@@ -59,38 +59,45 @@ Previous additions :
 
 
 
-### Install note for M1/M2 Mac users
+### Install note for ARM64 (Silicon) Mac users
 
 To avoid issues when installing on the ARM64 architecture, please follow these steps.
 
-1) Create a new conda env using the provided conda/napari_cellseg3d_m1.yml file :
+1) Create a new conda env using the provided conda/napari_CellSeg3D_ARM64.yml file :
 
         git clone https://github.com/AdaptiveMotorControlLab/CellSeg3d.git
         cd CellSeg3d
-        conda env create -f conda/napari_cellseg3d_m1.yml
-        conda activate napari_cellseg3d_m1
+        conda env create -f conda/CellSeg3D_ARM64.yml
+        conda activate napari_CellSeg3D_ARM64
 
-2) Install the plugin.
-   From repository root folder, run :
 
-        pip install -e .
-   OR directly via PyPi :
+2) Install a Qt backend (PySide or PyQt5)
+3) Launch napari, the plugin should be available in the plugins menu.
 
-        pip install napari-cellseg3d
-
-   OR directly via [napari-hub] (see Installation section above)
 
 
 ## Requirements
 
 **Python 3.8 or 3.9 required.**
 Requires **[napari]**, **[PyTorch]** and **[MONAI]**.
+Compatible with Windows, MacOS and Linux.
+Installation should not take more than 30 minutes, depending on your internet connection.
 
 For PyTorch, please see [the PyTorch website for installation instructions].
 
 A CUDA-capable GPU is not needed but very strongly recommended, especially for training.
 
 If you get errors from MONAI regarding missing readers, please see [MONAI's optional dependencies] page for instructions on getting the readers required by your images.
+
+## Quick demo
+
+After installation, you can run the plugin by running:
+
+        napari
+
+and launching the plugin from the Plugins menu.
+You may use the test volume in the `examples` folder to test the inference and review tools.
+This should run in far less than five minutes on a modern computer.
 
 ## Issues
 
@@ -131,7 +138,7 @@ Distributed under the terms of the [MIT] license.
 
 [napari-hub]: https://www.napari-hub.org/plugins/napari-cellseg3d
 
-[file an issue]: https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues
+[file an issue]: https://github.com/AdaptiveMotorControlLab/CellSeg3D/issues
 [napari]: https://github.com/napari/napari
 [Cookiecutter]: https://github.com/audreyr/cookiecutter
 [@napari]: https://github.com/napari
@@ -140,7 +147,7 @@ Distributed under the terms of the [MIT] license.
 [tox]: https://tox.readthedocs.io/en/latest/
 [pip]: https://pypi.org/project/pip/
 [PyPI]: https://pypi.org/
-[Installation page]: https://adaptivemotorcontrollab.github.io/CellSeg3d/source/guides/installation_guide.html
+[Installation page]: https://adaptivemotorcontrollab.github.io/CellSeg3D/source/guides/installation_guide.html
 [the PyTorch website for installation instructions]: https://pytorch.org/get-started/locally/
 [PyTorch]: https://pytorch.org/get-started/locally/
 [MONAI's optional dependencies]: https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies

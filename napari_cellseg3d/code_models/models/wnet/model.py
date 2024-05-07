@@ -17,7 +17,7 @@ NUM_GROUPS = 4
 
 
 class WNet_encoder(nn.Module):
-    """WNet with encoder only."""
+    """WNet3D with encoder only."""
 
     def __init__(
         self,

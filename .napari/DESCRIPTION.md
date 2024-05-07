@@ -117,7 +117,7 @@ this information here.
 ## Getting Help
 
 If you would like to report an issue with the plugin,
-please open an [issue on Github](https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues)
+please open an [issue on Github](https://github.com/AdaptiveMotorControlLab/CellSeg3D/issues)
 <!--
 This section should point users to your preferred support tools, whether this be raising
 an issue on GitHub, asking a question on image.sc, or using some other method of contact.
