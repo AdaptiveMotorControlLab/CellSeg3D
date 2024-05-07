@@ -598,7 +598,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
                 model_artifact = wandb.Artifact(
                     "WNet3D",
                     type="model",
-                    description="CellSeg3D WNet",
+                    description="CellSeg3D WNet3D",
                     metadata=self.config.__dict__,
                 )
                 model_artifact.add_file(save_weights_path)

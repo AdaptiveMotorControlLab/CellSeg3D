@@ -430,7 +430,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     wandb.finish()
                 wandb.init(
                     config=config_dict,
-                    project="CellSeg3D - WNet",
+                    project="CellSeg3D - WNet3D",
                     name=f"WNet3D_training - {utils.get_date_time()}",
                     mode=self.wandb_config.mode,
                     tags=["WNet3D", "training"],
