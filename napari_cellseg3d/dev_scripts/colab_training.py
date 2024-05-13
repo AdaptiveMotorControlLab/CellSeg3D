@@ -332,7 +332,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
                     project="CellSeg3D (Colab)",
                     name=f"{self.config.model_info.name} training - {utils.get_date_time()}",
                     mode=self.wandb_config.mode,
-                    tags=["WNet", "Colab"],
+                    tags=["WNet3D", "Colab"],
                 )
 
             set_determinism(seed=self.config.deterministic_config.seed)
@@ -379,7 +379,7 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
             if self.config.weights_info.use_custom:
                 if self.config.weights_info.use_pretrained:
                     weights_file = "wnet.pth"
-                    self.downloader.download_weights("WNet", weights_file)
+                    self.downloader.download_weights("WNet3D", weights_file)
                     weights = PRETRAINED_WEIGHTS_DIR / Path(weights_file)
                     self.config.weights_info.path = weights
                 else:
@@ -596,9 +596,9 @@ class WNetTrainingWorkerColab(TrainingWorkerBase):
 
             if WANDB_INSTALLED and self.wandb_config.save_model_artifact:
                 model_artifact = wandb.Artifact(
-                    "WNet",
+                    "WNet3D",
                     type="model",
-                    description="CellSeg3D WNet",
+                    description="CellSeg3D WNet3D",
                     metadata=self.config.__dict__,
                 )
                 model_artifact.add_file(save_weights_path)

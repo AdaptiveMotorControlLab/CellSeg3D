@@ -26,7 +26,7 @@ MODEL_LIST = {
     "VNet": VNet_,
     "TRAILMAP_MS": TRAILMAP_MS_,
     "SwinUNetR": SwinUNETR_,
-    "WNet": WNet_,
+    "WNet3D": WNet_,
     # "TRAILMAP": TRAILMAP,
     # "test" : DO NOT USE, reserved for testing
 }

@@ -49,9 +49,9 @@ dependencies = [
 dynamic = ["version", "entry-points"]
 
 [project.urls]
-Homepage  = "https://github.com/AdaptiveMotorControlLab/CellSeg3d"
+Homepage  = "https://github.com/AdaptiveMotorControlLab/CellSeg3D"
 Documentation = "https://adaptivemotorcontrollab.github.io/cellseg3d-docs/res/welcome.html"
-Issues = "https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues"
+Issues = "https://github.com/AdaptiveMotorControlLab/CellSeg3D/issues"
 
 [build-system]
 requires = ["setuptools", "wheel"]
@@ -126,6 +126,15 @@ line_length = 79
 #crf = [
 #   "pydensecrf@git+https://github.com/lucasb-eyer/pydensecrf.git#egg=master",
 #]
+pyqt5 = [
+    "pyqt5",
+]
+pyside2 = [
+    "pyside2",
+]
+pyside6 = [
+    "pyside6",
+]
 onnx-cpu = [
     "onnx",
     "onnxruntime"

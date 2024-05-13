@@ -21,10 +21,10 @@ class Helper(QWidget, metaclass=ui.QWidgetSingleton):
         """Creates a widget with links to documentation and about page."""
         super().__init__()
 
-        self.help_url = "https://adaptivemotorcontrollab.github.io/CellSeg3d/"
+        self.help_url = "https://adaptivemotorcontrollab.github.io/CellSeg3D/"
 
         self.about_url = "https://wysscenter.ch/advances/3d-computer-vision-for-brain-analysis"
-        self.repo_url = "https://github.com/AdaptiveMotorControlLab/CellSeg3d"
+        self.repo_url = "https://github.com/AdaptiveMotorControlLab/CellSeg3D"
         self._viewer = viewer
 
         logo_path = str(

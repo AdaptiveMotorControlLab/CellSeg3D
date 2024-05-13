@@ -33,7 +33,7 @@ def test_worker_configs(make_napari_viewer_proxy):
                 worker.config, attr
             )
     # test unsupervised config and worker
-    widget.model_choice.setCurrentText("WNet")
+    widget.model_choice.setCurrentText("WNet3D")
     widget._toggle_unsupervised_mode(enabled=True)
     default_config = config.WNetTrainingWorkerConfig()
     worker = widget._create_worker(additional_results_description="TEST_1")

@@ -96,4 +96,4 @@ Common issues troubleshooting
 
 
 .. _WNet, A Deep Model for Fully Unsupervised Image Segmentation: https://arxiv.org/abs/1711.08506
-.. _open an issue: https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues
+.. _open an issue: https://github.com/AdaptiveMotorControlLab/CellSeg3D/issues

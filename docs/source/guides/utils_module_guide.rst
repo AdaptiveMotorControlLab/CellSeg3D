@@ -4,6 +4,7 @@ Utilities 🛠
 ============
 
 Here you will find a range of tools for image processing and analysis.
+See `Usage section <https://adaptivemotorcontrollab.github.io/CellSeg3d/welcome.html#usage>`_ for instructions on launching the plugin.
 
 .. note::
     The utility selection menu is found at the bottom of the plugin window.

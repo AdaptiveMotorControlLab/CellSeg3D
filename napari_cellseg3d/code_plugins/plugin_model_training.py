@@ -451,7 +451,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
     def _toggle_unsupervised_mode(self, enabled=False):
         """Change all the UI elements needed for unsupervised learning mode."""
-        if self.model_choice.currentText() == "WNet" or enabled:
+        if self.model_choice.currentText() == "WNet3D" or enabled:
             unsupervised = True
             self.start_btn = self.start_button_unsupervised
             if self.image_filewidget.text_field.text() == "Images directory":
@@ -799,7 +799,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ui.add_blank(advanced_tab, advanced_tab.layout)
         ##################
         model_params_group_w, model_params_group_l = ui.make_group(
-            "WNet parameters", r=20, b=5, t=11
+            "WNet3D parameters", r=20, b=5, t=11
         )
         ui.add_widgets(
             model_params_group_l,
