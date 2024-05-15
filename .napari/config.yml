@@ -2,11 +2,11 @@ visibility: public
 # note : remember to add napari-hub preview app to repo
 
 project_urls:
-  Bug Tracker: https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues
-  Documentation: https://adaptivemotorcontrollab.github.io/CellSeg3d/res/welcome.html
-  Source Code: https://github.com/AdaptiveMotorControlLab/CellSeg3d
-  Project Site: https://github.com/AdaptiveMotorControlLab/CellSeg3d
-  User Support: https://github.com/AdaptiveMotorControlLab/CellSeg3d/issues
+  Bug Tracker: https://github.com/AdaptiveMotorControlLab/CellSeg3D/issues
+  Documentation: https://adaptivemotorcontrollab.github.io/CellSeg3D/res/welcome.html
+  Source Code: https://github.com/AdaptiveMotorControlLab/CellSeg3D
+  Project Site: https://github.com/AdaptiveMotorControlLab/CellSeg3D
+  User Support: https://github.com/AdaptiveMotorControlLab/CellSeg3D/issues
 
 # Add labels from the EDAM Bioimaging ontology
 labels:

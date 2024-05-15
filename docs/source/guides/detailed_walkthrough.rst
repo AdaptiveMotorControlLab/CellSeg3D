@@ -32,6 +32,11 @@ For quick model checks, check the "Inference" sections in our docs.
   If you need to start labeling volumes from scratch or correct initial labels, we recommend consulting the sections on :ref:`Review<walkthrough_reviewing>` section right after :ref:`Cropping <walkthrough_cropping>`.
 
 
+Launching the plugin
+************************
+
+See `Usage section <https://adaptivemotorcontrollab.github.io/CellSeg3D/welcome.html#usage>`_ for instructions on launching the plugin.
+
 Cropping
 *********
 .. _walkthrough_cropping:
@@ -202,7 +207,7 @@ To visualise some of the results when running on a folder, you can leave the **V
 .. note::
     Too plot your results, check out the `provided notebooks`_
 
-.. _provided notebooks: https://github.com/AdaptiveMotorControlLab/CellSeg3d/tree/main/notebooks
+.. _provided notebooks: https://github.com/AdaptiveMotorControlLab/CellSeg3D/tree/main/notebooks
 
 
 You can then launch inference and the results will be saved in your specified folder.
@@ -266,6 +271,6 @@ for the plots to work.
    Example of the plot present in the notebooks.
    Coordinates are based on centroids, the size represents the volume, the color, and the sphericity.
 
-.. _notebooks folder of the repository: https://github.com/AdaptiveMotorControlLab/CellSeg3d/tree/main/notebooks
+.. _notebooks folder of the repository: https://github.com/AdaptiveMotorControlLab/CellSeg3D/tree/main/notebooks
 
 With this complete, you can repeat the workflow as needed.

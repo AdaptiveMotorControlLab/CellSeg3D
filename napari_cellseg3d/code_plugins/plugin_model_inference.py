@@ -258,7 +258,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self._remove_unused()
 
     def _toggle_crf_choice(self):
-        if self.model_choice.currentText() == "WNet":
+        if self.model_choice.currentText() == "WNet3D":
             self.use_crf.setVisible(True)
         else:
             self.use_crf.setVisible(False)
@@ -335,7 +335,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
     def _restrict_window_size_for_model(self):
         """Sets the window size to a value that is compatible with the chosen model."""
         self.wnet_enabled = False
-        if self.model_choice.currentText() == "WNet":
+        if self.model_choice.currentText() == "WNet3D":
             self.wnet_enabled = True
             self.window_size_choice.setCurrentIndex(self._default_window_size)
             self.use_window_choice.setChecked(self.wnet_enabled)

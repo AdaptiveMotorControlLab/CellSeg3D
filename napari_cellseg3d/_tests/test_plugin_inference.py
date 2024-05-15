@@ -31,7 +31,7 @@ def test_inference(make_napari_viewer_proxy, qtbot):
 
     assert widget.check_ready()
 
-    widget.model_choice.setCurrentText("WNet")
+    widget.model_choice.setCurrentText("WNet3D")
     widget._restrict_window_size_for_model()
     assert widget.use_window_choice.isChecked()
     assert widget.window_size_choice.currentText() == "64"

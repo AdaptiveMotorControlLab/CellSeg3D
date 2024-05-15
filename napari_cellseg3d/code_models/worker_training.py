@@ -430,10 +430,10 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     wandb.finish()
                 wandb.init(
                     config=config_dict,
-                    project="CellSeg3D - WNet",
-                    name=f"WNet_training - {utils.get_date_time()}",
+                    project="CellSeg3D - WNet3D",
+                    name=f"WNet3D_training - {utils.get_date_time()}",
                     mode=self.wandb_config.mode,
-                    tags=["WNet", "training"],
+                    tags=["WNet3D", "training"],
                 )
 
             set_determinism(seed=self.config.deterministic_config.seed)
@@ -487,7 +487,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     )
 
                     weights_file = WNet_.weights_file
-                    self.downloader.download_weights("WNet", weights_file)
+                    self.downloader.download_weights("WNet3D", weights_file)
                     weights = str(PRETRAINED_WEIGHTS_DIR / Path(weights_file))
                     self.config.weights_info.path = weights
 
@@ -781,7 +781,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
 
             if WANDB_INSTALLED and self.wandb_config.save_model_artifact:
                 model_artifact = wandb.Artifact(
-                    "WNet",
+                    "WNet3D",
                     type="model",
                     description="CellSeg3D WNet",
                     metadata=self.config.__dict__,
@@ -1126,6 +1126,11 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
         model_config = self.config.model_info
         weights_config = self.config.weights_info
         deterministic_config = self.config.deterministic_config
+
+        if self.config.device == "mps":
+            from os import environ
+
+            environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
         start_time = time.time()
 

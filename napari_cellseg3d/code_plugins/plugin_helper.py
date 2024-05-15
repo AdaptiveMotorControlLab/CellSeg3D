@@ -21,10 +21,10 @@ class Helper(QWidget, metaclass=ui.QWidgetSingleton):
         """Creates a widget with links to documentation and about page."""
         super().__init__()
 
-        self.help_url = "https://adaptivemotorcontrollab.github.io/CellSeg3d/"
+        self.help_url = "https://adaptivemotorcontrollab.github.io/CellSeg3D/"
 
         self.about_url = "https://wysscenter.ch/advances/3d-computer-vision-for-brain-analysis"
-        self.repo_url = "https://github.com/AdaptiveMotorControlLab/CellSeg3d"
+        self.repo_url = "https://github.com/AdaptiveMotorControlLab/CellSeg3D"
         self._viewer = viewer
 
         logo_path = str(
@@ -43,7 +43,7 @@ class Helper(QWidget, metaclass=ui.QWidgetSingleton):
         self.logo_label.setToolTip("Open Github page")
 
         self.info_label = ui.make_label(
-            f"You are using napari-cellseg3d v.{'0.1.2'}\n\n"
+            f"You are using napari-cellseg3d v.{'0.2.0'}\n\n"
             f"Plugin for cell segmentation developed\n"
             f"by the Mathis Lab of Adaptive Motor Control\n\n"
             f"Code by :\nCyril Achard\nMaxime Vidal\nJessy Lauer\nMackenzie Mathis\n"
