@@ -16,12 +16,12 @@
 
 ## Installation
 
- 💻 See the [Installation page] in the documentation for detailed instructions.
+ 💻 See the [Installation page](https://adaptivemotorcontrollab.github.io/CellSeg3d/welcome.html) in the documentation for detailed instructions.
 
 ## Documentation
 
-📚 A lot of documentation is available at https://AdaptiveMotorControlLab.github.io/CellSeg3D
-
+📚 A lot of documentation is available at [https://AdaptiveMotorControlLab.github.io/CellSeg3D
+](https://adaptivemotorcontrollab.github.io/CellSeg3d/welcome.html)
 You can also generate docs by running ``make html`` in the docs/ folder.
 
 ## Quick Start
