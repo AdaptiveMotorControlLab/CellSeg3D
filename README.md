@@ -16,12 +16,12 @@
 
 ## Installation
 
- 💻 See the [Installation page] in the documentation for detailed instructions.
+ 💻 See the [Installation page](https://adaptivemotorcontrollab.github.io/CellSeg3d/welcome.html) in the documentation for detailed instructions.
 
 ## Documentation
 
-📚 A lot of documentation is available at https://AdaptiveMotorControlLab.github.io/CellSeg3D
-
+📚 A lot of documentation is available at [https://AdaptiveMotorControlLab.github.io/CellSeg3D
+](https://adaptivemotorcontrollab.github.io/CellSeg3d/welcome.html)
 You can also generate docs by running ``make html`` in the docs/ folder.
 
 ## Quick Start
@@ -39,15 +39,15 @@ Then go into Plugins > napari-cellseg3d, and choose which tool to use.
 
 ## News
 
-**New version : v0.2.0**
+**New version: v0.2.0**
 
 - Changed project name to "napari_cellseg3d" to avoid setuptools deprecation
 - Small API changes for training/inference from a script
 - Some fixes to WandB integration ad csv saving after training
 
-Previous additions :
+Previous additions:
 
-- v0.1.2 :Fixed manifest issue for PyPi
+- v0.1.2: Fixed manifest issue for PyPi
 - Improved training interface
 - Unsupervised model : WNet3D
   - Generate labels directly from raw data!
@@ -158,6 +158,21 @@ Distributed under the terms of the [MIT] license.
 [MONAI's optional dependencies]: https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies
 [MONAI]: https://docs.monai.io/en/stable/installation.html#installing-the-recommended-dependencies
 
+## Citation
+
+```
+@article {Achard2024,
+	author = {Achard, Cyril and Kousi, Timokleia and Frey, Markus and Vidal, Maxime and Paychere, Yves and Hofmann, Colin and Iqbal, Asim and Hausmann, Sebastien B. and Pages, Stephane and Mathis, Mackenzie W.},
+	title = {CellSeg3D: self-supervised 3D cell segmentation for microscopy},
+	elocation-id = {2024.05.17.594691},
+	year = {2024},
+	doi = {10.1101/2024.05.17.594691},
+	publisher = {Cold Spring Harbor Laboratory},
+	URL = {https://www.biorxiv.org/content/early/2024/05/17/2024.05.17.594691},
+	eprint = {https://www.biorxiv.org/content/early/2024/05/17/2024.05.17.594691.full.pdf},
+	journal = {bioRxiv}
+}
+```
 ## Acknowledgements
 
 This plugin was developed by originally Cyril Achard, Maxime Vidal, Mackenzie Mathis.
