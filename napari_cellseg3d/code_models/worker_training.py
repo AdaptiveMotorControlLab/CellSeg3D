@@ -331,24 +331,40 @@ class WNetTrainingWorker(TrainingWorkerBase):
             (self.data_shape, dataset) = self.get_dataset(train_transforms)
 
         logger.debug(f"Data shape : {self.data_shape}")
-        self.dataloader = DataLoader(
-            dataset,
-            batch_size=self.config.batch_size,
-            shuffle=True,
-            num_workers=self.config.num_workers,
-            collate_fn=pad_list_data_collate,
-        )
+        try:
+            self.dataloader = DataLoader(
+                dataset,
+                batch_size=self.config.batch_size,
+                shuffle=True,
+                num_workers=self.config.num_workers,
+                collate_fn=pad_list_data_collate,
+            )
+        except ValueError:
+            self.dataloader = DataLoader(
+                dataset,
+                batch_size=self.config.batch_size,
+                num_workers=self.config.num_workers,
+                collate_fn=pad_list_data_collate,
+            )
 
         if self.config.eval_volume_dict is not None:
             eval_dataset = self.get_dataset_eval(self.config.eval_volume_dict)
             logger.debug(f"Eval batch size : {self.config.eval_batch_size}")
-            self.eval_dataloader = DataLoader(
-                eval_dataset,
-                batch_size=self.config.eval_batch_size,
-                shuffle=False,
-                num_workers=self.config.num_workers,
-                collate_fn=pad_list_data_collate,
-            )
+            try:
+                self.eval_dataloader = DataLoader(
+                    eval_dataset,
+                    batch_size=self.config.eval_batch_size,
+                    shuffle=False,
+                    num_workers=self.config.num_workers,
+                    collate_fn=pad_list_data_collate,
+                )
+            except ValueError:
+                self.eval_dataloader = DataLoader(
+                    eval_dataset,
+                    batch_size=self.config.eval_batch_size,
+                    num_workers=self.config.num_workers,
+                    collate_fn=pad_list_data_collate,
+                )
         else:
             self.eval_dataloader = None
         return self.dataloader, self.eval_dataloader, self.data_shape
@@ -1385,13 +1401,21 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                     data=self.val_files, transform=load_whole_images
                 )
             logger.debug("Dataloader")
-            train_loader = DataLoader(
-                train_dataset,
-                batch_size=self.config.batch_size,
-                shuffle=True,
-                num_workers=self.config.num_workers,
-                collate_fn=pad_list_data_collate,
-            )
+            try:
+                train_loader = DataLoader(
+                    train_dataset,
+                    batch_size=self.config.batch_size,
+                    shuffle=True,
+                    num_workers=self.config.num_workers,
+                    collate_fn=pad_list_data_collate,
+                )
+            except ValueError:
+                train_loader = DataLoader(
+                    train_dataset,
+                    batch_size=self.config.batch_size,
+                    num_workers=self.config.num_workers,
+                    collate_fn=pad_list_data_collate,
+                )
 
             validation_loader = DataLoader(
                 validation_dataset,
