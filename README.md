@@ -21,7 +21,7 @@
 ## Documentation
 
 📚 A lot of documentation is available at [https://AdaptiveMotorControlLab.github.io/CellSeg3D
-](https://adaptivemotorcontrollab.github.io/CellSeg3d/welcome.html)
+](https://adaptivemotorcontrollab.github.io/CellSeg3D/welcome.html)
 You can also generate docs by running ``make html`` in the docs/ folder.
 
 ## Quick Start
