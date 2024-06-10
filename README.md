@@ -39,7 +39,7 @@ Then go into Plugins > napari-cellseg3d, and choose which tool to use.
 - **Train**:  This module allows you to train segmentation algorithms from labeled volumes.
 - **Utilities**: This module allows you to perform several actions like cropping your volumes and labels dynamically, by selecting a fixed size volume and moving it around the image; fragment images into smaller cubes for training; or converting labels from instance to segmentation and the opposite.
 
-## Why use CellSeg3D? 
+## Why use CellSeg3D?
 
 The strength of our approach is we can match supervised model performance with purely self-supervised learning, meaning users don't need to spend (hundreds) of hours on annotation. Here is a quick look of our key results. TL;DR see panel **f**, which shows that with minmal input data we can outperform supervised models:
 
@@ -48,12 +48,12 @@ The strength of our approach is we can match supervised model performance with p
 </p>
 
 #### Performance of 3D Semantic and Instance Segmentation Models.
-**a:** Raw mesoSPIM whole-brain sample, volumes and corresponding ground truth labels from somatosensory (S1) and visual (V1) cortical regions. 
-**b:** Evaluation of instance segmentation performance for several supervised models over three data subsets. F1-score is computed from the Intersection over Union (IoU) with ground truth labels, then averaged. Error bars represent 50% Confidence Intervals (CIs). 
-**c:** View of 3D instance labels from supervised models, as noted, for visual cortex volume in b evaluation. 
-**d:** Illustration of our WNet3D architecture showcasing the dual 3D U-Net structure with modifications (see Methods). 
-**e:** Example 3D instance labels from WNet3D; top row is S1, bottom is V1, with artifacts removed. 
-**f:** Semantic segmentation performance: comparison of model efficiency, indicating the volume of training data required to achieve a given performance level. Each supervised model was trained with an increasing percentage of training data (with 10, 20, 60 or 80%, left to right within each model grouping); Dice score was computed on unseen test data, over three data subsets for each training/evaluation split. Our self-supervised model (WNet3D) is also trained on a subset of the training set of images, but always without human labels. Far right: We also show performance of the pretrained WNet3D available in the plugin (far right), with and without removing artifacts in the image. See Methods for details. The central box represents the interquartile range (IQR) of values with the median as a horizontal line, the upper and lower limits the upper and lower quartiles. Whiskers extend to data points within 1.5 IQR of the quartiles. 
+**a:** Raw mesoSPIM whole-brain sample, volumes and corresponding ground truth labels from somatosensory (S1) and visual (V1) cortical regions.
+**b:** Evaluation of instance segmentation performance for several supervised models over three data subsets. F1-score is computed from the Intersection over Union (IoU) with ground truth labels, then averaged. Error bars represent 50% Confidence Intervals (CIs).
+**c:** View of 3D instance labels from supervised models, as noted, for visual cortex volume in b evaluation.
+**d:** Illustration of our WNet3D architecture showcasing the dual 3D U-Net structure with modifications (see Methods).
+**e:** Example 3D instance labels from WNet3D; top row is S1, bottom is V1, with artifacts removed.
+**f:** Semantic segmentation performance: comparison of model efficiency, indicating the volume of training data required to achieve a given performance level. Each supervised model was trained with an increasing percentage of training data (with 10, 20, 60 or 80%, left to right within each model grouping); Dice score was computed on unseen test data, over three data subsets for each training/evaluation split. Our self-supervised model (WNet3D) is also trained on a subset of the training set of images, but always without human labels. Far right: We also show performance of the pretrained WNet3D available in the plugin (far right), with and without removing artifacts in the image. See Methods for details. The central box represents the interquartile range (IQR) of values with the median as a horizontal line, the upper and lower limits the upper and lower quartiles. Whiskers extend to data points within 1.5 IQR of the quartiles.
 **g:** Instance segmentation performance comparison of Swin-UNetR and WNet3D (pretrained, see Methods), evaluated on unseen data across 3 data subsets, compared with a Swin-UNetR model trained using labels from the WNet3D self-supervised model. Here, WNet3D was trained on separate data, producing semantic labels that were then used to train a supervised Swin-UNetR model, still on held-out data. This supervised model was evaluated as the other models, on 3 held-out images from our dataset, unseen during training. Error bars indicate 50% CIs.
 
 
@@ -85,7 +85,7 @@ Previous additions:
 
 ## Requirements
 
-**Python 3.9 is required.**
+**Compatible with Python 3.8 to 3.10.**
 Requires **[napari]**, **[PyTorch]** and **[MONAI]**.
 Compatible with Windows, MacOS and Linux.
 Installation should not take more than 30 minutes, depending on your internet connection.
