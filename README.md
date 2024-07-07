@@ -18,7 +18,7 @@
 
 ## Installation
 
- 💻 See the [Installation page](https://adaptivemotorcontrollab.github.io/CellSeg3d/welcome.html) in the documentation for detailed instructions.
+ 💻 See the [Installation page](https://adaptivemotorcontrollab.github.io/CellSeg3D/welcome.html) in the documentation for detailed instructions.
 
 ## Documentation
 
