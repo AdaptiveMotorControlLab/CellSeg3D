@@ -136,6 +136,27 @@ In order to update the environment, navigate to the CellSeg3D folder and run:
     conda deactivate
     conda env update -f conda/napari_cellseg3d_ARM64.yml
 
+
+Troubleshoting
+------------------------------
+
+pyClesperanto
+_____________________
+
+If you encounter the following error : *clGetPlatformIDs failed: PLATFORM_NOT_FOUND_KHR* :
+
+Please install `clinfo <https://github.com/Oblomov/clinfo>`_ and check if your OpenCL platform is available.
+
+If not, please install the OpenCL driver for your hardware.
+
+`[Source] <https://forum.image.sc/t/pyclesperanto-prototype-doesnt-work/45724>`_
+
+
+---
+
+
+**Please help us make this section better by reporting any issues you encounter during installation.**
+
 Optional requirements
 ------------------------------
 
