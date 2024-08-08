@@ -276,7 +276,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             scale=self.config.zoom_factor,
         )  # anything bigger than 255 will get mapped to 255... they did it like this because it must have rgb images
         viewer.add_labels(
-            base_label, name="labels", seed=0.6, scale=self.config.zoom_factor
+            base_label, name="labels", scale=self.config.zoom_factor
         )
 
         @magicgui(
