@@ -433,6 +433,10 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#updating-the-environment">Updating the environment</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshoting">Troubleshoting</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyclesperanto">pyClesperanto</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-requirements">Optional requirements</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#additional-functionalities">Additional functionalities</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#development-requirements">Development requirements</a></li>
@@ -552,6 +556,18 @@ See <a class="reference external" href="https://adaptivemotorcontrollab.github.i
 <span class="n">conda</span> <span class="n">env</span> <span class="n">update</span> <span class="o">-</span><span class="n">f</span> <span class="n">conda</span><span class="o">/</span><span class="n">napari_cellseg3d_ARM64</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
+</section>
+</section>
+<section id="troubleshoting">
+<h2>Troubleshoting<a class="headerlink" href="#troubleshoting" title="Permalink to this heading">#</a></h2>
+<section id="pyclesperanto">
+<h3>pyClesperanto<a class="headerlink" href="#pyclesperanto" title="Permalink to this heading">#</a></h3>
+<p>If you encounter the following error : <em>clGetPlatformIDs failed: PLATFORM_NOT_FOUND_KHR</em> :</p>
+<p>Please install <a class="reference external" href="https://github.com/Oblomov/clinfo">clinfo</a> and check if your OpenCL platform is available.</p>
+<p>If not, please install the OpenCL driver for your hardware.</p>
+<p><a class="reference external" href="https://forum.image.sc/t/pyclesperanto-prototype-doesnt-work/45724">[Source]</a></p>
+<p>—</p>
+<p><strong>Please help us make this section better by reporting any issues you encounter during installation.</strong></p>
 </section>
 </section>
 <section id="optional-requirements">
@@ -677,6 +693,10 @@ Depending on your hardware, you can install the CPU or GPU version of ONNX.</p><
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#arm64-mac-installation">ARM64 Mac installation</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-the-environment">Creating the environment</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#updating-the-environment">Updating the environment</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshoting">Troubleshoting</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyclesperanto">pyClesperanto</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-requirements">Optional requirements</a><ul class="nav section-nav flex-column">
