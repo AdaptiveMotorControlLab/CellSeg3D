@@ -104,7 +104,7 @@ To avoid issues when installing on the ARM64 architecture, please follow these s
 
         git clone https://github.com/AdaptiveMotorControlLab/CellSeg3d.git
         cd CellSeg3d
-        conda env create -f conda/CellSeg3D_ARM64.yml
+        conda env create -f conda/napari_CellSeg3D_ARM64.yml
         conda activate napari_CellSeg3D_ARM64
 
 
