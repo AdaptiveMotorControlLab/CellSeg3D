@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from monai.utils import set_determinism
+
 from napari_cellseg3d import config
 from napari_cellseg3d.code_plugins.plugin_model_training import (
     Trainer,
@@ -11,6 +13,7 @@ im_path_str = str(im_path)
 
 
 def test_worker_configs(make_napari_viewer_proxy):
+    set_determinism(seed=0)
     viewer = make_napari_viewer_proxy()
     widget = Trainer(viewer=viewer)
     # test supervised config and worker
