@@ -38,9 +38,9 @@ def test_crop_widget(make_napari_viewer_proxy):
     view = make_napari_viewer_proxy()
     widget = Cropping(view)
 
-    image = rand_gen.random((10, 10, 10)).astype(np.int8)
+    image = rand_gen.random((10, 10, 10))
     image_layer_1 = view.add_image(image, name="image")
-    image_layer_2 = view.add_labels(image, name="image2")
+    image_layer_2 = view.add_labels(image.astype(np.uint16), name="image2")
 
     view.window.add_dock_widget(widget)
     view.dims.ndisplay = 3
