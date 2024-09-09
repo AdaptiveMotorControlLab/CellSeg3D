@@ -22,7 +22,7 @@ jobs:
       matrix:
 # platform: [ubuntu-latest, windows-latest] # , macos-latest
         platform: [ubuntu-latest]
-        python-version: ['3.8', '3.9', '3.10']
+        python-version: ['3.8', '3.9'] #issues with monai and 3.10; pausing for now. users should use python 3.9
 
     steps:
       - uses: actions/checkout@v3
