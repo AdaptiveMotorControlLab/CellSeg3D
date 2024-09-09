@@ -14,12 +14,25 @@ Please refer to the :ref:`section below <source/guides/installation_guide:ARM64 
 Installing pre-requisites
 ---------------------------
 
+Conda environment
+_____________________
+
+Create and activate a conda environment using :
+
+.. code-block::
+
+    conda create -n cellseg3d python=3.8
+    conda activate cellseg3d
+
+
+(Make sure to use a supported Python version, such as 3.8, 3.9 or 3.10)
+
 PyQt5 or PySide2
 _____________________
 
 CellSeg3D requires either **PyQt5** or **PySide2** as a Qt backend for napari. If you don't have a Qt backend installed:
 
-.. code-block::
+.. code-block:: bash
 
     pip install napari[all]
 
@@ -50,7 +63,7 @@ Installing CellSeg3D
 
 **Via pip**:
 
-.. code-block::
+.. code-block:: bash
 
   pip install napari-cellseg3d
 
@@ -62,7 +75,7 @@ Installing CellSeg3D
 **For local installation** (after cloning from GitHub)
 Navigate to the cloned CellSeg3D folder and run:
 
-.. code-block::
+.. code-block:: bash
 
   pip install -e .
 
@@ -84,14 +97,14 @@ ______________________________
 
 1. **Clone the repository** (`link <https://github.com/AdaptiveMotorControlLab/CellSeg3D>`_):
 
-.. code-block::
+.. code-block:: bash
 
     git clone https://github.com/AdaptiveMotorControlLab/CellSeg3D.git
 
 2. **Create the Conda Environment** :
 In the terminal, navigate to the CellSeg3D folder:
 
-.. code-block::
+.. code-block:: bash
 
     cd CellSeg3D
     conda env create -f conda/napari_cellseg3d_ARM64.yml
@@ -100,7 +113,7 @@ This will also install the necessary dependencies as well as the plugin.
 
 3. **Activate the environment** :
 
-.. code-block::
+.. code-block:: bash
 
     conda activate napari_cellseg3d_ARM64
 
@@ -108,14 +121,14 @@ This will also install the necessary dependencies as well as the plugin.
 Important : you only need to install one of the following backends.
 PyQt5:
 
-.. code-block::
+.. code-block:: bash
 
         pip install PyQt5
 
 OR
 PySide2:
 
-.. code-block::
+.. code-block:: bash
 
         pip install PySide2
 
@@ -131,7 +144,7 @@ ______________________________
 
 In order to update the environment, navigate to the CellSeg3D folder and run:
 
-.. code-block::
+.. code-block:: bash
 
     conda deactivate
     conda env update -f conda/napari_cellseg3d_ARM64.yml
@@ -167,13 +180,13 @@ Several additional functionalities are available optionally. To install them, us
 
 - CRF post-processing:
 
-.. code-block::
+.. code-block:: bash
 
     pip install pydensecrf@git+https://github.com/lucasb-eyer/pydensecrf.git#egg=master
 
 - Weights & Biases integration:
 
-.. code-block::
+.. code-block:: bash
 
     pip install napari-cellseg3D[wandb]
 
@@ -181,7 +194,7 @@ Several additional functionalities are available optionally. To install them, us
 - ONNX model support (EXPERIMENTAL):
   Depending on your hardware, you can install the CPU or GPU version of ONNX.
 
-.. code-block::
+.. code-block:: bash
 
     pip install napari-cellseg3D[onnx-cpu]
     pip install napari-cellseg3D[onnx-gpu]
@@ -191,19 +204,19 @@ ______________________________
 
 - Building the documentation:
 
-.. code-block::
+.. code-block:: bash
 
     pip install napari-cellseg3D[docs]
 
 - Running tests locally:
 
-.. code-block::
+.. code-block:: bash
 
     pip install pydensecrf@git+https://github.com/lucasb-eyer/pydensecrf.git#egg=master
     pip install napari-cellseg3D[test]
 
 - Dev utilities:
 
-.. code-block::
+.. code-block:: bash
 
     pip install napari-cellseg3D[dev]
