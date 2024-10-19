@@ -75,7 +75,7 @@ class Cropping(
 
         self.create_new_layer = ui.CheckBox("Create new layers")
         self.create_new_layer.setToolTip(
-            'Use this to create a new layer everytime you start cropping, so you can "zoom in" your volume'
+            'Use this to create a new layer every time you start cropping, so you can "zoom in" your volume'
         )
 
         self._viewer.layers.events.inserted.connect(self._check_image_list)
@@ -324,8 +324,9 @@ class Cropping(
 
             if self.crop_second_image:
                 self.image_layer2 = self._add_isotropic_layer(
-                    self.image_layer2, visible=False
+                    self.image_layer2
                 )
+                self.image_layer2.visible = False
         else:
             self.image_layer1.opacity = 0.7
             self.image_layer1.colormap = "inferno"
