@@ -1,6 +1,6 @@
 """Module to store configuration parameters for napari_cellseg3d."""
 import datetime
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional
 
@@ -182,9 +182,9 @@ class PostProcessConfig:
         instance (InstanceSegConfig): instance segmentation config
     """
 
-    zoom: Zoom = Zoom()
-    thresholding: Thresholding = Thresholding()
-    instance: InstanceSegConfig = InstanceSegConfig()
+    zoom: Zoom = field(default_factory=Zoom)
+    thresholding: Thresholding = field(default_factory=Thresholding)
+    instance: InstanceSegConfig = field(default_factory=InstanceSegConfig)
     artifact_removal: bool = False
     artifact_removal_size: int = 500
 
@@ -265,16 +265,16 @@ class InferenceWorkerConfig:
     """
 
     device: str = "cpu"
-    model_info: ModelInfo = ModelInfo()
-    weights_config: WeightsInfo = WeightsInfo()
+    model_info: ModelInfo = field(default_factory=ModelInfo)
+    weights_config: WeightsInfo = field(default_factory=WeightsInfo)
     results_path: str = str(Path.home() / "cellseg3d" / "inference")
     filetype: str = ".tif"
     keep_on_cpu: bool = False
     compute_stats: bool = False
-    post_process_config: PostProcessConfig = PostProcessConfig()
-    sliding_window_config: SlidingWindowConfig = SlidingWindowConfig()
+    post_process_config: PostProcessConfig = field(default_factory=PostProcessConfig)
+    sliding_window_config: SlidingWindowConfig = field(default_factory=SlidingWindowConfig)
     use_crf: bool = False
-    crf_config: CRFConfig = CRFConfig()
+    crf_config: CRFConfig = field(default_factory=CRFConfig)
 
     images_filepaths: List[str] = None
     layer: napari.layers.Layer = None
@@ -329,10 +329,10 @@ class TrainingWorkerConfig:
     learning_rate: np.float64 = 1e-3
     validation_interval: int = 2
     batch_size: int = 1
-    deterministic_config: DeterministicConfig = DeterministicConfig()
+    deterministic_config: DeterministicConfig = field(default_factory=DeterministicConfig)
     scheduler_factor: float = 0.5
     scheduler_patience: int = 10
-    weights_info: WeightsInfo = WeightsInfo()
+    weights_info: WeightsInfo = field(default_factory=WeightsInfo)
     # data params
     results_path_folder: str = str(Path.home() / "cellseg3d" / "training")
     sampling: bool = False
