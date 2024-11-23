@@ -142,6 +142,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.thresholding_checkbox = ui.CheckBox(
             "Perform thresholding", self._toggle_display_thresh
         )
+        self.thresholding_checkbox.setChecked(True)
 
         self.thresholding_slider = ui.Slider(
             default=config.PostProcessConfig().thresholding.threshold_value
