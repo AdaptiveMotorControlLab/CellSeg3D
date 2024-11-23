@@ -2,6 +2,7 @@
 
 Please note that custom model implementations are not fully supported out of the box yet, but might be in the future.
 """
+
 from abc import ABC, abstractmethod
 
 
@@ -11,6 +12,7 @@ class ModelTemplate_(ABC):
     weights_file = (
         "model_template.pth"  # specify the file name of the weights file only
     )
+    default_threshold = 0.5  # specify the default threshold for the model
 
     @abstractmethod
     def __init__(

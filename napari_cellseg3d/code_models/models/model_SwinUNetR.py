@@ -1,4 +1,5 @@
 """SwinUNetR wrapper for napari_cellseg3d."""
+
 from monai.networks.nets import SwinUNETR
 
 from napari_cellseg3d.utils import LOGGER
@@ -10,6 +11,7 @@ class SwinUNETR_(SwinUNETR):
     """SwinUNETR wrapper for napari_cellseg3d."""
 
     weights_file = "SwinUNetR_latest.pth"
+    default_threshold = 0.4
 
     def __init__(
         self,

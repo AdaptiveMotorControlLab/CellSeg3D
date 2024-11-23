@@ -1,4 +1,5 @@
 """VNet wrapper for napari_cellseg3d."""
+
 from monai.networks.nets import VNet
 
 
@@ -6,6 +7,7 @@ class VNet_(VNet):
     """VNet wrapper for napari_cellseg3d."""
 
     weights_file = "VNet_latest.pth"
+    default_threshold = 0.15
 
     def __init__(self, in_channels=1, out_channels=1, **kwargs):
         """Create a VNet model.

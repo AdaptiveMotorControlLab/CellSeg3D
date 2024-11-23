@@ -1,4 +1,5 @@
 """Model for testing purposes."""
+
 import torch
 from torch import nn
 
@@ -7,6 +8,7 @@ class TestModel(nn.Module):
     """For tests only."""
 
     weights_file = "test.pth"
+    default_threshold = 0.5
 
     def __init__(self, **kwargs):
         """Create a TestModel model."""

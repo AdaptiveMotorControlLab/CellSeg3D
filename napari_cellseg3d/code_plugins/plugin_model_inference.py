@@ -143,11 +143,11 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.thresholding_checkbox = ui.CheckBox(
             "Perform thresholding", self._toggle_display_thresh
         )
-        self.thresholding_checkbox.setChecked(True)
 
         self.thresholding_slider = ui.Slider(
-            default=config.PostProcessConfig().thresholding.threshold_value
-            * 100,
+            default=config.MODEL_LIST[
+                self.model_choice.currentText()
+            ].default_threshold,
             divide_factor=100.0,
             parent=self,
         )
@@ -410,6 +410,13 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         )
         self._update_weights_path(file)
 
+    def _set_default_threshold(self):
+        # Whenever a model is selected, set the default threshold from the model file
+        model_name = self.model_choice.currentText()
+        threshold = config.MODEL_LIST[model_name].default_threshold
+        print(threshold)
+        self.thresholding_slider.slider_value = threshold * 100
+
     def _build(self):
         """Puts all widgets in a layout and adds them to the napari Viewer."""
         # ui.add_blank(self.view_results_container, view_results_layout)
@@ -494,7 +501,8 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.device_choice,
             ],
         )
-        self.window_infer_params.setVisible(False)
+        self.use_window_choice.setChecked(True)
+        # self.window_infer_params.setVisible(False)
 
         inference_param_group_w.setLayout(inference_param_group_l)
 
@@ -539,14 +547,18 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 # self.instance_param_container,  # instance segmentation
             ],
         )
+        # self.thresholding_slider.container.setVisible(False)
+        self.thresholding_checkbox.setChecked(True)
         self._toggle_crf_choice()
         self.model_choice.currentIndexChanged.connect(self._toggle_crf_choice)
+        self.model_choice.currentIndexChanged.connect(
+            self._set_default_threshold
+        )
         ModelFramework._show_io_element(
             self.save_stats_to_csv_box, self.use_instance_choice
         )
 
         self.anisotropy_wdgt.container.setVisible(False)
-        self.thresholding_slider.container.setVisible(False)
         self.instance_widgets.setVisible(False)
         self.crf_widgets.setVisible(False)
         self.save_stats_to_csv_box.setVisible(False)
