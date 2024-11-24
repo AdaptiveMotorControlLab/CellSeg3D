@@ -9,17 +9,14 @@ Welcome to CellSeg3D!
 Use CellSeg3D to:
 
 * Review labeled cell volumes from whole-brain samples of mice imaged by mesoSPIM microscopy [1]_
-* Train and use segmentation models from the MONAI project [2]_ or implement your own custom 3D segmentation models using PyTorch.
+* Train and use segmentation models from the MONAI project [2]_ 
+* Train and use our WNet3D unsupervised model
+* Or implement your own custom 3D segmentation models using PyTorch!
 
-No labeled data? Try our unsupervised model **WNet3D**, based on the `WNet`_ model, to automate your data labelling.
-
-The models provided should be adaptable to other tasks related to detection of 3D objects,
-outside of whole-brain light-sheet microscopy.
-This applies to the unsupervised model as well, feel free to try to generate labels for your own data!
 
 .. figure:: https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/0d16a71b-3ff2-477a-9d83-18d96cb1ce28/full_demo.gif?format=500w
    :alt: CellSeg3D demo
-   :width: 500
+   :width: 800
    :align: center
 
    Demo of the plugin
@@ -145,14 +142,14 @@ Other useful napari plugins
 
 Acknowledgments & References
 ---------------------------------------------
-This plugin has been developed by Cyril Achard and Maxime Vidal, supervised by Mackenzie Mathis for the `Mathis Laboratory of Adaptive Motor Control`_.
+If you find our code or ideas useful, please cite:
 
-We also greatly thank Timokleia Kousi for her contributions to this project and the `Wyss Center`_ for project funding.
+Achard Cyril, Kousi Timokleia, Frey Markus, Vidal Maxime, Paychère Yves, Hofmann Colin, Iqbal Asim, Hausmann Sebastien B, Pagès Stéphane, Mathis Mackenzie Weygandt (2024) 
+CellSeg3D: self-supervised 3D cell segmentation for microscopy eLife https://doi.org/10.7554/eLife.99848.1
 
-The TRAILMAP models and original weights used here were ported to PyTorch but originate from the `TRAILMAP project on GitHub`_.
-We also provide a model that was trained in-house on mesoSPIM nuclei data in collaboration with Dr. Stephane Pages and Timokleia Kousi.
 
-This plugin mainly uses the following libraries and software:
+
+This plugin additionally uses the following libraries and software:
 
 * `napari`_
 
@@ -162,9 +159,9 @@ This plugin mainly uses the following libraries and software:
 
 * `pyclEsperanto`_ (for the Voronoi Otsu labeling) by Robert Haase
 
-* A new unsupervised 3D model based on the `WNet`_ by Xia and Kulis [3]_
 
-.. _Mathis Laboratory of Adaptive Motor Control: http://www.mackenziemathislab.org/
+
+.. _Mathis Laboratory of Adaptive Intelligence: http://www.mackenziemathislab.org/
 .. _Wyss Center: https://wysscenter.ch/
 .. _TRAILMAP project on GitHub: https://github.com/AlbertPun/TRAILMAP
 .. _napari: https://napari.org/
@@ -178,4 +175,3 @@ This plugin mainly uses the following libraries and software:
 
 .. [1] The mesoSPIM initiative: open-source light-sheet microscopes for imaging cleared tissue, Voigt et al., 2019 ( https://doi.org/10.1038/s41592-019-0554-0 )
 .. [2] MONAI Project website ( https://monai.io/ )
-.. [3] W-Net: A Deep Model for Fully Unsupervised Image Segmentation, Xia and Kulis, 2018 ( https://arxiv.org/abs/1711.08506 )
