@@ -11,6 +11,21 @@ See `Usage section <https://adaptivemotorcontrollab.github.io/CellSeg3d/welcome.
 
 You may specify the results directory for saving; afterwards you can run each action on a folder or on the currently selected layer.
 
+Default Paths for Saving Results
+________________________________
+
+Each utility saves results to a default directory under the user's home directory. The default paths are as follows:
+
+* Artifact Removal: ``~/cellseg3d/artifact_removed``
+* Fragmentation: ``~/cellseg3d/fragmented``
+* Anisotropy Correction: ``~/cellseg3d/anisotropy``
+* Small Object Removal: ``~/cellseg3d/small_removed``
+* Semantic Label Conversion: ``~/cellseg3d/semantic_labels``
+* Instance Label Conversion: ``~/cellseg3d/instance_labels``
+* Thresholding: ``~/cellseg3d/threshold``
+* Statistics: ``~/cellseg3d/stats``
+* Threshold Grid Search: ``~/cellseg3d/threshold_grid_search``
+
 Available actions
 __________________
 
@@ -88,6 +103,18 @@ Global metrics :
 ----------------------
 | Clears labels that are larger than a given threshold.
 | This is useful for removing artifacts that are larger than the objects of interest.
+
+11. Find best threshold
+-----------------------
+| Finds the best threshold for separating objects from the background.
+| Requires a prediction from a model and GT labels as input.
+
+.. caution::
+    If the input prediction is not from the plugin, it will be remapped to the 0-1 range.
+
+| The threshold is found by maximizing the Dice coefficient between the thresolded prediction and the binarized GT labels.
+
+| The value for the best threshold will be displayed, and the prediction will be thresholded and saved with this value.
 
 Source code
 ___________

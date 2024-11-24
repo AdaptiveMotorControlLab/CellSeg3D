@@ -857,6 +857,7 @@ class ThresholdGridSearchUtils(BasePluginUtils):
             parent=parent,
         )
         self.do_binarize = False
+        self.do_remap = False
         self.result_text = ""
         self.values = {}
 
@@ -926,6 +927,8 @@ class ThresholdGridSearchUtils(BasePluginUtils):
             or len(np.unique(label_data)) != 2
         ):
             self.do_binarize = True
+        if image_data.min() < 0 or image_data.max() > 1:
+            self.do_remap = True
         return True
 
     def _get_dice_graph(self):
@@ -945,6 +948,11 @@ class ThresholdGridSearchUtils(BasePluginUtils):
         if self.do_binarize:
             logger.info("Labels values are not binary, binarizing")
             label_data = to_semantic(label_data)
+        if self.do_remap:
+            logger.info(
+                "Prediction values are not from a model. Remapping between 0 and 1"
+            )
+            pred_data = utils.remap_image(pred_data, new_max=1)
         # find best threshold
         search_space = np.arange(0, 1, 0.05)
         for i in search_space:
