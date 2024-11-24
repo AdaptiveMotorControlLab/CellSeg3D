@@ -104,7 +104,7 @@ Global metrics :
 | Clears labels that are larger than a given threshold.
 | This is useful for removing artifacts that are larger than the objects of interest.
 
-11. Find best threshold
+11. Find the best threshold
 -----------------------
 | Finds the best threshold for separating objects from the background.
 | Requires a prediction from a model and GT labels as input.
