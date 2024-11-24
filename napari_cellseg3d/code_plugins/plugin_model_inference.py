@@ -415,7 +415,6 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         # Whenever a model is selected, set the default threshold from the model file
         model_name = self.model_choice.currentText()
         threshold = config.MODEL_LIST[model_name].default_threshold
-        print(threshold)
         self.thresholding_slider.slider_value = threshold * 100
 
     def _build(self):
