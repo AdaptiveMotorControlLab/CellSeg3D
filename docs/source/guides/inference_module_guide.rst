@@ -151,6 +151,15 @@ Unsupervised model - WNet3D
 | The `WNet3D model` is a fully self-supervised model used to segment images without any labels.
 | It functions similarly to the above models, with a few notable differences.
 
+WNet3D works best with :
+
+* **MesoSPIM** data (whole-brain samples of mice imaged by mesoSPIM microscopy) with nuclei staining.
+* Other microscopy data with :
+    * **Sufficient contrast** between objects and background.
+    * **Low to medium crowding** of objects. If all objects are adjacent to each other, instance segmentation methods provided here may not work well.
+
+Noise and object size are less critical, though objects still have to fit within the field of view of the model.
+
 .. _WNet3D model: https://arxiv.org/abs/1711.08506
 
 .. note::

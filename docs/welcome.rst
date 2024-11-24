@@ -11,7 +11,7 @@ Use CellSeg3D to:
 * Review labeled cell volumes from whole-brain samples of mice imaged by mesoSPIM microscopy [1]_
 * Train and use segmentation models from the MONAI project [2]_ or implement your own custom 3D segmentation models using PyTorch.
 
-No labeled data? Try our unsupervised model, based on the `WNet`_ model, to automate your data labelling.
+No labeled data? Try our unsupervised model **WNet3D**, based on the `WNet`_ model, to automate your data labelling.
 
 The models provided should be adaptable to other tasks related to detection of 3D objects,
 outside of whole-brain light-sheet microscopy.

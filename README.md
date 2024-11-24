@@ -1,4 +1,4 @@
-# CellSeg3D: self-supervised (and supervised) 3D cell segmentation, primarily for mesoSPIM data! 
+# CellSeg3D: self-supervised (and supervised) 3D cell segmentation, primarily for mesoSPIM data!
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-cellseg3d)](https://www.napari-hub.org/plugins/napari-cellseg3d)
 [![PyPI](https://img.shields.io/pypi/v/napari-cellseg3d.svg?color=green)](https://pypi.org/project/napari-cellseg3d)
 [![Downloads](https://static.pepy.tech/badge/napari-cellseg3d)](https://pepy.tech/project/napari-cellseg3d)
@@ -59,7 +59,7 @@ The strength of our approach is we can match supervised model performance with p
 
 ## News
 
-**New version: v0.2.0**
+**New version: v0.2.0post1**
 
 - Changed project name to "napari_cellseg3d" to avoid setuptools deprecation
 - Small API changes for training/inference from a script
