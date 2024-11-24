@@ -61,9 +61,15 @@ The strength of our approach is we can match supervised model performance with p
 
 **New version: v0.2.0post1**
 
-- Changed project name to "napari_cellseg3d" to avoid setuptools deprecation
-- Small API changes for training/inference from a script
-- Some fixes to WandB integration ad csv saving after training
+- v0.2.0post1:
+  - Updated plugin default behaviors across the board to be more readily applicable to demo data
+  - Threshold value in inference is now automatically set by default according to performance on demo data on a per-model basis
+  - Added a grid search utility to find best thresholds for supervised models
+
+- v0.2.0:
+  - Changed project name to "napari_cellseg3d" to avoid setuptools deprecation
+  - Small API changes for training/inference from a script
+  - Some fixes to WandB integration ad csv saving after training
 
 Previous additions:
 
