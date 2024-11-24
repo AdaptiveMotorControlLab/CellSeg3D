@@ -1,4 +1,5 @@
 """TRAILMAP model, reimplemented in PyTorch."""
+
 from napari_cellseg3d.code_models.models.unet.model import UNet3D
 from napari_cellseg3d.utils import LOGGER as logger
 
@@ -7,6 +8,7 @@ class TRAILMAP_MS_(UNet3D):
     """TRAILMAP_MS wrapper for napari_cellseg3d."""
 
     weights_file = "TRAILMAP_MS_best_metric.pth"
+    default_threshold = 0.15
 
     # original model from Liqun Luo lab, transferred to pytorch and trained on mesoSPIM-acquired data (mostly TPH2 as of July 2022)
 

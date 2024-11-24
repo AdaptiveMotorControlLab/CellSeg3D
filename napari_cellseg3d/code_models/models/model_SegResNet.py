@@ -1,4 +1,5 @@
 """SegResNet wrapper for napari_cellseg3d."""
+
 from monai.networks.nets import SegResNetVAE
 
 
@@ -6,6 +7,7 @@ class SegResNet_(SegResNetVAE):
     """SegResNet_ wrapper for napari_cellseg3d."""
 
     weights_file = "SegResNet_latest.pth"
+    default_threshold = 0.3
 
     def __init__(
         self, input_img_size, out_channels=1, dropout_prob=0.3, **kwargs

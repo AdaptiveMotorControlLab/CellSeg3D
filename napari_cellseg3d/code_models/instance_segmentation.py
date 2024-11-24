@@ -1,4 +1,5 @@
 """Instance segmentation methods for 3D images."""
+
 import abc
 from dataclasses import dataclass
 from functools import partial
@@ -128,14 +129,14 @@ class InstanceMethod:
         """Records all the parameters of the instance segmentation method from the current values of the widgets."""
         if len(self.sliders) > 0:
             for slider in self.sliders:
-                self.recorded_parameters[
-                    slider.label.text()
-                ] = slider.slider_value
+                self.recorded_parameters[slider.label.text()] = (
+                    slider.slider_value
+                )
         if len(self.counters) > 0:
             for counter in self.counters:
-                self.recorded_parameters[
-                    counter.label.text()
-                ] = counter.value()
+                self.recorded_parameters[counter.label.text()] = (
+                    counter.value()
+                )
 
     def run_method_from_params(self, image):
         """Runs the method on the image with the RECORDED parameters set in the widget.
@@ -327,10 +328,8 @@ def binary_connected(
     )
     semantic = np.squeeze(volume)
     foreground = np.where(semantic > thres, volume, 0)  # int(255 * thres)
-    segm = label(foreground)
-    segm = remove_small_objects(segm, thres_small)
-
-    return segm
+    seg = label(foreground)
+    return remove_small_objects(seg, thres_small)
 
 
 def binary_watershed(
@@ -419,14 +418,9 @@ def clear_small_objects(image, threshold, is_file_path=False):
     if is_file_path:
         image = imread(image)
 
-    # print(threshold)
-
     labeled = label(image)
 
     result = remove_small_objects(labeled, threshold)
-
-    # print(np.sum(labeled))
-    # print(np.sum(result))
 
     if np.sum(labeled) == np.sum(result):
         print("Warning : no objects were removed")
@@ -551,9 +545,9 @@ class Watershed(InstanceMethod):
         )
 
         self.sliders[0].label.setText("Foreground probability threshold")
-        self.sliders[
-            0
-        ].tooltips = "Probability threshold for foreground object"
+        self.sliders[0].tooltips = (
+            "Probability threshold for foreground object"
+        )
         self.sliders[0].setValue(500)
 
         self.sliders[1].label.setText("Seed probability threshold")
@@ -652,9 +646,9 @@ class ConnectedComponents(InstanceMethod):
         )
 
         self.sliders[0].label.setText("Foreground probability threshold")
-        self.sliders[
-            0
-        ].tooltips = "Probability threshold for foreground object"
+        self.sliders[0].tooltips = (
+            "Probability threshold for foreground object"
+        )
         self.sliders[0].setValue(800)
 
         self.counters[0].label.setText("Small objects removal")
@@ -715,18 +709,18 @@ class VoronoiOtsu(InstanceMethod):
             widget_parent=widget_parent,
         )
         self.counters[0].label.setText("Spot sigma")  # closeness
-        self.counters[
-            0
-        ].tooltips = "Determines how close detected objects can be"
+        self.counters[0].tooltips = (
+            "Determines how close detected objects can be"
+        )
         self.counters[0].setMaximum(100)
-        self.counters[0].setValue(2)
+        self.counters[0].setValue(0.65)
 
         self.counters[1].label.setText("Outline sigma")  # smoothness
-        self.counters[
-            1
-        ].tooltips = "Determines the smoothness of the segmentation"
+        self.counters[1].tooltips = (
+            "Determines the smoothness of the segmentation"
+        )
         self.counters[1].setMaximum(100)
-        self.counters[1].setValue(2)
+        self.counters[1].setValue(0.65)
 
         self.counters[2].label.setText("Small object removal")
         self.counters[2].tooltips = (

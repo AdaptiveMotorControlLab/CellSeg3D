@@ -1,4 +1,5 @@
 """Several image processing utilities."""
+
 from pathlib import Path
 from warnings import warn
 
@@ -837,3 +838,145 @@ class StatsUtils(BasePluginUtils):
                 )
         else:
             logger.warning("Please specify a layer or a folder")
+
+
+class ThresholdGridSearchUtils(BasePluginUtils):
+    """Widget to run a grid search for thresholding."""
+
+    save_path = Path.home() / "cellseg3d" / "threshold_grid_search"
+
+    def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
+        """Creates a ThresholdGridSearchUtils widget.
+
+        Args:
+            viewer: viewer in which to process data
+            parent: parent widget
+        """
+        super().__init__(
+            viewer,
+            parent=parent,
+        )
+        self.do_binarize = False
+        self.do_remap = False
+        self.result_text = ""
+        self.values = {}
+
+        self.data_panel = self._build_io_panel()
+        # disable folder choice
+        self.radio_buttons.setVisible(False)
+        self.radio_buttons.setEnabled(False)
+
+        self.image_layer_loader.layer_list.label.setText("Prediction :")
+        self.label_layer_loader.layer_list.label.setText("Labels :")
+
+        self.results_path = str(self.save_path)
+        self.results_filewidget.text_field.setText(self.results_path)
+        self.results_filewidget.check_ready()
+
+        self.start_btn = ui.Button("Start", self._start)
+        self.result_display = ui.make_label(self.result_text, self)
+        self.image_layer_loader.layer_list.currentIndexChanged.connect(
+            self._reset
+        )
+        self.label_layer_loader.layer_list.currentIndexChanged.connect(
+            self._reset
+        )
+
+        self.container = self._build()
+
+    def _build(self):
+        container = ui.ContainerWidget()
+
+        container.layout.addWidget(self.data_panel)
+        ui.add_widgets(
+            container.layout,
+            [
+                self.start_btn,
+                self.result_display,
+            ],
+        )
+
+        ui.ScrollArea.make_scrollable(
+            container.layout, self, max_wh=[MAX_W, MAX_H]
+        )
+        self._set_io_visibility()
+        return container
+
+    def _reset(self):
+        self.values = {}
+        self.result_text = ""
+        self.result_display.setText("")
+
+    def _check_ready(self):
+        image_data = self.image_layer_loader.layer_data()
+        label_data = self.label_layer_loader.layer_data()
+        if image_data is None:
+            self.result_display.setText("Please load a prediction layer")
+            return False
+        if label_data is None:
+            self.result_display.setText("Please load a labels layer")
+            return False
+        if label_data.shape != image_data.shape:
+            self.result_display.setText(
+                "Prediction and labels must have the same shape"
+            )
+            return False
+        if (
+            label_data.min() < 0
+            or label_data.max() > 1
+            or len(np.unique(label_data)) != 2
+        ):
+            self.do_binarize = True
+        if image_data.min() < 0 or image_data.max() > 1:
+            self.do_remap = True
+        return True
+
+    def _get_dice_graph(self):
+        max_dice = max(self.values.values())
+        self.result_text += "Thre |  Dice  | Graph\n"
+        for tr, dice in self.values.items():
+            bar = "°" * int((dice / max_dice) * 25)
+            self.result_text += f"{tr:.2f} | {dice:.3f} | {bar}\n"
+
+    def _start(self):
+        utils.mkdir_from_str(self.results_path)
+        if not self._check_ready():
+            return
+
+        pred_data = self.image_layer_loader.layer_data().copy()
+        label_data = self.label_layer_loader.layer_data().copy()
+        if self.do_binarize:
+            logger.info("Labels values are not binary, binarizing")
+            label_data = to_semantic(label_data)
+        if self.do_remap:
+            logger.info(
+                "Prediction values are not from a model. Remapping between 0 and 1"
+            )
+            pred_data = utils.remap_image(pred_data, new_max=1)
+        # find best threshold
+        search_space = np.arange(0, 1, 0.05)
+        for i in search_space:
+            i = i.round(2)
+            binarized = threshold(pred_data, i)
+            binarized = np.where(binarized > 0, 1, 0)
+            dice = utils.dice_coeff(binarized, label_data).round(3)
+            self.values[i] = dice
+            logger.info(f"Threshold : {i}, Dice : {dice}")
+
+        best_threshold = max(self.values, key=self.values.get)
+        binarized = threshold(pred_data, best_threshold)
+        utils.save_layer(
+            self.results_path,
+            f"binarized_{utils.get_date_time()}.tif",
+            binarized,
+        )
+        self.layer = utils.show_result(
+            self._viewer,
+            self.image_layer_loader.layer(),
+            binarized,
+            "binarized",
+            existing_layer=self.layer,
+        )
+        self.result_test = f"Best threshold : {best_threshold}, Dice : {self.values[best_threshold]}\n"
+        self._get_dice_graph()
+        self.result_display.setText(self.result_text)
