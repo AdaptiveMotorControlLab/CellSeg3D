@@ -22,6 +22,7 @@ napari\_cellseg3d.code\_plugins.plugin\_convert
       FragmentUtils
       RemoveSmallUtils
       StatsUtils
+      ThresholdGridSearchUtils
       ThresholdUtils
       ToInstanceUtils
       ToSemanticUtils

@@ -424,6 +424,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#default-paths-for-saving-results">Default Paths for Saving Results</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-actions">Available actions</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#crop-3d-volumes">1. Crop 3D volumes</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#convert-to-instance-labels">2. Convert to instance labels</a></li>
@@ -435,6 +436,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conditional-random-field-crf">8. Conditional Random Field (CRF)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#labels-statistics">9. Labels statistics</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#clear-large-labels">10. Clear large labels</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#find-the-best-threshold">11. Find the best threshold</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#source-code">Source code</a></li>
@@ -458,6 +460,21 @@ See <a class="reference external" href="https://adaptivemotorcontrollab.github.i
 <p>The utility selection menu is found at the bottom of the plugin window.</p>
 </div>
 <p>You may specify the results directory for saving; afterwards you can run each action on a folder or on the currently selected layer.</p>
+<section id="default-paths-for-saving-results">
+<h2>Default Paths for Saving Results<a class="headerlink" href="#default-paths-for-saving-results" title="Permalink to this heading">#</a></h2>
+<p>Each utility saves results to a default directory under the user’s home directory. The default paths are as follows:</p>
+<ul class="simple">
+<li><p>Artifact Removal: <code class="docutils literal notranslate"><span class="pre">~/cellseg3d/artifact_removed</span></code></p></li>
+<li><p>Fragmentation: <code class="docutils literal notranslate"><span class="pre">~/cellseg3d/fragmented</span></code></p></li>
+<li><p>Anisotropy Correction: <code class="docutils literal notranslate"><span class="pre">~/cellseg3d/anisotropy</span></code></p></li>
+<li><p>Small Object Removal: <code class="docutils literal notranslate"><span class="pre">~/cellseg3d/small_removed</span></code></p></li>
+<li><p>Semantic Label Conversion: <code class="docutils literal notranslate"><span class="pre">~/cellseg3d/semantic_labels</span></code></p></li>
+<li><p>Instance Label Conversion: <code class="docutils literal notranslate"><span class="pre">~/cellseg3d/instance_labels</span></code></p></li>
+<li><p>Thresholding: <code class="docutils literal notranslate"><span class="pre">~/cellseg3d/threshold</span></code></p></li>
+<li><p>Statistics: <code class="docutils literal notranslate"><span class="pre">~/cellseg3d/stats</span></code></p></li>
+<li><p>Threshold Grid Search: <code class="docutils literal notranslate"><span class="pre">~/cellseg3d/threshold_grid_search</span></code></p></li>
+</ul>
+</section>
 <section id="available-actions">
 <h2>Available actions<a class="headerlink" href="#available-actions" title="Permalink to this heading">#</a></h2>
 <section id="crop-3d-volumes">
@@ -543,6 +560,23 @@ You may install it by using the command <code class="docutils literal notranslat
 <div class="line">This is useful for removing artifacts that are larger than the objects of interest.</div>
 </div>
 </section>
+<section id="find-the-best-threshold">
+<h3>11. Find the best threshold<a class="headerlink" href="#find-the-best-threshold" title="Permalink to this heading">#</a></h3>
+<div class="line-block">
+<div class="line">Finds the best threshold for separating objects from the background.</div>
+<div class="line">Requires a prediction from a model and GT labels as input.</div>
+</div>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>If the input prediction is not from the plugin, it will be remapped to the 0-1 range.</p>
+</div>
+<div class="line-block">
+<div class="line">The threshold is found by maximizing the Dice coefficient between the thresolded prediction and the binarized GT labels.</div>
+</div>
+<div class="line-block">
+<div class="line">The value for the best threshold will be displayed, and the prediction will be thresholded and saved with this value.</div>
+</div>
+</section>
 </section>
 <section id="source-code">
 <h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this heading">#</a></h2>
@@ -616,6 +650,7 @@ You may install it by using the command <code class="docutils literal notranslat
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#default-paths-for-saving-results">Default Paths for Saving Results</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-actions">Available actions</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#crop-3d-volumes">1. Crop 3D volumes</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#convert-to-instance-labels">2. Convert to instance labels</a></li>
@@ -627,6 +662,7 @@ You may install it by using the command <code class="docutils literal notranslat
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conditional-random-field-crf">8. Conditional Random Field (CRF)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#labels-statistics">9. Labels statistics</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#clear-large-labels">10. Clear large labels</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#find-the-best-threshold">11. Find the best threshold</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#source-code">Source code</a></li>

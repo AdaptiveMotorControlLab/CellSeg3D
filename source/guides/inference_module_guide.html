@@ -495,14 +495,14 @@ Otherwise you can run inference directly on layers within napari. Stacks of 2D f
 </figcaption>
 </figure>
 <ul>
-<li><p><strong>Loading data</strong> :</p>
+<li><p><strong>Loading data</strong>:</p>
 <div class="line-block">
 <div class="line">When launching the module, select either an <strong>image layer</strong> or an <strong>image folder</strong> containing the 3D volumes you wish to label.</div>
 <div class="line">When loading from folder : All images with the chosen extension ( currently <strong>.tif</strong>) will be labeled.</div>
 <div class="line">Specify an <strong>output folder</strong>, where the labelled results will be saved.</div>
 </div>
 </li>
-<li><p><strong>Model selection</strong> :</p>
+<li><p><strong>Model selection</strong>:</p>
 <div class="line-block">
 <div class="line">You can then choose from the listed <strong>models</strong> for inference.</div>
 <div class="line">You may also <strong>load custom weights</strong> rather than the pre-trained ones. Make sure these weights are <strong>compatible</strong> (e.g. produced from the training module for the same model).</div>
@@ -516,7 +516,7 @@ Otherwise you can run inference directly on layers within napari. Stacks of 2D f
 Provided weights use a size of 64, please leave it on the default value if you’re not using custom weights.</p>
 </div>
 <ul class="simple">
-<li><p><strong>Inference parameters</strong> :</p>
+<li><p><strong>Inference parameters</strong>:</p>
 <ul>
 <li><p><strong>Window inference</strong>: You can choose to use inference on the entire image at once (disabled) or divide the image (enabled) on smaller chunks, based on your memory constraints.</p></li>
 <li><p><strong>Window overlap</strong>: Define the overlap between windows to reduce border effects;
@@ -525,13 +525,13 @@ recommended values are 0.1-0.3 for 3D inference.</p></li>
 <li><p><strong>Device Selection</strong>: You can choose to run inference on either CPU or GPU. A GPU is recommended for faster inference.</p></li>
 </ul>
 </li>
-<li><p><strong>Anisotropy</strong> :</p></li>
+<li><p><strong>Anisotropy</strong>:</p></li>
 </ul>
 <blockquote>
 <div><p>For <strong>anisotropic images</strong> you may set the <strong>resolution of your volume in micron</strong>, to view and save the results without anisotropy.</p>
 </div></blockquote>
 <ul>
-<li><p><strong>Thresholding</strong> :</p>
+<li><p><strong>Thresholding</strong>:</p>
 <p>You can perform thresholding to <strong>binarize your labels</strong>.
 All values below the <strong>confidence threshold</strong> will be set to 0.</p>
 </li>
@@ -542,7 +542,7 @@ All values below the <strong>confidence threshold</strong> will be set to 0.</p>
 and run inference later with your chosen threshold.</p>
 </div>
 <ul>
-<li><p><strong>Instance segmentation</strong> :</p>
+<li><p><strong>Instance segmentation</strong>:</p>
 <div class="line-block">
 <div class="line">You can convert the semantic segmentation into instance labels by using either the <a class="reference external" href="https://haesleinhuepf.github.io/BioImageAnalysisNotebooks/20_image_segmentation/11_voronoi_otsu_labeling.html">Voronoi-Otsu</a>, <a class="reference external" href="https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_watershed.html">Watershed</a> or <a class="reference external" href="https://scikit-image.org/docs/dev/api/skimage.measure.html#skimage.measure.label">Connected Components</a> method, as detailed in <a class="reference internal" href="utils_module_guide.html#utils-module-guide"><span class="std std-ref">Utilities 🛠</span></a>.</div>
 <div class="line">Instance labels will be saved (and shown if applicable) separately from other results.</div>
@@ -550,7 +550,7 @@ and run inference later with your chosen threshold.</p>
 </li>
 </ul>
 <ul>
-<li><p><strong>Computing objects statistics</strong> :</p>
+<li><p><strong>Computing objects statistics</strong>:</p>
 <p>You can choose to compute various stats from the labels and save them to a <strong>`.csv`</strong> file for later use.
 Statistics include individual object details and general metrics.
 For each object :</p>
@@ -559,7 +559,7 @@ For each object :</p>
 <li><p><span class="math notranslate nohighlight">\(X,Y,Z\)</span> coordinates of the centroid</p></li>
 <li><p>Sphericity</p></li>
 </ul>
-<p>Global metrics :</p>
+<p>Global metrics:</p>
 <ul class="simple">
 <li><p>Image size</p></li>
 <li><p>Total image volume (pixels)</p></li>
@@ -568,7 +568,7 @@ For each object :</p>
 <li><p>The number of labeled objects</p></li>
 </ul>
 </li>
-<li><p><strong>Display options</strong> :</p>
+<li><p><strong>Display options</strong>:</p>
 <p>When running inference on a folder, you can choose to display the results in napari.
 If selected, you may choose the display quantity, and whether to display the original image alongside the results.</p>
 </li>
@@ -603,6 +603,19 @@ Simply load the csv file in the notebook and use the provided functions to plot 
 <div class="line">The <cite>WNet3D model</cite> is a fully self-supervised model used to segment images without any labels.</div>
 <div class="line">It functions similarly to the above models, with a few notable differences.</div>
 </div>
+<p>WNet3D has been tested on:</p>
+<ul class="simple">
+<li><p><strong>MesoSPIM</strong> data (whole-brain samples of mice imaged by mesoSPIM microscopy) with nuclei staining.</p></li>
+<li><dl class="simple">
+<dt>Other microscopy (i.e., confocal) data with:</dt><dd><ul>
+<li><p><strong>Sufficient contrast</strong> between objects and background.</p></li>
+<li><p><strong>Low to medium crowding</strong> of objects. If all objects are adjacent to each other, instance segmentation methods provided here may not work well.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Noise and object size are less critical, though objects still have to fit within the field of view of the model.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Our provided, pre-trained model uses an input size of 64x64x64. As such, window inference is always enabled

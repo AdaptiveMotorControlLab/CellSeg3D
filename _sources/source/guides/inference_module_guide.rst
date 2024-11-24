@@ -50,13 +50,13 @@ Interface and functionalities
 
     Inference parameters
 
-* **Loading data** :
+* **Loading data**:
 
   | When launching the module, select either an **image layer** or an **image folder** containing the 3D volumes you wish to label.
   | When loading from folder : All images with the chosen extension ( currently **.tif**) will be labeled.
   | Specify an **output folder**, where the labelled results will be saved.
 
-* **Model selection** :
+* **Model selection**:
 
   | You can then choose from the listed **models** for inference.
   | You may also **load custom weights** rather than the pre-trained ones. Make sure these weights are **compatible** (e.g. produced from the training module for the same model).
@@ -66,7 +66,7 @@ Interface and functionalities
     Currently the SegResNet and SwinUNetR models require you to provide the size of the images the model was trained with.
     Provided weights use a size of 64, please leave it on the default value if you're not using custom weights.
 
-* **Inference parameters** :
+* **Inference parameters**:
 
   * **Window inference**: You can choose to use inference on the entire image at once (disabled) or divide the image (enabled) on smaller chunks, based on your memory constraints.
   * **Window overlap**: Define the overlap between windows to reduce border effects;
@@ -74,11 +74,11 @@ Interface and functionalities
   * **Keep on CPU**: You can choose to keep the dataset in RAM rather than VRAM to avoid running out of VRAM if you have several images.
   * **Device Selection**: You can choose to run inference on either CPU or GPU. A GPU is recommended for faster inference.
 
-* **Anisotropy** :
+* **Anisotropy**:
 
  For **anisotropic images** you may set the **resolution of your volume in micron**, to view and save the results without anisotropy.
 
-* **Thresholding** :
+* **Thresholding**:
 
   You can perform thresholding to **binarize your labels**.
   All values below the **confidence threshold** will be set to 0.
@@ -87,7 +87,7 @@ Interface and functionalities
   It is recommended to first run without thresholding. You can then use the napari contrast limits to find a good threshold value,
   and run inference later with your chosen threshold.
 
-* **Instance segmentation** :
+* **Instance segmentation**:
 
   | You can convert the semantic segmentation into instance labels by using either the `Voronoi-Otsu`_, `Watershed`_ or `Connected Components`_ method, as detailed in :ref:`utils_module_guide`.
   | Instance labels will be saved (and shown if applicable) separately from other results.
@@ -98,7 +98,7 @@ Interface and functionalities
 .. _Voronoi-Otsu: https://haesleinhuepf.github.io/BioImageAnalysisNotebooks/20_image_segmentation/11_voronoi_otsu_labeling.html
 
 
-* **Computing objects statistics** :
+* **Computing objects statistics**:
 
   You can choose to compute various stats from the labels and save them to a **`.csv`** file for later use.
   Statistics include individual object details and general metrics.
@@ -109,7 +109,7 @@ Interface and functionalities
   * Sphericity
 
 
-  Global metrics :
+  Global metrics:
 
   * Image size
   * Total image volume (pixels)
@@ -118,7 +118,7 @@ Interface and functionalities
   * The number of labeled objects
 
 
-* **Display options** :
+* **Display options**:
 
   When running inference on a folder, you can choose to display the results in napari.
   If selected, you may choose the display quantity, and whether to display the original image alongside the results.
@@ -151,7 +151,16 @@ Unsupervised model - WNet3D
 | The `WNet3D model` is a fully self-supervised model used to segment images without any labels.
 | It functions similarly to the above models, with a few notable differences.
 
-.. _WNet3D model: https://arxiv.org/abs/1711.08506
+WNet3D has been tested on:
+
+* **MesoSPIM** data (whole-brain samples of mice imaged by mesoSPIM microscopy) with nuclei staining.
+* Other microscopy (i.e., confocal) data with:
+    * **Sufficient contrast** between objects and background.
+    * **Low to medium crowding** of objects. If all objects are adjacent to each other, instance segmentation methods provided here may not work well.
+
+Noise and object size are less critical, though objects still have to fit within the field of view of the model.
+
+.. _WNet3D model: https://elifesciences.org/reviewed-preprints/99848
 
 .. note::
     Our provided, pre-trained model uses an input size of 64x64x64. As such, window inference is always enabled
