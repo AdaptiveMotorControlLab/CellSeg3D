@@ -147,7 +147,8 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.thresholding_slider = ui.Slider(
             default=config.MODEL_LIST[
                 self.model_choice.currentText()
-            ].default_threshold,
+            ].default_threshold
+            * 100,
             divide_factor=100.0,
             parent=self,
         )
