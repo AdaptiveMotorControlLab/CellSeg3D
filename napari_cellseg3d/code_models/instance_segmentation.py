@@ -332,7 +332,6 @@ def binary_connected(
     return remove_small_objects(seg, thres_small)
 
 
-
 def binary_watershed(
     volume,
     thres_objects=0.3,

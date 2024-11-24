@@ -1,4 +1,5 @@
 """Central plugin for all utilities."""
+
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -18,6 +19,7 @@ from napari_cellseg3d.code_plugins.plugin_convert import (
     FragmentUtils,
     RemoveSmallUtils,
     StatsUtils,
+    ThresholdGridSearchUtils,
     ThresholdUtils,
     ToInstanceUtils,
     ToSemanticUtils,
@@ -39,6 +41,7 @@ UTILITIES_WIDGETS = {
     "CRF": CRFWidget,
     "Label statistics": StatsUtils,
     "Clear large labels": ArtifactRemovalUtils,
+    "Find best threshold": ThresholdGridSearchUtils,
 }
 
 
@@ -62,6 +65,7 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
             "crf",
             "stats",
             "artifacts",
+            "find_thresh",
         ]
         self._create_utils_widgets(attr_names)
         self.utils_choice = ui.DropdownMenu(
