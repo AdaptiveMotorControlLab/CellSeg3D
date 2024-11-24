@@ -160,7 +160,7 @@ WNet3D has been tested on:
 
 Noise and object size are less critical, though objects still have to fit within the field of view of the model.
 
-.. _WNet3D model: https://arxiv.org/abs/1711.08506
+.. _WNet3D model: https://elifesciences.org/reviewed-preprints/99848
 
 .. note::
     Our provided, pre-trained model uses an input size of 64x64x64. As such, window inference is always enabled
