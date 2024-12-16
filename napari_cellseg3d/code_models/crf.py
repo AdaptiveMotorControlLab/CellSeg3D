@@ -1,4 +1,4 @@
-"""Implements the CRF post-processing step for the W-Net.
+"""Implements the CRF post-processing step for the WNet3D.
 
 The CRF requires the following parameters:
 
@@ -31,8 +31,8 @@ CRF_INSTALLED = spec is not None
 if not CRF_INSTALLED:
     logger.info(
         "pydensecrf not installed, CRF post-processing will not be available. "
-        "Please install by running : pip install pydensecrf@git+https://github.com/lucasb-eyer/pydensecrf.git#egg=master"
-        "This is not a hard requirement, you do not need it to install it unless you want to use the CRF post-processing step."
+        "Please install by running : pip install pydensecrf "
+        "This is not a hard requirement, you do not need it to install it unless you want to use the CRF post-processing step. "
     )
 else:
     import pydensecrf.densecrf as dcrf
