@@ -1,4 +1,5 @@
 """Script to run WNet training in Google Colab."""
+
 import time
 from pathlib import Path
 
@@ -55,7 +56,28 @@ except ImportError:
     )
     WANDB_INSTALLED = False
 
-# TODO subclass to reduce code duplication
+
+class LogFixture:
+    """Fixture for napari-less logging, replaces napari_cellseg3d.interface.Log in model_workers.
+
+    This allows to redirect the output of the workers to stdout instead of a specialized widget.
+    """
+
+    def __init__(self):
+        """Creates a LogFixture object."""
+        super(LogFixture, self).__init__()
+
+    def print_and_log(self, text, printing=None):
+        """Prints and logs text."""
+        print(text)
+
+    def warn(self, warning):
+        """Logs warning."""
+        logger.warning(warning)
+
+    def error(self, e):
+        """Logs error."""
+        raise (e)
 
 
 class WNetTrainingWorkerColab(TrainingWorkerBase):
@@ -728,8 +750,14 @@ def get_colab_worker(
         worker_config (config.WNetTrainingWorkerConfig): config for the training worker
         wandb_config (config.WandBConfig): config for wandb
     """
+    log = LogFixture()
     worker = WNetTrainingWorkerColab(worker_config)
     worker.wandb_config = wandb_config
+
+    worker.log_signal.connect(log.print_and_log)
+    worker.warn_signal.connect(log.warn)
+    worker.error_signal.connect(log.error)
+
     return worker
 
 
