@@ -204,7 +204,6 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 EnsureChannelFirstd(
                     keys=["image"],
                     channel_dim="no_channel",
-                    strict_check=False,
                 ),
                 RandSpatialCropSamplesd(
                     keys=["image"],
@@ -242,7 +241,6 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 EnsureChannelFirstd(
                     keys=["image", "label"],
                     channel_dim="no_channel",
-                    strict_check=False,
                 ),
                 # RandSpatialCropSamplesd(
                 #     keys=["image", "label"],
@@ -290,7 +288,6 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 EnsureChannelFirstd(
                     keys=["image"],
                     channel_dim="no_channel",
-                    strict_check=False,
                 ),
                 Orientationd(keys=["image"], axcodes="PLI"),
                 SpatialPadd(
