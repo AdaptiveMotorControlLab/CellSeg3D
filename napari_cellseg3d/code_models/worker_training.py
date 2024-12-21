@@ -281,7 +281,11 @@ class WNetTrainingWorker(TrainingWorkerBase):
         load_single_images = Compose(
             [
                 LoadImaged(keys=["image"]),
-                EnsureChannelFirstd(keys=["image"], channel_dim="no_channel", strict_check=False),
+                EnsureChannelFirstd(
+                    keys=["image"],
+                    channel_dim="no_channel",
+                    strict_check=False,
+                ),
                 Orientationd(keys=["image"], axcodes="PLI"),
                 SpatialPadd(
                     keys=["image"],
