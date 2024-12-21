@@ -30,17 +30,6 @@ logger = utils.LOGGER
 VERBOSE_SCHEDULER = True
 logger.debug(f"PRETRAINED WEIGHT DIR LOCATION : {PRETRAINED_WEIGHTS_DIR}")
 
-try:
-    import wandb
-
-    WANDB_INSTALLED = True
-except ImportError:
-    logger.warning(
-        "wandb not installed, wandb config will not be taken into account",
-        stacklevel=1,
-    )
-    WANDB_INSTALLED = False
-
 
 class LogFixture:
     """Fixture for napari-less logging, replaces napari_cellseg3d.interface.Log in model_workers.
@@ -161,8 +150,7 @@ def get_colab_worker(
         wandb_config (config.WandBConfig): config for wandb
     """
     log = LogFixture()
-    worker = WNetTrainingWorkerColab(worker_config)
-    worker.wandb_config = wandb_config
+    worker = WNetTrainingWorkerColab(worker_config, wandb_config)
 
     worker.log_signal.connect(log.print_and_log)
     worker.warn_signal.connect(log.warn)
