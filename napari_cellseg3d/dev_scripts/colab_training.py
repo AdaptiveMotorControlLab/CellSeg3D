@@ -4,8 +4,19 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from monai.data import CacheDataset
+
 # MONAI
 from monai.metrics import DiceMetric
+from monai.transforms import (
+    AddChanneld,
+    Compose,
+    EnsureChannelFirstd,
+    EnsureTyped,
+    LoadImaged,
+    Orientationd,
+    SpatialPadd,
+)
 
 # local
 from napari_cellseg3d import config, utils
@@ -93,6 +104,53 @@ class WNetTrainingWorkerColab(WNetTrainingWorker):
         self.dataloader: DataLoader = None
         self.eval_dataloader: DataLoader = None
         self.data_shape = None
+
+    def get_dataset(self, train_transforms):
+        """Creates a Dataset applying some transforms/augmentation on the data using the MONAI library.
+
+        Args:
+            train_transforms (monai.transforms.Compose): The transforms to apply to the data
+
+        Returns:
+            (tuple): A tuple containing the shape of the data and the dataset
+        """
+        train_files = self.config.train_data_dict
+
+        first_volume = LoadImaged(keys=["image"])(train_files[0])
+        first_volume_shape = first_volume["image"].shape
+
+        if len(first_volume_shape) != 3:
+            raise ValueError(
+                f"Expected 3D volumes, got {len(first_volume_shape)} dimensions"
+            )
+
+        # Transforms to be applied to each volume
+        load_single_images = Compose(
+            [
+                LoadImaged(keys=["image"]),
+                # EnsureChannelFirstd(
+                #     keys=["image"],
+                #     channel_dim="no_channel",
+                #     strict_check=False,
+                # ),
+                AddChanneld(keys=["image"]),
+                Orientationd(keys=["image"], axcodes="PLI"),
+                # SpatialPadd(
+                #     keys=["image"],
+                #     spatial_size=(utils.get_padding_dim(first_volume_shape)),
+                # ),
+                EnsureTyped(keys=["image"]),
+                # RemapTensord(keys=["image"], new_min=0.0, new_max=100.0),
+            ]
+        )
+
+        # Create the dataset
+        dataset = CacheDataset(
+            data=train_files,
+            transform=Compose([load_single_images, train_transforms]),
+        )
+
+        return first_volume_shape, dataset
 
 
 def get_colab_worker(
