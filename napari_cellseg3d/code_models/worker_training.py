@@ -200,7 +200,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
         patch_func = Compose(
             [
                 LoadImaged(keys=["image"], image_only=True),
-                EnsureChannelFirstd(keys=["image"], strict_check=False),
+                EnsureChannelFirstd(keys=["image"], channel_dim="no_channel"),
                 RandSpatialCropSamplesd(
                     keys=["image"],
                     roi_size=(
@@ -235,7 +235,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
             [
                 LoadImaged(keys=["image", "label"]),
                 EnsureChannelFirstd(
-                    keys=["image", "label"], strict_check=False
+                    keys=["image", "label"], channel_dim="no_channel"
                 ),
                 # RandSpatialCropSamplesd(
                 #     keys=["image", "label"],
@@ -280,7 +280,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
         load_single_images = Compose(
             [
                 LoadImaged(keys=["image"]),
-                EnsureChannelFirstd(keys=["image"], strict_check=False),
+                EnsureChannelFirstd(keys=["image"], channel_dim="no_channel"),
                 Orientationd(keys=["image"], axcodes="PLI"),
                 SpatialPadd(
                     keys=["image"],
@@ -1296,7 +1296,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 return Compose(
                     [
                         LoadImaged(keys=["image", "label"]),
-                        EnsureChannelFirstd(keys=["image", "label"], strict_check=False),
+                        EnsureChannelFirstd(keys=["image", "label"]),
                         RandSpatialCropSamplesd(
                             keys=["image", "label"],
                             roi_size=(
@@ -1381,7 +1381,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                             # image_only=True,
                             # reader=WSIReader(backend="tifffile")
                         ),
-                        EnsureChannelFirstd(keys=["image", "label"], strict_check=False),
+                        EnsureChannelFirstd(keys=["image", "label"]),
                         Orientationd(keys=["image", "label"], axcodes="PLI"),
                         QuantileNormalizationd(keys=["image"]),
                         SpatialPadd(
