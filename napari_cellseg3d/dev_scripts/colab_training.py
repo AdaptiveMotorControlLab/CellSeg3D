@@ -9,13 +9,11 @@ from monai.data import CacheDataset
 # MONAI
 from monai.metrics import DiceMetric
 from monai.transforms import (
-    AddChanneld,
     Compose,
     EnsureChannelFirstd,
     EnsureTyped,
     LoadImaged,
     Orientationd,
-    SpatialPadd,
 )
 
 # local
@@ -128,12 +126,11 @@ class WNetTrainingWorkerColab(WNetTrainingWorker):
         load_single_images = Compose(
             [
                 LoadImaged(keys=["image"]),
-                # EnsureChannelFirstd(
-                #     keys=["image"],
-                #     channel_dim="no_channel",
-                #     strict_check=False,
-                # ),
-                AddChanneld(keys=["image"]),
+                EnsureChannelFirstd(
+                    keys=["image"],
+                    channel_dim="no_channel",
+                    strict_check=False,
+                ),
                 Orientationd(keys=["image"], axcodes="PLI"),
                 # SpatialPadd(
                 #     keys=["image"],
