@@ -73,8 +73,8 @@ class WNetTrainingWorkerColab(WNetTrainingWorker):
             worker_config: worker configuration
             wandb_config: optional wandb configuration
         """
-        super().__init__()
-        self.config = worker_config
+        super().__init__(worker_config)
+        super().__init__(worker_config)
         self.wandb_config = (
             wandb_config if wandb_config is not None else config.WandBConfig()
         )
