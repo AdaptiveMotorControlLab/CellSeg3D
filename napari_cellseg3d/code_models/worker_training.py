@@ -201,7 +201,11 @@ class WNetTrainingWorker(TrainingWorkerBase):
         patch_func = Compose(
             [
                 LoadImaged(keys=["image"], image_only=True),
-                EnsureChannelFirstd(keys=["image"], channel_dim="no_channel", strict_check=False),
+                EnsureChannelFirstd(
+                    keys=["image"],
+                    channel_dim="no_channel",
+                    strict_check=False,
+                ),
                 RandSpatialCropSamplesd(
                     keys=["image"],
                     roi_size=(
@@ -236,7 +240,9 @@ class WNetTrainingWorker(TrainingWorkerBase):
             [
                 LoadImaged(keys=["image", "label"]),
                 EnsureChannelFirstd(
-                    keys=["image", "label"], channel_dim="no_channel", strict_check=False
+                    keys=["image", "label"],
+                    channel_dim="no_channel",
+                    strict_check=False,
                 ),
                 # RandSpatialCropSamplesd(
                 #     keys=["image", "label"],
