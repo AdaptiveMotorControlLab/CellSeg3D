@@ -20,21 +20,21 @@ You may find below some guidelines, based on our own data and testing.
 
 The WNet3D is designed to segment objects based on their brightness, and is particularly well-suited for images with a clear contrast between objects and background.
 
-The WNet3D is not suitable for images with artifacts, therefore care should be taken that the images are clean and that the objects are at least somewhat distinguishable from the background.
+The WNet3D is not suitable for images with strong noise or artifacts, therefore care should be taken that the images are clean and that the objects are at least somewhat distinguishable from the background.
 
 
 .. important::
     For optimal performance, the following should be avoided for training:
 
     - Images with very large, bright regions
-    - Almost-empty and empty images
+    - Almost-empty and empty images, especially if noise is present
     - Images with large empty regions or "holes"
 
-    However, the model may be accomodate:
+    However, the model may accomodate:
 
     - Uneven brightness distribution
     - Varied object shapes and radius
-    - Noisy images
+    - Noisy images (as long as resolution is sufficient and boundaries are clear)
     - Uneven illumination across the image
 
 For optimal results, during inference, images should be similar to those the model was trained on; however this is not a strict requirement.
@@ -88,7 +88,7 @@ Common issues troubleshooting
     If you do not find a satisfactory answer here, please do not hesitate to `open an issue`_ on GitHub.
 
 
-- **The NCuts loss "explodes" after a few epochs** : Lower the learning rate, for example start with a factor of two, then ten.
+- **The NCuts loss "explodes" upward after a few epochs** : Lower the learning rate, for example start with a factor of two, then ten.
 
 - **Reconstruction (decoder) performance is poor** : First, try increasing the weight of the reconstruction loss. If this is ineffective, switch to BCE loss and set the scaling factor of the reconstruction loss to 0.5, OR adjust the weight of the MSE loss.
 
