@@ -1,4 +1,5 @@
 """Contains the workers used to train the models."""
+
 import platform
 import time
 from abc import abstractmethod
@@ -280,7 +281,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
         load_single_images = Compose(
             [
                 LoadImaged(keys=["image"]),
-                EnsureChannelFirstd(keys=["image"], channel_dim="no_channel"),
+                EnsureChannelFirstd(keys=["image"], channel_dim="no_channel", strict_check=False),
                 Orientationd(keys=["image"], axcodes="PLI"),
                 SpatialPadd(
                     keys=["image"],
@@ -1345,9 +1346,9 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                     )
                     sample_loader_eval = get_patch_loader_func(num_val_samples)
                 else:
-                    num_train_samples = (
-                        num_val_samples
-                    ) = self.config.num_samples
+                    num_train_samples = num_val_samples = (
+                        self.config.num_samples
+                    )
 
                     sample_loader_train = get_patch_loader_func(
                         num_train_samples
