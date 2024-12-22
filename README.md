@@ -10,7 +10,7 @@
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/838605d0-9723-4e43-83cd-6dbfe4adf36b/cellseg-logo.png?format=1500w" title="cellseg3d" alt="cellseg3d logo" width="350" align="right" vspace = "80"/>
 
 
-**A package for 3D cell segmentation with deep learning, including a napari plugin**: training, inference, and data review. In particular, this project was developed for analysis of mesoSPIM-acquired (cleared tissue + lightsheet) brain tissue datasets, but is not limited to this type of data. [Check out our preprint for more information!](https://www.biorxiv.org/content/10.1101/2024.05.17.594691v1)
+**A package for 3D cell segmentation with deep learning, including a napari plugin**: training, inference, and data review. In particular, this project was developed for analysis of confocal and mesoSPIM-acquired (cleared tissue + lightsheet) tissue datasets, but is not limited to this type of data. [Check out our preprint for more information!](https://www.biorxiv.org/content/10.1101/2024.05.17.594691v1)
 
 
 ![demo](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/0d16a71b-3ff2-477a-9d83-18d96cb1ce28/full_demo.gif?format=500w)
@@ -24,7 +24,9 @@
 
 📚 Documentation is available at [https://AdaptiveMotorControlLab.github.io/CellSeg3D
 ](https://adaptivemotorcontrollab.github.io/CellSeg3D/welcome.html)
-You can also generate docs locally by running ``make html`` in the docs/ folder.
+
+
+📚 For additional examples and how to reproduce our paper figures, see: [https://github.com/C-Achard/cellseg3d-figures](https://github.com/C-Achard/cellseg3d-figures)
 
 ## Quick Start
 
@@ -130,6 +132,8 @@ To avoid issues when installing on the ARM64 architecture, please follow these s
 If you encounter any problems, please [file an issue] along with a detailed description.
 
 ## Testing
+
+You can generate docs locally by running ``make html`` in the docs/ folder.
 
 Before testing, install all requirements using ``pip install napari-cellseg3d[test]``.
 
