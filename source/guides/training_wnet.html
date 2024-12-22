@@ -449,22 +449,20 @@ document.write(`
 <h2>Selecting training data<a class="headerlink" href="#selecting-training-data" title="Permalink to this heading">#</a></h2>
 <p>The WNet3D <strong>does not require a large amount of data to train</strong>, but <strong>choosing the right data</strong> to train this unsupervised model <strong>is crucial</strong>.</p>
 <p>You may find below some guidelines, based on our own data and testing.</p>
-<p>The WNet3D is designed to segment objects based on their brightness, and is particularly well-suited for images with a clear contrast between objects and background.</p>
-<p>The WNet3D is not suitable for images with artifacts, therefore care should be taken that the images are clean and that the objects are at least somewhat distinguishable from the background.</p>
+<p>The WNet3D is a self-supervised learning approach for 3D cell segmentation, and relies on the assumption that structural and morphological features of cells can be inferred directly from unlabeled data. This involves leveraging inherent properties such as spatial coherence and local contrast in imaging volumes to distinguish cellular structures. This approach assumes that meaningful representations of cellular boundaries and nuclei can emerge solely from raw 3D volumes. Thus, we strongly recommend that you use WNet3D on stacks that have clear foreground/background segregation and limited noise. Even if your final samples have noise, it is best to train on data that is as clean as you can.</p>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
 <p>For optimal performance, the following should be avoided for training:</p>
 <ul class="simple">
-<li><p>Images with very large, bright regions</p></li>
-<li><p>Almost-empty and empty images</p></li>
-<li><p>Images with large empty regions or “holes”</p></li>
+<li><p>Images with over-exposed pixels/artifacts you do not want to be learned!</p></li>
+<li><p>Almost-empty and/or fully empty images, especially if noise is present (it will learn to segment very small objects!).</p></li>
 </ul>
-<p>However, the model may be accomodate:</p>
+<p>However, the model may accomodate:</p>
 <ul class="simple">
-<li><p>Uneven brightness distribution</p></li>
-<li><p>Varied object shapes and radius</p></li>
-<li><p>Noisy images</p></li>
-<li><p>Uneven illumination across the image</p></li>
+<li><p>Uneven brightness distribution in your image!</p></li>
+<li><p>Varied object shapes and radius!</p></li>
+<li><p>Noisy images (as long as resolution is sufficient and boundaries are clear)!</p></li>
+<li><p>Uneven illumination across the image!</p></li>
 </ul>
 </div>
 <p>For optimal results, during inference, images should be similar to those the model was trained on; however this is not a strict requirement.</p>
@@ -532,7 +530,7 @@ if the NCuts loss is “taking over”, causing the segmentation to only label v
 <p>If you do not find a satisfactory answer here, please do not hesitate to <a class="reference external" href="https://github.com/AdaptiveMotorControlLab/CellSeg3D/issues">open an issue</a> on GitHub.</p>
 </div>
 <ul class="simple">
-<li><p><strong>The NCuts loss “explodes” after a few epochs</strong> : Lower the learning rate, for example start with a factor of two, then ten.</p></li>
+<li><p><strong>The NCuts loss “explodes” upward after a few epochs</strong> : Lower the learning rate, for example start with a factor of two, then ten.</p></li>
 <li><p><strong>Reconstruction (decoder) performance is poor</strong> : First, try increasing the weight of the reconstruction loss. If this is ineffective, switch to BCE loss and set the scaling factor of the reconstruction loss to 0.5, OR adjust the weight of the MSE loss.</p></li>
 <li><p><strong>Segmentation only separates the brighter versus dimmer regions</strong> : Increase the weight of the reconstruction loss.</p></li>
 </ul>
