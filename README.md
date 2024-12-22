@@ -10,7 +10,7 @@
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/838605d0-9723-4e43-83cd-6dbfe4adf36b/cellseg-logo.png?format=1500w" title="cellseg3d" alt="cellseg3d logo" width="350" align="right" vspace = "80"/>
 
 
-**A package for 3D cell segmentation with deep learning, including a napari plugin**: training, inference, and data review. In particular, this project was developed for analysis of mesoSPIM-acquired (cleared tissue + lightsheet) brain tissue datasets, but is not limited to this type of data. [Check out our preprint for more information!](https://www.biorxiv.org/content/10.1101/2024.05.17.594691v1)
+**A package for 3D cell segmentation with deep learning, including a napari plugin**: training, inference, and data review. In particular, this project was developed for analysis of confocal and mesoSPIM-acquired (cleared tissue + lightsheet) tissue datasets, but is not limited to this type of data. [Check out our preprint for more information!](https://www.biorxiv.org/content/10.1101/2024.05.17.594691v1)
 
 
 ![demo](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/0d16a71b-3ff2-477a-9d83-18d96cb1ce28/full_demo.gif?format=500w)
@@ -24,15 +24,21 @@
 
 📚 Documentation is available at [https://AdaptiveMotorControlLab.github.io/CellSeg3D
 ](https://adaptivemotorcontrollab.github.io/CellSeg3D/welcome.html)
-You can also generate docs locally by running ``make html`` in the docs/ folder.
+
+
+📚 For additional examples and how to reproduce our paper figures, see: [https://github.com/C-Achard/cellseg3d-figures](https://github.com/C-Achard/cellseg3d-figures)
 
 ## Quick Start
+
+```
+pip install napari_cellseg3d
+```
 
 To use the plugin, please run:
 ```
 napari
 ```
-Then go into Plugins > napari-cellseg3d, and choose which tool to use.
+Then go into `Plugins > napari-cellseg3d`, and choose which tool to use.
 
 - **Review (label)**: This module allows you to review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.
 - **Inference**: This module allows you to use pre-trained segmentation algorithms on volumes to automatically label cells and compute statistics.
@@ -43,18 +49,17 @@ Then go into Plugins > napari-cellseg3d, and choose which tool to use.
 
 The strength of our approach is we can match supervised model performance with purely self-supervised learning, meaning users don't need to spend (hundreds) of hours on annotation. Here is a quick look of our key results. TL;DR see panel **f**, which shows that with minmal input data we can outperform supervised models:
 
-<p align="center">
-<img src="https://www.biorxiv.org/content/biorxiv/early/2024/05/17/2024.05.17.594691/F1.large.jpg?format=200w" alt="Figure1" width="600"/>
-</p>
 
-#### Performance of 3D Semantic and Instance Segmentation Models.
-**a:** Raw mesoSPIM whole-brain sample, volumes and corresponding ground truth labels from somatosensory (S1) and visual (V1) cortical regions.
-**b:** Evaluation of instance segmentation performance for several supervised models over three data subsets. F1-score is computed from the Intersection over Union (IoU) with ground truth labels, then averaged. Error bars represent 50% Confidence Intervals (CIs).
-**c:** View of 3D instance labels from supervised models, as noted, for visual cortex volume in b evaluation.
-**d:** Illustration of our WNet3D architecture showcasing the dual 3D U-Net structure with modifications (see Methods).
-**e:** Example 3D instance labels from WNet3D; top row is S1, bottom is V1, with artifacts removed.
-**f:** Semantic segmentation performance: comparison of model efficiency, indicating the volume of training data required to achieve a given performance level. Each supervised model was trained with an increasing percentage of training data (with 10, 20, 60 or 80%, left to right within each model grouping); Dice score was computed on unseen test data, over three data subsets for each training/evaluation split. Our self-supervised model (WNet3D) is also trained on a subset of the training set of images, but always without human labels. Far right: We also show performance of the pretrained WNet3D available in the plugin (far right), with and without removing artifacts in the image. See Methods for details. The central box represents the interquartile range (IQR) of values with the median as a horizontal line, the upper and lower limits the upper and lower quartiles. Whiskers extend to data points within 1.5 IQR of the quartiles.
-**g:** Instance segmentation performance comparison of Swin-UNetR and WNet3D (pretrained, see Methods), evaluated on unseen data across 3 data subsets, compared with a Swin-UNetR model trained using labels from the WNet3D self-supervised model. Here, WNet3D was trained on separate data, producing semantic labels that were then used to train a supervised Swin-UNetR model, still on held-out data. This supervised model was evaluated as the other models, on 3 held-out images from our dataset, unseen during training. Error bars indicate 50% CIs.
+![FIG1 (1)](https://github.com/user-attachments/assets/0d970b45-79ff-4c58-861f-e1e7dc9abc65)
+
+**Figure 1. Performance of 3D Semantic and Instance Segmentation Models.** 
+**a:** Raw mesoSPIM whole-brain sample, volumes and corresponding ground truth labels from somatosensory (S1) and visual (V1) cortical regions. 
+**b:** Evaluation of instance segmentation performance for baseline
+thresholding-only, supervised models: Cellpose, StartDist, SwinUNetR, SegResNet, and our self-supervised model WNet3D over three data subsets.
+F1-score is computed from the Intersection over Union (IoU) with ground truth labels, then averaged. Error bars represent 50% Confidence Intervals
+(CIs). 
+**c:** View of 3D instance labels from supervised models, as noted, for visual cortex volume in b evaluation. 
+**d:** Illustration of our WNet3D architecture showcasing the dual 3D U-Net structure with our modifications.
 
 
 ## News
@@ -127,6 +132,8 @@ To avoid issues when installing on the ARM64 architecture, please follow these s
 If you encounter any problems, please [file an issue] along with a detailed description.
 
 ## Testing
+
+You can generate docs locally by running ``make html`` in the docs/ folder.
 
 Before testing, install all requirements using ``pip install napari-cellseg3d[test]``.
 
