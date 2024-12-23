@@ -52,13 +52,13 @@ The strength of our approach is we can match supervised model performance with p
 
 ![FIG1 (1)](https://github.com/user-attachments/assets/0d970b45-79ff-4c58-861f-e1e7dc9abc65)
 
-**Figure 1. Performance of 3D Semantic and Instance Segmentation Models.** 
-**a:** Raw mesoSPIM whole-brain sample, volumes and corresponding ground truth labels from somatosensory (S1) and visual (V1) cortical regions. 
+**Figure 1. Performance of 3D Semantic and Instance Segmentation Models.**
+**a:** Raw mesoSPIM whole-brain sample, volumes and corresponding ground truth labels from somatosensory (S1) and visual (V1) cortical regions.
 **b:** Evaluation of instance segmentation performance for baseline
 thresholding-only, supervised models: Cellpose, StartDist, SwinUNetR, SegResNet, and our self-supervised model WNet3D over three data subsets.
 F1-score is computed from the Intersection over Union (IoU) with ground truth labels, then averaged. Error bars represent 50% Confidence Intervals
-(CIs). 
-**c:** View of 3D instance labels from supervised models, as noted, for visual cortex volume in b evaluation. 
+(CIs).
+**c:** View of 3D instance labels from supervised models, as noted, for visual cortex volume in b evaluation.
 **d:** Illustration of our WNet3D architecture showcasing the dual 3D U-Net structure with our modifications.
 
 
@@ -141,7 +141,7 @@ Before testing, install all requirements using ``pip install napari-cellseg3d[te
 
 To run tests locally:
 
-- Locally : run ``pytest`` in the plugin folder
+- Locally : run ``pytest napari_cellseg3d\_tests`` in the plugin folder.
 - Locally with coverage : In the plugin folder, run ``coverage run --source=napari_cellseg3d -m pytest`` then ``coverage xml`` to generate a .xml coverage file.
 - With tox : run ``tox`` in the plugin folder (will simulate tests with several python and OS configs, requires substantial storage space)
 

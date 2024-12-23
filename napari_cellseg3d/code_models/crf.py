@@ -18,6 +18,7 @@ NIPS 2011
 
 Implemented using the pydense library available at https://github.com/lucasb-eyer/pydensecrf.
 """
+
 import importlib
 
 import numpy as np
@@ -28,13 +29,7 @@ from napari_cellseg3d.utils import LOGGER as logger
 
 spec = importlib.util.find_spec("pydensecrf")
 CRF_INSTALLED = spec is not None
-if not CRF_INSTALLED:
-    logger.info(
-        "pydensecrf not installed, CRF post-processing will not be available. "
-        "Please install by running : pip install pydensecrf "
-        "This is not a hard requirement, you do not need it to install it unless you want to use the CRF post-processing step. "
-    )
-else:
+if CRF_INSTALLED:
     import pydensecrf.densecrf as dcrf
     from pydensecrf.utils import (
         create_pairwise_bilateral,
@@ -124,6 +119,11 @@ def crf(image, prob, sa, sb, sg, w1, w2, n_iter=5):
         np.ndarray: Array of shape (K, H, W, D) containing the refined class probabilities for each pixel.
     """
     if not CRF_INSTALLED:
+        logger.info(
+            "pydensecrf not installed, CRF post-processing will not be available. "
+            "Please install by running : pip install pydensecrf@git+https://github.com/lucasb-eyer/pydensecrf.git#egg=master"
+            "This is not a hard requirement, you do not need it to install it unless you want to use the CRF post-processing step."
+        )
         return None
 
     d = dcrf.DenseCRF(
@@ -232,7 +232,12 @@ class CRFWorker(GeneratorWorker):
     def _run_crf_job(self):
         """Runs the CRF post-processing step for the W-Net."""
         if not CRF_INSTALLED:
-            raise ImportError("pydensecrf is not installed.")
+            logger.info(
+                "pydensecrf not installed, CRF post-processing will not be available. "
+                "Please install by running : pip install pydensecrf@git+https://github.com/lucasb-eyer/pydensecrf.git#egg=master"
+                "This is not a hard requirement, you do not need it to install it unless you want to use the CRF post-processing step."
+            )
+        # raise ImportError("pydensecrf is not installed.")
 
         if len(self.images) != len(self.labels):
             raise ValueError("Number of images and labels must be the same.")
