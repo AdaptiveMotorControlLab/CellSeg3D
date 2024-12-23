@@ -45,6 +45,7 @@ dependencies = [
     "pyclesperanto-prototype",
     "tqdm",
     "matplotlib",
+    "pydensecrf2",
 ]
 dynamic = ["version", "entry-points"]
 
