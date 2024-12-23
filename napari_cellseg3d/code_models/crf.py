@@ -1,4 +1,4 @@
-"""Implements the CRF post-processing step for the WNet3D.
+"""Implements the CRF post-processing step for WNet3D.
 
 The CRF requires the following parameters:
 
@@ -16,8 +16,10 @@ Efficient Inference in Fully Connected CRFs with Gaussian Edge Potentials
 Philipp Krähenbühl and Vladlen Koltun
 NIPS 2011
 
-Implemented using the pydense library available at https://github.com/lucasb-eyer/pydensecrf.
+Implemented using the pydensecrf library available at https://github.com/lucasb-eyer/pydensecrf.
+However, this is not maintained, thus we maintain this pacakge at https://github.com/AdaptiveMotorControlLab/pydensecrf.
 """
+
 import importlib
 
 import numpy as np
@@ -28,13 +30,7 @@ from napari_cellseg3d.utils import LOGGER as logger
 
 spec = importlib.util.find_spec("pydensecrf")
 CRF_INSTALLED = spec is not None
-if not CRF_INSTALLED:
-    logger.info(
-        "pydensecrf not installed, CRF post-processing will not be available. "
-        "Please install by running : pip install pydensecrf "
-        "This is not a hard requirement, you do not need it to install it unless you want to use the CRF post-processing step. "
-    )
-else:
+if CRF_INSTALLED:
     import pydensecrf.densecrf as dcrf
     from pydensecrf.utils import (
         create_pairwise_bilateral,
@@ -42,33 +38,11 @@ else:
         unary_from_softmax,
     )
 
-__author__ = "Yves Paychère, Colin Hofmann, Cyril Achard"
-__credits__ = [
-    "Yves Paychère",
-    "Colin Hofmann",
-    "Cyril Achard",
-    "Philipp Krähenbühl",
-    "Vladlen Koltun",
-    "Liang-Chieh Chen",
-    "George Papandreou",
-    "Iasonas Kokkinos",
-    "Kevin Murphy",
-    "Alan L. Yuille",
-    "Xide Xia",
-    "Brian Kulis",
-    "Lucas Beyer",
-]
-
-
 def correct_shape_for_crf(image, desired_dims=4):
     """Corrects the shape of the image to be compatible with the CRF post-processing step."""
     logger.debug(f"Correcting shape for CRF, desired_dims={desired_dims}")
     logger.debug(f"Image shape: {image.shape}")
     if len(image.shape) > desired_dims:
-        # if image.shape[0] > 1:
-        #     raise ValueError(
-        #         f"Image shape {image.shape} might have several channels"
-        #     )
         image = np.squeeze(image, axis=0)
     elif len(image.shape) < desired_dims:
         image = np.expand_dims(image, axis=0)
@@ -77,7 +51,7 @@ def correct_shape_for_crf(image, desired_dims=4):
 
 
 def crf_batch(images, probs, sa, sb, sg, w1, w2, n_iter=5):
-    """CRF post-processing step for the W-Net, applied to a batch of images.
+    """CRF post-processing step for the WNet3D, applied to a batch of images.
 
     Args:
         images (np.ndarray): Array of shape (N, C, H, W, D) containing the input images.
@@ -105,7 +79,7 @@ def crf_batch(images, probs, sa, sb, sg, w1, w2, n_iter=5):
 
 
 def crf(image, prob, sa, sb, sg, w1, w2, n_iter=5):
-    """Implements the CRF post-processing step for the W-Net.
+    """Implements the CRF post-processing step for the WNet3D.
 
     Inspired by https://arxiv.org/abs/1210.5644, https://arxiv.org/abs/1606.00915 and https://arxiv.org/abs/1711.08506.
     Implemented using the pydensecrf library.
@@ -124,14 +98,15 @@ def crf(image, prob, sa, sb, sg, w1, w2, n_iter=5):
         np.ndarray: Array of shape (K, H, W, D) containing the refined class probabilities for each pixel.
     """
     if not CRF_INSTALLED:
+        logger.info(
+            "pydensecrf not installed, therefore CRF post-processing will not be available! Please install the package. "
+            "Please install by running: pip install pydensecrf2 "
+        )
         return None
 
     d = dcrf.DenseCRF(
         image.shape[1] * image.shape[2] * image.shape[3], prob.shape[0]
     )
-    # print(f"Image shape : {image.shape}")
-    # print(f"Prob shape : {prob.shape}")
-    # d = dcrf.DenseCRF(262144, 3) # npoints, nlabels
 
     # Get unary potentials from softmax probabilities
     U = unary_from_softmax(prob)
@@ -165,7 +140,7 @@ def crf(image, prob, sa, sb, sg, w1, w2, n_iter=5):
 
 
 def crf_with_config(image, prob, config: CRFConfig = None, log=logger.info):
-    """Implements the CRF post-processing step for the W-Net.
+    """Implements the CRF post-processing step for the WNet3D.
 
     Args:
         image (np.ndarray): Array of shape (C, H, W, D) containing the input image.
@@ -202,7 +177,7 @@ def crf_with_config(image, prob, config: CRFConfig = None, log=logger.info):
 
 
 class CRFWorker(GeneratorWorker):
-    """Worker for the CRF post-processing step for the W-Net."""
+    """Worker for the CRF post-processing step for the WNet3D."""
 
     def __init__(
         self,
@@ -230,9 +205,12 @@ class CRFWorker(GeneratorWorker):
         self.log = log
 
     def _run_crf_job(self):
-        """Runs the CRF post-processing step for the W-Net."""
+        """Runs the CRF post-processing step for the WNet3D."""
         if not CRF_INSTALLED:
-            raise ImportError("pydensecrf is not installed.")
+            logger.info(
+                "pydensecrf not installed, therefore CRF post-processing will not be available! Please install the package. "
+                "Please install by running: pip install pydensecrf2 "
+            )
 
         if len(self.images) != len(self.labels):
             raise ValueError("Number of images and labels must be the same.")

@@ -145,7 +145,7 @@ Before testing, install all requirements using ``pip install napari-cellseg3d[te
 
 To run tests locally:
 
-- Locally : run ``pytest`` in the plugin folder
+- Locally : run ``pytest napari_cellseg3d\_tests`` in the plugin folder.
 - Locally with coverage : In the plugin folder, run ``coverage run --source=napari_cellseg3d -m pytest`` then ``coverage xml`` to generate a .xml coverage file.
 - With tox : run ``tox`` in the plugin folder (will simulate tests with several python and OS configs, requires substantial storage space)
 

@@ -45,6 +45,7 @@ dependencies = [
     "pyclesperanto-prototype",
     "tqdm",
     "matplotlib",
+    "pydensecrf2",
 ]
 dynamic = ["version", "entry-points"]
 
@@ -123,9 +124,6 @@ profile = "black"
 line_length = 79
 
 [project.optional-dependencies]
-crf = [
-   # "pydensecrf@git+https://github.com/lucasb-eyer/pydensecrf.git#egg=master",
-]
 pyqt5 = [
     "pyqt5",
 ]
@@ -164,7 +162,6 @@ test = [
     "coverage",
     "tox",
     "twine",
-    # "pydensecrf@git+https://github.com/lucasb-eyer/pydensecrf.git#egg=master",
     "onnx",
     "onnxruntime",
 ]
