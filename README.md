@@ -52,21 +52,25 @@ The strength of our approach is we can match supervised model performance with p
 
 ![FIG1 (1)](https://github.com/user-attachments/assets/0d970b45-79ff-4c58-861f-e1e7dc9abc65)
 
-**Figure 1. Performance of 3D Semantic and Instance Segmentation Models.** 
-**a:** Raw mesoSPIM whole-brain sample, volumes and corresponding ground truth labels from somatosensory (S1) and visual (V1) cortical regions. 
+**Figure 1. Performance of 3D Semantic and Instance Segmentation Models.**
+**a:** Raw mesoSPIM whole-brain sample, volumes and corresponding ground truth labels from somatosensory (S1) and visual (V1) cortical regions.
 **b:** Evaluation of instance segmentation performance for baseline
 thresholding-only, supervised models: Cellpose, StartDist, SwinUNetR, SegResNet, and our self-supervised model WNet3D over three data subsets.
 F1-score is computed from the Intersection over Union (IoU) with ground truth labels, then averaged. Error bars represent 50% Confidence Intervals
-(CIs). 
-**c:** View of 3D instance labels from supervised models, as noted, for visual cortex volume in b evaluation. 
+(CIs).
+**c:** View of 3D instance labels from supervised models, as noted, for visual cortex volume in b evaluation.
 **d:** Illustration of our WNet3D architecture showcasing the dual 3D U-Net structure with our modifications.
 
 
 ## News
 
-**New version: v0.2.1**
+**New version: v0.2.2**
 
-- v0.2.1:
+- v0.2.2:
+  - Updated Colab notebooks for training and inference!
+    - New models available in inference demo notebook
+    - CRF optional post-processing adjustments
+- v0.2.2:
   - Updated plugin default behaviors across the board to be more readily applicable to demo data
   - Threshold value in inference is now automatically set by default according to performance on demo data on a per-model basis
   - Added a grid search utility to find best thresholds for supervised models
