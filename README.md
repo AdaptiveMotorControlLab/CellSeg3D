@@ -64,8 +64,12 @@ F1-score is computed from the Intersection over Union (IoU) with ground truth la
 
 ## News
 
-**New version: v0.2.1**
+**New version: v0.2.2**
 
+- v0.2.2:
+  - Updated the Colab Notebooks for training and inference
+  - New models available in the inference demo notebook
+  - CRF optional post-processing adjustments (and pip install directly)
 - v0.2.1:
   - Updated plugin default behaviors across the board to be more readily applicable to demo data
   - Threshold value in inference is now automatically set by default according to performance on demo data on a per-model basis
