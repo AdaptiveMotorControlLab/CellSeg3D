@@ -426,7 +426,7 @@ document.write(`
                   
   <section id="module-napari_cellseg3d.code_models.crf">
 <span id="napari-cellseg3d-code-models-crf"></span><h1>napari_cellseg3d.code_models.crf<a class="headerlink" href="#module-napari_cellseg3d.code_models.crf" title="Permalink to this heading">#</a></h1>
-<p>Implements the CRF post-processing step for the WNet3D.</p>
+<p>Implements the CRF post-processing step for WNet3D.</p>
 <p>The CRF requires the following parameters:</p>
 <ul class="simple">
 <li><p>images : Array of shape (N, C, H, W, D) containing the input images.</p></li>
@@ -442,7 +442,8 @@ Also uses research from:
 Efficient Inference in Fully Connected CRFs with Gaussian Edge Potentials
 Philipp Krähenbühl and Vladlen Koltun
 NIPS 2011</p>
-<p>Implemented using the pydense library available at <a class="github reference external" href="https://github.com/lucasb-eyer/pydensecrf">lucasb-eyer/pydensecrf</a>.</p>
+<p>Implemented using the pydensecrf library available at <a class="github reference external" href="https://github.com/lucasb-eyer/pydensecrf">lucasb-eyer/pydensecrf</a>.
+However, this is not maintained, thus we maintain this pacakge at <a class="github reference external" href="https://github.com/AdaptiveMotorControlLab/pydensecrf">AdaptiveMotorControlLab/pydensecrf</a>.</p>
 <p class="rubric">Functions</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
@@ -450,13 +451,13 @@ NIPS 2011</p>
 <td><p>Corrects the shape of the image to be compatible with the CRF post-processing step.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">crf</span></code>(image, prob, sa, sb, sg, w1, w2[, n_iter])</p></td>
-<td><p>Implements the CRF post-processing step for the W-Net.</p></td>
+<td><p>Implements the CRF post-processing step for the WNet3D.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">crf_batch</span></code>(images, probs, sa, sb, sg, w1, w2)</p></td>
-<td><p>CRF post-processing step for the W-Net, applied to a batch of images.</p></td>
+<td><p>CRF post-processing step for the WNet3D, applied to a batch of images.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">crf_with_config</span></code>(image, prob[, config, log])</p></td>
-<td><p>Implements the CRF post-processing step for the W-Net.</p></td>
+<td><p>Implements the CRF post-processing step for the WNet3D.</p></td>
 </tr>
 </tbody>
 </table>
@@ -464,7 +465,7 @@ NIPS 2011</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">CRFWorker</span></code>(images_list, labels_list[, ...])</p></td>
-<td><p>Worker for the CRF post-processing step for the W-Net.</p></td>
+<td><p>Worker for the CRF post-processing step for the WNet3D.</p></td>
 </tr>
 </tbody>
 </table>
