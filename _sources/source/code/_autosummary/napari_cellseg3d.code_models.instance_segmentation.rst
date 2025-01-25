@@ -4,16 +4,11 @@ napari\_cellseg3d.code\_models.instance\_segmentation
 .. automodule:: napari_cellseg3d.code_models.instance_segmentation
 
    
-   
    .. rubric:: Module Attributes
 
    .. autosummary::
    
       USE_SLIDING_WINDOW
-   
-   
-
-   
    
    .. rubric:: Functions
 
@@ -28,10 +23,6 @@ napari\_cellseg3d.code\_models.instance\_segmentation
       volume_stats
       voronoi_otsu
    
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -43,11 +34,3 @@ napari\_cellseg3d.code\_models.instance\_segmentation
       VoronoiOtsu
       Watershed
    
-   
-
-   
-   
-   
-
-
-

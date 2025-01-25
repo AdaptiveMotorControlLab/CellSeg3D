@@ -4,11 +4,6 @@ napari\_cellseg3d.code\_models.models.unet.buildingblocks
 .. automodule:: napari_cellseg3d.code_models.models.unet.buildingblocks
 
    
-   
-   
-
-   
-   
    .. rubric:: Functions
 
    .. autosummary::
@@ -17,10 +12,6 @@ napari\_cellseg3d.code\_models.models.unet.buildingblocks
       create_conv
       create_decoders
       create_encoders
-   
-   
-
-   
    
    .. rubric:: Classes
 
@@ -36,11 +27,3 @@ napari\_cellseg3d.code\_models.models.unet.buildingblocks
       SingleConv
       TransposeConvUpsampling
    
-   
-
-   
-   
-   
-
-
-

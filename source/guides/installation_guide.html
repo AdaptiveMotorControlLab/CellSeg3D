@@ -2,11 +2,11 @@
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="../../" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Installation guide ⚙ &#8212; napari-cellseg3d Documentation</title>
   
@@ -14,51 +14,52 @@
   
   <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
-    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-  
-  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
-
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css?v=6ad1a40c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
-  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=2b91c5f0"></script>
-    <script src="../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
-    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="../../_static/design-tabs.js?v=36754332"></script>
-    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
-const thebe_selector = ".thebe,.cell"
-const thebe_selector_input = "pre"
-const thebe_selector_output = ".output, .cell_output"
-</script>
-    <script async="async" src="../../_static/sphinx-thebe.js?v=afe5de03"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'source/guides/installation_guide';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -66,6 +67,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="prev" title="Welcome to CellSeg3D!" href="../../welcome.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
   </head>
   
   
@@ -73,32 +75,16 @@ const thebe_selector_output = ".output, .cell_output"
 
   
   
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
   
   <div id="pst-scroll-pixel-helper"></div>
-
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>
-    Back to top
-  </button>
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          name="__primary"
-          id="__primary"/>
-  <label class="overlay overlay-primary" for="__primary"></label>
-  
-  <input type="checkbox"
-          class="sidebar-toggle"
-          name="__secondary"
-          id="__secondary"/>
-  <label class="overlay overlay-secondary" for="__secondary"></label>
-  
-  <div class="search-button__wrapper">
-    <div class="search-button__overlay"></div>
-    <div class="search-button__search-container">
+  <dialog id="pst-search-dialog">
+    
 <form class="bd-search d-flex align-items-center"
       action="../../search.html"
       method="get">
@@ -106,7 +92,6 @@ const thebe_selector_output = ".output, .cell_output"
   <input type="search"
          class="form-control"
          name="q"
-         id="search-input"
          placeholder="Search this book..."
          aria-label="Search this book..."
          autocomplete="off"
@@ -114,16 +99,25 @@ const thebe_selector_output = ".output, .cell_output"
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
-  </div>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
   
-    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
-    </nav>
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
   
+
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
       
-      <div class="bd-sidebar-primary bd-sidebar">
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -138,6 +132,8 @@ const thebe_selector_output = ".output, .cell_output"
         <div class="sidebar-primary-item">
 
   
+    
+  
 
 <a class="navbar-brand logo" href="../../welcome.html">
   
@@ -151,11 +147,18 @@ const thebe_selector_output = ".output, .cell_output"
     
     
     <img src="../../_static/logo_alpha.png" class="logo__image only-light" alt="napari-cellseg3d Documentation - Home"/>
-    <script>document.write(`<img src="../../_static/logo_alpha.png" class="logo__image only-dark" alt="napari-cellseg3d Documentation - Home"/>`);</script>
+    <img src="../../_static/logo_alpha.png" class="logo__image only-dark pst-js-only" alt="napari-cellseg3d Documentation - Home"/>
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -185,13 +188,13 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Code</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../code/api.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../code/api.html">API reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.interface.html">napari_cellseg3d.interface</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.html">napari_cellseg3d.code_models</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.html">napari_cellseg3d.code_models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.crf.html">napari_cellseg3d.code_models.crf</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.instance_segmentation.html">napari_cellseg3d.code_models.instance_segmentation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.model_framework.html">napari_cellseg3d.code_models.model_framework</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.models.html">napari_cellseg3d.code_models.models</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.models.html">napari_cellseg3d.code_models.models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.models.TEMPLATE_model.html">napari_cellseg3d.code_models.models.TEMPLATE_model</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.models.model_SegResNet.html">napari_cellseg3d.code_models.models.model_SegResNet</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.models.model_SwinUNetR.html">napari_cellseg3d.code_models.models.model_SwinUNetR</a></li>
@@ -204,13 +207,13 @@ const thebe_selector_output = ".output, .cell_output"
 <li class="toctree-l4"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.models.unet.html">napari_cellseg3d.code_models.models.unet</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.models.wnet.html">napari_cellseg3d.code_models.models.wnet</a></li>
 </ul>
-</li>
+</details></li>
 <li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.worker_inference.html">napari_cellseg3d.code_models.worker_inference</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.worker_training.html">napari_cellseg3d.code_models.worker_training</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_models.workers_utils.html">napari_cellseg3d.code_models.workers_utils</a></li>
 </ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.html">napari_cellseg3d.code_plugins</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.html">napari_cellseg3d.code_plugins</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.plugin_base.html">napari_cellseg3d.code_plugins.plugin_base</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.plugin_convert.html">napari_cellseg3d.code_plugins.plugin_convert</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.plugin_crf.html">napari_cellseg3d.code_plugins.plugin_crf</a></li>
@@ -223,10 +226,10 @@ const thebe_selector_output = ".output, .cell_output"
 <li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.plugin_review_dock.html">napari_cellseg3d.code_plugins.plugin_review_dock</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.code_plugins.plugin_utilities.html">napari_cellseg3d.code_plugins.plugin_utilities</a></li>
 </ul>
-</li>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="../code/_autosummary/napari_cellseg3d.utils.html">napari_cellseg3d.utils</a></li>
 </ul>
-</li>
+</details></li>
 </ul>
 
     </div>
@@ -235,14 +238,19 @@ const thebe_selector_output = ".output, .cell_output"
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
       </div>
       
-      <main id="main-content" class="bd-main">
+      <main id="main-content" class="bd-main" role="main">
         
         
 
@@ -251,14 +259,14 @@ const thebe_selector_output = ".output, .cell_output"
           <div class="bd-content">
             <div class="bd-article-container">
               
-              <div class="bd-header-article">
+              <div class="bd-header-article d-print-none">
 <div class="header-article-items header-article__inner">
   
     <div class="header-article-items__start">
       
-        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
   <span class="fa-solid fa-bars"></span>
-</label></div>
+</button></div>
       
     </div>
   
@@ -381,27 +389,19 @@ const thebe_selector_output = ".output, .cell_output"
 
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
-  </button>
-`);
-</script>
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-  </button>
-`);
-</script>
-<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
-</label>
+</button>
 </div></div>
       
     </div>
@@ -451,10 +451,10 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article" role="main">
+                <article class="bd-article">
                   
   <section id="installation-guide">
-<h1>Installation guide ⚙<a class="headerlink" href="#installation-guide" title="Permalink to this heading">#</a></h1>
+<h1>Installation guide ⚙<a class="headerlink" href="#installation-guide" title="Link to this heading">#</a></h1>
 <p>This guide outlines the steps for installing CellSeg3D and its dependencies. The plugin is compatible with Windows, Linux, and MacOS.</p>
 <p><strong>Note for ARM64 Mac Users:</strong>
 Please refer to the <a class="reference internal" href="#arm64-mac-installation"><span class="std std-ref">section below</span></a> for specific instructions.</p>
@@ -463,9 +463,9 @@ Please refer to the <a class="reference internal" href="#arm64-mac-installation"
 <p>If you encounter any issues during installation, feel free to open an issue on our <a class="reference external" href="https://github.com/AdaptiveMotorControlLab/CellSeg3D/issues">GitHub repository</a>.</p>
 </div>
 <section id="installing-pre-requisites">
-<h2>Installing pre-requisites<a class="headerlink" href="#installing-pre-requisites" title="Permalink to this heading">#</a></h2>
+<h2>Installing pre-requisites<a class="headerlink" href="#installing-pre-requisites" title="Link to this heading">#</a></h2>
 <section id="pyqt5-or-pyside2">
-<h3>PyQt5 or PySide2<a class="headerlink" href="#pyqt5-or-pyside2" title="Permalink to this heading">#</a></h3>
+<h3>PyQt5 or PySide2<a class="headerlink" href="#pyqt5-or-pyside2" title="Link to this heading">#</a></h3>
 <p>CellSeg3D requires either <strong>PyQt5</strong> or <strong>PySide2</strong> as a Qt backend for napari. If you don’t have a Qt backend installed:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">napari</span><span class="p">[</span><span class="nb">all</span><span class="p">]</span>
 </pre></div>
@@ -473,7 +473,7 @@ Please refer to the <a class="reference internal" href="#arm64-mac-installation"
 <p>This command installs PyQt5 by default.</p>
 </section>
 <section id="pytorch">
-<h3>PyTorch<a class="headerlink" href="#pytorch" title="Permalink to this heading">#</a></h3>
+<h3>PyTorch<a class="headerlink" href="#pytorch" title="Link to this heading">#</a></h3>
 <p>For PyTorch installation, refer to <a class="reference external" href="https://pytorch.org/get-started/locally/">PyTorch’s website</a> , with or without CUDA according to your hardware.
 Select the installation criteria that match your OS and hardware (GPU or CPU).</p>
 <div class="admonition note">
@@ -486,7 +486,7 @@ Select the installation criteria that match your OS and hardware (GPU or CPU).</
 </section>
 </section>
 <section id="installing-cellseg3d">
-<h2>Installing CellSeg3D<a class="headerlink" href="#installing-cellseg3d" title="Permalink to this heading">#</a></h2>
+<h2>Installing CellSeg3D<a class="headerlink" href="#installing-cellseg3d" title="Link to this heading">#</a></h2>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>For ARM64 Mac users, please see the <a class="reference internal" href="#arm64-mac-installation"><span class="std std-ref">section below</span></a></p>
@@ -508,11 +508,11 @@ Navigate to the cloned CellSeg3D folder and run:</p>
 <p>Successful installation will add the napari-cellseg3D plugin to napari’s Plugins section.</p>
 </section>
 <section id="arm64-mac-installation">
-<h2>ARM64 Mac installation<a class="headerlink" href="#arm64-mac-installation" title="Permalink to this heading">#</a></h2>
+<h2>ARM64 Mac installation<a class="headerlink" href="#arm64-mac-installation" title="Link to this heading">#</a></h2>
 <p id="id1">For ARM64 Macs, we recommend using our custom CONDA environment. This is particularly important for ARM64 (Silicon chips) MacBooks.</p>
 <p>Start by installing <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html">miniconda3</a>.</p>
 <section id="creating-the-environment">
-<h3>Creating the environment<a class="headerlink" href="#creating-the-environment" title="Permalink to this heading">#</a></h3>
+<h3>Creating the environment<a class="headerlink" href="#creating-the-environment" title="Link to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p><strong>Clone the repository</strong> (<a class="reference external" href="https://github.com/AdaptiveMotorControlLab/CellSeg3D">link</a>):</p></li>
 </ol>
@@ -550,7 +550,7 @@ You should now see the CellSeg3D plugin in the Plugins section of napari.
 See <a class="reference external" href="https://adaptivemotorcontrollab.github.io/CellSeg3d/welcome.html#usage">Usage section</a> for a guide on how to use the plugin.</p>
 </section>
 <section id="updating-the-environment">
-<h3>Updating the environment<a class="headerlink" href="#updating-the-environment" title="Permalink to this heading">#</a></h3>
+<h3>Updating the environment<a class="headerlink" href="#updating-the-environment" title="Link to this heading">#</a></h3>
 <p>In order to update the environment, navigate to the CellSeg3D folder and run:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">deactivate</span>
 <span class="n">conda</span> <span class="n">env</span> <span class="n">update</span> <span class="o">-</span><span class="n">f</span> <span class="n">conda</span><span class="o">/</span><span class="n">napari_cellseg3d_ARM64</span><span class="o">.</span><span class="n">yml</span>
@@ -559,9 +559,9 @@ See <a class="reference external" href="https://adaptivemotorcontrollab.github.i
 </section>
 </section>
 <section id="troubleshoting">
-<h2>Troubleshoting<a class="headerlink" href="#troubleshoting" title="Permalink to this heading">#</a></h2>
+<h2>Troubleshoting<a class="headerlink" href="#troubleshoting" title="Link to this heading">#</a></h2>
 <section id="pyclesperanto">
-<h3>pyClesperanto<a class="headerlink" href="#pyclesperanto" title="Permalink to this heading">#</a></h3>
+<h3>pyClesperanto<a class="headerlink" href="#pyclesperanto" title="Link to this heading">#</a></h3>
 <p>If you encounter the following error : <em>clGetPlatformIDs failed: PLATFORM_NOT_FOUND_KHR</em> :</p>
 <p>Please install <a class="reference external" href="https://github.com/Oblomov/clinfo">clinfo</a> and check if your OpenCL platform is available.</p>
 <p>If not, please install the OpenCL driver for your hardware.</p>
@@ -571,9 +571,9 @@ See <a class="reference external" href="https://adaptivemotorcontrollab.github.i
 </section>
 </section>
 <section id="optional-requirements">
-<h2>Optional requirements<a class="headerlink" href="#optional-requirements" title="Permalink to this heading">#</a></h2>
+<h2>Optional requirements<a class="headerlink" href="#optional-requirements" title="Link to this heading">#</a></h2>
 <section id="additional-functionalities">
-<h3>Additional functionalities<a class="headerlink" href="#additional-functionalities" title="Permalink to this heading">#</a></h3>
+<h3>Additional functionalities<a class="headerlink" href="#additional-functionalities" title="Link to this heading">#</a></h3>
 <p>Several additional functionalities are available optionally. To install them, use the following commands:</p>
 <ul class="simple">
 <li><p>CRF post-processing:</p></li>
@@ -597,7 +597,7 @@ Depending on your hardware, you can install the CPU or GPU version of ONNX.</p><
 </div>
 </section>
 <section id="development-requirements">
-<h3>Development requirements<a class="headerlink" href="#development-requirements" title="Permalink to this heading">#</a></h3>
+<h3>Development requirements<a class="headerlink" href="#development-requirements" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Building the documentation:</p></li>
 </ul>
@@ -648,7 +648,7 @@ Depending on your hardware, you can install the CPU or GPU version of ONNX.</p><
               
               
               
-                <footer class="prev-next-footer">
+                <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
     <a class="left-prev"
@@ -676,7 +676,9 @@ Depending on your hardware, you can install the CPU or GPU version of ONNX.</p><
             
             
               
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
 
   <div class="sidebar-secondary-item">
   <div class="page-toc tocsection onthispage">
@@ -728,7 +730,7 @@ By Cyril Achard, Maxime Vidal, Timokleia Kousi, Mackenzie Mathis | Mathis Labora
 
   <p class="copyright">
     
-      © Copyright 2022.
+      © Copyright 2023.
       <br/>
     
   </p>
@@ -752,8 +754,8 @@ By Cyril Achard, Maxime Vidal, Timokleia Kousi, Mackenzie Mathis | Mathis Labora
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
   </footer>

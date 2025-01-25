@@ -9,7 +9,7 @@ Welcome to CellSeg3D!
 Use CellSeg3D to:
 
 * Review labeled cell volumes from whole-brain samples of mice imaged by mesoSPIM microscopy [1]_
-* Train and use segmentation models from the MONAI project [2]_ 
+* Train and use segmentation models from the MONAI project [2]_
 * Train and use our WNet3D unsupervised model
 * Or implement your own custom 3D segmentation models using PyTorch!
 
@@ -137,14 +137,14 @@ Other useful napari plugins
 
 .. _napari-pyclesperanto-assistant: https://www.napari-hub.org/plugins/napari-pyclesperanto-assistant
 .. _napari-brightness-contrast: https://www.napari-hub.org/plugins/napari-brightness-contrast
-.. _brainreg-napari: https://www.napari-hub.org/plugins/brainreg-napari
+.. _brainreg-napari: https://github.com/brainglobe/brainreg?tab=readme-ov-file#installation
 .. _napari-skimage-regionprops: https://www.napari-hub.org/plugins/napari-skimage-regionprops
 
 Acknowledgments & References
 ---------------------------------------------
 If you find our code or ideas useful, please cite:
 
-Achard Cyril, Kousi Timokleia, Frey Markus, Vidal Maxime, Paychère Yves, Hofmann Colin, Iqbal Asim, Hausmann Sebastien B, Pagès Stéphane, Mathis Mackenzie Weygandt (2024) 
+Achard Cyril, Kousi Timokleia, Frey Markus, Vidal Maxime, Paychère Yves, Hofmann Colin, Iqbal Asim, Hausmann Sebastien B, Pagès Stéphane, Mathis Mackenzie Weygandt (2024)
 CellSeg3D: self-supervised 3D cell segmentation for microscopy eLife https://doi.org/10.7554/eLife.99848.1
 
 

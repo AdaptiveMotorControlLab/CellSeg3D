@@ -4,11 +4,6 @@
 .. automodule:: napari_cellseg3d.utils
 
    
-   
-   
-
-   
-   
    .. rubric:: Functions
 
    .. autosummary::
@@ -42,21 +37,9 @@
       sphericity_volume_area
       time_difference
    
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
    
       Singleton
    
-   
-
-   
-   
-   
-
-
-

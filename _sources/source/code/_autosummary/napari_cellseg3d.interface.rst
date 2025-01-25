@@ -4,7 +4,6 @@
 .. automodule:: napari_cellseg3d.interface
 
    
-   
    .. rubric:: Module Attributes
 
    .. autosummary::
@@ -16,10 +15,6 @@
       ABS_AL
       BOTT_AL
       TOP_AL
-   
-   
-
-   
    
    .. rubric:: Functions
 
@@ -39,10 +34,6 @@
       open_url
       set_spinbox
       toggle_visibility
-   
-   
-
-   
    
    .. rubric:: Classes
 
@@ -65,11 +56,3 @@
       Slider
       UtilsDropdown
    
-   
-
-   
-   
-   
-
-
-

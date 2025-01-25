@@ -4,15 +4,6 @@ napari\_cellseg3d.code\_plugins.plugin\_base
 .. automodule:: napari_cellseg3d.code_plugins.plugin_base
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -21,11 +12,3 @@ napari\_cellseg3d.code\_plugins.plugin\_base
       BasePluginSingleImage
       BasePluginUtils
    
-   
-
-   
-   
-   
-
-
-
