@@ -7,6 +7,7 @@ from typing import Union
 
 import napari
 import numpy as np
+import pkg_resources
 import torch
 from monai.transforms import Zoom
 from numpy.random import PCG64, Generator
@@ -645,3 +646,18 @@ def fraction_above_threshold(volume: np.array, threshold=0.5) -> float:
         f"non zero in above_thresh : {np.count_nonzero(above_thresh)}"
     )
     return np.count_nonzero(above_thresh) / np.size(flattened)
+
+
+def _is_mps_available(torch):
+    available = False
+    if pkg_resources.parse_version(
+        torch.__version__
+    ) >= pkg_resources.parse_version("1.12"):
+        LOGGER.debug("Torch version is 1.12 or higher, compatible with MPS")
+        if torch.backends.mps.is_available():
+            LOGGER.debug("MPS is available")
+            if torch.backends.mps.is_built():
+                LOGGER.debug("MPS is built")
+                available = True
+
+    return available

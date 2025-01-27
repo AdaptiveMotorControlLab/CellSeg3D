@@ -838,6 +838,11 @@ class InferenceWorker(GeneratorWorker):
             torch.set_num_threads(1)  # required for threading on macOS ?
             self.log("Number of threads has been set to 1 for macOS")
 
+        if self.config.device == "mps":
+            from os import environ
+
+            environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+
         try:
             dims = self.config.model_info.model_input_size
             self.log(f"MODEL DIMS : {dims}")
