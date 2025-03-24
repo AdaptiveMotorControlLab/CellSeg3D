@@ -38,7 +38,7 @@ To use the plugin, please run:
 ```
 napari
 ```
-Then go into `Plugins > napari-cellseg3d`, and choose which tool to use.
+Then go into `Plugins > napari_cellseg3d`, and choose which tool to use. 
 
 - **Review (label)**: This module allows you to review your labels, from predictions or manual labeling, and correct them if needed. It then saves the status of each file in a csv, for easier monitoring.
 - **Inference**: This module allows you to use pre-trained segmentation algorithms on volumes to automatically label cells and compute statistics.
