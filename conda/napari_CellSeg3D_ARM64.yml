@@ -18,7 +18,7 @@ dependencies:
         - monai[nibabel, einops]>=0.9.0
         - tqdm
         - scikit-image
-        - pyclesperanto-prototype
+        - pyclesperanto
         - tqdm
         - matplotlib
         - napari_cellseg3d

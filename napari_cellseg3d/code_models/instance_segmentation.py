@@ -6,7 +6,7 @@ from functools import partial
 from typing import List
 
 import numpy as np
-import pyclesperanto_prototype as cle
+import pyclesperanto as cle
 from qtpy.QtWidgets import QWidget
 from skimage.measure import label, regionprops
 from skimage.morphology import remove_small_objects
@@ -287,7 +287,7 @@ def voronoi_otsu(
     BASED ON CODE FROM : napari_pyclesperanto_assistant by Robert Haase
     https://github.com/clEsperanto/napari_pyclesperanto_assistant
     Original code at :
-    https://github.com/clEsperanto/pyclesperanto_prototype/blob/master/pyclesperanto_prototype/_tier9/_voronoi_otsu_labeling.py.
+    https://github.com/clEsperanto/pyclesperanto/blob/d1990e28b1da44a7921890b7bd809d522d3198b8/pyclesperanto/_tier7.py#L409-L448.
 
     Args:
         volume (np.ndarray): volume to segment

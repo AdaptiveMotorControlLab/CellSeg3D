@@ -168,7 +168,7 @@ This plugin additionally uses the following libraries and software:
 .. _PyTorch: https://pytorch.org/
 .. _MONAI project: https://monai.io/
 .. _on their website: https://docs.monai.io/en/stable/networks.html#nets
-.. _pyclEsperanto: https://github.com/clEsperanto/pyclesperanto_prototype
+.. _pyclEsperanto: https://github.com/clEsperanto/pyclesperanto
 .. _WNet: https://arxiv.org/abs/1711.08506
 
 .. rubric:: References

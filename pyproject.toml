@@ -42,7 +42,7 @@ dependencies = [
     "tqdm",
 #    "nibabel",
 #    "pillow",
-    "pyclesperanto-prototype",
+    "pyclesperanto",
     "tqdm",
     "matplotlib",
     "pydensecrf2",
