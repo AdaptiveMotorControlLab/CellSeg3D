@@ -1,3 +1,5 @@
+"""Tools to correct labels and add missing labels to the label image."""
+
 import threading
 import time
 import warnings
@@ -89,7 +91,7 @@ def add_label(old_label, artefact, new_label_path, i_labels_to_add):
 returns = []
 
 
-def ask_labels(unique_artefact, test=False):
+def _ask_labels(unique_artefact, test=False):
     global returns
     returns = []
     if not test:
@@ -204,7 +206,7 @@ def relabel(
     while loop:
         # visualize the artefact and ask the user which label to add to the label image
         t = threading.Thread(
-            target=partial(ask_labels, test=test), args=(unique_artefact,)
+            target=partial(_ask_labels, test=test), args=(unique_artefact,)
         )
         t.start()
         artefact_copy = np.where(
@@ -212,7 +214,7 @@ def relabel(
         )
         if viewer is None:
             viewer = napari.Viewer()
-            images = viewer.add_image(image, name="image")
+            viewer.add_image(image, name="image")
         else:
             viewer = viewer
             viewer.add_image(image, name="image")
