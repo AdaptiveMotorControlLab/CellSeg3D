@@ -64,11 +64,14 @@ def test_single_image_build_not_implemented(make_napari_viewer_proxy):
         plugin._build()
 
 
-def test_make_navigation_buttons(make_napari_viewer_proxy):
+def test_make_navigation_buttons(make_napari_viewer_proxy, qtbot):
     plugin = BasePluginSingleImage(make_napari_viewer_proxy())
-
-    plugin.addTab(SimpleNamespace(), "A")
-    plugin.addTab(SimpleNamespace(), "B")
+    a_wdg = QWidget()
+    b_wdg = QWidget()
+    qtbot.addWidget(a_wdg)
+    qtbot.addWidget(b_wdg)
+    plugin.addTab(a_wdg, "A")
+    plugin.addTab(b_wdg, "B")
     plugin.setCurrentIndex(1)
 
     prev_button = plugin._make_prev_button()
