@@ -1,4 +1,5 @@
 """Script to perform inference on a single image and run post-processing on the results, withot napari."""
+
 import logging
 from dataclasses import dataclass
 from pathlib import Path
@@ -75,16 +76,14 @@ class PostProcessConfig:
     outline_sigma: float = 0.55
     isotropic_spot_sigma: float = 0.2
     isotropic_outline_sigma: float = 0.2
-    anisotropy_correction: List[
-        float
-    ] = None  # TODO change to actual values, should be a ratio like [1,1/5,1]
+    anisotropy_correction: List[float] = (
+        None  # TODO change to actual values, should be a ratio like [1,1/5,1]
+    )
     clear_small_size: int = 5
     clear_large_objects: int = 500
 
 
-def inference_on_images(
-    image: np.array, config: InferenceWorkerConfig = CONFIG
-):
+def inference_on_images(image: np.array, config: InferenceWorkerConfig = CONFIG):
     """This function provides inference on an image with minimal config.
 
     Args:
@@ -148,12 +147,10 @@ def post_processing(semantic_segmentation, config: PostProcessConfig = None):
     )
     # clear small objects
     logger.info(f"Clearing small objects with {config.clear_small_size}")
-    labels = clear_small_objects(labels, config.clear_small_size).astype(
-        np.uint16
-    )
+    labels = clear_small_objects(labels, config.clear_small_size).astype(np.uint16)
     logger.debug(f"Labels shape: {labels.shape}")
     # get volume stats WITH ANISOTROPY
-    logger.debug(f"NUMBER OF OBJECTS: {np.max(np.unique(labels))-1}")
+    logger.debug(f"NUMBER OF OBJECTS: {np.max(np.unique(labels)) - 1}")
     stats_not_resized = volume_stats(labels)
     ######## RUN WITH ANISOTROPY ########
     result_dict = {}
@@ -172,15 +169,11 @@ def post_processing(semantic_segmentation, config: PostProcessConfig = None):
             spot_sigma=config.isotropic_spot_sigma,
             outline_sigma=config.isotropic_outline_sigma,
         )
-        logger.info(
-            f"Clearing small objects with {config.clear_large_objects}"
-        )
+        logger.info(f"Clearing small objects with {config.clear_large_objects}")
         labels_resized = clear_small_objects(
             labels_resized, config.clear_small_size
         ).astype(np.uint16)
-        logger.debug(
-            f"NUMBER OF OBJECTS: {np.max(np.unique(labels_resized))-1}"
-        )
+        logger.debug(f"NUMBER OF OBJECTS: {np.max(np.unique(labels_resized)) - 1}")
         logger.info("Getting volume stats without anisotropy")
         stats_resized = volume_stats(labels_resized)
         return labels_resized, stats_resized

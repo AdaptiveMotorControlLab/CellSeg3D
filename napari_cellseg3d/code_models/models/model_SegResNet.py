@@ -9,9 +9,7 @@ class SegResNet_(SegResNetVAE):
     weights_file = "SegResNet_latest.pth"
     default_threshold = 0.3
 
-    def __init__(
-        self, input_img_size, out_channels=1, dropout_prob=0.3, **kwargs
-    ):
+    def __init__(self, input_img_size, out_channels=1, dropout_prob=0.3, **kwargs):
         """Create a SegResNet model.
 
         Args:

@@ -75,17 +75,13 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
         self._build()
 
         self.utils_choice.currentIndexChanged.connect(self._update_visibility)
-        self.utils_choice.currentIndexChanged.connect(
-            self._update_current_widget
-        )
+        self.utils_choice.currentIndexChanged.connect(self._update_current_widget)
         # self._dock_util()
         self._update_visibility()
         qInstallMessageHandler(ui.handle_adjust_errors_wrapper(self))
 
     def _update_current_widget(self):
-        self.current_widget = self.utils_widgets[
-            self.utils_choice.currentIndex()
-        ]
+        self.current_widget = self.utils_widgets[self.utils_choice.currentIndex()]
 
     def _update_results_path(self, widget):
         self.results_filewidget.text_field.setText(str(widget.save_path))
@@ -106,9 +102,7 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
         # layout.setSizeConstraint(QLayout.SetFixedSize)
         self.setLayout(layout)
         # self.setMinimumHeight(2000)
-        self.setSizePolicy(
-            QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
-        )
+        self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
         self._update_visibility()
 
     def _create_utils_widgets(self, names):
@@ -123,9 +117,7 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
 
         self.current_widget = self.utils_widgets[0]
         if len(self.utils_widgets) != len(UTILITIES_WIDGETS.keys()):
-            raise RuntimeError(
-                "One or several utility widgets are missing/erroneous"
-            )
+            raise RuntimeError("One or several utility widgets are missing/erroneous")
 
     def _update_layers(self, current_loader, new_loader):
         current_layer = current_loader.layer()
@@ -136,9 +128,7 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
             and current_layer.name in new_loader.layer_list.get_items()
         ):
             index = new_loader.layer_list.get_items().index(current_layer.name)
-            logger.debug(
-                f"Index of layer {current_layer.name} in new loader : {index}"
-            )
+            logger.debug(f"Index of layer {current_layer.name} in new loader : {index}")
             new_loader.layer_list.setCurrentIndex(index)
 
     def _update_fields(self, widget: BasePluginUtils):
@@ -164,9 +154,7 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
         except KeyError:
             pass
 
-        logger.debug(
-            f"Current widget save path : {self.current_widget.save_path}"
-        )
+        logger.debug(f"Current widget save path : {self.current_widget.save_path}")
         logger.debug(
             f"Current widget text field : {self.current_widget.results_filewidget.text_field.text()}"
         )

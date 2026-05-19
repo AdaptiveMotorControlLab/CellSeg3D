@@ -1,4 +1,5 @@
 """Review plugin for 3D labeling of volumes."""
+
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -91,9 +92,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
 
         self._build()
 
-        self.image_filewidget.text_field.textChanged.connect(
-            self._update_results_path
-        )
+        self.image_filewidget.text_field.textChanged.connect(self._update_results_path)
         print(f"{self}")
 
     def _update_results_path(self):
@@ -275,9 +274,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             contrast_limits=[200, 1000],
             scale=self.config.zoom_factor,
         )  # anything bigger than 255 will get mapped to 255... they did it like this because it must have rgb images
-        viewer.add_labels(
-            base_label, name="labels", scale=self.config.zoom_factor
-        )
+        viewer.add_labels(base_label, name="labels", scale=self.config.zoom_factor)
 
         @magicgui(
             dirname={"mode": "d", "label": "Save labels in... "},
@@ -322,9 +319,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             canvas = FigureCanvas(Figure(figsize=(3, 15)))
 
             xy_axes = canvas.figure.add_subplot(3, 1, 1)
-            canvas.figure.suptitle(
-                "Shift-click on image for plot \n", fontsize=8
-            )
+            canvas.figure.suptitle("Shift-click on image for plot \n", fontsize=8)
             xy_axes.imshow(np.zeros((100, 100), np.int16))
             xy_axes.scatter(50, 50, s=30, c="green", alpha=0.6, marker="+")
             xy_axes.set_xlabel("X axis")
@@ -347,18 +342,14 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
 
         canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
 
-        canvas_dock = viewer.window.add_dock_widget(
-            canvas, name=" ", area="right"
-        )
+        canvas_dock = viewer.window.add_dock_widget(canvas, name=" ", area="right")
         canvas_dock._close_btn = False
 
         @viewer.mouse_drag_callbacks.append
         def update_canvas(viewer, event):
             if "shift" in event.modifiers:
                 try:
-                    cursor_position = np.round(viewer.cursor.position).astype(
-                        int
-                    )
+                    cursor_position = np.round(viewer.cursor.position).astype(int)
                     logger.debug(f"plot @ {cursor_position}")
 
                     cropped_volume = crop_volume_around_point(
@@ -403,9 +394,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             self.config.model_name,
             self.config.new_csv,
         )
-        datamananger = viewer.window.add_dock_widget(
-            dmg, name=" ", area="left"
-        )
+        datamananger = viewer.window.add_dock_widget(dmg, name=" ", area="left")
         datamananger._close_btn = False
 
         def update_button(axis_event):
@@ -437,9 +426,11 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
                 for min_coordinate in min_coordinates
             ]
             superior_bound = [
-                max_coordinate - volume.shape[i]
-                if volume.shape[i] < max_coordinate
-                else 0
+                (
+                    max_coordinate - volume.shape[i]
+                    if volume.shape[i] < max_coordinate
+                    else 0
+                )
                 for i, max_coordinate in enumerate(max_coordinates)
             ]
 

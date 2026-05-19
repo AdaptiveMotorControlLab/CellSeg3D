@@ -1,4 +1,5 @@
 """Utilities functions, classes, and variables."""
+
 import logging
 import math
 from datetime import datetime
@@ -30,9 +31,7 @@ rand_gen = Generator(PCG64(12345))
 
 ####################
 # viewer utils
-def save_folder(
-    results_path, folder_name, images, image_paths, exist_ok=False
-):
+def save_folder(results_path, folder_name, images, image_paths, exist_ok=False):
     """Saves a list of images in a folder.
 
     Args:
@@ -98,18 +97,14 @@ def show_result(
     if existing_layer is None:
         if add_as_image:
             LOGGER.info("Added resulting image layer")
-            results_layer = viewer.add_image(
-                image, name=name, colormap=colormap
-            )
+            results_layer = viewer.add_image(image, name=name, colormap=colormap)
         elif add_as_labels:
             LOGGER.info("Added resulting label layer")
             results_layer = viewer.add_labels(image, name=name)
         else:
             if isinstance(layer, napari.layers.Image):
                 LOGGER.info("Added resulting image layer")
-                results_layer = viewer.add_image(
-                    image, name=name, colormap=colormap
-                )
+                results_layer = viewer.add_image(image, name=name, colormap=colormap)
             elif isinstance(layer, napari.layers.Labels):
                 LOGGER.info("Added resulting label layer")
                 results_layer = viewer.add_labels(image, name=name)
@@ -126,9 +121,7 @@ def show_result(
                 f"Results not shown, layer {existing_layer.name} not found"
                 "Showing new layer instead"
             )
-            results_layer = show_result(
-                viewer, layer, image, name, existing_layer=None
-            )
+            results_layer = show_result(viewer, layer, image, name, existing_layer=None)
     return results_layer
 
 
@@ -202,9 +195,7 @@ def sphericity_axis(semi_major, semi_minor):
     root = np.sqrt(a**2 - b**2)
     try:
         result = (
-            2
-            * (a * (b**2)) ** (1 / 3)
-            / (a + (b**2) / root * np.log((a + root) / b))
+            2 * (a * (b**2)) ** (1 / 3) / (a + (b**2) / root * np.log((a + root) / b))
         )
     except ZeroDivisionError:
         # LOGGER.debug(
@@ -287,8 +278,7 @@ def normalize_max(image):
     shape = image.shape
     image = image.flatten()
     image = (image - image.min()) / (image.max() - image.min())
-    image = image.reshape(shape)
-    return image
+    return image.reshape(shape)
 
 
 def remap_image(
@@ -305,8 +295,7 @@ def remap_image(
     im_min = prev_min if prev_min is not None else image.min()
     image = (image - im_min) / (im_max - im_min)
     image = image * (new_max - new_min) + new_min
-    image = image.reshape(shape)
-    return image
+    return image.reshape(shape)
 
 
 def resize(image, zoom_factors):
@@ -376,11 +365,7 @@ def time_difference(time_start, time_finish, as_string=True):
     minutes = f"{int(minutes[0])}".zfill(2)
     seconds = f"{int(seconds[0])}".zfill(2)
 
-    return (
-        f"{hours}:{minutes}:{seconds}"
-        if as_string
-        else [hours, minutes, seconds]
-    )
+    return f"{hours}:{minutes}:{seconds}" if as_string else [hours, minutes, seconds]
 
 
 def get_padding_dim(image_shape, anisotropy_factor=None):
@@ -618,14 +603,10 @@ def channels_fraction_above_threshold(volume: np.array, threshold=0.5) -> list:
         list: List of length C containing the fraction of pixels above the threshold for each channel
     """
     if len(volume.shape) != 4:
-        raise ValueError(
-            f"Volume shape {volume.shape} is not 4D. Expecting CxHxWxD."
-        )
+        raise ValueError(f"Volume shape {volume.shape} is not 4D. Expecting CxHxWxD.")
     fractions = []
     for _i, channel in enumerate(volume):
-        fractions.append(
-            fraction_above_threshold(channel, threshold=threshold)
-        )
+        fractions.append(fraction_above_threshold(channel, threshold=threshold))
     return fractions
 
 
@@ -641,7 +622,5 @@ def fraction_above_threshold(volume: np.array, threshold=0.5) -> float:
     """
     flattened = volume.flatten()
     above_thresh = np.where(flattened > threshold, 1, 0)
-    LOGGER.debug(
-        f"non zero in above_thresh : {np.count_nonzero(above_thresh)}"
-    )
+    LOGGER.debug(f"non zero in above_thresh : {np.count_nonzero(above_thresh)}")
     return np.count_nonzero(above_thresh) / np.size(flattened)

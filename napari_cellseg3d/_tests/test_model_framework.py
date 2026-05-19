@@ -58,9 +58,7 @@ def test_create_train_dataset_dict(make_napari_viewer_proxy):
 
 def test_log(make_napari_viewer_proxy):
     mock_test = "test"
-    framework = model_framework.ModelFramework(
-        viewer=make_napari_viewer_proxy()
-    )
+    framework = model_framework.ModelFramework(viewer=make_napari_viewer_proxy())
     framework.log.print_and_log(mock_test)
     assert len(framework.log.toPlainText()) != 0
     assert framework.log.toPlainText() == "\n" + mock_test
@@ -83,9 +81,7 @@ def test_log(make_napari_viewer_proxy):
 
 
 def test_display_elements(make_napari_viewer_proxy):
-    framework = model_framework.ModelFramework(
-        viewer=make_napari_viewer_proxy()
-    )
+    framework = model_framework.ModelFramework(viewer=make_napari_viewer_proxy())
 
     framework.display_status_report()
     framework.display_status_report()
@@ -96,20 +92,13 @@ def test_display_elements(make_napari_viewer_proxy):
 
 
 def test_available_models_retrieval(make_napari_viewer_proxy):
-    framework = model_framework.ModelFramework(
-        viewer=make_napari_viewer_proxy()
-    )
+    framework = model_framework.ModelFramework(viewer=make_napari_viewer_proxy())
     assert framework.get_available_models() == MODEL_LIST
 
 
 def test_update_weights_path(make_napari_viewer_proxy):
-    framework = model_framework.ModelFramework(
-        viewer=make_napari_viewer_proxy()
-    )
-    assert (
-        framework._update_weights_path(framework._default_weights_folder)
-        is None
-    )
+    framework = model_framework.ModelFramework(viewer=make_napari_viewer_proxy())
+    assert framework._update_weights_path(framework._default_weights_folder) is None
     name = str(Path.home() / "test/weight.pth")
     framework._update_weights_path([name])
     assert framework.weights_config.path == name

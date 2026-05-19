@@ -230,14 +230,10 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         )
 
         self.epoch_choice.valueChanged.connect(self._update_validation_choice)
-        self.val_interval_choice.valueChanged.connect(
-            self._update_validation_choice
-        )
+        self.val_interval_choice.valueChanged.connect(self._update_validation_choice)
 
         self.learning_rate_choice = LearningRateWidget(parent=self)
-        self.lbl_learning_rate_choice = (
-            self.learning_rate_choice.lr_value_choice.label
-        )
+        self.lbl_learning_rate_choice = self.learning_rate_choice.lr_value_choice.label
 
         self.scheduler_patience_choice = ui.IntIncrementCounter(
             1,
@@ -253,9 +249,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         self.augment_choice = ui.CheckBox("Augment data")
 
-        self.close_buttons = [
-            self._make_close_button() for i in range(NUMBER_TABS)
-        ]
+        self.close_buttons = [self._make_close_button() for i in range(NUMBER_TABS)]
         """Close buttons list for each tab"""
 
         self.patch_size_widgets = ui.IntIncrementCounter.make_n(
@@ -328,9 +322,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
     def _set_tooltips(self):
         # tooltips
-        self.zip_choice.setToolTip(
-            "Save a copy of the results as a zip folder"
-        )
+        self.zip_choice.setToolTip("Save a copy of the results as a zip folder")
         self.train_split_percent_choice.tooltips = "The percentage of images to retain for training.\nThe remaining images will be used for validation"
         self.epoch_choice.tooltips = "The number of epochs to train for.\nThe more you train, the better the model will fit the training data"
         self.loss_choice.setToolTip(
@@ -360,10 +352,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             "Check this to enable data augmentation, which will randomly deform, flip and shift the intensity in images"
             " to provide a more diverse dataset"
         )
-        [
-            w.setToolTip("Size of the sample to extract")
-            for w in self.patch_size_widgets
-        ]
+        [w.setToolTip("Size of the sample to extract") for w in self.patch_size_widgets]
         self.patch_choice.setToolTip(
             "Check this to automatically crop your images into smaller, cubic images for training."
             "\nShould be used if you have a few large images"
@@ -752,9 +741,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         ui.add_blank(self, train_tab.layout)
         ##################
         # deterministic choice group
-        seed_w, seed_l = ui.make_group(
-            "Deterministic training", r=1, b=5, t=11
-        )
+        seed_w, seed_l = ui.make_group("Deterministic training", r=1, b=5, t=11)
         ui.add_widgets(
             seed_l,
             [self.use_deterministic_choice, self.container_seed],
@@ -970,9 +957,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
             self._reset_loss_plot()
 
-            self.config = config.TrainerConfig(
-                save_as_zip=self.zip_choice.isChecked()
-            )
+            self.config = config.TrainerConfig(save_as_zip=self.zip_choice.isChecked())
 
             if self.unsupervised_mode:
                 try:
@@ -1030,13 +1015,9 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         return WNetTrainingWorker(worker_config=worker_config)
 
     def _create_worker(self, additional_results_description=None):
-        self._set_worker_config(
-            additional_description=additional_results_description
-        )
+        self._set_worker_config(additional_description=additional_results_description)
         if self.unsupervised_mode:
-            return self._create_unsupervised_worker_from_config(
-                self.worker_config
-            )
+            return self._create_unsupervised_worker_from_config(self.worker_config)
         return self._create_supervised_worker_from_config(self.worker_config)
 
     def _set_worker_config(
@@ -1069,14 +1050,10 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         )
 
         loss_name = (
-            (f"{self.loss_choice.currentText()}_")
-            if not self.unsupervised_mode
-            else ""
+            (f"{self.loss_choice.currentText()}_") if not self.unsupervised_mode else ""
         )
         additional_description = (
-            (f"{additional_description}_")
-            if additional_description is not None
-            else ""
+            (f"{additional_description}_") if additional_description is not None else ""
         )
         results_path_folder = Path(
             self.results_path
@@ -1175,9 +1152,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         if eval_volume_dict is None:
             eval_batch_size = 1
         else:
-            eval_batch_size = (
-                1 if len(eval_volume_dict) < batch_size else batch_size
-            )
+            eval_batch_size = 1 if len(eval_volume_dict) < batch_size else batch_size
         self.worker_config = config.WNetTrainingWorkerConfig(
             device=self.check_device_choice(),
             weights_info=self.weights_config,
@@ -1192,9 +1167,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             sample_size=patch_size,
             do_augmentation=self.augment_choice.isChecked(),
             deterministic_config=deterministic_config,
-            num_classes=int(
-                self.wnet_widgets.num_classes_choice.currentText()
-            ),
+            num_classes=int(self.wnet_widgets.num_classes_choice.currentText()),
             reconstruction_loss=self.wnet_widgets.loss_choice.currentText(),
             n_cuts_weight=self.wnet_widgets.ncuts_weight_choice.value(),
             rec_loss_weight=self.wnet_widgets.get_reconstruction_weight(),
@@ -1207,9 +1180,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
     def _is_current_job_supervised(
         self,
     ):  # TODO(cyril) rework for better check and _make_csv
-        if isinstance(self.worker, WNetTrainingWorker):
-            return False
-        return True
+        return not isinstance(self.worker, WNetTrainingWorker)
 
     def on_start(self):
         """Catches started signal from worker."""
@@ -1226,9 +1197,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.log.print_and_log("*" * 20)
         self.log.print_and_log(f"\nWorker finished at {utils.get_time()}")
 
-        self.log.print_and_log(
-            f"Saving in {self.worker_config.results_path_folder}"
-        )
+        self.log.print_and_log(f"Saving in {self.worker_config.results_path_folder}")
         self.log.print_and_log("Saving last loss plot")
 
         plot_name = self.worker_config.results_path_folder / Path(
@@ -1301,9 +1270,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self._viewer.reset_view()
         else:
             for i, layer_name in enumerate(list(images_dict.keys())):
-                if layer_name not in [
-                    layer.name for layer in self._viewer.layers
-                ]:
+                if layer_name not in [layer.name for layer in self._viewer.layers]:
                     logger.debug(f"Adding missing layer {layer_name}")
                     layer = self._viewer.add_image(
                         data=images_dict[layer_name]["data"],
@@ -1313,9 +1280,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                     layer_list[i] = layer
                 else:
                     logger.debug(f"Refreshing layer {layer_name}")
-                    self.result_layers[i].data = images_dict[layer_name][
-                        "data"
-                    ]
+                    self.result_layers[i].data = images_dict[layer_name]["data"]
                     self.result_layers[i].refresh()
                     self.result_layers[i].reset_contrast_limits()
 
@@ -1330,15 +1295,12 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
                 if (
                     report.epoch == 0
-                    or report.epoch + 1
-                    == self.worker_config.validation_interval
+                    or report.epoch + 1 == self.worker_config.validation_interval
                 ) and len(self.result_layers) == 0:
                     self.result_layers = []
                     self._display_results(report.images_dict)
                 else:
-                    self._display_results(
-                        report.images_dict, complete_missing=True
-                    )
+                    self._display_results(report.images_dict, complete_missing=True)
             except Exception as e:
                 logger.exception(e)
 
@@ -1400,9 +1362,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 self.loss_2_values,
                 self.worker_config.validation_interval - 1,
                 "",
-            )[
-                : len(size_column)
-            ]
+            )[: len(size_column)]
 
             self.df = pd.DataFrame(
                 {
@@ -1441,9 +1401,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                     }
                 )
 
-        path = Path(self.worker_config.results_path_folder) / Path(
-            "training.csv"
-        )
+        path = Path(self.worker_config.results_path_folder) / Path("training.csv")
         self.df.to_csv(path, index=False)
 
     def _show_plot_max(self, plot, y):
@@ -1464,11 +1422,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         show_plot_2_max: bool = True,
     ):
         """Creates two subplots to plot the training loss and validation metric."""
-        plot_key = (
-            "supervised"
-            if self._is_current_job_supervised()
-            else "unsupervised"
-        )
+        plot_key = "supervised" if self._is_current_job_supervised() else "unsupervised"
         with plt.style.context("dark_background"):
             # update loss
             self.plot_1.set_title(self.plot_1_labels["title"][plot_key])
@@ -1488,9 +1442,7 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 if metric_name == "Dice metric":
                     self._show_plot_max(self.plot_1, y)
             if len(loss_values_1.keys()) > 1:
-                self.plot_1.legend(
-                    loc="lower left", fontsize="10", markerscale=0.6
-                )
+                self.plot_1.legend(loc="lower left", fontsize="10", markerscale=0.6)
 
             # update plot 2
             if self._is_current_job_supervised():
@@ -1691,14 +1643,12 @@ class WNetWidgets:
             text_label="Reconstruction weight",
         )
         self.reconstruction_weight_choice.setMaximumWidth(20)
-        self.reconstruction_weight_divide_factor_choice = (
-            ui.DoubleIncrementCounter(
-                lower=0.01,
-                upper=10000.0,
-                default=1.0,
-                parent=parent,
-                text_label="Reconstruction weight divide factor",
-            )
+        self.reconstruction_weight_divide_factor_choice = ui.DoubleIncrementCounter(
+            lower=0.01,
+            upper=10000.0,
+            default=1.0,
+            parent=parent,
+            text_label="Reconstruction weight divide factor",
         )
         self.reconstruction_weight_divide_factor_choice.setMaximumWidth(20)
 
@@ -1706,12 +1656,8 @@ class WNetWidgets:
 
     def _set_tooltips(self):
         self.num_classes_choice.setToolTip("Number of classes to segment")
-        self.intensity_sigma_choice.setToolTip(
-            "Intensity sigma for the NCuts loss"
-        )
-        self.spatial_sigma_choice.setToolTip(
-            "Spatial sigma for the NCuts loss"
-        )
+        self.intensity_sigma_choice.setToolTip("Intensity sigma for the NCuts loss")
+        self.spatial_sigma_choice.setToolTip("Spatial sigma for the NCuts loss")
         self.radius_choice.setToolTip("Radius of NCuts loss region")
         self.loss_choice.setToolTip("Loss function to use for reconstruction")
         self.ncuts_weight_choice.setToolTip("Weight of the NCuts loss")

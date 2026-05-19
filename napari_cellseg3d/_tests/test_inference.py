@@ -63,9 +63,7 @@ def test_load_folder():
 def test_inference_on_folder():
     config = InferenceWorkerConfig()
     config.filetype = ".tif"
-    config.images_filepaths = [
-        str(Path(__file__).resolve().parent / "res/test.tif")
-    ]
+    config.images_filepaths = [str(Path(__file__).resolve().parent / "res/test.tif")]
 
     config.sliding_window_config.window_size = 8
 

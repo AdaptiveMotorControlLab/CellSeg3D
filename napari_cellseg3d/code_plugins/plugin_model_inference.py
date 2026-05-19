@@ -87,9 +87,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         """InferenceWorkerConfig class from config.py"""
         self.instance_config: InstanceMethod
         """InstanceSegConfig class from config.py"""
-        self.post_process_config: config.PostProcessConfig = (
-            config.PostProcessConfig()
-        )
+        self.post_process_config: config.PostProcessConfig = config.PostProcessConfig()
         """PostProcessConfig class from config.py"""
 
         ###########################
@@ -145,18 +143,14 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         )
 
         self.thresholding_slider = ui.Slider(
-            default=config.MODEL_LIST[
-                self.model_choice.currentText()
-            ].default_threshold
+            default=config.MODEL_LIST[self.model_choice.currentText()].default_threshold
             * 100,
             divide_factor=100.0,
             parent=self,
         )
 
         self.use_window_choice = ui.CheckBox("Use window inference")
-        self.use_window_choice.toggled.connect(
-            self._toggle_display_window_size
-        )
+        self.use_window_choice.toggled.connect(self._toggle_display_window_size)
 
         sizes_window = ["8", "16", "32", "64", "128", "256", "512"]
         self._default_window_size = sizes_window.index("64")
@@ -200,9 +194,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             func=self._toggle_display_artifact_size_thresh,
             parent=self,
         )
-        self.remove_artifacts_label = ui.make_label(
-            "Remove labels larger than :"
-        )
+        self.remove_artifacts_label = ui.make_label("Remove labels larger than :")
         self.artifact_removal_size = ui.IntIncrementCounter(
             lower=1,
             upper=10000,
@@ -225,18 +217,14 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             func=self._toggle_display_instance,
             parent=self,
         )
-        self.use_instance_choice.toggled.connect(
-            self._toggle_artifact_removal_widgets
-        )
+        self.use_instance_choice.toggled.connect(self._toggle_artifact_removal_widgets)
         self.use_crf = ui.CheckBox(
             "Use CRF post-processing",
             func=self._toggle_display_crf,
             parent=self,
         )
 
-        self.save_stats_to_csv_box = ui.CheckBox(
-            "Save stats to csv", parent=self
-        )
+        self.save_stats_to_csv_box = ui.CheckBox("Save stats to csv", parent=self)
 
         ##################
         ##################
@@ -299,7 +287,9 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.window_size_choice.setToolTip(
             "Size of the window to run inference with (in pixels)"
         )
-        self.window_overlap_slider.tooltips = "Percentage of overlap between windows to use when using sliding window"
+        self.window_overlap_slider.tooltips = (
+            "Percentage of overlap between windows to use when using sliding window"
+        )
 
         self.keep_data_on_cpu_box.setToolTip(
             "If enabled, data will be kept on the RAM rather than the VRAM.\nCan avoid out of memory issues with CUDA"
@@ -328,10 +318,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         if self.layer_choice.isChecked():
             if self.image_layer_loader.layer_data() is not None:
                 return True
-        elif (
-            self.folder_choice.isChecked()
-            and self.image_filewidget.check_ready()
-        ):
+        elif self.folder_choice.isChecked() and self.image_filewidget.check_ready():
             return True
         return False
 
@@ -430,27 +417,21 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             alignment=None,
         )
 
-        self.view_results_container.setLayout(
-            self.view_results_container.layout
-        )
+        self.view_results_container.setLayout(self.view_results_container.layout)
 
         self.anisotropy_wdgt.build()
 
         ######
         ############
         ##################
-        tab = ui.ContainerWidget(
-            b=1, parent=self
-        )  # tab that will contain all widgets
+        tab = ui.ContainerWidget(b=1, parent=self)  # tab that will contain all widgets
 
         L, T, R, B = 7, 20, 7, 11  # margins for group boxes
         #################################
         #################################
         # self.image_filewidget.update_field_color("black")
 
-        self.results_filewidget.text_field.setText(
-            self.worker_config.results_path
-        )
+        self.results_filewidget.text_field.setText(self.worker_config.results_path)
         self.results_filewidget.check_ready()
 
         tab.layout.addWidget(self.data_panel)
@@ -551,9 +532,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.thresholding_checkbox.setChecked(True)
         self._toggle_crf_choice()
         self.model_choice.currentIndexChanged.connect(self._toggle_crf_choice)
-        self.model_choice.currentIndexChanged.connect(
-            self._set_default_threshold
-        )
+        self.model_choice.currentIndexChanged.connect(self._set_default_threshold)
         ModelFramework._show_io_element(
             self.save_stats_to_csv_box, self.use_instance_choice
         )
@@ -689,9 +668,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             and not isinstance(result.instance_labels, Exception)
             and self.worker_config.post_process_config.instance.enabled
         ):
-            method_name = (
-                self.worker_config.post_process_config.instance.method.name
-            )
+            method_name = self.worker_config.post_process_config.instance.method.name
 
             if len(result.instance_labels.shape) >= 4:
                 channels_by_labels = np.argsort(
@@ -702,9 +679,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 for i in range(1, len(channels_by_labels)):
                     if (
                         np.unique(
-                            result.instance_labels[
-                                channels_by_labels[i]
-                            ].flatten()
+                            result.instance_labels[channels_by_labels[i]].flatten()
                         ).size
                         > 1
                     ):
@@ -712,9 +687,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                         break
 
                 number_cells = (
-                    np.unique(
-                        result.instance_labels[min_objs_channel].flatten()
-                    ).size
+                    np.unique(result.instance_labels[min_objs_channel].flatten()).size
                     - 1
                 )
             else:
@@ -833,9 +806,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             self.worker.start()
             self.btn_start.setText("Running...  Click to stop")
 
-    def _create_worker_from_config(
-        self, worker_config: config.InferenceWorkerConfig
-    ):
+    def _create_worker_from_config(self, worker_config: config.InferenceWorkerConfig):
         if isinstance(worker_config, config.InfererConfig):
             raise TypeError("Please provide a valid worker config object")
         return InferenceWorker(worker_config=worker_config)
@@ -972,10 +943,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
                 total = 1
             self._update_progress_bar(image_id, total)
 
-            if (
-                self.config.show_results
-                and image_id <= self.config.show_results_count
-            ):
+            if self.config.show_results and image_id <= self.config.show_results_count:
                 self._display_results(result)
         except Exception as e:
             self.on_error(e)

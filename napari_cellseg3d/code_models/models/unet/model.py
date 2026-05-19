@@ -12,8 +12,7 @@ def number_of_features_per_level(init_channel_number, num_levels):
 
 
 class Abstract3DUNet(nn.Module):
-    """
-    Base class for standard and residual UNet.
+    """Base class for standard and residual UNet.
 
     Args:
         in_channels (int): number of input channels
@@ -60,9 +59,7 @@ class Abstract3DUNet(nn.Module):
         super(Abstract3DUNet, self).__init__()
 
         if isinstance(f_maps, int):
-            f_maps = number_of_features_per_level(
-                f_maps, num_levels=num_levels
-            )
+            f_maps = number_of_features_per_level(f_maps, num_levels=num_levels)
 
         assert isinstance(f_maps, (list, tuple))
         assert len(f_maps) > 1, "Required at least 2 levels in the U-Net"
@@ -132,8 +129,7 @@ class Abstract3DUNet(nn.Module):
 
 
 class UNet3D(Abstract3DUNet):
-    """
-    3DUnet model from
+    """3DUnet model from
     `"3D U-Net: Learning Dense Volumetric Segmentation from Sparse Annotation"
         <https://arxiv.org/pdf/1606.06650.pdf>`.
 

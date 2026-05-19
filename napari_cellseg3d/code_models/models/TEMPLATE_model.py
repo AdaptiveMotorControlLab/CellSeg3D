@@ -15,9 +15,7 @@ class ModelTemplate_(ABC):
     default_threshold = 0.5  # specify the default threshold for the model
 
     @abstractmethod
-    def __init__(
-        self, input_image_size, in_channels=1, out_channels=1, **kwargs
-    ):
+    def __init__(self, input_image_size, in_channels=1, out_channels=1, **kwargs):
         """Reimplement this as needed; only include input_image_size if necessary. For now only in/out channels = 1 is supported."""
         pass
 

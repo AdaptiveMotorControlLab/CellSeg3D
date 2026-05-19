@@ -1,4 +1,3 @@
-import os  # TODO(cyril): remove os
 from pathlib import Path
 
 import napari
@@ -48,9 +47,7 @@ def map_labels(labels, artefacts):
         unique = np.flip(unique[np.argsort(counts)])
         counts = np.flip(counts[np.argsort(counts)])
         if unique[0] != 0:
-            map_labels_existing.append(
-                np.array([i, unique[np.argmax(counts)]])
-            )
+            map_labels_existing.append(np.array([i, unique[np.argmax(counts)]]))
         elif (
             counts[0] < np.sum(counts) * 2 / 3.0
         ):  # the artefact is connected to multiple neurons
@@ -116,9 +113,7 @@ def make_labels(
     else:
         labels = ndimage.label(image_contrasted)[0]
 
-    labels = select_artefacts_by_size(
-        labels, min_size=threshold_size, is_labeled=True
-    )
+    labels = select_artefacts_by_size(labels, min_size=threshold_size, is_labeled=True)
 
     if not do_multi_label:
         labels = np.where(labels > 0, label_value, 0)
@@ -226,9 +221,7 @@ def make_artefact_labels(
     # calculate the percentile of the intensity of all the pixels that are labeled as neurons
     # check if the neurons are not empty
     if np.sum(neurons) > 0:
-        threshold = np.percentile(
-            image[neurons], threshold_artefact_brightness_percent
-        )
+        threshold = np.percentile(image[neurons], threshold_artefact_brightness_percent)
     else:
         # take the percentile of the non neurons if the neurons are empty
         threshold = np.percentile(image[non_neurons], 90)
@@ -259,9 +252,7 @@ def make_artefact_labels(
     # calculate the percentile of the size of the neurons
     if np.sum(neurons) > 0:
         sizes = ndimage.sum_labels(labels > 0, labels, np.unique(labels))
-        neurone_size_percentile = np.percentile(
-            sizes, threshold_artefact_size_percent
-        )
+        neurone_size_percentile = np.percentile(sizes, threshold_artefact_size_percent)
     else:
         # find the size of each connected component
         sizes = ndimage.sum_labels(labels > 0, labels, np.unique(labels))
@@ -385,12 +376,8 @@ def create_artefact_labels_from_folder(
         Power for contrast enhancement.
     """
     # find all the images in the folder and create a list
-    path_labels = [
-        f for f in os.listdir(path + "/labels") if f.endswith(".tif")
-    ]
-    path_images = [
-        f for f in os.listdir(path + "/volumes") if f.endswith(".tif")
-    ]
+    path_labels = [f.name for f in Path(path / "labels").glob("*.tif")]
+    path_images = [f.name for f in Path(path / "volumes").glob("*.tif")]
     # sort the list
     path_labels.sort()
     path_images.sort()

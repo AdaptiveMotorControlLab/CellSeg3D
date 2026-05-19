@@ -1,4 +1,5 @@
 """Test script for sliding window Voronoi-Otsu segmentation.""."""
+
 import numpy as np
 import pyclesperanto as cle
 from tqdm import tqdm

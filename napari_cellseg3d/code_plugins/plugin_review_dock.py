@@ -1,4 +1,5 @@
 """Widget opened when a new Review session is started."""
+
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -43,9 +44,7 @@ class Datamanager(QWidget):
         """napari.viewer.Viewer: viewer in which the widget is displayed"""
 
         # add some buttons
-        self.button = ui.Button(
-            "1", self._button_func, parent=self, fixed=True
-        )
+        self.button = ui.Button("1", self._button_func, parent=self, fixed=True)
         self.time_label = ui.make_label("", self)
         self.time_label.setVisible(False)
 
@@ -97,7 +96,7 @@ class Datamanager(QWidget):
             self.time_elapsed += self.pause_start - self.start_time
             self.pause_box.setText("Resume timer")
             self.time_label.setText(
-                f"({utils.time_difference(timedelta(),self.time_elapsed)})"
+                f"({utils.time_difference(timedelta(), self.time_elapsed)})"
             )
             self.is_paused = True
         else:
@@ -185,9 +184,7 @@ class Datamanager(QWidget):
         # logger.debug("csv load time")
         # logger.debug(recorded_time)
         t = datetime.strptime(recorded_time, TIMER_FORMAT)
-        self.time_elapsed = timedelta(
-            hours=t.hour, minutes=t.minute, seconds=t.second
-        )
+        self.time_elapsed = timedelta(hours=t.hour, minutes=t.minute, seconds=t.second)
         # logger.debug(self.time_elapsed)
         return df, csv_path
 
@@ -204,9 +201,7 @@ class Datamanager(QWidget):
             labels = sorted(
                 list(
                     path.name
-                    for path in Path(str(label_dir)).glob(
-                        "./*" + self.filetype
-                    )
+                    for path in Path(str(label_dir)).glob("./*" + self.filetype)
                 )
             )
         else:

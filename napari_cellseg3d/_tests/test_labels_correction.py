@@ -32,9 +32,7 @@ def test_artefact_labeling_utils():
 def test_correct_labels():
     output_path = res_folder / "test_correct"
     output_path.mkdir(exist_ok=True, parents=True)
-    cl.relabel_non_unique_i(
-        labels, str(output_path / "corrected.tif"), go_fast=True
-    )
+    cl.relabel_non_unique_i(labels, str(output_path / "corrected.tif"), go_fast=True)
 
 
 def test_relabel(make_napari_viewer_proxy):
@@ -49,6 +47,4 @@ def test_relabel(make_napari_viewer_proxy):
 
 
 def test_evaluate_model_performance():
-    el.evaluate_model_performance(
-        labels, labels, print_details=True, visualize=False
-    )
+    el.evaluate_model_performance(labels, labels, print_details=True, visualize=False)

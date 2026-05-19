@@ -1,4 +1,5 @@
 """Utilities to improve whole-brain regions segmentation."""
+
 import numpy as np
 from skimage.measure import label
 from skimage.segmentation import find_boundaries

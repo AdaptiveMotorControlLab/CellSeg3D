@@ -1,5 +1,5 @@
-
 <!---->
+
 <!--
 TODO : complete
 This file is designed to provide you with a starting template for documenting
@@ -10,6 +10,7 @@ The sections below are given as a guide for the flow of information only, and
 are in no way prescriptive. You should feel free to merge, remove, add and
 rename sections at will to make this document work best for your plugin.
 -->
+
 ## Description
 
 A napari plugin for 3D cell segmentation: training, inference, and data review. In particular, this project was developed for analysis of mesoSPIM-acquired (cleared tissue + lightsheet) datasets.
@@ -46,6 +47,7 @@ Here is an example of an mp4 video embedded this way.
 
 https://user-images.githubusercontent.com/17995243/120088305-6c093380-c132-11eb-822d-620e81eb5f0e.mp4
 -->
+
 ## Intended Audience & Supported Data
 
 This plugin requires basic knowledge in machine learning;
@@ -68,6 +70,7 @@ make sure to mention this.
 If you know of researchers, groups or labs using your plugin, or if it has been cited
 anywhere, feel free to also include this information here.
 -->
+
 ## Quickstart
 
 Install from pip with `pip install napari-cellseg3d`
@@ -75,9 +78,10 @@ Install from pip with `pip install napari-cellseg3d`
 OR
 
 - Install napari from pip with `pip install "napari[all]"`,
-then from the “Plugins” menu within the napari application, select “Install/Uninstall Package(s)...”
+  then from the “Plugins” menu within the napari application, select “Install/Uninstall Package(s)...”
 - Copy `napari-cellseg3d` and paste it where it says “Install by name/url…”
 - Click “Install”
+
 <!--
 
 
@@ -91,6 +95,7 @@ quick overview of the plugin's functionality, but you should definitely link out
 more complex and in-depth tutorials highlighting any intricacies of your plugin, and
 more detailed documentation if you have it.
 -->
+
 ## Additional Install Steps
 
 **Python >= 3.8 required**
@@ -114,10 +119,12 @@ over in `setup.cfg`. However, if your plugin has any more complex dependencies, 
 requires any additional preparation before (or after) installation, you should add
 this information here.
 -->
+
 ## Getting Help
 
 If you would like to report an issue with the plugin,
 please open an [issue on Github](https://github.com/AdaptiveMotorControlLab/CellSeg3D/issues)
+
 <!--
 This section should point users to your preferred support tools, whether this be raising
 an issue on GitHub, asking a question on image.sc, or using some other method of contact.
@@ -126,7 +133,6 @@ here.
 -->
 
 ## How to Cite
-
 
 <!--
 Many plugins may be used in the course of published (or publishable) research, as well as

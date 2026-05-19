@@ -6,16 +6,11 @@ from torch.nn import functional as F
 
 
 def conv3d(in_channels, out_channels, kernel_size, bias, padding):
-    return nn.Conv3d(
-        in_channels, out_channels, kernel_size, padding=padding, bias=bias
-    )
+    return nn.Conv3d(in_channels, out_channels, kernel_size, padding=padding, bias=bias)
 
 
-def create_conv(
-    in_channels, out_channels, kernel_size, order, num_groups, padding
-):
-    """
-    Create a list of modules with together constitute a single conv layer with non-linearity
+def create_conv(in_channels, out_channels, kernel_size, order, num_groups, padding):
+    """Create a list of modules with together constitute a single conv layer with non-linearity
     and optional batchnorm/groupnorm.
 
     Args:
@@ -35,9 +30,9 @@ def create_conv(
         list of tuple (name, module)
     """
     assert "c" in order, "Conv layer MUST be present"
-    assert (
-        order[0] not in "rle"
-    ), "Non-linearity cannot be the first operation in the layer"
+    assert order[0] not in "rle", (
+        "Non-linearity cannot be the first operation in the layer"
+    )
 
     modules = []
     for i, char in enumerate(order):
@@ -70,15 +65,13 @@ def create_conv(
             if num_channels < num_groups:
                 num_groups = 1
 
-            assert (
-                num_channels % num_groups == 0
-            ), f"Expected number of channels in input to be divisible by num_groups. num_channels={num_channels}, num_groups={num_groups}"
+            assert num_channels % num_groups == 0, (
+                f"Expected number of channels in input to be divisible by num_groups. num_channels={num_channels}, num_groups={num_groups}"
+            )
             modules.append(
                 (
                     "groupnorm",
-                    nn.GroupNorm(
-                        num_groups=num_groups, num_channels=num_channels
-                    ),
+                    nn.GroupNorm(num_groups=num_groups, num_channels=num_channels),
                 )
             )
         elif char == "b":
@@ -96,8 +89,7 @@ def create_conv(
 
 
 class SingleConv(nn.Sequential):
-    """
-    Basic convolutional module consisting of a Conv3d, non-linearity and optional batchnorm/groupnorm. The order
+    """Basic convolutional module consisting of a Conv3d, non-linearity and optional batchnorm/groupnorm. The order
     of operations can be specified via the `order` parameter
 
     Args:
@@ -136,8 +128,7 @@ class SingleConv(nn.Sequential):
 
 
 class DoubleConv(nn.Sequential):
-    """
-    A module consisting of two consecutive convolution layers (e.g. BatchNorm3d+ReLU+Conv3d).
+    """A module consisting of two consecutive convolution layers (e.g. BatchNorm3d+ReLU+Conv3d).
     We use (Conv3d+ReLU+GroupNorm3d) by default.
     This can be changed however by providing the 'order' argument, e.g. in order
     to change to Conv3d+BatchNorm3d+ELU use order='cbe'.
@@ -211,8 +202,7 @@ class DoubleConv(nn.Sequential):
 
 
 class ExtResNetBlock(nn.Module):
-    """
-    Basic UNet block consisting of a SingleConv followed by the residual block.
+    """Basic UNet block consisting of a SingleConv followed by the residual block.
     The SingleConv takes care of increasing/decreasing the number of channels and also ensures that the number
     of output channels is compatible with the residual block that follows.
     This block can be used instead of standard DoubleConv in the Encoder module.
@@ -278,18 +268,16 @@ class ExtResNetBlock(nn.Module):
         out = self.conv3(out)
 
         out += residual
-        out = self.non_linearity(out)
-
-        return out
+        return self.non_linearity(out)
 
 
 class Encoder(nn.Module):
-    """
-    A single module from the encoder path consisting of the optional max
+    """A single module from the encoder path consisting of the optional max
     pooling layer (one may specify the MaxPool kernel_size to be different
     than the standard (2,2,2), e.g. if the volumetric data is anisotropic
     (make sure to use complementary scale_factor in the decoder path) followed by
     a DoubleConv module.
+
     Args:
         in_channels (int): number of input channels
         out_channels (int): number of output channels
@@ -340,14 +328,13 @@ class Encoder(nn.Module):
     def forward(self, x):
         if self.pooling is not None:
             x = self.pooling(x)
-        x = self.basic_module(x)
-        return x
+        return self.basic_module(x)
 
 
 class Decoder(nn.Module):
-    """
-    A single module for decoder path consisting of the upsampling layer
+    """A single module for decoder path consisting of the upsampling layer
     (either learned ConvTranspose3d or nearest neighbor interpolation) followed by a basic module (DoubleConv or ExtResNetBlock).
+
     Args:
         in_channels (int): number of input channels
         out_channels (int): number of output channels
@@ -415,8 +402,7 @@ class Decoder(nn.Module):
     def forward(self, encoder_features, x):
         x = self.upsampling(encoder_features=encoder_features, x=x)
         x = self.joining(encoder_features, x)
-        x = self.basic_module(x)
-        return x
+        return self.basic_module(x)
 
     @staticmethod
     def _joining(encoder_features, x, concat):
@@ -510,8 +496,7 @@ def create_decoders(
 
 
 class AbstractUpsampling(nn.Module):
-    """
-    Abstract class for upsampling. A given implementation should upsample a given 5D input tensor using either
+    """Abstract class for upsampling. A given implementation should upsample a given 5D input tensor using either
     interpolation or learned transposed convolution.
     """
 
@@ -527,11 +512,10 @@ class AbstractUpsampling(nn.Module):
 
 
 class InterpolateUpsampling(AbstractUpsampling):
-    """
-    Args:
-        mode (str): algorithm used for upsampling:
-            'nearest' | 'linear' | 'bilinear' | 'trilinear' | 'area'. Default: 'nearest'
-            used only if transposed_conv is False
+    """Args:
+    mode (str): algorithm used for upsampling:
+        'nearest' | 'linear' | 'bilinear' | 'trilinear' | 'area'. Default: 'nearest'
+        used only if transposed_conv is False
     """
 
     def __init__(self, mode="nearest"):
@@ -544,16 +528,15 @@ class InterpolateUpsampling(AbstractUpsampling):
 
 
 class TransposeConvUpsampling(AbstractUpsampling):
-    """
-    Args:
-        in_channels (int): number of input channels for transposed conv
-            used only if transposed_conv is True
-        out_channels (int): number of output channels for transpose conv
-            used only if transposed_conv is True
-        kernel_size (int or tuple): size of the convolving kernel
-            used only if transposed_conv is True
-        scale_factor (int or tuple): stride of the convolution
-            used only if transposed_conv is True
+    """Args:
+    in_channels (int): number of input channels for transposed conv
+        used only if transposed_conv is True
+    out_channels (int): number of output channels for transpose conv
+        used only if transposed_conv is True
+    kernel_size (int or tuple): size of the convolving kernel
+        used only if transposed_conv is True
+    scale_factor (int or tuple): stride of the convolution
+        used only if transposed_conv is True
 
     """
 

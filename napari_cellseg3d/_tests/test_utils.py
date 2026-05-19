@@ -29,9 +29,7 @@ def test_save_folder():
     images = [rand_gen.random((5, 5, 5)).astype(np.float32) for _ in range(10)]
     images_paths = [f"{i}.tif" for i in range(10)]
 
-    utils.save_folder(
-        test_path, folder_name, images, images_paths, exist_ok=True
-    )
+    utils.save_folder(test_path, folder_name, images, images_paths, exist_ok=True)
     assert (test_path / folder_name).is_dir()
     for i in range(10):
         assert (test_path / folder_name / images_paths[i]).is_file()
@@ -51,9 +49,7 @@ def test_sphericities():
         mock_surface = random.randint(
             100, 1000
         )  # assuming surface is always larger than volume
-        sphericity_vol = utils.sphericity_volume_area(
-            mock_volume, mock_surface
-        )
+        sphericity_vol = utils.sphericity_volume_area(mock_volume, mock_surface)
         assert 0 <= sphericity_vol <= 1
 
         semi_major = random.randint(10, 100)
@@ -65,9 +61,7 @@ def test_sphericities():
         except ValueError:
             sphericity_axes = 0
         if sphericity_axes is None:
-            sphericity_axes = (
-                0  # errors already handled in function, returns None
-            )
+            sphericity_axes = 0  # errors already handled in function, returns None
         assert 0 <= sphericity_axes <= 1
 
 
@@ -215,15 +209,11 @@ def test_parse_default_path():
 
     test_path = (Path.home() / "test" / "test" / "test" / "test").as_posix()
     path = [test_path, None, None]
-    assert utils.parse_default_path(path, check_existence=False) == str(
-        test_path
-    )
+    assert utils.parse_default_path(path, check_existence=False) == str(test_path)
 
     test_path = (Path.home() / "test" / "does" / "not" / "exist").as_posix()
     path = [test_path, None, None]
-    assert utils.parse_default_path(path, check_existence=True) == str(
-        Path.home()
-    )
+    assert utils.parse_default_path(path, check_existence=True) == str(Path.home())
 
     long_path = Path.home()
     long_path = (

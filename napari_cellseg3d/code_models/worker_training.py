@@ -217,9 +217,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 Orientationd(keys=["image"], axcodes="PLI"),
                 SpatialPadd(
                     keys=["image"],
-                    spatial_size=(
-                        utils.get_padding_dim(self.config.sample_size)
-                    ),
+                    spatial_size=(utils.get_padding_dim(self.config.sample_size)),
                 ),
                 EnsureTyped(keys=["image"]),
             ]
@@ -331,9 +329,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
 
         if self.config.sampling:
             logger.debug("Loading patch dataset")
-            (self.data_shape, dataset) = self.get_patch_dataset(
-                train_transforms
-            )
+            (self.data_shape, dataset) = self.get_patch_dataset(train_transforms)
         else:
             logger.debug("Loading volume dataset")
             (self.data_shape, dataset) = self.get_dataset(train_transforms)
@@ -425,9 +421,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
             ]
         self.log("*" * 20)
 
-    def train(
-        self, provided_model=None, provided_optimizer=None, provided_loss=None
-    ):
+    def train(self, provided_model=None, provided_optimizer=None, provided_loss=None):
         """Main training function.
 
         Note : args are mainly used for testing purposes. Model is otherwise initialized in the function.
@@ -617,9 +611,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     epoch_rec_loss += reconstruction_loss.item()
                     if WANDB_INSTALLED:
                         wandb.log(
-                            {
-                                "Train/Reconstruction loss": reconstruction_loss.item()
-                            }
+                            {"Train/Reconstruction loss": reconstruction_loss.item()}
                         )
 
                     # Backward pass for the reconstruction loss
@@ -633,9 +625,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                     epoch_loss += loss.item()
 
                     if WANDB_INSTALLED:
-                        wandb.log(
-                            {"Train/Weighted sum of losses": loss.item()}
-                        )
+                        wandb.log({"Train/Weighted sum of losses": loss.item()})
 
                     loss.backward(loss)
                     optimizer.step()
@@ -664,9 +654,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                         if WANDB_INSTALLED:
                             wandb.finish()
 
-                self.ncuts_losses.append(
-                    epoch_ncuts_loss / len(self.dataloader)
-                )
+                self.ncuts_losses.append(epoch_ncuts_loss / len(self.dataloader))
                 self.rec_losses.append(epoch_rec_loss / len(self.dataloader))
                 self.total_losses.append(epoch_loss / len(self.dataloader))
 
@@ -709,25 +697,15 @@ class WNetTrainingWorker(TrainingWorkerBase):
 
                 if WANDB_INSTALLED:
                     wandb.log({"Ncuts loss for epoch": self.ncuts_losses[-1]})
+                    wandb.log({"Reconstruction loss for epoch": self.rec_losses[-1]})
+                    wandb.log({"Sum of losses for epoch": self.total_losses[-1]})
                     wandb.log(
-                        {"Reconstruction loss for epoch": self.rec_losses[-1]}
-                    )
-                    wandb.log(
-                        {"Sum of losses for epoch": self.total_losses[-1]}
-                    )
-                    wandb.log(
-                        {
-                            "LR/Model learning rate": optimizer.param_groups[
-                                0
-                            ]["lr"]
-                        }
+                        {"LR/Model learning rate": optimizer.param_groups[0]["lr"]}
                     )
 
                 self.log(f"Ncuts loss: {self.ncuts_losses[-1]:.5f}")
                 self.log(f"Reconstruction loss: {self.rec_losses[-1]:.5f}")
-                self.log(
-                    f"Weighted sum of losses: {self.total_losses[-1]:.5f}"
-                )
+                self.log(f"Weighted sum of losses: {self.total_losses[-1]:.5f}")
                 if epoch > 0:
                     self.log(
                         f"Ncuts loss difference: {self.ncuts_losses[-1] - self.ncuts_losses[-2]:.5f}"
@@ -774,8 +752,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 if epoch % 5 == 0:
                     torch.save(
                         model.state_dict(),
-                        self.config.results_path_folder
-                        + "/wnet_checkpoint.pth",
+                        self.config.results_path_folder + "/wnet_checkpoint.pth",
                     )
 
             self.log("Training finished")
@@ -858,9 +835,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 # normalize val_inputs across channels
                 for i in range(val_inputs.shape[0]):
                     for j in range(val_inputs.shape[1]):
-                        val_inputs[i][j] = self.normalize_function(
-                            val_inputs[i][j]
-                        )
+                        val_inputs[i][j] = self.normalize_function(val_inputs[i][j])
                 logger.debug(f"Val inputs shape: {val_inputs.shape}")
                 val_outputs = sliding_window_inference(
                     val_inputs,
@@ -885,9 +860,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 val_outputs = AsDiscrete(threshold=0.5)(val_outputs)
                 logger.debug(f"Val outputs shape: {val_outputs.shape}")
                 logger.debug(f"Val labels shape: {val_labels.shape}")
-                logger.debug(
-                    f"Val decoder outputs shape: {val_decoder_outputs.shape}"
-                )
+                logger.debug(f"Val decoder outputs shape: {val_decoder_outputs.shape}")
 
                 max_dice_channel = utils.seek_best_dice_coeff_channel(
                     y_pred=val_outputs, y_true=val_labels
@@ -913,8 +886,7 @@ class WNetTrainingWorker(TrainingWorkerBase):
                 # save_best_path.mkdir(parents=True, exist_ok=True)
                 save_best_name = "wnet"
                 save_path = (
-                    str(Path(save_best_path) / save_best_name)
-                    + "_best_metric.pth"
+                    str(Path(save_best_path) / save_best_name) + "_best_metric.pth"
                 )
                 self.log(f"Saving new best model to {save_path}")
                 torch.save(model.state_dict(), save_path)
@@ -1056,10 +1028,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
         ]
         # self.log("-" * 10)
         self.log("Validation files :\n")
-        [
-            self.log(f"- {Path(val_file['image']).name}\n")
-            for val_file in self.val_files
-        ]
+        [self.log(f"- {Path(val_file['image']).name}\n") for val_file in self.val_files]
         # self.log("-" * 10)
 
         if self.config.deterministic_config.enabled:
@@ -1198,9 +1167,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             model_class = model_config.get_model()
 
             ######## Check that labels are semantic, not instance
-            check_labels = LoadImaged(keys=["label"])(
-                self.config.train_data_dict[0]
-            )
+            check_labels = LoadImaged(keys=["label"])(self.config.train_data_dict[0])
             if check_labels["label"].max() > 1:
                 self.warn(
                     "Labels are not semantic, but instance. Converting to semantic, this might cause errors."
@@ -1209,9 +1176,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
             ########
 
             if not self.config.sampling:
-                data_check = LoadImaged(keys=["image"])(
-                    self.config.train_data_dict[0]
-                )
+                data_check = LoadImaged(keys=["image"])(self.config.train_data_dict[0])
                 check = data_check["image"].shape
             do_sampling = self.config.sampling
             size = self.config.sample_size if do_sampling else check
@@ -1260,9 +1225,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
 
                 logger.warning(msg)
 
-            logger.debug(
-                f"Data dict from config is {self.config.train_data_dict}"
-            )
+            logger.debug(f"Data dict from config is {self.config.train_data_dict}")
             logger.debug(f"Train files : {self.train_files}")
             logger.debug(f"Val. files : {self.val_files}")
 
@@ -1272,23 +1235,21 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 raise ValueError("Validation dataset is empty")
 
             if self.config.do_augmentation:
-                train_transforms = (
-                    Compose(  # TODO : figure out which ones and values ?
-                        [
-                            RandShiftIntensityd(keys=["image"], offsets=0.7),
-                            Rand3DElasticd(
-                                keys=["image", "label"],
-                                sigma_range=(0.3, 0.7),
-                                magnitude_range=(0.3, 0.7),
-                            ),
-                            RandFlipd(keys=["image", "label"]),
-                            RandRotate90d(keys=["image", "label"]),
-                            RandAffined(
-                                keys=["image"],
-                            ),
-                            EnsureTyped(keys=["image"]),
-                        ]
-                    )
+                train_transforms = Compose(  # TODO : figure out which ones and values ?
+                    [
+                        RandShiftIntensityd(keys=["image"], offsets=0.7),
+                        Rand3DElasticd(
+                            keys=["image", "label"],
+                            sigma_range=(0.3, 0.7),
+                            magnitude_range=(0.3, 0.7),
+                        ),
+                        RandFlipd(keys=["image", "label"]),
+                        RandRotate90d(keys=["image", "label"]),
+                        RandAffined(
+                            keys=["image"],
+                        ),
+                        EnsureTyped(keys=["image"]),
+                    ]
                 )
             else:
                 train_transforms = EnsureTyped(keys=["image", "label"])
@@ -1334,8 +1295,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                         self.config.num_samples * self.config.training_percent
                     )
                     num_val_samples = ceil(
-                        self.config.num_samples
-                        * (1 - self.config.training_percent)
+                        self.config.num_samples * (1 - self.config.training_percent)
                     )
                     if num_train_samples < 2:
                         self.log(
@@ -1348,24 +1308,16 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                         )
                         num_val_samples = 2
 
-                    sample_loader_train = get_patch_loader_func(
-                        num_train_samples
-                    )
+                    sample_loader_train = get_patch_loader_func(num_train_samples)
                     sample_loader_eval = get_patch_loader_func(num_val_samples)
                 else:
-                    num_train_samples = num_val_samples = (
-                        self.config.num_samples
-                    )
+                    num_train_samples = num_val_samples = self.config.num_samples
 
-                    sample_loader_train = get_patch_loader_func(
-                        num_train_samples
-                    )
+                    sample_loader_train = get_patch_loader_func(num_train_samples)
                     sample_loader_eval = get_patch_loader_func(num_val_samples)
 
                 logger.debug(f"AMOUNT of train samples : {num_train_samples}")
-                logger.debug(
-                    f"AMOUNT of validation samples : {num_val_samples}"
-                )
+                logger.debug(f"AMOUNT of validation samples : {num_val_samples}")
 
                 logger.debug("train_ds")
                 train_dataset = PatchDataset(
@@ -1518,9 +1470,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 self.log(f"Epoch {epoch + 1}/{self.config.max_epochs}")
                 if device.type == "cuda":
                     self.log("Memory Usage:")
-                    alloc_mem = round(
-                        torch.cuda.memory_allocated(device) / 1024**3, 1
-                    )
+                    alloc_mem = round(torch.cuda.memory_allocated(device) / 1024**3, 1)
                     reserved_mem = round(
                         torch.cuda.memory_reserved(device) / 1024**3, 1
                     )
@@ -1591,11 +1541,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                 if WANDB_INSTALLED:
                     wandb.log({"Training/Epoch loss": epoch_loss / step})
                     wandb.log(
-                        {
-                            "LR/Model learning rate": optimizer.param_groups[
-                                0
-                            ]["lr"]
-                        }
+                        {"LR/Model learning rate": optimizer.param_groups[0]["lr"]}
                     )
 
                 epoch_loss /= step
@@ -1604,9 +1550,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
 
                 self.log("Updating scheduler...")
                 scheduler.step(epoch_loss)
-                self.log(
-                    f"Current learning rate: {optimizer.param_groups[0]['lr']}"
-                )
+                self.log(f"Current learning rate: {optimizer.param_groups[0]['lr']}")
 
                 checkpoint_output = []
                 eta = (
@@ -1646,9 +1590,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                             except Exception as e:
                                 self.raise_error(e, "Error during validation")
 
-                            logger.debug(
-                                f"val_outputs shape : {val_outputs.shape}"
-                            )
+                            logger.debug(f"val_outputs shape : {val_outputs.shape}")
                             # val_outputs = model(val_inputs)
 
                             pred = decollate_batch(val_outputs)
@@ -1664,18 +1606,13 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                             post_label = EnsureType()
 
                             output_raw = [
-                                RemapTensor(new_max=1, new_min=0)(t)
-                                for t in pred
+                                RemapTensor(new_max=1, new_min=0)(t) for t in pred
                             ]
                             # output_raw = pred
 
-                            val_outputs = [
-                                post_pred(res_tensor) for res_tensor in pred
-                            ]
+                            val_outputs = [post_pred(res_tensor) for res_tensor in pred]
 
-                            val_labels = [
-                                post_label(res_tensor) for res_tensor in labs
-                            ]
+                            val_labels = [post_label(res_tensor) for res_tensor in labs]
 
                             # logger.debug(len(val_outputs))
                             # logger.debug(len(val_labels))
@@ -1704,9 +1641,7 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                             for channel in checkpoint_output
                             for item in channel
                         ]
-                        checkpoint_output[3] = checkpoint_output[3].astype(
-                            np.uint16
-                        )
+                        checkpoint_output[3] = checkpoint_output[3].astype(np.uint16)
 
                         metric = dice_metric.aggregate().detach().item()
 

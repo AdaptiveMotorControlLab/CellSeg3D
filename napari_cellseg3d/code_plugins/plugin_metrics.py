@@ -1,4 +1,5 @@
 """CURRENTLY UNUSED."""
+
 from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
@@ -111,9 +112,7 @@ class MetricsUtils(BasePluginFolder):
             self.threshold_box, self.lbl_threshold_box, horizontal=False, l=2
         )
 
-        ui.add_widgets(
-            param_group_l, [thresh_container, self.rotate_choice], None
-        )
+        ui.add_widgets(param_group_l, [thresh_container, self.rotate_choice], None)
 
         param_group_w.setLayout(param_group_l)
         ##############################
@@ -173,7 +172,7 @@ class MetricsUtils(BasePluginFolder):
 
     def remove_plots(self):
         """Clears plots from window view."""
-        if len(self.plots) != 0:
+        if self.plots:
             for p in self.plots:
                 p.setVisible(False)
         self.plots = []
@@ -191,14 +190,12 @@ class MetricsUtils(BasePluginFolder):
         rotate = self.rotate_choice.isChecked()
 
         total_metrics = []
-        self.canvas = (
-            None  # kind of terrible way to stack plots... but it works.
-        )
-        image_id = 0
-        for ground_path, pred_path in zip(
-            self.images_filepaths, self.labels_filepaths
+        self.canvas = None  # kind of terrible way to stack plots... but it works.
+
+        for image_id, (ground_path, pred_path) in enumerate(
+            zip(self.images_filepaths, self.labels_filepaths),
+            start=1,
         ):
-            image_id += 1
             ground = imread(ground_path)
             pred = imread(pred_path)
 
@@ -206,97 +203,55 @@ class MetricsUtils(BasePluginFolder):
             pred = to_semantic(pred).astype(np.int8)
 
             pred_dims = pred.shape[-3:]
-            # ground_dims = ground.shape[-3:]
-            # print(pred_dims)
-            # print(ground_dims)
             pad_pred = utils.get_padding_dim(pred_dims)
-            # pad_ground = utils.get_padding_dim(ground_dims)
-
-            # origin, target = utils.align_array_sizes(array_shape=pad_ground, target_shape=pad_pred)
-
-            # ground = np.moveaxis(ground, origin, target)
-            # print(ground.shape)
-            # print(pred.shape)
 
             while len(pred.shape) < 5:
                 pred = np.expand_dims(pred, axis=0)
-                # print("-")
+
             while len(ground.shape) < 4:
                 ground = np.expand_dims(ground, axis=0)
+
             ground = (SpatialPad(pad_pred)(ToTensor()(ground))).numpy()
+
             while len(ground.shape) < len(pred.shape):
                 ground = np.expand_dims(ground, axis=0)
-                # print("&")
-
-            # print(ground.shape)
-            # print(pred.shape)
 
             if ground.shape != pred.shape:
                 raise ValueError(
-                    f"Padded sizes of images do not match ! Padded ground label : {ground.shape} Padded pred label : {pred.shape}"
+                    "Padded sizes of images do not match! "
+                    f"Padded ground label: {ground.shape}. "
+                    f"Padded pred label: {pred.shape}."
                 )
-            # if u < 1:
-            # self._viewer.add_image(
-            #     ground, name="ground", colormap="blue", opacity=0.7
-            # )
-            # self._viewer.add_image(pred, name="pred", colormap="red")
-            # self._viewer.add_image(
-            #     np.rot90(pred[0][0], axes=(0, 1)),
-            #     name="pred flip 0",
-            #     colormap="red",
-            #     opacity=0.7,
-            # )
-            # self._viewer.add_image(
-            #     np.rot90(pred[0][0], axes=(1, 2)),
-            #     name="pred flip 1",
-            #     colormap="red",
-            #     opacity=0.7,
-            # )
-            # self._viewer.add_image(
-            #     np.rot90(pred[0][0], axes=(0, 2)),
-            #     name="pred flip 2",
-            #     colormap="red",
-            #     opacity=0.7,
-            # )
-            # u += 1
 
             scores = []
-            if rotate:  # TODO : recored best rotation for display
+
+            if rotate:
                 pred_flip_x = np.rot90(pred[0][0], axes=(0, 1))
                 pred_flip_y = np.rot90(pred[0][0], axes=(1, 2))
                 pred_flip_z = np.rot90(pred[0][0], axes=(0, 2))
 
-                for p in [pred[0][0], pred_flip_x, pred_flip_y, pred_flip_z]:
-                    scores.append(utils.dice_coeff(p, ground))
-                    scores.append(utils.dice_coeff(np.flip(p), ground))
-                    for i in range(3):
+                for rotated_pred in [pred[0][0], pred_flip_x, pred_flip_y, pred_flip_z]:
+                    scores.append(utils.dice_coeff(rotated_pred, ground))
+                    scores.append(utils.dice_coeff(np.flip(rotated_pred), ground))
+
+                    for axis in range(3):
                         scores.append(
-                            utils.dice_coeff(np.flip(p, axis=i), ground)
+                            utils.dice_coeff(np.flip(rotated_pred, axis=axis), ground)
                         )
             else:
-                i = 0
                 scores.append(utils.dice_coeff(pred, ground))
-            # if t < 1:
-            #     for i in range(3):
-            #         self._viewer.add_image(
-            #             np.flip(pred_flip_x, axis=i),
-            #             name=f"flip",
-            #             colormap="green",
-            #             opacity=0.7,
-            #         )
-            #     t += 1
 
-            # print(scores)
             score = max(scores)
+
             if score < threshold:
-                # TODO add filename ?
                 self._viewer.dims.ndisplay = 3
                 self._viewer.add_image(
-                    ground, name=f"ground_{i+1}", colormap="blue", opacity=0.7
+                    ground, name=f"ground_{image_id}", colormap="blue", opacity=0.7
                 )
                 self._viewer.add_image(
-                    pred, name=f"pred_{i+1}", colormap="red", opacity=0.7
+                    pred, name=f"pred_{image_id}", colormap="red", opacity=0.7
                 )
+
             total_metrics.append(score)
         # print(f"DICE METRIC :{total_metrics}")
         self.plot_dice(total_metrics, threshold)
