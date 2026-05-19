@@ -126,10 +126,10 @@ convention = "google"
 
 [project.optional-dependencies]
 pyside6 = [
-    "pyside6",
+    "napari[pyside6]",
 ]
 pyqt6 = [
-    "PyQt6",
+    "napari[pyqt6]",
 ]
 onnx-cpu = [
     "onnx",
