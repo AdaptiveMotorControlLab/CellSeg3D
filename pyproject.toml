@@ -14,9 +14,9 @@ classifiers = [
     "Topic :: Software Development :: Testing",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Operating System :: OS Independent",
     "License :: OSI Approved :: MIT License",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
@@ -43,16 +43,18 @@ dependencies = [
 #    "nibabel",
 #    "pillow",
     "pyclesperanto",
-    "tqdm",
     "matplotlib",
     "pydensecrf2",
 ]
-dynamic = ["version", "entry-points"]
+dynamic = ["version"]
 
 [project.urls]
 Homepage  = "https://github.com/AdaptiveMotorControlLab/CellSeg3D"
 Documentation = "https://adaptivemotorcontrollab.github.io/cellseg3d-docs/res/welcome.html"
 Issues = "https://github.com/AdaptiveMotorControlLab/CellSeg3D/issues"
+
+[project.entry-points."napari.manifest"]
+"napari_cellseg3d" = "napari_cellseg3d:napari.yaml"
 
 [build-system]
 requires = ["setuptools", "wheel"]
@@ -65,7 +67,7 @@ include-package-data = true
 where = ["."]
 
 [tool.setuptools.package-data]
-"*" = ["res/*.png", "code_models/models/pretrained/*.json", "*.yaml"]
+"*" = ["res/*.png", "code_models/models/pretrained/*.json", "*.yaml", "napari.yaml"]
 
 [tool.ruff]
 select = [
@@ -79,7 +81,7 @@ select = [
     "PTH",
     "RET",
     "SIM",
-    "TCH",
+    "TC",
     "NPY",
 ]
 # Never enforce `E501` (line length violations) and 'E741' (ambiguous variable names)
@@ -116,22 +118,12 @@ exclude = [
 [tool.ruff.pydocstyle]
 convention = "google"
 
-[tool.black]
-line-length = 79
-
-[tool.isort]
-profile = "black"
-line_length = 79
-
 [project.optional-dependencies]
-pyqt5 = [
-    "pyqt5",
-]
-pyside2 = [
-    "pyside2",
-]
 pyside6 = [
     "pyside6",
+]
+pyqt6 = [
+    "PyQt6",
 ]
 onnx-cpu = [
     "onnx",
@@ -145,11 +137,8 @@ wandb = [
     "wandb"
 ]
 dev = [
-    "isort",
-    "black",
     "ruff",
     "pre-commit",
-    "tuna",
     "twine",
 ]
 docs = [
@@ -164,4 +153,7 @@ test = [
     "twine",
     "onnx",
     "onnxruntime",
+]
+crf = [
+    "pydensecrf2",
 ]
