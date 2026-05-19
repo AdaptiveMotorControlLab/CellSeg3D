@@ -1,4 +1,5 @@
 import os
+
 import pytest
 
 from napari_cellseg3d.code_models.workers_utils import (
@@ -8,8 +9,8 @@ from napari_cellseg3d.code_models.workers_utils import (
 
 
 @pytest.mark.skipif(
-    os.getenv("GITHUB_ACTIONS") == "true",
-    reason="This test causes GitHub Actions to freeze",
+    os.getenv("CI") == "true",
+    reason="This test causes CI to freeze",
 )
 def test_weight_download():
     downloader = WeightsDownloader()
