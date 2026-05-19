@@ -1,10 +1,16 @@
+import os
+import pytest
+
 from napari_cellseg3d.code_models.workers_utils import (
     PRETRAINED_WEIGHTS_DIR,
     WeightsDownloader,
 )
 
 
-# DISABLED, causes GitHub actions to freeze
+@pytest.mark.skipif(
+    os.getenv("GITHUB_ACTIONS") == "true",
+    reason="This test causes GitHub Actions to freeze",
+)
 def test_weight_download():
     downloader = WeightsDownloader()
     downloader.download_weights("test", "test.pth")

@@ -211,7 +211,8 @@ def relabel(
             np.isin(artefact, i_labels_to_add), 0, artefact
         )
         if viewer is None:
-            viewer = napari.view_image(image)
+            viewer = napari.Viewer()
+            images = viewer.add_image(image, name="image")
         else:
             viewer = viewer
             viewer.add_image(image, name="image")
