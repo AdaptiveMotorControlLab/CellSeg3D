@@ -43,7 +43,6 @@ dependencies = [
 #    "nibabel",
 #    "pillow",
     "pyclesperanto",
-    "matplotlib",
     "pydensecrf2",
 ]
 dynamic = ["version"]
@@ -131,9 +130,6 @@ pyside6 = [
 pyqt6 = [
     "napari[pyqt6]",
 ]
-pyqt6 = [
-    "PyQt6",
-]
 onnx-cpu = [
     "onnx",
     "onnxruntime"
@@ -155,7 +151,7 @@ docs = [
 ]
 test = [
     "pytest",
-    "pytest_qt",
+    "pytest-qt",
     "pytest-cov",
     "coverage",
     "tox",
