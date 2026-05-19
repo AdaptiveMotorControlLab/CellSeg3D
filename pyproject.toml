@@ -131,9 +131,6 @@ pyside6 = [
 pyqt6 = [
     "napari[pyqt6]",
 ]
-pyqt6 = [
-    "PyQt6",
-]
 onnx-cpu = [
     "onnx",
     "onnxruntime"
