@@ -37,12 +37,14 @@ def test_correct_labels():
     )
 
 
-def test_relabel():
+def test_relabel(make_napari_viewer_proxy):
+    viewer = make_napari_viewer_proxy()
     cl.relabel(
         str(image_path),
         str(labels_path),
         go_fast=True,
         test=True,
+        viewer=viewer,
     )
 
 

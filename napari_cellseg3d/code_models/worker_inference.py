@@ -1,4 +1,5 @@
 """Contains the :py:class:`~InferenceWorker` class, which is a custom worker to run inference jobs in."""
+
 import platform
 import sys
 from pathlib import Path
@@ -268,7 +269,6 @@ class InferenceWorker(GeneratorWorker):
                 f" please check for extra channel/batch dimensions"
             )
         volume = utils.correct_rotation(volume)
-        # volume = np.reshape(volume, newshape=(1, 1, *volume.shape))
 
         dims_check = volume.shape
 
@@ -280,7 +280,7 @@ class InferenceWorker(GeneratorWorker):
             if self.config.model_info.name != "WNet3D"
             else lambda x: x
         )
-        volume = np.reshape(volume, newshape=(1, *volume.shape))
+        volume = volume.reshape((1, *volume.shape))
         if self.config.sliding_window_config.is_enabled():
             load_transforms = Compose(
                 [
