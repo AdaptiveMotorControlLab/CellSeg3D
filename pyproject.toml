@@ -11,11 +11,6 @@ name = "napari-cellseg3d"
 description = "Plugin for cell segmentation in 3D"
 readme = "README.md"
 license = { text = "MIT" }
-authors = [
-  { name = "Cyril Achard", email = "cyril.achard@epfl.ch" },
-  { name = "Maxime Vidal", email = "maxime.vidal@epfl.ch" },
-  { name = "Mackenzie Mathis", email = "mackenzie@post.harvard.edu" },
-]
 requires-python = ">=3.10"
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -28,8 +23,6 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.13",
-  "Programming Language :: Python :: 3.14",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
   "Topic :: Scientific/Engineering :: Image Processing",
   "Topic :: Scientific/Engineering :: Visualization",
@@ -56,26 +49,38 @@ dependencies = [
   "torch>=1.11",
   "tqdm",
 ]
-optional-dependencies.crf = [
+[[project.authors]]
+name = "Cyril Achard"
+email = "cyril.achard@epfl.ch"
+[[project.authors]]
+name = "Maxime Vidal"
+email = "maxime.vidal@epfl.ch"
+[[project.authors]]
+name = "Mackenzie Mathis"
+email = "mackenzie@post.harvard.edu"
+[project.entry-points]
+"napari.manifest".napari_cellseg3d = "napari_cellseg3d:napari.yaml"
+[project.optional-dependencies]
+crf = [
   "pydensecrf2",
 ]
-optional-dependencies.dev = [
+dev = [
   "pre-commit",
   "ruff",
   "twine",
 ]
-optional-dependencies.docs = [
+docs = [
   "jupyter-book",
 ]
-optional-dependencies.onnx-cpu = [ "onnx", "onnxruntime" ]
-optional-dependencies.onnx-gpu = [ "onnx", "onnxruntime-gpu" ]
-optional-dependencies.pyqt6 = [
+onnx-cpu = [ "onnx", "onnxruntime" ]
+onnx-gpu = [ "onnx", "onnxruntime-gpu" ]
+pyqt6 = [
   "napari[pyqt6]",
 ]
-optional-dependencies.pyside6 = [
+pyside6 = [
   "napari[pyside6]",
 ]
-optional-dependencies.test = [
+test = [
   "coverage",
   "onnx",
   "onnxruntime",
@@ -85,16 +90,18 @@ optional-dependencies.test = [
   "tox",
   "twine",
 ]
-optional-dependencies.wandb = [ "wandb" ]
-urls.Documentation = "https://adaptivemotorcontrollab.github.io/cellseg3d-docs/res/welcome.html"
-urls.Homepage = "https://github.com/AdaptiveMotorControlLab/CellSeg3D"
-urls.Issues = "https://github.com/AdaptiveMotorControlLab/CellSeg3D/issues"
-entry-points."napari.manifest".napari_cellseg3d = "napari_cellseg3d:napari.yaml"
+wandb = [ "wandb" ]
+[project.urls]
+Documentation = "https://adaptivemotorcontrollab.github.io/cellseg3d-docs/res/welcome.html"
+Homepage = "https://github.com/AdaptiveMotorControlLab/CellSeg3D"
+Issues = "https://github.com/AdaptiveMotorControlLab/CellSeg3D/issues"
 
 [tool.setuptools]
 include-package-data = true
-package-data."*" = [ "res/*.png", "code_models/models/pretrained/*.json", "*.yaml", "napari.yaml" ]
-packages.find.where = [ "." ]
+[tool.setuptools.package-data]
+"*" = [ "res/*.png", "code_models/models/pretrained/*.json", "*.yaml", "napari.yaml" ]
+[tool.setuptools.packages]
+find.where = [ "." ]
 
 [tool.setuptools_scm]
 version_file = "napari_cellseg3d/_version.py"
@@ -125,13 +132,7 @@ exclude = [
   "node_modules",
   "venv",
 ]
-# Never enforce `E501` (line length violations) and 'E741' (ambiguous variable names)
-# and 'G004' (do not use f-strings in logging)
-# and 'A003' (Shadowing python builtins)
-# and 'F401' (imported but unused)
-# and 'E402' (module level import not at top of file)
-ignore = [ "E501", "E741", "G004", "A003", "F401", "E402" ]
-pydocstyle.convention = "google"
+[tool.ruff.lint]
 select = [
   "E",
   "F",
@@ -146,3 +147,17 @@ select = [
   "SIM",
   "NPY",
 ]
+# Never enforce `E501` (line length violations) and 'E741' (ambiguous variable names)
+# and 'G004' (do not use f-strings in logging)
+# and 'A003' (Shadowing python builtins)
+# and 'F401' (imported but unused)
+# and 'E402' (module level import not at top of file)
+ignore = [ "E501", "E741", "G004", "A003", "F401", "E402" ]
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.pyproject-fmt]
+max_supported_python = "3.12"
+generate_python_version_classifiers = true
+# Avoid collapsing tables to field.key = value format (less readable)
+table_format = "long"
