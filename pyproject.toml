@@ -148,7 +148,7 @@ dev = [
     "twine",
 ]
 docs = [
-    "jupyter-book",
+    "jupyter-book<2",
 ]
 test = [
     "pytest",
