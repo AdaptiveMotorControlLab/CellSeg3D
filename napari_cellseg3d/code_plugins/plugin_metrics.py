@@ -193,7 +193,7 @@ class MetricsUtils(BasePluginFolder):
         self.canvas = None  # kind of terrible way to stack plots... but it works.
 
         for image_id, (ground_path, pred_path) in enumerate(
-            zip(self.images_filepaths, self.labels_filepaths),
+            zip(self.images_filepaths, self.labels_filepaths, strict=False),
             start=1,
         ):
             ground = imread(ground_path)

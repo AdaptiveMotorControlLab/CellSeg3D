@@ -164,11 +164,11 @@ class FragmentUtils(BasePluginUtils):
         )
         [
             lbl.setText(f"Size in {ax} (pixels):")
-            for lbl, ax in zip(self.size_selection.box_widgets_lbl, "xyz")
+            for lbl, ax in zip(self.size_selection.box_widgets_lbl, "xyz", strict=False)
         ]
         [
             w.setToolTip(f"Size of crop for {dim} axis")
-            for w, dim in zip(self.size_selection.box_widgets, "xyz")
+            for w, dim in zip(self.size_selection.box_widgets, "xyz", strict=False)
         ]
 
         self.image_layer_loader.layer_list.label.setText("Layer :")

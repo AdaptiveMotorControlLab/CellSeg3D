@@ -44,7 +44,7 @@ def save_folder(results_path, folder_name, images, image_paths, exist_ok=False):
     results_folder = results_path / Path(folder_name)
     results_folder.mkdir(exist_ok=exist_ok, parents=True)
 
-    for file, image in zip(image_paths, images):
+    for file, image in zip(image_paths, images, strict=False):
         path = results_folder / Path(file).name
 
         imwrite(

@@ -106,7 +106,7 @@ class Utilities(QWidget, metaclass=ui.QWidgetSingleton):
         self._update_visibility()
 
     def _create_utils_widgets(self, names):
-        for key, name in zip(UTILITIES_WIDGETS, names):
+        for key, name in zip(UTILITIES_WIDGETS, names, strict=False):
             logger.debug(f"Creating {name} widget")
             setattr(self, name, UTILITIES_WIDGETS[key](self._viewer))
 

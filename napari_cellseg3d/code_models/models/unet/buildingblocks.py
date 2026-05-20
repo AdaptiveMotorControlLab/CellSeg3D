@@ -90,7 +90,7 @@ def create_conv(in_channels, out_channels, kernel_size, order, num_groups, paddi
 
 class SingleConv(nn.Sequential):
     """Basic convolutional module consisting of a Conv3d, non-linearity and optional batchnorm/groupnorm. The order
-    of operations can be specified via the `order` parameter
+    of operations can be specified via the `order` parameter.
 
     Args:
         in_channels (int): number of input channels
@@ -206,7 +206,7 @@ class ExtResNetBlock(nn.Module):
     The SingleConv takes care of increasing/decreasing the number of channels and also ensures that the number
     of output channels is compatible with the residual block that follows.
     This block can be used instead of standard DoubleConv in the Encoder module.
-    Motivated by: https://arxiv.org/pdf/1706.00120.pdf
+    Motivated by: https://arxiv.org/pdf/1706.00120.pdf.
 
     Notice we use ELU instead of ReLU (order='cge') and put non-linearity after the groupnorm.
     """
@@ -515,7 +515,7 @@ class InterpolateUpsampling(AbstractUpsampling):
     """Args:
     mode (str): algorithm used for upsampling:
         'nearest' | 'linear' | 'bilinear' | 'trilinear' | 'area'. Default: 'nearest'
-        used only if transposed_conv is False
+        used only if transposed_conv is False.
     """
 
     def __init__(self, mode="nearest"):
@@ -536,7 +536,7 @@ class TransposeConvUpsampling(AbstractUpsampling):
     kernel_size (int or tuple): size of the convolving kernel
         used only if transposed_conv is True
     scale_factor (int or tuple): stride of the convolution
-        used only if transposed_conv is True
+        used only if transposed_conv is True.
 
     """
 

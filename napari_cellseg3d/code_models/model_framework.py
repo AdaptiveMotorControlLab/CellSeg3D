@@ -293,7 +293,7 @@ class ModelFramework(BasePluginFolder):
         data_dicts = [
             {"image": image_name, "label": label_name}
             for image_name, label_name in zip(
-                self.images_filepaths, self.labels_filepaths
+                self.images_filepaths, self.labels_filepaths, strict=False
             )
         ]
         logger.debug(f"Training data dict : {data_dicts}")

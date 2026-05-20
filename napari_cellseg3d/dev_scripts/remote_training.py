@@ -76,7 +76,7 @@ def prepare_data(images_path, labels_path):
 
     return [
         {"image": str(image_path), "label": str(label_path)}
-        for image_path, label_path in zip(images, labels)
+        for image_path, label_path in zip(images, labels, strict=False)
     ]
 
 

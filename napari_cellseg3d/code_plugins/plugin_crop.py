@@ -177,7 +177,9 @@ class Cropping(
         dim_group_l.addWidget(self.aniso_widgets)
         [
             dim_group_l.addWidget(widget, alignment=ui.ABS_AL)
-            for widget_list in zip(self.crop_size_labels, self.crop_size_widgets)
+            for widget_list in zip(
+                self.crop_size_labels, self.crop_size_widgets, strict=False
+            )
             for widget in widget_list
         ]
         dim_group_w.setLayout(dim_group_l)
@@ -546,7 +548,7 @@ class Cropping(
 
         sliders = [
             ui.Slider(text_label=axis, lower=0, upper=end, step=step)
-            for axis, end, step in zip("zyx", ends, stepsizes)
+            for axis, end, step in zip("zyx", ends, stepsizes, strict=False)
         ]
         self.sliders = sliders
         for axis, slider in enumerate(sliders):

@@ -437,7 +437,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             crop_slice = tuple(
                 slice(np.maximum(0, min_coordinate), max_coordinate)
                 for min_coordinate, max_coordinate in zip(
-                    min_coordinates, max_coordinates
+                    min_coordinates, max_coordinates, strict=False
                 )
             )
 

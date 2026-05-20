@@ -203,5 +203,7 @@ def create_eval_dataset_dict(image_directory, label_directory):
         logger.info(Path(file).name)
     return [
         {"image": image_name, "label": label_name}
-        for image_name, label_name in zip(images_filepaths, labels_filepaths)
+        for image_name, label_name in zip(
+            images_filepaths, labels_filepaths, strict=False
+        )
     ]

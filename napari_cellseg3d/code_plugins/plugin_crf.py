@@ -226,7 +226,7 @@ class CRFWidget(BasePluginUtils):
     def run_crf_on_batch(self, images_list: list, labels_list: list, log=None):
         """Run CRF on a batch of images and labels."""
         self.crf_results = []
-        for image, label in zip(images_list, labels_list):
+        for image, label in zip(images_list, labels_list, strict=False):
             tqdm(
                 unit="B",
                 total=len(images_list),

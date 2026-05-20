@@ -712,7 +712,7 @@ class AnisotropyWidgets(QWidget):
         )
         [
             w.setToolTip(f"Anisotropic resolution in microns for {dim} axis")
-            for w, dim in zip(self.box_widgets, "xyz")
+            for w, dim in zip(self.box_widgets, "xyz", strict=False)
         ]
         ##################
 
@@ -729,7 +729,7 @@ class AnisotropyWidgets(QWidget):
         """Builds the layout of the widget."""
         [
             self.container.layout.addWidget(widget, alignment=HCENTER_AL)
-            for widgets in zip(self.box_widgets_lbl, self.box_widgets)
+            for widgets in zip(self.box_widgets_lbl, self.box_widgets, strict=False)
             for widget in widgets
         ]
         # anisotropy

@@ -625,7 +625,9 @@ class Trainer(ModelFramework, metaclass=ui.QWidgetSingleton):
         patch_size_l = patch_size_w.layout
         [
             patch_size_l.addWidget(widget, alignment=ui.LEFT_AL)
-            for widgts in zip(self.patch_size_lbl, self.patch_size_widgets)
+            for widgts in zip(
+                self.patch_size_lbl, self.patch_size_widgets, strict=False
+            )
             for widget in widgts
         ]  # patch sizes
         patch_size_w.setLayout(patch_size_l)
