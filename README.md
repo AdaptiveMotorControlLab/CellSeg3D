@@ -3,11 +3,13 @@
 <!-- [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-cellseg3d)](https://www.napari-hub.org/plugins/napari_cellseg3d) -->
 
 [![PyPI](https://img.shields.io/pypi/v/napari-cellseg3d.svg?color=green)](https://pypi.org/project/napari-cellseg3d)
+[![Python versions](https://img.shields.io/pypi/pyversions/napari-cellseg3d)](https://pypi.org/project/napari-cellseg3d)
 [![Downloads](https://static.pepy.tech/badge/napari-cellseg3d)](https://pepy.tech/project/napari-cellseg3d)
 [![Downloads](https://static.pepy.tech/badge/napari-cellseg3d/month)](https://pepy.tech/project/napari-cellseg3d)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/AdaptiveMotorControlLab/CellSeg3D/raw/main/LICENSE)
 [![codecov](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3D/branch/main/graph/badge.svg?token=hzUcn3XN8F)](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3D)
-<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+[![Code style:Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/838605d0-9723-4e43-83cd-6dbfe4adf36b/cellseg-logo.png?format=1500w" title="cellseg3d" alt="cellseg3d logo" width="150" align="right" vspace = "80"/>
 
@@ -65,7 +67,16 @@ F1-score is computed from the Intersection over Union (IoU) with ground truth la
 
 Read the [article here !](https://elifesciences.org/articles/99848)
 
-### **New version: v0.2.2**
+### **New version: v0.2.3**
+
+- v0.2.3:
+  - Python 3.10-12 support added
+  - Several fixes to deprecation errors on newer Python versions
+  - Upgraded packaging to use only pyproject.toml
+  - Added uv.lock to repository for more reproducible installs
+
+> [!WARNING]
+> If you are still getting errors related to `in_channels` on the SwinUNetR model, please open an issue and report your MONAI version. Thanks!
 
 - v0.2.2:
 
@@ -102,7 +113,7 @@ Previous additions:
 
 ## Requirements
 
-**Compatible with Python 3.8 to 3.10.**
+**Compatible with Python 3.10 to 3.12.**
 Requires **[napari]**, **[PyTorch]** and **[MONAI]**.
 Compatible with Windows, MacOS and Linux.
 Installation of the plugin itself should not take more than 30 minutes, depending on your internet connection,
