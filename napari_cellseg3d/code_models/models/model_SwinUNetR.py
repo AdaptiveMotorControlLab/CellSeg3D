@@ -53,9 +53,15 @@ class SwinUNETR_(SwinUNETR):
         try:
             parent_init(**init_kwargs)
         except TypeError as e:
-            logger.warning(f"Caught TypeError: {e}")
-            init_kwargs["in_channels"] = 1
-            parent_init(**init_kwargs)
+            if "img_size" in init_kwargs:
+                logger.warning(
+                    "Retrying SwinUNETR initialization without img_size due to "
+                    f"MONAI API compatibility issue: {e}"
+                )
+                init_kwargs.pop("img_size", None)
+                parent_init(**init_kwargs)
+            else:
+                raise
 
     # def forward(self, x_in):
     #     y = super().forward(x_in)
