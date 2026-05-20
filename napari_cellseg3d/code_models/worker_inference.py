@@ -174,17 +174,11 @@ class InferenceWorker(GeneratorWorker):
                 f"Thresholding is enabled at {config.post_process_config.thresholding.threshold_value}"
             )
 
-        status = (
-            "enabled"
-            if config.sliding_window_config.is_enabled()
-            else "disabled"
-        )
+        status = "enabled" if config.sliding_window_config.is_enabled() else "disabled"
 
         self.log(f"Window inference is {status}")
         if status == "enabled":
-            self.log(
-                f"Window size is {self.config.sliding_window_config.window_size}"
-            )
+            self.log(f"Window size is {self.config.sliding_window_config.window_size}")
             self.log(
                 f"Window overlap is {self.config.sliding_window_config.window_overlap}"
             )
@@ -210,9 +204,7 @@ class InferenceWorker(GeneratorWorker):
         """Loads the folder specified in :py:attr:`~self.images_filepaths` and returns a MONAI DataLoader."""
         images_dict = self.create_inference_dict(self.config.images_filepaths)
 
-        data_check = LoadImaged(keys=["image"], image_only=True)(
-            images_dict[0]
-        )
+        data_check = LoadImaged(keys=["image"], image_only=True)(images_dict[0])
         check = data_check["image"].shape
         pad = utils.get_padding_dim(check)
 
@@ -249,9 +241,7 @@ class InferenceWorker(GeneratorWorker):
 
         self.log("Loading dataset...")
         inference_ds = Dataset(data=images_dict, transform=load_transforms)
-        inference_loader = DataLoader(
-            inference_ds, batch_size=1, num_workers=2
-        )
+        inference_loader = DataLoader(inference_ds, batch_size=1, num_workers=2)
         self.log("Done")
         return inference_loader
 
@@ -337,9 +327,7 @@ class InferenceWorker(GeneratorWorker):
             aniso_transform (monai.transforms.Zoom): the anisotropic transform to apply to the output
         """
         inputs = inputs.to("cpu")
-        dataset_device = (
-            "cpu" if self.config.keep_on_cpu else self.config.device
-        )
+        dataset_device = "cpu" if self.config.keep_on_cpu else self.config.device
 
         if self.config.sliding_window_config.is_enabled():
             window_size = self.config.sliding_window_config.window_size
@@ -352,10 +340,7 @@ class InferenceWorker(GeneratorWorker):
             # logger.debug(f"model : {model}")
             logger.debug(f"inputs shape : {inputs.shape}")
             logger.debug(f"inputs type : {inputs.dtype}")
-            if (
-                self.config.layer is None
-                and self.config.images_filepaths is not None
-            ):
+            if self.config.layer is None and self.config.images_filepaths is not None:
                 normalization = QuantileNormalization()
             else:
 
@@ -376,15 +361,11 @@ class InferenceWorker(GeneratorWorker):
                         check_result = result.detach().cpu().numpy()
                         for i in range(check_result.shape[0]):
                             for j in range(check_result.shape[1]):
-                                fraction_labeled = (
-                                    utils.fraction_above_threshold(
-                                        check_result[i, j],
-                                        EXPERIMENTAL_AUTO_DISCARD_VALUE,
-                                    )
+                                fraction_labeled = utils.fraction_above_threshold(
+                                    check_result[i, j],
+                                    EXPERIMENTAL_AUTO_DISCARD_VALUE,
                                 )
-                                logger.debug(
-                                    f"Fraction labeled: {fraction_labeled}"
-                                )
+                                logger.debug(f"Fraction labeled: {fraction_labeled}")
                                 if (
                                     fraction_labeled
                                     > EXPERIMENTAL_AUTO_DISCARD_FRACTION_THRESHOLD
@@ -392,9 +373,7 @@ class InferenceWorker(GeneratorWorker):
                                     logger.debug(
                                         f"Discarding empty region with fraction {fraction_labeled}"
                                     )
-                                    result[i, j] = torch.zeros_like(
-                                        result[i, j]
-                                    )
+                                    result[i, j] = torch.zeros_like(result[i, j])
                         return result
                     ##########################################
                     return post_process_transforms(result)
@@ -431,8 +410,7 @@ class InferenceWorker(GeneratorWorker):
             if aniso_transform is not None:
                 out = aniso_transform(out)
             out = np.array(out).astype(np.float32)
-            out = np.squeeze(out)
-            return out
+            return np.squeeze(out)
         except Exception as e:
             logger.exception(e)
             self._raise_error(e, "Error during sliding window inference")
@@ -449,9 +427,7 @@ class InferenceWorker(GeneratorWorker):
                 f"Correcting rotation due to results shape mismatch: target {shape}, got {array.shape}"
             )
             array = utils.correct_rotation(array)
-            if (
-                array.shape[-3:] != shape[-3:]
-            ):  # check only non-channel dimensions
+            if array.shape[-3:] != shape[-3:]:  # check only non-channel dimensions
                 logger.warning(
                     f"Results shape mismatch: target {shape}, got {array.shape}"
                 )
@@ -527,9 +503,7 @@ class InferenceWorker(GeneratorWorker):
                 * the stats of the instance labels
         """
         if not from_layer and i == -1:
-            raise ValueError(
-                "An ID should be provided when running from a file"
-            )
+            raise ValueError("An ID should be provided when running from a file")
         # old_stderr = sys.stderr
         # sys.stderr = TqdmToLogSignal(self.log_w_replacement)
         if self.config.post_process_config.instance.enabled:
@@ -585,7 +559,7 @@ class InferenceWorker(GeneratorWorker):
             + f"{additional_info}"
             + original_filename
             + self.config.model_info.name
-            + f"_pred_{i+1}"
+            + f"_pred_{i + 1}"
             + f"_{time}"
             + filetype
         )
@@ -600,7 +574,7 @@ class InferenceWorker(GeneratorWorker):
         if from_layer:
             self.log(f"Layer prediction saved as : {filename}")
         else:
-            self.log(f"File n°{i+1} saved as : {filename}")
+            self.log(f"File n°{i + 1} saved as : {filename}")
 
     def aniso_transform(self, image):
         """Applies an anisotropic transform to the image."""
@@ -614,9 +588,7 @@ class InferenceWorker(GeneratorWorker):
             return anisotropic_transform(image[0])
         return image
 
-    def instance_seg(
-        self, semantic_labels, image_id=0, original_filename="layer"
-    ):
+    def instance_seg(self, semantic_labels, image_id=0, original_filename="layer"):
         """Runs the instance segmentation on the semantic labels.
 
         Args:
@@ -628,16 +600,10 @@ class InferenceWorker(GeneratorWorker):
             self.log(f"Running instance segmentation for image n°{image_id}")
 
         method = self.config.post_process_config.instance.method
-        instance_labels = method.run_method_on_channels_from_params(
-            semantic_labels
-        )
+        instance_labels = method.run_method_on_channels_from_params(semantic_labels)
         logger.debug(f"DEBUG instance results shape : {instance_labels.shape}")
 
-        filetype = (
-            ".tif"
-            if self.config.filetype == ""
-            else "_" + self.config.filetype
-        )
+        filetype = ".tif" if self.config.filetype == "" else "_" + self.config.filetype
 
         instance_filepath = (
             self.config.results_path
@@ -673,9 +639,7 @@ class InferenceWorker(GeneratorWorker):
 
         out = utils.correct_rotation(out)
         extra_dims = len(inputs.shape) - 3
-        inputs_shape_corrected = np.swapaxes(
-            inputs, extra_dims, 2 + extra_dims
-        ).shape
+        inputs_shape_corrected = np.swapaxes(inputs, extra_dims, 2 + extra_dims).shape
         if out.shape[-3:] != inputs_shape_corrected[-3:]:
             logger.debug(
                 f"Output shape {out.shape[-3:]} does not match input shape {inputs_shape_corrected[-3:]} on HWD dims even after rotation"
@@ -699,7 +663,7 @@ class InferenceWorker(GeneratorWorker):
             crf_results = None
 
         original = np.array(inf_data["image"]).astype(np.float32)
-        self.log(f"Inference completed on image n°{i+1}")
+        self.log(f"Inference completed on image n°{i + 1}")
 
         return self.create_inference_result(
             out,
@@ -770,9 +734,7 @@ class InferenceWorker(GeneratorWorker):
         logger.debug(f"Inference on layer result shape : {out.shape}")
         out = utils.correct_rotation(out)
         extra_dims = len(image.shape) - 3
-        layer_shape_corrected = np.swapaxes(
-            image, extra_dims, 2 + extra_dims
-        ).shape
+        layer_shape_corrected = np.swapaxes(image, extra_dims, 2 + extra_dims).shape
         if out.shape[-3:] != layer_shape_corrected[-3:]:
             logger.debug(
                 f"Output shape {out.shape[-3:]} does not match input shape {layer_shape_corrected[-3:]} on HWD dims even after rotation"
@@ -881,12 +843,14 @@ class InferenceWorker(GeneratorWorker):
                         PRETRAINED_WEIGHTS_DIR / Path(model_class.weights_file)
                     )
                 try:
-                    missing = model.load_state_dict(  # note that this is redefined in WNet_
-                        torch.load(
-                            weights,
-                            map_location=self.config.device,
-                        ),
-                        strict=False,  # True, # TODO(cyril): change to True
+                    missing = (
+                        model.load_state_dict(  # note that this is redefined in WNet_
+                            torch.load(
+                                weights,
+                                map_location=self.config.device,
+                            ),
+                            strict=False,  # True, # TODO(cyril): change to True
+                        )
                     )
                     self.log(f"Weights status : {missing}")
                 except Exception as e:

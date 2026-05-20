@@ -120,9 +120,7 @@ class ArtifactRemovalUtils(BasePluginUtils):
                     existing_layer=self.layer,
                     add_as_labels=True,
                 )
-        elif (
-            self.folder_choice.isChecked() and len(self.labels_filepaths) != 0
-        ):
+        elif self.folder_choice.isChecked() and len(self.labels_filepaths) != 0:
             images = [
                 self._remove_large(imread(file), remove_size)
                 for file in self.labels_filepaths
@@ -166,11 +164,11 @@ class FragmentUtils(BasePluginUtils):
         )
         [
             lbl.setText(f"Size in {ax} (pixels):")
-            for lbl, ax in zip(self.size_selection.box_widgets_lbl, "xyz")
+            for lbl, ax in zip(self.size_selection.box_widgets_lbl, "xyz", strict=False)
         ]
         [
             w.setToolTip(f"Size of crop for {dim} axis")
-            for w, dim in zip(self.size_selection.box_widgets, "xyz")
+            for w, dim in zip(self.size_selection.box_widgets, "xyz", strict=False)
         ]
 
         self.image_layer_loader.layer_list.label.setText("Layer :")
@@ -201,9 +199,7 @@ class FragmentUtils(BasePluginUtils):
         )
 
         self._set_io_visibility()
-        self.setSizePolicy(
-            QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
-        )
+        self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
 
     def _fragment(self, crops, name):
         dir_name = f"/{name}_fragmented_{utils.get_time_filepath()}"
@@ -280,9 +276,7 @@ class AnisoUtils(BasePluginUtils):
         )
 
         self._set_io_visibility()
-        self.setSizePolicy(
-            QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
-        )
+        self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
 
     def _start(self):
         utils.mkdir_from_str(self.results_path)
@@ -312,9 +306,7 @@ class AnisoUtils(BasePluginUtils):
                     existing_layer=self.layer,
                 )
 
-        elif (
-            self.folder_choice.isChecked() and len(self.images_filepaths) != 0
-        ):
+        elif self.folder_choice.isChecked() and len(self.images_filepaths) != 0:
             images = [
                 utils.resize(np.array(imread(file)), zoom)
                 for file in self.images_filepaths
@@ -384,9 +376,7 @@ class RemoveSmallUtils(BasePluginUtils):
         )
         container.layout.addWidget(self.data_panel)
 
-        ui.ScrollArea.make_scrollable(
-            container.layout, self, max_wh=[MAX_W, MAX_H]
-        )
+        ui.ScrollArea.make_scrollable(container.layout, self, max_wh=[MAX_W, MAX_H])
         self._set_io_visibility()
         container.setSizePolicy(
             QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
@@ -417,9 +407,7 @@ class RemoveSmallUtils(BasePluginUtils):
                     existing_layer=self.layer,
                     add_as_labels=True,
                 )
-        elif (
-            self.folder_choice.isChecked() and len(self.images_filepaths) != 0
-        ):
+        elif self.folder_choice.isChecked() and len(self.images_filepaths) != 0:
             images = [
                 clear_small_objects(file, remove_size, is_file_path=True)
                 for file in self.images_filepaths
@@ -470,9 +458,7 @@ class ToSemanticUtils(BasePluginUtils):
         )
         container.layout.addWidget(self.data_panel)
 
-        ui.ScrollArea.make_scrollable(
-            container.layout, self, max_wh=[MAX_W, MAX_H]
-        )
+        ui.ScrollArea.make_scrollable(container.layout, self, max_wh=[MAX_W, MAX_H])
         self._set_io_visibility()
         container.setSizePolicy(
             QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
@@ -505,12 +491,9 @@ class ToSemanticUtils(BasePluginUtils):
                     f"semantic_{layer.name}",
                     existing_layer=self.layer,
                 )
-        elif (
-            self.folder_choice.isChecked() and len(self.labels_filepaths) != 0
-        ):
+        elif self.folder_choice.isChecked() and len(self.labels_filepaths) != 0:
             images = [
-                to_semantic(file, is_file_path=True)
-                for file in self.labels_filepaths
+                to_semantic(file, is_file_path=True) for file in self.labels_filepaths
             ]
             utils.save_folder(
                 self.results_path,
@@ -568,9 +551,7 @@ class ToInstanceUtils(BasePluginUtils):
 
         ui.add_widgets(self.instance_widgets.layout(), [self.start_btn])
 
-        ui.ScrollArea.make_scrollable(
-            container.layout, self, max_wh=[MAX_W, MAX_H]
-        )
+        ui.ScrollArea.make_scrollable(container.layout, self, max_wh=[MAX_W, MAX_H])
         self._set_io_visibility()
         container.setSizePolicy(
             QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
@@ -600,9 +581,7 @@ class ToInstanceUtils(BasePluginUtils):
                     add_as_labels=True,
                 )
 
-        elif (
-            self.folder_choice.isChecked() and len(self.images_filepaths) != 0
-        ):
+        elif self.folder_choice.isChecked() and len(self.images_filepaths) != 0:
             images = [
                 self.instance_widgets.run_method(imread(file))
                 for file in self.images_filepaths
@@ -676,9 +655,7 @@ class ThresholdUtils(BasePluginUtils):
         )
         container.layout.addWidget(self.data_panel)
 
-        ui.ScrollArea.make_scrollable(
-            container.layout, self, max_wh=[MAX_W, MAX_H]
-        )
+        ui.ScrollArea.make_scrollable(container.layout, self, max_wh=[MAX_W, MAX_H])
         self._set_io_visibility()
         container.setSizePolicy(
             QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
@@ -709,9 +686,7 @@ class ThresholdUtils(BasePluginUtils):
                     f"threshold_{layer.name}",
                     existing_layer=self.layer,
                 )
-        elif (
-            self.folder_choice.isChecked() and len(self.images_filepaths) != 0
-        ):
+        elif self.folder_choice.isChecked() and len(self.images_filepaths) != 0:
             images = [
                 self.function(imread(file), remove_size)
                 for file in self.images_filepaths
@@ -771,9 +746,7 @@ class StatsUtils(BasePluginUtils):
         )
         container.layout.addWidget(self.data_panel)
 
-        ui.ScrollArea.make_scrollable(
-            container.layout, self, max_wh=[MAX_W, MAX_H]
-        )
+        ui.ScrollArea.make_scrollable(container.layout, self, max_wh=[MAX_W, MAX_H])
         self._set_io_visibility()
         container.setSizePolicy(
             QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
@@ -797,12 +770,8 @@ class StatsUtils(BasePluginUtils):
                 stats_df = pd.DataFrame(stats.get_dict())
                 csv_name = self.csv_name.text() + ".csv"
                 logger.info(f"Saving stats to {self.results_path}/{csv_name}")
-                stats_df.to_csv(
-                    self.results_path + "/" + csv_name, index=False
-                )
-        elif (
-            self.folder_choice.isChecked() and len(self.labels_filepaths) != 0
-        ):
+                stats_df.to_csv(self.results_path + "/" + csv_name, index=False)
+        elif self.folder_choice.isChecked() and len(self.labels_filepaths) != 0:
             for i, image_path in enumerate(self.labels_filepaths):
                 logger.debug(f"Loading image {i} : {image_path}")
                 image = imread(image_path)
@@ -821,21 +790,15 @@ class StatsUtils(BasePluginUtils):
                 try:
                     stats = volume_stats(image)
                 except Exception as e:
-                    logger.warning(
-                        f"Error computing stats for image {i} : {e}"
-                    )
+                    logger.warning(f"Error computing stats for image {i} : {e}")
                     warn(f"Error computing stats for image {i}", stacklevel=0)
                 logger.debug("Computing stats")
                 stats_df = pd.DataFrame(stats.get_dict())
-                csv_name = (
-                    str(image_name) + "_" + self.csv_name.text() + f"_{i}.csv"
-                )
+                csv_name = str(image_name) + "_" + self.csv_name.text() + f"_{i}.csv"
                 logger.info(
                     f"Saving stats to {(Path(self.results_path) / Path(csv_name)).resolve()}"
                 )
-                stats_df.to_csv(
-                    Path(self.results_path) / Path(csv_name), index=False
-                )
+                stats_df.to_csv(Path(self.results_path) / Path(csv_name), index=False)
         else:
             logger.warning("Please specify a layer or a folder")
 
@@ -875,12 +838,8 @@ class ThresholdGridSearchUtils(BasePluginUtils):
 
         self.start_btn = ui.Button("Start", self._start)
         self.result_display = ui.make_label(self.result_text, self)
-        self.image_layer_loader.layer_list.currentIndexChanged.connect(
-            self._reset
-        )
-        self.label_layer_loader.layer_list.currentIndexChanged.connect(
-            self._reset
-        )
+        self.image_layer_loader.layer_list.currentIndexChanged.connect(self._reset)
+        self.label_layer_loader.layer_list.currentIndexChanged.connect(self._reset)
 
         self.container = self._build()
 
@@ -896,9 +855,7 @@ class ThresholdGridSearchUtils(BasePluginUtils):
             ],
         )
 
-        ui.ScrollArea.make_scrollable(
-            container.layout, self, max_wh=[MAX_W, MAX_H]
-        )
+        ui.ScrollArea.make_scrollable(container.layout, self, max_wh=[MAX_W, MAX_H])
         self._set_io_visibility()
         return container
 
@@ -977,6 +934,8 @@ class ThresholdGridSearchUtils(BasePluginUtils):
             "binarized",
             existing_layer=self.layer,
         )
-        self.result_test = f"Best threshold : {best_threshold}, Dice : {self.values[best_threshold]}\n"
+        self.result_test = (
+            f"Best threshold : {best_threshold}, Dice : {self.values[best_threshold]}\n"
+        )
         self._get_dice_graph()
         self.result_display.setText(self.result_text)

@@ -38,6 +38,7 @@ if CRF_INSTALLED:
         unary_from_softmax,
     )
 
+
 def correct_shape_for_crf(image, desired_dims=4):
     """Corrects the shape of the image to be compatible with the CRF post-processing step."""
     logger.debug(f"Correcting shape for CRF, desired_dims={desired_dims}")
@@ -104,9 +105,7 @@ def crf(image, prob, sa, sb, sg, w1, w2, n_iter=5):
         )
         return None
 
-    d = dcrf.DenseCRF(
-        image.shape[1] * image.shape[2] * image.shape[3], prob.shape[0]
-    )
+    d = dcrf.DenseCRF(image.shape[1] * image.shape[2] * image.shape[3], prob.shape[0])
 
     # Get unary potentials from softmax probabilities
     U = unary_from_softmax(prob)

@@ -40,9 +40,7 @@ def relabel_non_unique_i(label, save_path, go_fast=False):
     new_labels = np.zeros_like(label)
     map_labels_existing = []
     unique_label = np.unique(label)
-    for i_label in tqdm(
-        range(len(unique_label)), desc="relabeling", ncols=100
-    ):
+    for i_label in tqdm(range(len(unique_label)), desc="relabeling", ncols=100):
         i = unique_label[i_label]
         if i == 0:
             continue
@@ -183,9 +181,7 @@ def relabel(
             "visualize the relabeld image in white the previous labels and in red the new labels"
         )
         if not test:
-            visualize_map(
-                map_labels_existing, label_path, new_label_path, delay=delay
-            )
+            visualize_map(map_labels_existing, label_path, new_label_path, delay=delay)
         label_path = new_label_path
     # detect artefact
     print("detection of potential neurons (in progress)")
@@ -209,9 +205,7 @@ def relabel(
             target=partial(_ask_labels, test=test), args=(unique_artefact,)
         )
         t.start()
-        artefact_copy = np.where(
-            np.isin(artefact, i_labels_to_add), 0, artefact
-        )
+        artefact_copy = np.where(np.isin(artefact, i_labels_to_add), 0, artefact)
         if viewer is None:
             viewer = napari.Viewer()
             viewer.add_image(image, name="image")
@@ -228,9 +222,7 @@ def relabel(
         for i in i_labels_to_add:
             if i not in i_labels_to_add_tmp:
                 i_labels_to_add_tmp.append(i)
-        artefact_copy = np.where(
-            np.isin(artefact, i_labels_to_add_tmp), artefact, 0
-        )
+        artefact_copy = np.where(np.isin(artefact, i_labels_to_add_tmp), artefact, 0)
         print("these labels will be added")
         if test:
             viewer.close()
@@ -307,15 +299,11 @@ def to_show(map_labels_existing, delay=0.5):
             time.sleep(delay)
 
 
-def create_connected_widget(
-    old_label, new_label, map_labels_existing, delay=0.5
-):
+def create_connected_widget(old_label, new_label, map_labels_existing, delay=0.5):
     """Builds a widget that can control a function in another thread."""
     worker = to_show(map_labels_existing, delay)
     worker.start()
-    worker.yielded.connect(
-        lambda arg: modify_viewer(old_label, new_label, arg)
-    )
+    worker.yielded.connect(lambda arg: modify_viewer(old_label, new_label, arg))
 
 
 def visualize_map(map_labels_existing, label_path, relabel_path, delay=0.5):
@@ -347,9 +335,7 @@ def visualize_map(map_labels_existing, label_path, relabel_path, delay=0.5):
     old_label.show_selected_label = True
     new_label.show_selected_label = True
 
-    create_connected_widget(
-        old_label, new_label, map_labels_existing, delay=delay
-    )
+    create_connected_widget(old_label, new_label, map_labels_existing, delay=delay)
     napari.run()
 
 

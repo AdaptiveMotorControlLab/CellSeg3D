@@ -55,12 +55,8 @@ class WNet(nn.Module):
     ):
         """Initialize the W-Net model."""
         super(WNet, self).__init__()
-        self.encoder = UNet(
-            in_channels, num_classes, softmax=True, dropout=dropout
-        )
-        self.decoder = UNet(
-            num_classes, out_channels, softmax=False, dropout=dropout
-        )
+        self.encoder = UNet(in_channels, num_classes, softmax=True, dropout=dropout)
+        self.decoder = UNet(num_classes, out_channels, softmax=False, dropout=dropout)
 
     def forward(self, x):
         """Forward pass of the W-Net model. Returns the segmentation and the reconstructed image."""

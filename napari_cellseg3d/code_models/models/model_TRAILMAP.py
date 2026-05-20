@@ -1,4 +1,5 @@
 """Legacy version of adapted TRAILMAP model, not used in the current version of the plugin."""
+
 # import torch
 # from torch import nn
 #

@@ -24,7 +24,9 @@ class Helper(QWidget, metaclass=ui.QWidgetSingleton):
 
         self.help_url = "https://adaptivemotorcontrollab.github.io/CellSeg3D/"
 
-        self.about_url = "https://wysscenter.ch/advances/3d-computer-vision-for-brain-analysis"
+        self.about_url = (
+            "https://wysscenter.ch/advances/3d-computer-vision-for-brain-analysis"
+        )
         self.repo_url = "https://github.com/AdaptiveMotorControlLab/CellSeg3D"
         self._viewer = viewer
 
@@ -38,9 +40,7 @@ class Helper(QWidget, metaclass=ui.QWidgetSingleton):
         self.logo_label.setIcon(QIcon(image))
         self.logo_label.setMinimumSize(200, 200)
         self.logo_label.setIconSize(QSize(200, 200))
-        self.logo_label.setStyleSheet(
-            "QPushButton { background-color: transparent }"
-        )
+        self.logo_label.setStyleSheet("QPushButton { background-color: transparent }")
         self.logo_label.setToolTip("Open Github page")
 
         self.info_label = ui.make_label(

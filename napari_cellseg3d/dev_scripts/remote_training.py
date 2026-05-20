@@ -18,13 +18,10 @@ SPLIT_FOLDER = "1_c15"  # "2_c1_c4_visual"  "3_c1245_visual"
 RESULTS_PATH = (
     Path("/data/cyril")
     / "CELLSEG_BENCHMARK/cellseg3d_train"
-    / f"{MODEL_NAME}_{SPLIT_FOLDER}_{int(TRAINING_SPLIT*100)}"
+    / f"{MODEL_NAME}_{SPLIT_FOLDER}_{int(TRAINING_SPLIT * 100)}"
 )
 
-IMAGES = (
-    Path("/data/cyril")
-    / f"CELLSEG_BENCHMARK/TPH2_mesospim/SPLITS/{SPLIT_FOLDER}"
-)
+IMAGES = Path("/data/cyril") / f"CELLSEG_BENCHMARK/TPH2_mesospim/SPLITS/{SPLIT_FOLDER}"
 LABELS = (
     Path("/data/cyril")
     / f"CELLSEG_BENCHMARK/TPH2_mesospim/SPLITS/{SPLIT_FOLDER}/labels/semantic"
@@ -75,13 +72,11 @@ def prepare_data(images_path, labels_path):
     for file in images:
         logger.info(Path(file).name)
 
-    assert len(images) == len(
-        labels
-    ), "Number of images and labels must be the same"
+    assert len(images) == len(labels), "Number of images and labels must be the same"
 
     return [
         {"image": str(image_path), "label": str(label_path)}
-        for image_path, label_path in zip(images, labels)
+        for image_path, label_path in zip(images, labels, strict=False)
     ]
 
 

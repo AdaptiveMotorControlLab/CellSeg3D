@@ -59,9 +59,7 @@ class InstanceMethod:
         self.function = function
         self.counters: List[ui.DoubleIncrementCounter] = []
         self.sliders: List[ui.Slider] = []
-        self._setup_widgets(
-            num_counters, num_sliders, widget_parent=widget_parent
-        )
+        self._setup_widgets(num_counters, num_sliders, widget_parent=widget_parent)
 
         self.recorded_parameters = {}
         """Stores the parameters when calling self.record_parameters()"""
@@ -97,9 +95,7 @@ class InstanceMethod:
                 setattr(
                     self,
                     widget,
-                    ui.DoubleIncrementCounter(
-                        text_label="", parent=widget_parent
-                    ),
+                    ui.DoubleIncrementCounter(text_label="", parent=widget_parent),
                 )
                 self.counters.append(getattr(self, widget))
 
@@ -129,14 +125,10 @@ class InstanceMethod:
         """Records all the parameters of the instance segmentation method from the current values of the widgets."""
         if len(self.sliders) > 0:
             for slider in self.sliders:
-                self.recorded_parameters[slider.label.text()] = (
-                    slider.slider_value
-                )
+                self.recorded_parameters[slider.label.text()] = slider.slider_value
         if len(self.counters) > 0:
             for counter in self.counters:
-                self.recorded_parameters[counter.label.text()] = (
-                    counter.value()
-                )
+                self.recorded_parameters[counter.label.text()] = counter.value()
 
     def run_method_from_params(self, image):
         """Runs the method on the image with the RECORDED parameters set in the widget.
@@ -149,14 +141,10 @@ class InstanceMethod:
         Returns: processed image from self._method
         """
         if len(self.recorded_parameters) == 0:
-            logger.warning(
-                "No parameters recorded, running with values from widgets"
-            )
+            logger.warning("No parameters recorded, running with values from widgets")
             self.record_parameters()
 
-        parameters = [
-            self.recorded_parameters[key] for key in self.recorded_parameters
-        ]
+        parameters = [self.recorded_parameters[key] for key in self.recorded_parameters]
 
         assert len(parameters) == len(self.sliders) + len(self.counters), (
             f"Number of parameters recorded ({len(parameters)}) "
@@ -187,9 +175,7 @@ class InstanceMethod:
         Returns: processed image from self._method
         """
         image_list = self._make_list_from_channels(image)
-        result = np.array(
-            [self.run_method_from_params(im) for im in image_list]
-        )
+        result = np.array([self.run_method_from_params(im) for im in image_list])
         return result.squeeze()
 
     @staticmethod
@@ -389,9 +375,7 @@ def clear_large_objects(image, large_label_size=200, use_window=True):
             thres_small=large_label_size,
             rem_seed_thres=0,
         )
-        res = InstanceMethod.sliding_window(
-            image, func, increment_labels=False
-        )
+        res = InstanceMethod.sliding_window(image, func, increment_labels=False)
         return np.where(res > 0, 0, image)
 
     labeled = binary_watershed(
@@ -545,9 +529,7 @@ class Watershed(InstanceMethod):
         )
 
         self.sliders[0].label.setText("Foreground probability threshold")
-        self.sliders[0].tooltips = (
-            "Probability threshold for foreground object"
-        )
+        self.sliders[0].tooltips = "Probability threshold for foreground object"
         self.sliders[0].setValue(500)
 
         self.sliders[1].label.setText("Seed probability threshold")
@@ -646,9 +628,7 @@ class ConnectedComponents(InstanceMethod):
         )
 
         self.sliders[0].label.setText("Foreground probability threshold")
-        self.sliders[0].tooltips = (
-            "Probability threshold for foreground object"
-        )
+        self.sliders[0].tooltips = "Probability threshold for foreground object"
         self.sliders[0].setValue(800)
 
         self.counters[0].label.setText("Small objects removal")
@@ -709,16 +689,12 @@ class VoronoiOtsu(InstanceMethod):
             widget_parent=widget_parent,
         )
         self.counters[0].label.setText("Spot sigma")  # closeness
-        self.counters[0].tooltips = (
-            "Determines how close detected objects can be"
-        )
+        self.counters[0].tooltips = "Determines how close detected objects can be"
         self.counters[0].setMaximum(100)
         self.counters[0].setValue(0.65)
 
         self.counters[1].label.setText("Outline sigma")  # smoothness
-        self.counters[1].tooltips = (
-            "Determines the smoothness of the segmentation"
-        )
+        self.counters[1].tooltips = "Determines the smoothness of the segmentation"
         self.counters[1].setMaximum(100)
         self.counters[1].setValue(0.65)
 
@@ -823,9 +799,7 @@ class InstanceWidgets(QWidget):
                         group.layout.addWidget(counter)
                         self.instance_widgets[name].append(counter)
         except RuntimeError as e:
-            logger.debug(
-                f"Caught runtime error {e}, most likely during testing"
-            )
+            logger.debug(f"Caught runtime error {e}, most likely during testing")
 
         self.setLayout(group.layout)
         self._set_visibility()

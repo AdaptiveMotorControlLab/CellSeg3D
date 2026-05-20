@@ -1,4 +1,5 @@
 """Basic napari plugin framework for inference and training."""
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -48,9 +49,7 @@ class ModelFramework(BasePluginFolder):
             loads_labels: if True, will contain UI elements used to load napari label layers
             has_results: if True, will add UI to choose a results path
         """
-        super().__init__(
-            viewer, parent, loads_images, loads_labels, has_results
-        )
+        super().__init__(viewer, parent, loads_images, loads_labels, has_results)
 
         self._viewer = viewer
         """Viewer to display the widget in"""
@@ -107,9 +106,7 @@ class ModelFramework(BasePluginFolder):
 
         self.report_container = ui.ContainerWidget(l=10, t=5, r=5, b=5)
 
-        self.report_container.setSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.Minimum
-        )
+        self.report_container.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Minimum)
         self.container_docked = False  # check if already docked
 
         self.progress = QProgressBar(self.report_container)
@@ -240,9 +237,7 @@ class ModelFramework(BasePluginFolder):
 
     def _toggle_weights_path(self):
         """Toggle visibility of weight path."""
-        ui.toggle_visibility(
-            self.custom_weights_choice, self.weights_filewidget
-        )
+        ui.toggle_visibility(self.custom_weights_choice, self.weights_filewidget)
 
     def get_unsupervised_image_filepaths(self):
         """Returns a list of filepaths to images in the unsupervised images folder."""
@@ -298,7 +293,7 @@ class ModelFramework(BasePluginFolder):
         data_dicts = [
             {"image": image_name, "label": label_name}
             for image_name, label_name in zip(
-                self.images_filepaths, self.labels_filepaths
+                self.images_filepaths, self.labels_filepaths, strict=False
             )
         ]
         logger.debug(f"Training data dict : {data_dicts}")

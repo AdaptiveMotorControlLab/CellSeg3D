@@ -37,9 +37,7 @@ class SoftNCutsLoss(nn.Module):
         radius (scalar): radius of pixels for which we compute the weights
     """
 
-    def __init__(
-        self, data_shape, device, intensity_sigma, spatial_sigma, radius=None
-    ):
+    def __init__(self, data_shape, device, intensity_sigma, spatial_sigma, radius=None):
         """Initialize the Soft N-Cuts loss.
 
         Args:
@@ -86,24 +84,18 @@ class SoftNCutsLoss(nn.Module):
 
         loss = 0
 
-        kernel = self.gaussian_kernel(self.radius, self.spatial_sigma).to(
-            self.device
-        )
+        kernel = self.gaussian_kernel(self.radius, self.spatial_sigma).to(self.device)
 
         for k in range(K):
             # Compute the average pixel value for this class, and the difference from each pixel
             class_probs = labels[:, k].unsqueeze(1)
             class_mean = torch.mean(
                 inputs * class_probs, dim=(2, 3, 4), keepdim=True
-            ) / torch.add(
-                torch.mean(class_probs, dim=(2, 3, 4), keepdim=True), 1e-5
-            )
+            ) / torch.add(torch.mean(class_probs, dim=(2, 3, 4), keepdim=True), 1e-5)
             diff = (inputs - class_mean).pow(2).sum(dim=1).unsqueeze(1)
 
             # Weight the loss by the difference from the class average.
-            weights = torch.exp(
-                diff.pow(2).mul(-1 / self.intensity_sigma**2)
-            )
+            weights = torch.exp(diff.pow(2).mul(-1 / self.intensity_sigma**2))
 
             numerator = torch.sum(
                 class_probs
@@ -134,14 +126,10 @@ class SoftNCutsLoss(nn.Module):
         x_2 = np.linspace(-radius, radius, 2 * radius + 1) ** 2
         dist = (
             np.sqrt(
-                x_2.reshape(-1, 1, 1)
-                + x_2.reshape(1, -1, 1)
-                + x_2.reshape(1, 1, -1)
+                x_2.reshape(-1, 1, 1) + x_2.reshape(1, -1, 1) + x_2.reshape(1, 1, -1)
             )
             / sigma
         )
         kernel = norm.pdf(dist) / norm.pdf(0)
         kernel = torch.from_numpy(kernel.astype(np.float32))
-        return kernel.view(
-            (1, 1, kernel.shape[0], kernel.shape[1], kernel.shape[2])
-        )
+        return kernel.view((1, 1, kernel.shape[0], kernel.shape[1], kernel.shape[2]))

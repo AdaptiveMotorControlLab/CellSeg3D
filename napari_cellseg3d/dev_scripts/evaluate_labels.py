@@ -69,9 +69,7 @@ def evaluate_model_performance(
     artefacts_found = len(new_labels)
     if len(map_labels_existing) > 0:
         # calculate the mean true positive ratio of the model
-        mean_true_positive_ratio_model = np.mean(
-            [i[3] for i in map_labels_existing]
-        )
+        mean_true_positive_ratio_model = np.mean([i[3] for i in map_labels_existing])
         # calculate the mean ratio of the neurons pixels correctly labelled
         mean_ratio_pixel_found = np.mean([i[2] for i in map_labels_existing])
     else:
@@ -80,9 +78,7 @@ def evaluate_model_performance(
 
     if len(map_fused_neurons) > 0:
         # calculate the mean ratio of the neurons pixels correctly labelled for the fused neurons
-        mean_ratio_pixel_found_fused = np.mean(
-            [i[2] for i in map_fused_neurons]
-        )
+        mean_ratio_pixel_found_fused = np.mean([i[2] for i in map_fused_neurons])
         # calculate the mean true positive ratio of the model for the fused neurons
         mean_true_positive_ratio_model_fused = np.mean(
             [i[3] for i in map_fused_neurons]
@@ -150,9 +146,7 @@ def evaluate_model_performance(
             neurones_not_found_labels = neurones_not_found_labels[
                 neurones_not_found_labels != 0
             ]
-            not_found = np.where(
-                np.isin(labels, neurones_not_found_labels), labels, 0
-            )
+            not_found = np.where(np.isin(labels, neurones_not_found_labels), labels, 0)
             viewer.add_labels(not_found, name="ground truth not found")
             artefacts_found = np.where(
                 np.isin(model_labels, [i[0] for i in new_labels]),
@@ -229,9 +223,7 @@ def map_labels(gt_labels, model_labels, threshold_correct=PERCENT_CORRECT):
             else:
                 # if >50% of the pixels of the label unique[ii] of the true label map to the same label i of the model,
                 # the label i is considered either as a fused neurons, if it the case for multiple unique[ii] or as neurone found
-                ratio_pixel_found = counts[ii] / np.sum(
-                    gt_labels == unique[ii]
-                )
+                ratio_pixel_found = counts[ii] / np.sum(gt_labels == unique[ii])
                 if ratio_pixel_found > threshold_correct:
                     total_pixel_found += np.sum(counts[ii])
                     tmp_map.append(

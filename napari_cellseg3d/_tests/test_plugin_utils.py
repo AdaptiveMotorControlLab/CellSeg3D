@@ -21,9 +21,7 @@ def test_utils_plugin(make_napari_viewer_proxy):
     view.dims.ndisplay = 3
     for i, utils_name in enumerate(UTILITIES_WIDGETS.keys()):
         widget.utils_choice.setCurrentIndex(i)
-        assert isinstance(
-            widget.utils_widgets[i], UTILITIES_WIDGETS[utils_name]
-        )
+        assert isinstance(widget.utils_widgets[i], UTILITIES_WIDGETS[utils_name])
         if utils_name == "Convert to instance labels":
             # to avoid issues with Voronoi-Otsu missing runtime
             menu = widget.utils_widgets[i].instance_widgets.method_choice

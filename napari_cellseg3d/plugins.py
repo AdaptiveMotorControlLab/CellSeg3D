@@ -2,6 +2,7 @@
 
 Main plugins menu for napari-cellseg3d.
 """
+
 from napari_cellseg3d.code_plugins.plugin_helper import Helper
 from napari_cellseg3d.code_plugins.plugin_model_inference import Inferer
 from napari_cellseg3d.code_plugins.plugin_model_training import Trainer

@@ -32,9 +32,7 @@ def test_worker_configs(make_napari_viewer_proxy):
     ]
     for attr in dir(default_config):
         if not attr.startswith("__") and attr not in excluded:
-            assert getattr(default_config, attr) == getattr(
-                worker.config, attr
-            )
+            assert getattr(default_config, attr) == getattr(worker.config, attr)
     # test unsupervised config and worker
     widget.model_choice.setCurrentText("WNet3D")
     widget._toggle_unsupervised_mode(enabled=True)
@@ -43,9 +41,7 @@ def test_worker_configs(make_napari_viewer_proxy):
     excluded = ["results_path_folder", "sample_size", "weights_info"]
     for attr in dir(default_config):
         if not attr.startswith("__") and attr not in excluded:
-            assert getattr(default_config, attr) == getattr(
-                worker.config, attr
-            )
+            assert getattr(default_config, attr) == getattr(worker.config, attr)
     widget.unsupervised_images_filewidget.text_field.setText(
         str((im_path.parent / "wnet_test").resolve())
     )

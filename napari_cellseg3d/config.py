@@ -1,4 +1,5 @@
 """Module to store configuration parameters for napari_cellseg3d."""
+
 import datetime
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -101,9 +102,7 @@ class ModelInfo:
     """
 
     name: str = next(iter(MODEL_LIST))
-    model_input_size: Optional[
-        List[int]
-    ] = None  # only used by SegResNet and SwinUNETR
+    model_input_size: Optional[List[int]] = None  # only used by SegResNet and SwinUNETR
     num_classes: int = 2  # only used by WNets
 
     def get_model(self):
@@ -272,7 +271,9 @@ class InferenceWorkerConfig:
     keep_on_cpu: bool = False
     compute_stats: bool = False
     post_process_config: PostProcessConfig = field(default_factory=PostProcessConfig)
-    sliding_window_config: SlidingWindowConfig = field(default_factory=SlidingWindowConfig)
+    sliding_window_config: SlidingWindowConfig = field(
+        default_factory=SlidingWindowConfig
+    )
     use_crf: bool = False
     crf_config: CRFConfig = field(default_factory=CRFConfig)
 
@@ -329,7 +330,9 @@ class TrainingWorkerConfig:
     learning_rate: np.float64 = 1e-3
     validation_interval: int = 2
     batch_size: int = 1
-    deterministic_config: DeterministicConfig = field(default_factory=DeterministicConfig)
+    deterministic_config: DeterministicConfig = field(
+        default_factory=DeterministicConfig
+    )
     scheduler_factor: float = 0.5
     scheduler_patience: int = 10
     weights_info: WeightsInfo = field(default_factory=WeightsInfo)

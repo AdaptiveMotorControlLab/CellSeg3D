@@ -1,4 +1,5 @@
 """User interface functions and aliases."""
+
 import contextlib
 import threading
 from functools import partial
@@ -88,9 +89,7 @@ class QWidgetSingleton(type(QObject)):
     def __call__(cls, *args, **kwargs):
         """Ensure only one instance of a QWidget with QWidgetSingleton as a metaclass exists at a time."""
         if cls not in cls._instances:
-            cls._instances[cls] = super(QWidgetSingleton, cls).__call__(
-                *args, **kwargs
-            )
+            cls._instances[cls] = super(QWidgetSingleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
 
@@ -282,9 +281,7 @@ class Log(QTextEdit):
             # causes issue if you clik on terminal (tied to CMD QuickEdit mode on Windows)
             self.moveCursor(QTextCursor.End)
             self.insertPlainText(f"\n{text}")
-            self.verticalScrollBar().setValue(
-                self.verticalScrollBar().maximum()
-            )
+            self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
         finally:
             self.lock.release()
 
@@ -354,9 +351,7 @@ def add_label(widget, label, label_before=True, horizontal=True):
 class ContainerWidget(QWidget):
     """Class for a container widget that can contain other widgets."""
 
-    def __init__(
-        self, l=0, t=0, r=1, b=11, vertical=True, parent=None, fixed=True
-    ):
+    def __init__(self, l=0, t=0, r=1, b=11, vertical=True, parent=None, fixed=True):
         """Creates a container widget that can contain other widgets.
 
         Args:
@@ -498,9 +493,7 @@ class Slider(QSlider):
         super().__init__(orientation, parent)
 
         if upper <= lower:
-            raise ValueError(
-                "The minimum value cannot be below the maximum one"
-            )
+            raise ValueError("The minimum value cannot be below the maximum one")
 
         self.setMaximum(upper)
         self.setMinimum(lower)
@@ -690,9 +683,7 @@ class AnisotropyWidgets(QWidget):
         self._layout.setContentsMargins(0, 0, 0, 0)
 
         self.container = ContainerWidget(t=7, parent=parent)
-        self.checkbox = CheckBox(
-            "Anisotropic data", self._toggle_display_aniso, parent
-        )
+        self.checkbox = CheckBox("Anisotropic data", self._toggle_display_aniso, parent)
 
         if use_integer_counter:
             self.box_widgets = IntIncrementCounter.make_n(
@@ -721,7 +712,7 @@ class AnisotropyWidgets(QWidget):
         )
         [
             w.setToolTip(f"Anisotropic resolution in microns for {dim} axis")
-            for w, dim in zip(self.box_widgets, "xyz")
+            for w, dim in zip(self.box_widgets, "xyz", strict=False)
         ]
         ##################
 
@@ -738,7 +729,7 @@ class AnisotropyWidgets(QWidget):
         """Builds the layout of the widget."""
         [
             self.container.layout.addWidget(widget, alignment=HCENTER_AL)
-            for widgets in zip(self.box_widgets_lbl, self.box_widgets)
+            for widgets in zip(self.box_widgets_lbl, self.box_widgets, strict=False)
             for widget in widgets
         ]
         # anisotropy
@@ -799,9 +790,7 @@ class LayerSelecter(ContainerWidget):
         self._viewer = viewer
         self.layer_type = layer_type
 
-        self.layer_list = DropdownMenu(
-            parent=self, text_label=name, fixed=False
-        )
+        self.layer_list = DropdownMenu(parent=self, text_label=name, fixed=False)
         self.layer_description = make_label("Shape:", parent=self)
         self.layer_description.setVisible(False)
         # self.layer_list.setSizeAdjustPolicy(QComboBox.AdjustToContents) # use tooltip instead ?
@@ -822,9 +811,7 @@ class LayerSelecter(ContainerWidget):
         self._check_for_layers()
 
     def _get_all_layers(self):
-        return [
-            self.layer_list.itemText(i) for i in range(self.layer_list.count())
-        ]
+        return [self.layer_list.itemText(i) for i in range(self.layer_list.count())]
 
     def _check_for_layers(self):
         """Check for layers of the correct type and update the dropdown menu.
@@ -838,9 +825,7 @@ class LayerSelecter(ContainerWidget):
                 isinstance(layer, self.layer_type)
                 and layer.name not in self._get_all_layers()
             ):
-                logger.debug(
-                    f"Layer {layer.name} - List : {self._get_all_layers()}"
-                )
+                logger.debug(f"Layer {layer.name} - List : {self._get_all_layers()}")
                 # add new layers of correct type
                 self.layer_list.addItem(layer.name)
                 logger.debug(f"Layer {layer.name} has been added to the menu")
@@ -854,9 +839,7 @@ class LayerSelecter(ContainerWidget):
                 # remove layers of incorrect type
                 index = self.layer_list.findText(layer.name)
                 self.layer_list.removeItem(index)
-                logger.debug(
-                    f"Layer {layer.name} has been removed from the menu"
-                )
+                logger.debug(f"Layer {layer.name} has been removed from the menu")
 
         self._check_for_removed_layers()
         self._update_tooltip()
@@ -917,9 +900,7 @@ class LayerSelecter(ContainerWidget):
     def _remove_layer(self, event):
         removed_layer = event.value
 
-        if isinstance(
-            removed_layer, self.layer_type
-        ) and removed_layer.name in [
+        if isinstance(removed_layer, self.layer_type) and removed_layer.name in [
             self.layer_list.itemText(i) for i in range(self.layer_list.count())
         ]:
             index = self.layer_list.findText(removed_layer.name)
@@ -1044,10 +1025,7 @@ class FilePathWidget(QWidget):  # TODO include load as folder
 
     def check_ready(self):
         """Check if a path is correctly set."""
-        if (
-            self.text_field.text() in ["", self._initial_desc]
-            and self.required
-        ):
+        if self.text_field.text() in ["", self._initial_desc] and self.required:
             self.update_field_color("indianred")
             self.text_field.setToolTip("Mandatory field !")
             return False
@@ -1095,20 +1073,14 @@ class ScrollArea(QScrollArea):
         """
         super().__init__(parent)
 
-        self._container_widget = (
-            QWidget()
-        )  # required to use QScrollArea.setWidget()
-        self._container_widget.setSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.Maximum
-        )
+        self._container_widget = QWidget()  # required to use QScrollArea.setWidget()
+        self._container_widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Maximum)
         self._container_widget.setLayout(contained_layout)
         self._container_widget.adjustSize()
 
         self.setWidget(self._container_widget)
         self.setWidgetResizable(True)
-        self.setSizePolicy(
-            QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
-        )
+        self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
 
         if base_wh is not None:
             self.setBaseSize(base_wh[0], base_wh[1])
@@ -1118,9 +1090,7 @@ class ScrollArea(QScrollArea):
             self.setMinimumSize(min_wh[0], min_wh[1])
 
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.setHorizontalScrollBarPolicy(
-            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
-        )
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
     @classmethod
     def make_scrollable(
@@ -1281,9 +1251,7 @@ class DoubleIncrementCounter(QDoubleSpinBox):
         fixed: Optional[bool] = True,
     ):
         """Creates n increment counters with the specified parameters."""
-        return make_n_spinboxes(
-            cls, n, lower, upper, default, step, parent, fixed
-        )
+        return make_n_spinboxes(cls, n, lower, upper, default, step, parent, fixed)
 
     def set_visibility(self, visible: bool):
         """Sets the visibility of the counter and its label."""
@@ -1347,9 +1315,7 @@ class IntIncrementCounter(QSpinBox):
         fixed: Optional[bool] = True,
     ):
         """Creates n increment counters with the specified parameters."""
-        return make_n_spinboxes(
-            cls, n, lower, upper, default, step, parent, fixed
-        )
+        return make_n_spinboxes(cls, n, lower, upper, default, step, parent, fixed)
 
 
 def add_blank(widget, layout=None):
@@ -1410,7 +1376,9 @@ def open_folder_dialog(
 
     logger.debug(f"Default : {default_path}")
     return QFileDialog.getExistingDirectory(
-        widget, "Open directory", default_path  # + "/.."
+        widget,
+        "Open directory",
+        default_path,  # + "/.."
     )
 
 
@@ -1543,23 +1511,15 @@ def combine_blocks(  # TODO FIXME PLEASE this is a horrible design
 
     temp_layout = QGridLayout()
     if horizontal:
-        temp_widget.setSizePolicy(
-            QSizePolicy.MinimumExpanding, QSizePolicy.Maximum
-        )
+        temp_widget.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Maximum)
         temp_layout.setColumnMinimumWidth(0, min_spacing)
         c1, c2, r1, r2 = 0, 1, 0, 0
-        temp_layout.setContentsMargins(
-            l, t, r, b
-        )  # determines spacing between widgets
+        temp_layout.setContentsMargins(l, t, r, b)  # determines spacing between widgets
     else:
-        temp_widget.setSizePolicy(
-            QSizePolicy.Maximum, QSizePolicy.MinimumExpanding
-        )
+        temp_widget.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.MinimumExpanding)
         temp_layout.setRowMinimumHeight(0, min_spacing)
         c1, c2, r1, r2 = 0, 0, 0, 1
-        temp_layout.setContentsMargins(
-            l, t, r, b
-        )  # determines spacing between widgets
+        temp_layout.setContentsMargins(l, t, r, b)  # determines spacing between widgets
     # temp_layout.setColumnMinimumWidth(1,100)
     # temp_layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
 

@@ -1,4 +1,5 @@
 """Crop utility plugin for napari_cellseg3d."""
+
 from math import floor
 from pathlib import Path
 
@@ -80,12 +81,8 @@ class Cropping(
 
         self._viewer.layers.events.inserted.connect(self._check_image_list)
         # TODO(cyril) : fix layer removal (issue with cropping layer? )
-        self.folder_choice.clicked.connect(
-            self._toggle_second_image_io_visibility
-        )
-        self.layer_choice.clicked.connect(
-            self._toggle_second_image_io_visibility
-        )
+        self.folder_choice.clicked.connect(self._toggle_second_image_io_visibility)
+        self.layer_choice.clicked.connect(self._toggle_second_image_io_visibility)
         self.results_filewidget.text_field.setText(str(self.save_path))
 
         self.results_filewidget.check_ready()
@@ -153,9 +150,7 @@ class Cropping(
             logger.debug(f"auto_set_dims : {data.shape}")
             if len(data.shape) == 3:
                 for i, box in enumerate(self.crop_size_widgets):
-                    logger.debug(
-                        f"setting dim {i} to {floor(data.shape[i]/2)}"
-                    )
+                    logger.debug(f"setting dim {i} to {floor(data.shape[i] / 2)}")
                     box.setValue(floor(data.shape[i] / 2))
 
     def _build(self):
@@ -183,7 +178,7 @@ class Cropping(
         [
             dim_group_l.addWidget(widget, alignment=ui.ABS_AL)
             for widget_list in zip(
-                self.crop_size_labels, self.crop_size_widgets
+                self.crop_size_labels, self.crop_size_widgets, strict=False
             )
             for widget in widget_list
         ]
@@ -242,8 +237,7 @@ class Cropping(
         time = utils.get_date_time()
 
         im1_path = str(
-            self.results_path
-            / Path("cropped_" + self.image_layer1.name + time)
+            self.results_path / Path("cropped_" + self.image_layer1.name + time)
         )
 
         viewer.layers[f"cropped_{self.image_layer1.name}"].save(im1_path)
@@ -252,8 +246,7 @@ class Cropping(
 
         if self.crop_second_image:
             im2_path = str(
-                self.results_path
-                / Path("cropped_" + self.image_layer2.name + time)
+                self.results_path / Path("cropped_" + self.image_layer2.name + time)
             )
 
             viewer.layers[f"cropped_{self.image_layer2.name}"].save(im2_path)
@@ -323,9 +316,7 @@ class Cropping(
             self.image_layer1 = self._add_isotropic_layer(self.image_layer1)
 
             if self.crop_second_image:
-                self.image_layer2 = self._add_isotropic_layer(
-                    self.image_layer2
-                )
+                self.image_layer2 = self._add_isotropic_layer(self.image_layer2)
                 self.image_layer2.visible = False
         else:
             self.image_layer1.opacity = 0.7
@@ -475,10 +466,7 @@ class Cropping(
         # logger.debug(crop_sizes)
         # logger.debug(ends)
         # logger.debug(stepsizes)
-        if (
-            self.im1_crop_layer is not None
-            and self.create_new_layer.isChecked()
-        ):
+        if self.im1_crop_layer is not None and self.create_new_layer.isChecked():
             self.im1_crop_layer.translate = [0, 0, 0]
             if self.im2_crop_layer is not None:
                 self.im2_crop_layer.translate = [0, 0, 0]
@@ -560,7 +548,7 @@ class Cropping(
 
         sliders = [
             ui.Slider(text_label=axis, lower=0, upper=end, step=step)
-            for axis, end, step in zip("zyx", ends, stepsizes)
+            for axis, end, step in zip("zyx", ends, stepsizes, strict=False)
         ]
         self.sliders = sliders
         for axis, slider in enumerate(sliders):

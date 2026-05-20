@@ -1,4 +1,5 @@
 """Base classes for napari_cellseg3d plugins."""
+
 from functools import partial
 from pathlib import Path
 
@@ -62,9 +63,7 @@ class BasePluginSingleImage(QTabWidget):
         self.layer_choice = ui.RadioButton("Layer", parent=self)
         self.folder_choice = ui.RadioButton("Folder", parent=self)
         self.filetype = None
-        self.radio_buttons = ui.combine_blocks(
-            self.folder_choice, self.layer_choice
-        )
+        self.radio_buttons = ui.combine_blocks(self.folder_choice, self.layer_choice)
         self.io_panel = None  # call self._build_io_panel to build
         ################
         # Image widgets
@@ -194,9 +193,7 @@ class BasePluginSingleImage(QTabWidget):
         widget.setVisible(True)
 
         if toggle is not None:
-            toggle.toggled.connect(
-                partial(ui.toggle_visibility, toggle, widget)
-            )
+            toggle.toggled.connect(partial(ui.toggle_visibility, toggle, widget))
 
     @staticmethod
     def _hide_io_element(widget: QWidget, toggle: QWidget = None):
@@ -263,9 +260,7 @@ class BasePluginSingleImage(QTabWidget):
             if not Path(folder).is_dir():
                 Path(folder).mkdir(parents=True, exist_ok=True)
                 if not Path(folder).is_dir():
-                    logger.info(
-                        f"Could not create missing results folder : {folder}"
-                    )
+                    logger.info(f"Could not create missing results folder : {folder}")
                     return False
                 logger.info(f"Created missing results folder : {folder}")
             return True
@@ -305,9 +300,7 @@ class BasePluginSingleImage(QTabWidget):
         )
 
     def _make_next_button(self):
-        return ui.Button(
-            "Next", lambda: self.setCurrentIndex(self.currentIndex() + 1)
-        )
+        return ui.Button("Next", lambda: self.setCurrentIndex(self.currentIndex() + 1))
 
     def remove_from_viewer(self):
         """Removes the widget from the napari window.
@@ -354,9 +347,7 @@ class BasePluginFolder(BasePluginSingleImage):
 
         * A dropdown menu to select the file extension to be loaded from the folders
         """
-        super().__init__(
-            viewer, parent, loads_images, loads_labels, has_results
-        )
+        super().__init__(viewer, parent, loads_images, loads_labels, has_results)
 
         self.images_filepaths = []
         """array(str): paths to images for training or inference"""
@@ -377,15 +368,11 @@ class BasePluginFolder(BasePluginSingleImage):
         #######################################################
         # interface
         self.image_filewidget.text_field = "Images directory"
-        self.image_filewidget.button.clicked.disconnect(
-            self._show_dialog_images
-        )
+        self.image_filewidget.button.clicked.disconnect(self._show_dialog_images)
         self.image_filewidget.button.clicked.connect(self.load_image_dataset)
 
         self.labels_filewidget.text_field = "Labels directory"
-        self.labels_filewidget.button.clicked.disconnect(
-            self._show_dialog_labels
-        )
+        self.labels_filewidget.button.clicked.disconnect(self._show_dialog_labels)
         self.labels_filewidget.button.clicked.connect(self.load_label_dataset)
         ################
         # Validation images widget
@@ -440,9 +427,7 @@ class BasePluginFolder(BasePluginSingleImage):
             logger.info("Images loaded (unsupervised training) :")
             for f in filenames:
                 logger.info(f"{str(Path(f).name)}")
-            self.validation_filepaths = [
-                str(path) for path in sorted(filenames)
-            ]
+            self.validation_filepaths = [str(path) for path in sorted(filenames)]
             path = str(Path(filenames[0]).parent)
             self.unsupervised_images_filewidget.text_field.setText(path)
             self.unsupervised_images_filewidget.check_ready()

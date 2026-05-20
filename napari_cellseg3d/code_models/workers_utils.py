@@ -1,4 +1,5 @@
 """Several worker-related utilities for inference and training."""
+
 import typing as t
 from dataclasses import dataclass
 from pathlib import Path
@@ -19,9 +20,7 @@ from napari_cellseg3d.utils import LOGGER as logger
 if TYPE_CHECKING:
     from napari_cellseg3d.code_models.instance_segmentation import ImageStats
 
-PRETRAINED_WEIGHTS_DIR = Path(__file__).parent.resolve() / Path(
-    "models/pretrained"
-)
+PRETRAINED_WEIGHTS_DIR = Path(__file__).parent.resolve() / Path("models/pretrained")
 
 
 class WeightsDownloader:
@@ -84,9 +83,7 @@ class WeightsDownloader:
                     file=self.log_widget,
                 )
 
-            filename, _ = urllib.request.urlretrieve(
-                url, reporthook=show_progress
-            )
+            filename, _ = urllib.request.urlretrieve(url, reporthook=show_progress)
             with tarfile.open(filename, mode="r:gz") as tar:
 
                 def is_within_directory(directory, target):
@@ -99,15 +96,11 @@ class WeightsDownloader:
 
                     return abs_directory in abs_target.parents
 
-                def safe_extract(
-                    tar, path=".", members=None, *, numeric_owner=False
-                ):
+                def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
                     for member in tar.getmembers():
                         member_path = str(Path(path) / member.name)
                         if not is_within_directory(path, member_path):
-                            raise Exception(
-                                "Attempted Path Traversal in Tar File"
-                            )
+                            raise Exception("Attempted Path Traversal in Tar File")
 
                     tar.extractall(path, members, numeric_owner=numeric_owner)
 
@@ -186,9 +179,7 @@ class ONNXModelWrapper(torch.nn.Module):
 
     def forward(self, modeL_input):
         """Wraps ONNX output in a torch tensor."""
-        outputs = self.ort_session.run(
-            None, {"input": modeL_input.cpu().numpy()}
-        )
+        outputs = self.ort_session.run(None, {"input": modeL_input.cpu().numpy()})
         return torch.tensor(outputs[0])
 
     def eval(self):
@@ -318,9 +309,7 @@ class TrainingReport:
     loss_1_values: t.Dict = None  # example : {"Loss" : [0.1, 0.2, 0.3]}
     loss_2_values: t.List = None
     weights: np.array = None
-    images_dict: t.Dict = (
-        None  # output, discrete output, target, target labels
-    )
+    images_dict: t.Dict = None  # output, discrete output, target, target labels
     supervised: bool = True
     # OR decoder output, encoder output, target, target labels
     # format : {"Layer name" : {"data" : np.array, "cmap" : "turbo"}}

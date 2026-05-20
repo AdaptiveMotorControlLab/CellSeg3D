@@ -52,12 +52,8 @@ def test_supervised_training(make_napari_viewer_proxy):
     worker_config = widget._set_worker_config()
     assert worker_config.model_info.name == "test"
     worker = widget._create_supervised_worker_from_config(worker_config)
-    worker.config.train_data_dict = [
-        {"image": im_path_str, "label": im_path_str}
-    ]
-    worker.config.val_data_dict = [
-        {"image": im_path_str, "label": im_path_str}
-    ]
+    worker.config.train_data_dict = [{"image": im_path_str, "label": im_path_str}]
+    worker.config.val_data_dict = [{"image": im_path_str, "label": im_path_str}]
     worker.config.max_epochs = 2
     worker.config.validation_interval = 2
 
@@ -97,9 +93,7 @@ def test_unsupervised_training(make_napari_viewer_proxy):
     )
     # widget.start()
     widget.data = widget.create_dataset_dict_no_labs()
-    widget.worker = widget._create_worker(
-        additional_results_description="wnet_test"
-    )
+    widget.worker = widget._create_worker(additional_results_description="wnet_test")
     assert widget.worker.config.train_data_dict is not None
     widget.worker.config.max_epochs = 1
     for res_i in widget.worker.train(

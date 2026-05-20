@@ -1,4 +1,5 @@
 """CRF plugin for napari_cellseg3d."""
+
 import contextlib
 from functools import partial
 from pathlib import Path
@@ -97,12 +98,8 @@ class CRFParamsWidget(ui.GroupedWidget):
         self.sg_choice.setToolTip(
             "SG : Standard deviation of the Gaussian kernel in the gradient term."
         )
-        self.w1_choice.setToolTip(
-            "W1 : Weight of the appearance term in the CRF."
-        )
-        self.w2_choice.setToolTip(
-            "W2 : Weight of the smoothness term in the CRF."
-        )
+        self.w1_choice.setToolTip("W1 : Weight of the appearance term in the CRF.")
+        self.w2_choice.setToolTip("W2 : Weight of the smoothness term in the CRF.")
         self.n_iter_choice.setToolTip("Number of iterations of the CRF.")
 
     def make_config(self):
@@ -229,7 +226,7 @@ class CRFWidget(BasePluginUtils):
     def run_crf_on_batch(self, images_list: list, labels_list: list, log=None):
         """Run CRF on a batch of images and labels."""
         self.crf_results = []
-        for image, label in zip(images_list, labels_list):
+        for image, label in zip(images_list, labels_list, strict=False):
             tqdm(
                 unit="B",
                 total=len(images_list),
@@ -265,10 +262,7 @@ class CRFWidget(BasePluginUtils):
         image_list = [self.image_layer_loader.layer_data()]
         labels_list = [self.label_layer_loader.layer_data()]
         [logger.debug(f"Image shape: {image.shape}") for image in image_list]
-        [
-            logger.debug(f"Label shape: {labels.shape}")
-            for labels in labels_list
-        ]
+        [logger.debug(f"Label shape: {labels.shape}") for labels in labels_list]
 
         self._prepare_worker(image_list, labels_list)
 

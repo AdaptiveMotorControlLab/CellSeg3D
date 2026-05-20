@@ -28,9 +28,7 @@ def test_base_single_image_update_default_paths(make_napari_viewer_proxy):
     assert plugin._default_path == [test_image, None, None]
 
 
-def test_check_results_path_creates_missing_folder(
-    make_napari_viewer_proxy, tmp_path
-):
+def test_check_results_path_creates_missing_folder(make_napari_viewer_proxy, tmp_path):
     plugin = BasePluginSingleImage(make_napari_viewer_proxy())
 
     results_dir = tmp_path / "new" / "results"
@@ -58,9 +56,7 @@ def test_check_results_path_rejects_non_string(make_napari_viewer_proxy):
 def test_single_image_build_not_implemented(make_napari_viewer_proxy):
     plugin = BasePluginSingleImage(make_napari_viewer_proxy())
 
-    with pytest.raises(
-        NotImplementedError, match="To be defined in child classes"
-    ):
+    with pytest.raises(NotImplementedError, match="To be defined in child classes"):
         plugin._build()
 
 
@@ -109,9 +105,7 @@ def test_remove_docked_widgets_handles_lookup_error(
     def raise_lookup_error(_dock_widget):
         raise LookupError
 
-    monkeypatch.setattr(
-        viewer.window, "remove_dock_widget", raise_lookup_error
-    )
+    monkeypatch.setattr(viewer.window, "remove_dock_widget", raise_lookup_error)
 
     assert plugin.remove_docked_widgets() is False
 
@@ -235,9 +229,7 @@ def test_load_image_dataset(make_napari_viewer_proxy, monkeypatch, tmp_path):
     image_0.write_text("fake")
     image_1.write_text("fake")
 
-    monkeypatch.setattr(
-        plugin, "load_dataset_paths", lambda: [image_0, image_1]
-    )
+    monkeypatch.setattr(plugin, "load_dataset_paths", lambda: [image_0, image_1])
 
     plugin.load_image_dataset()
 
@@ -253,9 +245,7 @@ def test_load_label_dataset(make_napari_viewer_proxy, monkeypatch, tmp_path):
     label_0.write_text("fake")
     label_1.write_text("fake")
 
-    monkeypatch.setattr(
-        plugin, "load_dataset_paths", lambda: [label_0, label_1]
-    )
+    monkeypatch.setattr(plugin, "load_dataset_paths", lambda: [label_0, label_1])
 
     plugin.load_label_dataset()
 
@@ -263,9 +253,7 @@ def test_load_label_dataset(make_napari_viewer_proxy, monkeypatch, tmp_path):
     assert plugin.labels_filewidget.text_field.text() == str(tmp_path)
 
 
-def test_load_unsup_images_dataset(
-    make_napari_viewer_proxy, monkeypatch, tmp_path
-):
+def test_load_unsup_images_dataset(make_napari_viewer_proxy, monkeypatch, tmp_path):
     plugin = BasePluginFolder(make_napari_viewer_proxy())
 
     image_0 = tmp_path / "b.tif"
@@ -273,16 +261,12 @@ def test_load_unsup_images_dataset(
     image_0.write_text("fake")
     image_1.write_text("fake")
 
-    monkeypatch.setattr(
-        plugin, "load_dataset_paths", lambda: [image_0, image_1]
-    )
+    monkeypatch.setattr(plugin, "load_dataset_paths", lambda: [image_0, image_1])
 
     plugin.load_unsup_images_dataset()
 
     assert plugin.validation_filepaths == [str(image_1), str(image_0)]
-    assert plugin.unsupervised_images_filewidget.text_field.text() == str(
-        tmp_path
-    )
+    assert plugin.unsupervised_images_filewidget.text_field.text() == str(tmp_path)
 
 
 def test_show_file_dialog_updates_filetype(
@@ -359,9 +343,7 @@ def test_load_results_path_sets_results_path(
     plugin._load_results_path()
 
     assert plugin.results_path == str(tmp_path.resolve())
-    assert plugin.results_filewidget.text_field.text() == str(
-        tmp_path.resolve()
-    )
+    assert plugin.results_filewidget.text_field.text() == str(tmp_path.resolve())
 
 
 def test_show_and_hide_io_element_without_toggle(qtbot):
