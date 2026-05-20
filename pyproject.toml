@@ -1,164 +1,148 @@
-[project]
-name = "napari_cellseg3d"
-authors = [
-    {name = "Cyril Achard", email = "cyril.achard@epfl.ch"},
-    {name = "Maxime Vidal", email = "maxime.vidal@epfl.ch"},
-    {name = "Mackenzie Mathis", email = "mackenzie@post.harvard.edu"},
-]
-readme = "README.md"
-description = "Plugin for cell segmentation in 3D"
-classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Science/Research",
-    "Framework :: napari",
-    "Topic :: Software Development :: Testing",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Operating System :: OS Independent",
-    "License :: OSI Approved :: MIT License",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Topic :: Scientific/Engineering :: Image Processing",
-    "Topic :: Scientific/Engineering :: Visualization",
-]
-license = {text = "MIT"}
-requires-python = ">=3.10"
-dependencies = [
-    "numpy",
-    "napari[all]>=0.4.14",
-    "QtPy",
-#    "opencv-python>=4.5.5",
-#    "dask-image>=0.6.0",
-    "scikit-image>=0.19.2",
-    "matplotlib>=3.4.1",
-#    "tifffile>=2022.2.9",
-#    "imageio-ffmpeg>=0.4.5",
-    "imagecodecs>=2023.3.16",
-    "torch>=1.11",
-    "monai[nibabel,einops, tifffile]>=0.9.0",
-    "itk",
-    "tqdm",
-#    "nibabel",
-#    "pillow",
-    "pyclesperanto",
-    "pydensecrf2",
-]
-dynamic = ["version"]
-
-[project.urls]
-Homepage  = "https://github.com/AdaptiveMotorControlLab/CellSeg3D"
-Documentation = "https://adaptivemotorcontrollab.github.io/cellseg3d-docs/res/welcome.html"
-Issues = "https://github.com/AdaptiveMotorControlLab/CellSeg3D/issues"
-
-[project.entry-points."napari.manifest"]
-"napari_cellseg3d" = "napari_cellseg3d:napari.yaml"
-
 [build-system]
-requires = [
-    "setuptools>=64",
-    "setuptools-scm>=8",
-    "wheel",
-]
 build-backend = "setuptools.build_meta"
+requires = [
+  "setuptools>=64",
+  "setuptools-scm>=8",
+  "wheel",
+]
+
+[project]
+name = "napari-cellseg3d"
+description = "Plugin for cell segmentation in 3D"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+  { name = "Cyril Achard", email = "cyril.achard@epfl.ch" },
+  { name = "Maxime Vidal", email = "maxime.vidal@epfl.ch" },
+  { name = "Mackenzie Mathis", email = "mackenzie@post.harvard.edu" },
+]
+requires-python = ">=3.10"
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Framework :: napari",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Scientific/Engineering :: Image Processing",
+  "Topic :: Scientific/Engineering :: Visualization",
+  "Topic :: Software Development :: Testing",
+]
+dynamic = [ "version" ]
+dependencies = [
+  # "tifffile>=2022.2.9",
+  #    "imageio-ffmpeg>=0.4.5",
+  "imagecodecs>=2023.3.16",
+  "itk",
+  "matplotlib>=3.4.1",
+  "monai[einops,nibabel,tifffile]>=0.9",
+  "napari[all]>=0.4.14",
+  "numpy",
+  # "nibabel",
+  #    "pillow",
+  "pyclesperanto",
+  "pydensecrf2",
+  "qtpy",
+  # "opencv-python>=4.5.5",
+  #    "dask-image>=0.6.0",
+  "scikit-image>=0.19.2",
+  "torch>=1.11",
+  "tqdm",
+]
+optional-dependencies.crf = [
+  "pydensecrf2",
+]
+optional-dependencies.dev = [
+  "pre-commit",
+  "ruff",
+  "twine",
+]
+optional-dependencies.docs = [
+  "jupyter-book<2",
+]
+optional-dependencies.onnx-cpu = [ "onnx", "onnxruntime" ]
+optional-dependencies.onnx-gpu = [ "onnx", "onnxruntime-gpu" ]
+optional-dependencies.pyqt6 = [
+  "napari[pyqt6]",
+]
+optional-dependencies.pyside6 = [
+  "napari[pyside6]",
+]
+optional-dependencies.test = [
+  "coverage",
+  "onnx",
+  "onnxruntime",
+  "pytest",
+  "pytest-cov",
+  "pytest-qt",
+  "tox",
+  "twine",
+]
+optional-dependencies.wandb = [ "wandb" ]
+urls.Documentation = "https://adaptivemotorcontrollab.github.io/cellseg3d-docs/res/welcome.html"
+urls.Homepage = "https://github.com/AdaptiveMotorControlLab/CellSeg3D"
+urls.Issues = "https://github.com/AdaptiveMotorControlLab/CellSeg3D/issues"
+entry-points."napari.manifest".napari_cellseg3d = "napari_cellseg3d:napari.yaml"
 
 [tool.setuptools]
 include-package-data = true
+package-data."*" = [ "res/*.png", "code_models/models/pretrained/*.json", "*.yaml", "napari.yaml" ]
+packages.find.where = [ "." ]
 
 [tool.setuptools_scm]
 version_file = "napari_cellseg3d/_version.py"
 
-[tool.setuptools.packages.find]
-where = ["."]
-
-[tool.setuptools.package-data]
-"*" = ["res/*.png", "code_models/models/pretrained/*.json", "*.yaml", "napari.yaml"]
-
 [tool.ruff]
-select = [
-    "E", "F", "W",
-    "A",
-    "B",
-    "D",
-    "G",
-    "I",
-    "PT",
-    "PTH",
-    "RET",
-    "SIM",
-    "NPY",
+exclude = [
+  ".bzr",
+  ".direnv",
+  ".eggs",
+  ".git",
+  ".git-rewrite",
+  ".hg",
+  ".mypy_cache",
+  ".nox",
+  ".pants.d",
+  ".pytype",
+  ".ruff_cache",
+  ".svn",
+  ".tox",
+  ".venv",
+  "__pypackages__",
+  "_build",
+  "buck-out",
+  "build",
+  "dist",
+  "docs/conf.py",
+  "napari_cellseg3d/_tests/conftest.py",
+  "node_modules",
+  "venv",
 ]
 # Never enforce `E501` (line length violations) and 'E741' (ambiguous variable names)
 # and 'G004' (do not use f-strings in logging)
 # and 'A003' (Shadowing python builtins)
 # and 'F401' (imported but unused)
-ignore = ["E501", "E741", "G004", "A003", "F401"]
-exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".git-rewrite",
-    ".hg",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pytype",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "venv",
-    "docs/conf.py",
-    "napari_cellseg3d/_tests/conftest.py",
-]
-
-[tool.ruff.pydocstyle]
-convention = "google"
-
-[project.optional-dependencies]
-pyside6 = [
-    "napari[pyside6]",
-]
-pyqt6 = [
-    "napari[pyqt6]",
-]
-onnx-cpu = [
-    "onnx",
-    "onnxruntime"
-]
-onnx-gpu = [
-    "onnx",
-    "onnxruntime-gpu"
-]
-wandb = [
-    "wandb"
-]
-dev = [
-    "ruff",
-    "pre-commit",
-    "twine",
-]
-docs = [
-    "jupyter-book<2",
-]
-test = [
-    "pytest",
-    "pytest-qt",
-    "pytest-cov",
-    "coverage",
-    "tox",
-    "twine",
-    "onnx",
-    "onnxruntime",
-]
-crf = [
-    "pydensecrf2",
+ignore = [ "E501", "E741", "G004", "A003", "F401" ]
+pydocstyle.convention = "google"
+select = [
+  "E",
+  "F",
+  "W",
+  "A",
+  "B",
+  "D",
+  "G",
+  "I",
+  "PT",
+  "PTH",
+  "RET",
+  "SIM",
+  "NPY",
 ]
