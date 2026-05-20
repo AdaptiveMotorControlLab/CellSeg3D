@@ -10,7 +10,6 @@
 [![codecov](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3D/branch/main/graph/badge.svg?token=hzUcn3XN8F)](https://codecov.io/gh/AdaptiveMotorControlLab/CellSeg3D)
 [![Code style:Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/838605d0-9723-4e43-83cd-6dbfe4adf36b/cellseg-logo.png?format=1500w" title="cellseg3d" alt="cellseg3d logo" width="150" align="right" vspace = "80"/>
 
 **A package for 3D cell segmentation with deep learning, including a napari plugin**: training, inference, and data review. In particular, this project was developed for analysis of confocal and mesoSPIM-acquired (cleared tissue + lightsheet) tissue datasets, but is not limited to this type of data. [Check out our publication for more information!](https://elifesciences.org/articles/99848)
