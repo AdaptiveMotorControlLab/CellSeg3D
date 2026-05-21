@@ -66,9 +66,9 @@ F1-score is computed from the Intersection over Union (IoU) with ground truth la
 
 Read the [article here !](https://elifesciences.org/articles/99848)
 
-### **New version: v0.2.3**
+### **New version: v0.2.4**
 
-- v0.2.3:
+- v0.2.4:
   - Python 3.10-12 support added
   - Several fixes to deprecation errors on newer Python versions
   - Upgraded packaging to use only pyproject.toml

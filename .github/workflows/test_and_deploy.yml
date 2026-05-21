@@ -105,7 +105,11 @@ jobs:
       - name: Install build tools
         run: |
           python -m pip install --upgrade pip
-          python -m pip install build twine
+          python -m pip install build twine npe2
+
+      - name: Validate plugin
+        run: |
+          python -m npe2 validate napari_cellseg3d/napari.yaml
 
       - name: Build package
         run: |
