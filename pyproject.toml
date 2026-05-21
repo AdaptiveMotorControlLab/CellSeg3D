@@ -70,7 +70,7 @@ dev = [
   "twine",
 ]
 docs = [
-  "jupyter-book",
+  "jupyter-book<2",
 ]
 onnx-cpu = [ "onnx", "onnxruntime" ]
 onnx-gpu = [ "onnx", "onnxruntime-gpu" ]

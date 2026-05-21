@@ -98,7 +98,7 @@ more detailed documentation if you have it.
 
 ## Additional Install Steps
 
-**Python >= 3.8 required**
+**Python >= 3.10 required**
 
 Requires manual installation of **pytorch** and **MONAI**.
 

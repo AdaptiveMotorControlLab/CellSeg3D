@@ -45,7 +45,6 @@ class SwinUNETR_(SwinUNETR):
             **kwargs,
         )
         if "img_size" in sig.parameters:
-            # since MONAI API changes depending on py3.8 or py3.9
             init_kwargs["img_size"] = input_img_size
         if "dropout_prob" in kwargs:
             init_kwargs["drop_rate"] = kwargs["dropout_prob"]
