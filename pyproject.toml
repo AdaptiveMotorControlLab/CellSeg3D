@@ -58,8 +58,8 @@ email = "maxime.vidal@epfl.ch"
 [[project.authors]]
 name = "Mackenzie Mathis"
 email = "mackenzie@post.harvard.edu"
-[project.entry-points]
-"napari.manifest".napari_cellseg3d = "napari_cellseg3d:napari.yaml"
+[project.entry-points."napari.manifest"]
+napari-cellseg3d = "napari_cellseg3d:napari.yaml"
 [project.optional-dependencies]
 crf = [
   "pydensecrf2",
