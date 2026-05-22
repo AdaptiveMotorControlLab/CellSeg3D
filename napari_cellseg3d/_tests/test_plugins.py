@@ -8,10 +8,11 @@ def test_all_plugins_import(make_napari_viewer_proxy):
     plugins.napari_experimental_provide_dock_widget()
 
 
-def test_plugin_metrics(make_napari_viewer_proxy):
+def test_plugin_metrics(make_napari_viewer_proxy, qtbot):
     viewer = make_napari_viewer_proxy()
     w = m.MetricsUtils(viewer=viewer, parent=None)
-    viewer.window.add_dock_widget(w)
+    qtbot.addWidget(w)
+    # viewer.window.add_dock_widget(w)
 
     im_path = str(Path(__file__).resolve().parent / "res/test.tif")
     labels_path = im_path
