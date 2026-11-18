@@ -16,6 +16,7 @@ from matplotlib.colors import ListedColormap, Normalize, PowerNorm
 from matplotlib.figure import Figure
 
 # Qt
+from qtpy.QtCore import QTimer
 from qtpy.QtWidgets import QLineEdit, QMessageBox, QSizePolicy
 from tifffile import imwrite
 
@@ -298,8 +299,8 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             if choice == QMessageBox.Save:
                 self.save_labels()
 
+        self.session = None  # first, so a second click finds nothing to undo
         self._restore_viewer(session)
-        self.session = None
         self.btn_start.setText("Start reviewing")
         self.session_label.setVisible(False)
         return True
@@ -387,33 +388,62 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         viewer.layers.selection.active = session.labels
 
     def _restore_viewer(self, session):
-        """Removes the review widgets and callbacks, and restores the layers."""
+        """Removes the review widgets and callbacks, and restores the layers.
+
+        Every step runs even if an earlier one fails (a dock already closed, a layer
+        removed meanwhile...), so the viewer always ends up back in a normal state.
+        """
         viewer = self._viewer
+
+        def attempt(step, action):
+            try:
+                action()
+            except Exception as e:  # keep going: the goal is a usable viewer
+                logger.debug(f"Review teardown, {step} : {e}")
+
         if session.mouse_callback in viewer.mouse_drag_callbacks:
-            viewer.mouse_drag_callbacks.remove(session.mouse_callback)
+            attempt(
+                "mouse callback",
+                lambda: viewer.mouse_drag_callbacks.remove(session.mouse_callback),
+            )
         if session.dims_callback is not None:
-            viewer.dims.events.current_step.disconnect(session.dims_callback)
+            attempt(
+                "slice callback",
+                lambda: viewer.dims.events.current_step.disconnect(
+                    session.dims_callback
+                ),
+            )
         if session.paint_event is not None:
-            session.paint_event.disconnect(self._mark_modified)
+            attempt(
+                "paint callback",
+                lambda: session.paint_event.disconnect(self._mark_modified),
+            )
         for emitter, callback in session.layer_events:
-            emitter.disconnect(callback)
+            attempt("layer callback", lambda e=emitter, c=callback: e.disconnect(c))
 
         present = list(viewer.layers)
         for layer, visible in session.hidden.items():
             if layer in present:
-                layer.visible = visible
+                attempt(
+                    "visibility", lambda la=layer, v=visible: setattr(la, "visible", v)
+                )
         for layer, lock in session.locks.items():
-            layer.locked = lock
+            attempt("lock", lambda la=layer, lo=lock: setattr(la, "locked", lo))
 
-        viewer.layers.selection.clear()
-        for layer in session.selection:
-            if layer in present:
-                viewer.layers.selection.add(layer)
-        if session.active in present:
-            viewer.layers.selection.active = session.active
+        def restore_selection():
+            viewer.layers.selection.clear()
+            for layer in session.selection:
+                if layer in present:
+                    viewer.layers.selection.add(layer)
+            if session.active in present:
+                viewer.layers.selection.active = session.active
 
-        self.docked_widgets = session.docks
-        self.remove_docked_widgets()
+        attempt("selection", restore_selection)
+
+        for dock in session.docks:
+            attempt("dock", lambda d=dock: viewer.window.remove_dock_widget(d))
+        session.docks.clear()
+        self.docked_widgets = []
 
     def launch_review(self):
         """Sets up the review in the current viewer and returns its :py:class:`ReviewSession`.
@@ -453,10 +483,18 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         open_dir_btn.changed.connect(lambda: ui.open_directory(save_dir.value))
         save_btn = PushButton(text="Save")
         save_btn.changed.connect(lambda: self.save_labels())
+        exit_btn = PushButton(text="Exit review")
+        ui.set_hover_color(exit_btn.native)
+        exit_btn.tooltip = (
+            "Remove the review panels and restore the layers as they were "
+            "(asks to save unsaved changes)"
+        )
+        # deferred: this button's own dock is removed while finishing
+        exit_btn.changed.connect(lambda: QTimer.singleShot(0, self.finish_review))
         save_widget = Container(
             widgets=[
                 Container(widgets=[save_dir, open_dir_btn], layout="horizontal"),
-                save_btn,
+                Container(widgets=[save_btn, exit_btn], layout="horizontal"),
             ]
         )
 
