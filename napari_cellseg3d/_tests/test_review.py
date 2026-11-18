@@ -1,23 +1,151 @@
-from pathlib import Path
+import numpy as np
+import pytest
 
+from napari_cellseg3d import interface as ui
 from napari_cellseg3d.code_plugins import plugin_review as rev
 
 
-def test_launch_review(make_napari_viewer_proxy):
-    view = make_napari_viewer_proxy()
-    widget = rev.Reviewer(view)
+@pytest.fixture
+def review_setup(make_napari_viewer_proxy, tmp_path):
+    """A viewer with an image, an empty labels layer and an unrelated layer."""
+    # Reviewer is a singleton: start each test with a fresh instance
+    ui.QWidgetSingleton._instances.pop(rev.Reviewer, None)
+    viewer = make_napari_viewer_proxy()
+    image = np.random.default_rng(0).random((8, 32, 32)).astype(np.float32)
+    viewer.add_image(image, name="image")
+    viewer.add_labels(np.zeros(image.shape, dtype=np.uint16), name="empty labels")
+    viewer.add_image(np.ones((32, 32)), name="other", visible=True)
 
-    # widget.filetype_choice.setCurrentIndex(0)
+    widget = rev.Reviewer(viewer)
+    widget.layer_choice.setChecked(True)  # "New review": review existing layers
+    widget.image_layer_loader.layer_list.setCurrentText("image")
+    widget.label_layer_loader.layer_list.setCurrentText("empty labels")
+    widget.results_filewidget.text_field.setText(str(tmp_path))
+    widget.csv_textbox.setText("test")
 
-    im_path = str(Path(__file__).resolve().parent / "res/test.tif")
-    lab_path = str(Path(__file__).resolve().parent / "res/test_labels.tif")
+    yield viewer, widget, tmp_path
 
-    widget.folder_choice.setChecked(True)
-    widget.image_filewidget.text_field = im_path
-    widget.labels_filewidget.text_field = lab_path
-    widget.results_filewidget.text_field = str(Path(__file__).resolve().parent / "res")
+    widget.finish_review(ask=False)
+    ui.QWidgetSingleton._instances.pop(rev.Reviewer, None)
+
+
+def test_review_stays_in_viewer(review_setup):
+    viewer, widget, _ = review_setup
+    n_layers = len(viewer.layers)
 
     widget.run_review()
-    widget._viewer.close()
 
-    assert widget._viewer is not None
+    assert widget.session is not None
+    assert widget._viewer == viewer
+    assert len(viewer.layers) == n_layers  # reviews the empty labels in place
+    assert widget.session.labels.name == "empty labels"
+    assert not viewer.layers["other"].visible
+    assert viewer.layers.selection.active.name == "empty labels"
+    assert len(widget.session.docks) == 3
+    assert widget.btn_start.text() == "Finish review"
+
+
+def test_finish_restores_viewer(review_setup):
+    viewer, widget, _ = review_setup
+    callbacks_before = list(viewer.mouse_drag_callbacks)
+
+    widget.run_review()
+    assert widget.finish_review(ask=False)
+
+    assert widget.session is None
+    assert viewer.layers["other"].visible
+    assert list(viewer.mouse_drag_callbacks) == callbacks_before
+    assert widget.docked_widgets == []
+    assert widget.btn_start.text() == "Start reviewing"
+    assert not viewer.layers["empty labels"].locked
+
+
+def test_restart_does_not_stack_widgets(review_setup):
+    viewer, widget, _ = review_setup
+    callbacks_before = len(viewer.mouse_drag_callbacks)
+
+    widget.run_review()
+    widget.run_review()  # nothing modified: finishes the first session silently
+
+    assert len(widget.session.docks) == 3
+    assert len(viewer.mouse_drag_callbacks) == callbacks_before + 1
+
+
+def test_save_labels(review_setup):
+    viewer, widget, tmp_path = review_setup
+    widget.run_review()
+    widget.session.labels.data[0, 0, 0] = 3
+    widget.session.modified = True
+
+    path = widget.save_labels(tmp_path)
+
+    assert path.is_file()
+    assert not widget.session.modified
+
+
+def test_save_button_writes_to_chosen_folder(review_setup, tmp_path):
+    viewer, widget, _ = review_setup
+    widget.run_review()
+    out = tmp_path / "chosen"
+    out.mkdir()
+    widget.session.save_dir.value = out
+
+    widget.save_labels()
+
+    assert (out / "labels_reviewed.tif").is_file()
+
+
+def test_open_directory(monkeypatch, tmp_path):
+    opened = []
+    monkeypatch.setattr(
+        ui.QDesktopServices, "openUrl", lambda url: opened.append(url) or True
+    )
+
+    assert ui.open_directory(tmp_path)
+    assert opened[0].toLocalFile().replace("\\", "/") == str(
+        tmp_path.resolve()
+    ).replace("\\", "/")
+    assert not ui.open_directory(tmp_path / "missing")
+    assert len(opened) == 1
+
+
+def test_review_without_labels_adds_empty_layer(review_setup):
+    viewer, widget, _ = review_setup
+    viewer.layers.remove("empty labels")
+    n_layers = len(viewer.layers)
+
+    widget.run_review()
+
+    assert len(viewer.layers) == n_layers + 1
+    assert widget.session.labels.data.shape == viewer.layers["image"].data.shape
+    assert not widget.session.labels.data.any()
+
+
+def test_anisotropy_unchecked_keeps_layer_scale(review_setup):
+    viewer, widget, _ = review_setup
+    viewer.layers["image"].scale = (2, 1, 1)
+    assert not widget.anisotropy_widgets.enabled()
+
+    widget.run_review()
+
+    assert widget.config.zoom_factor == [1, 1, 1]
+    assert tuple(viewer.layers["image"].scale) == (2, 1, 1)
+
+
+def test_anisotropy_checked_sets_layer_scale(review_setup):
+    viewer, widget, _ = review_setup
+    widget.anisotropy_widgets.checkbox.setChecked(True)
+
+    widget.run_review()
+
+    expected = tuple(widget.anisotropy_widgets.scaling_zyx())
+    assert tuple(viewer.layers["image"].scale) == pytest.approx(expected)
+    assert tuple(viewer.layers["empty labels"].scale) == pytest.approx(expected)
+
+
+def test_crop_volume_around_point_pads_edges():
+    data = np.ones((20, 20, 20), dtype=np.int16)
+    crop = rev.crop_volume_around_point([0, 0, 0], data, [1, 1, 1])
+    assert crop.shape == (100, 100, 100)
+    assert crop[50:70, 50:70, 50:70].all()
+    assert not crop[:50].any()

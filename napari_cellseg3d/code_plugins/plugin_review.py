@@ -1,18 +1,21 @@
 """Review plugin for 3D labeling of volumes."""
 
+from collections.abc import Callable
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 import matplotlib.pyplot as plt
 import napari
 import numpy as np
-from magicgui import magicgui
+from magicgui.widgets import Container, FileEdit, PushButton
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
 
 # Qt
-from qtpy.QtWidgets import QLineEdit, QSizePolicy
+from qtpy.QtWidgets import QLineEdit, QMessageBox, QSizePolicy
 from tifffile import imwrite
 
 # local
@@ -22,6 +25,32 @@ from napari_cellseg3d.code_plugins.plugin_base import BasePluginSingleImage
 from napari_cellseg3d.code_plugins.plugin_review_dock import Datamanager
 
 logger = utils.LOGGER
+
+
+@dataclass
+class ReviewSession:
+    """State of a running review, kept so the viewer can be restored when it ends."""
+
+    volume: Any
+    """napari.layers.Image being reviewed"""
+    labels: Any
+    """napari.layers.Labels being edited"""
+    docks: list[Any] = field(default_factory=list)
+    """dock widgets added for the review"""
+    save_dir: Any = None
+    """magicgui FileEdit holding the save directory"""
+    mouse_callback: Callable | None = None
+    dims_callback: Callable | None = None
+    paint_event: Any = None
+    """labels event that marks the session as modified"""
+    hidden: dict[Any, bool] = field(default_factory=dict)
+    """other layers -> their visibility before the review"""
+    locks: dict[Any, Any] = field(default_factory=dict)
+    """review layers -> their lock state before the review"""
+    selection: list[Any] = field(default_factory=list)
+    active: Any = None
+    modified: bool = False
+    """True when labels changed since the last save"""
 
 
 class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
@@ -53,6 +82,8 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
 
         # self._viewer = viewer # should not be needed
         self.config = config.ReviewConfig()
+        self.session: ReviewSession | None = None
+        """The running review, or None."""
         self.enable_utils_menu()
 
         #######################
@@ -67,16 +98,12 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
 
         self.new_csv_choice = ui.CheckBox("Create new dataset ?")
 
-        self.btn_start = ui.Button("Start reviewing", self.run_review, self)
+        self.btn_start = ui.Button("Start reviewing", self._on_start_clicked, self)
 
         self.lbl_mod = ui.make_label("Name", self)
 
-        self.warn_label = ui.make_label(
-            "WARNING : You already have a review session running.\n"
-            "Launching another will close the current one,\n"
-            " make sure to save your work beforehand",
-            None,
-        )
+        self.session_label = ui.make_label("", self)
+        self.session_label.setVisible(False)
 
         self.anisotropy_widgets = ui.AnisotropyWidgets(
             self, default_x=1.5, default_y=1.5, default_z=5
@@ -153,7 +180,10 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         ui.add_blank(self, layout)
         ###########################
 
-        ui.add_widgets(layout, [self.btn_start, self._make_close_button()])
+        ui.add_widgets(
+            layout,
+            [self.session_label, self.btn_start, self._make_close_button()],
+        )
 
         ui.ScrollArea.make_scrollable(
             contained_layout=layout, parent=tab, min_wh=[190, 300]
@@ -200,44 +230,188 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         self.config.new_csv = self.new_csv_choice.isChecked()
         # self.config.filetype = self.filetype
 
-        if self.anisotropy_widgets.enabled:
+        if self.anisotropy_widgets.enabled():
             zoom = self.anisotropy_widgets.scaling_zyx()
         else:
             zoom = [1, 1, 1]
         self.config.zoom_factor = zoom
 
+    def _on_start_clicked(self):
+        if self.session is None:
+            self.run_review()
+        else:
+            self.finish_review()
+
     def run_review(self):
-        """Launches review process by loading the files from the chosen folders, and adds several widgets to the napari Viewer.
+        """Starts a review session in the current viewer.
 
-        If the review process has been launched once before,
-        closes the window entirely and launches the review process in a fresh window.
-
-        Todo:
-        * Save work done before leaving
-
-        See launch_review
-
-        Returns:
-            napari.viewer.Viewer: self.viewer
+        The chosen image and labels layers are reviewed in place (layers are added
+        when reviewing from files, and an empty labels layer when none is given).
+        Every other layer is hidden, the review layers are protected from deletion,
+        and the review widgets are docked. :py:meth:`finish_review` undoes all of it
+        and keeps the layers.
         """
+        if self.session is not None and not self.finish_review():
+            return
         print("New review session\n" + "*" * 20)
-        previous_viewer = self._viewer
         try:
             self._prepare_data()
-
-            self._viewer, self.docked_widgets = self.launch_review()
-            self._reset()
-            previous_viewer.close()
         except ValueError as e:
             logger.warning(
                 f"An exception occurred : {e}. Please ensure you have entered all required parameters."
             )
+            return
 
-    def _reset(self):
+        self.session = self.launch_review()
+        self.btn_start.setText("Finish review")
+        self.session_label.setText(f"Reviewing : {self.session.labels.name}")
+        self.session_label.setVisible(True)
+
+    def finish_review(self, ask=True):
+        """Ends the review and restores the viewer as it was before.
+
+        Offers to save first when the labels changed since the last save.
+
+        Args:
+            ask (bool): show the save prompt. If False, unsaved changes are kept in the
+                layer but not written to disk.
+
+        Returns:
+            bool: False if the user cancelled, True otherwise.
+        """
+        session = self.session
+        if session is None:
+            return True
+        if ask and session.modified:
+            choice = QMessageBox.question(
+                self,
+                "Finish review",
+                f"Save the changes to '{session.labels.name}' before finishing ?",
+                QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel,
+                QMessageBox.Save,
+            )
+            if choice == QMessageBox.Cancel:
+                return False
+            if choice == QMessageBox.Save:
+                self.save_labels()
+
+        self._restore_viewer(session)
+        self.session = None
+        self.btn_start.setText("Start reviewing")
+        self.session_label.setVisible(False)
+        return True
+
+    def remove_from_viewer(self):
+        """Ends the review (asking to save if needed), then closes the plugin."""
+        if self.finish_review():
+            super().remove_from_viewer()
+
+    def save_labels(self, directory=None):
+        """Writes the reviewed labels to `labels_reviewed.tif`.
+
+        Args:
+            directory (str, optional): output folder. Defaults to the one in the save widget.
+        """
+        session = self.session
+        if session is None:
+            return None
+        if directory is None:
+            directory = session.save_dir.value
+        path = Path(directory) / "labels_reviewed.tif"
+        imwrite(str(path), data=session.labels.data)
+        session.modified = False
+        logger.info(f"Saved labels to {path}")
+        return path
+
+    def _mark_modified(self, event=None):
+        if self.session is not None:
+            self.session.modified = True
+
+    def _review_layers(self):
+        """Returns the (image, labels) layers to review, adding them when needed."""
+        viewer = self._viewer
+        from_layers = self.layer_choice.isChecked()
+        if from_layers:
+            volume = self.image_layer_loader.layer()
+            labels = (
+                self.label_layer_loader.layer()
+                if self.config.labels is not None
+                else None
+            )
+        else:
+            volume = viewer.add_image(
+                self.config.image,
+                name="volume",
+                colormap="inferno",
+                contrast_limits=[200, 1000],
+            )
+            labels = (
+                viewer.add_labels(self.config.labels, name="labels")
+                if self.config.labels is not None
+                else None
+            )
+        if labels is None:
+            labels = viewer.add_labels(
+                np.zeros(self.config.image.shape, dtype=np.uint16),
+                name="labels",
+            )
+
+        # keep the scale of existing layers unless anisotropy was set explicitly
+        if not from_layers or self.anisotropy_widgets.enabled():
+            volume.scale = self.config.zoom_factor
+            labels.scale = self.config.zoom_factor
+        return volume, labels
+
+    def _focus_on_review(self, session):
+        """Hides other layers, protects the review layers, selects the labels."""
+        viewer = self._viewer
+        # layers may be napari proxies: compare with ==, `in` and dict keys, never `is`
+        review_layers = (session.volume, session.labels)
+        session.selection = list(viewer.layers.selection)
+        session.active = viewer.layers.selection.active
+
+        for layer in viewer.layers:
+            if layer in review_layers:
+                continue
+            session.hidden[layer] = layer.visible
+            layer.visible = False
+
+        for layer in review_layers:
+            layer.visible = True
+            session.locks[layer] = layer.locked
+            layer.locked = True  # blocks deleting the layer from the UI
+
+        viewer.layers.selection.active = session.labels
+
+    def _restore_viewer(self, session):
+        """Removes the review widgets and callbacks, and restores the layers."""
+        viewer = self._viewer
+        if session.mouse_callback in viewer.mouse_drag_callbacks:
+            viewer.mouse_drag_callbacks.remove(session.mouse_callback)
+        if session.dims_callback is not None:
+            viewer.dims.events.current_step.disconnect(session.dims_callback)
+        if session.paint_event is not None:
+            session.paint_event.disconnect(self._mark_modified)
+
+        present = list(viewer.layers)
+        for layer, visible in session.hidden.items():
+            if layer in present:
+                layer.visible = visible
+        for layer, lock in session.locks.items():
+            layer.locked = lock
+
+        viewer.layers.selection.clear()
+        for layer in session.selection:
+            if layer in present:
+                viewer.layers.selection.add(layer)
+        if session.active in present:
+            viewer.layers.selection.active = session.active
+
+        self.docked_widgets = session.docks
         self.remove_docked_widgets()
 
     def launch_review(self):
-        """Launch the review process, loading the original image, the labels & the raw labels (from prediction) in the viewer.
+        """Sets up the review in the current viewer and returns its :py:class:`ReviewSession`.
 
         Adds several widgets to the viewer :
 
@@ -254,66 +428,37 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
           displays the chosen location on several projections (x-y, y-z, x-z),
           to allow the user to have a better all-around view of the object
           and determine whether it should be labeled or not.
-
-        Returns : list of all docked widgets
         """
-        images_original = self.config.image
-        if self.config.labels is not None:
-            base_label = self.config.labels
-        else:
-            base_label = np.zeros_like(images_original)
-
-        viewer = napari.Viewer()
-
+        viewer = self._viewer
+        volume, labels = self._review_layers()
+        session = ReviewSession(volume=volume, labels=labels)
+        self._focus_on_review(session)
         viewer.scale_bar.visible = True
 
-        viewer.add_image(
-            images_original,
-            name="volume",
-            colormap="inferno",
-            contrast_limits=[200, 1000],
-            scale=self.config.zoom_factor,
-        )  # anything bigger than 255 will get mapped to 255... they did it like this because it must have rgb images
-        viewer.add_labels(base_label, name="labels", scale=self.config.zoom_factor)
+        paint_event = labels.events.paint
+        paint_event.connect(self._mark_modified)
+        session.paint_event = paint_event
 
-        @magicgui(
-            dirname={"mode": "d", "label": "Save labels in... "},
-            call_button="Save",
-            # call_button_2="Save & quit",
+        # save folder | Choose directory | Open directory, then Save
+        save_dir = FileEdit(
+            mode="d", label="Save labels in... ", value=Path(self.config.csv_path)
         )
-        def file_widget(
-            dirname=Path(self.config.csv_path),
-        ):  # file name where to save annotations
-            # """Take a filename and do something with it."""
-            # logger.debug(("The filename is:", dirname)
-
-            dirname = Path(self.config.csv_path)
-            # def saver():
-            out_dir = file_widget.dirname.value
-
-            # logger.debug("The directory is:", out_dir)
-
-            def quicksave():
-                # if not self.config.as_stack:
-                if viewer.layers["labels"] is not None:
-                    name = str(Path(out_dir) / "labels_reviewed.tif")
-                    dat = viewer.layers["labels"].data
-                    imwrite(name, data=dat)
-
-                # else:
-                #     if viewer.layers["labels"] is not None:
-                #         dir_name = os.path.join(str(out_dir), "labels_reviewed")
-                #         dat = viewer.layers["labels"].data
-                #         utils.save_stack(
-                #             dat, dir_name, filetype=self.config.filetype
-                #         )
-
-            return dirname, quicksave()
-
-        file_widget_dock = viewer.window.add_dock_widget(
-            file_widget, name=" ", area="bottom"
+        open_dir_btn = PushButton(text="Open directory")
+        open_dir_btn.tooltip = "Show the save folder in the file browser"
+        open_dir_btn.changed.connect(lambda: ui.open_directory(save_dir.value))
+        save_btn = PushButton(text="Save")
+        save_btn.changed.connect(lambda: self.save_labels())
+        save_widget = Container(
+            widgets=[
+                Container(widgets=[save_dir, open_dir_btn], layout="horizontal"),
+                save_btn,
+            ]
         )
-        file_widget_dock._close_btn = False
+
+        session.save_dir = save_dir
+        session.docks.append(
+            viewer.window.add_dock_widget(save_widget, name=" ", area="bottom")
+        )
 
         with plt.style.context("dark_background"):
             canvas = FigureCanvas(Figure(figsize=(3, 15)))
@@ -335,17 +480,17 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             zx_axes.set_xlabel("X axis")
             zx_axes.set_ylabel("Z axis")
 
-            # canvas.figure.tight_layout()
             canvas.figure.subplots_adjust(
                 left=0.1, bottom=0.1, right=1, top=0.95, wspace=0, hspace=0.4
             )
 
         canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
+        session.docks.append(
+            viewer.window.add_dock_widget(canvas, name=" ", area="right")
+        )
 
-        canvas_dock = viewer.window.add_dock_widget(canvas, name=" ", area="right")
-        canvas_dock._close_btn = False
+        zoom_factor = self.config.zoom_factor
 
-        @viewer.mouse_drag_callbacks.append
         def update_canvas(viewer, event):
             if "shift" in event.modifiers:
                 try:
@@ -358,14 +503,9 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
                             cursor_position[1],
                             cursor_position[2],
                         ],
-                        viewer.layers["volume"],
-                        self.config.zoom_factor,
+                        volume.data,
+                        zoom_factor,
                     )
-
-                    ##########
-                    ##########
-                    # DEBUG
-                    # viewer.add_image(cropped_volume, name="DEBUG_crop_plot")
 
                     xy_axes.imshow(
                         cropped_volume[50], cmap="inferno", vmin=200, vmax=2000
@@ -386,16 +526,18 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
                 except Exception as e:
                     logger.exception(e)
 
-        # Qt widget defined in docker.py
-        dmg = Datamanager(parent=viewer)
+        viewer.mouse_drag_callbacks.append(update_canvas)
+        session.mouse_callback = update_canvas
+
+        # Qt widget defined in plugin_review_dock.py
+        dmg = Datamanager(parent=viewer, image_shape=volume.data.shape)
         dmg.prepare(
             self.config.csv_path,
             self.config.filetype,
             self.config.model_name,
             self.config.new_csv,
         )
-        datamananger = viewer.window.add_dock_widget(dmg, name=" ", area="left")
-        datamananger._close_btn = False
+        session.docks.append(viewer.window.add_dock_widget(dmg, name=" ", area="left"))
 
         def update_button(axis_event):
             slice_num = axis_event.value[0]
@@ -403,55 +545,49 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             dmg.update_dm(slice_num)
 
         viewer.dims.events.current_step.connect(update_button)
+        session.dims_callback = update_button
 
-        def crop_volume_around_point(points, layer, zoom_factor):
-            """Crops a volume around a point.
+        for dock in session.docks:
+            dock._close_btn = False
+        return session
 
-            Args:
-                points (list): list of 3 integers, the coordinates of the point to crop around
-                layer (napari.layers.Image): the layer to crop
-                zoom_factor (list): list of 3 floats, the zoom factor to apply to the layer before cropping
-            """
-            if zoom_factor != [1, 1, 1]:
-                data = np.array(layer.data, dtype=np.int16)
-                volume = utils.resize(data, zoom_factor)
-                # image = ndimage.zoom(layer.data, zoom_factor, mode="nearest") # cleaner but much slower...
-            else:
-                volume = layer.data
 
-            min_coordinates = [point - 50 for point in points]
-            max_coordinates = [point + 50 for point in points]
-            inferior_bound = [
-                min_coordinate if min_coordinate < 0 else 0
-                for min_coordinate in min_coordinates
-            ]
-            superior_bound = [
-                (
-                    max_coordinate - volume.shape[i]
-                    if volume.shape[i] < max_coordinate
-                    else 0
-                )
-                for i, max_coordinate in enumerate(max_coordinates)
-            ]
+def crop_volume_around_point(points, data, zoom_factor):
+    """Crops a 100x100x100 volume around a point, padding with zeros at the edges.
 
-            crop_slice = tuple(
-                slice(np.maximum(0, min_coordinate), max_coordinate)
-                for min_coordinate, max_coordinate in zip(
-                    min_coordinates, max_coordinates, strict=False
-                )
-            )
+    Args:
+        points (list): list of 3 integers, the coordinates of the point to crop around
+        data (np.ndarray): the volume to crop
+        zoom_factor (list): list of 3 floats, the zoom factor to apply to the volume before cropping
+    """
+    if list(zoom_factor) != [1, 1, 1]:
+        volume = utils.resize(np.array(data, dtype=np.int16), zoom_factor)
+    else:
+        volume = data
 
-            # if self.config.as_stack:
-            #     crop_temp = volume[crop_slice].persist().compute()
-            # else:
-            crop_temp = volume[crop_slice]
+    min_coordinates = [point - 50 for point in points]
+    max_coordinates = [point + 50 for point in points]
+    inferior_bound = [
+        min_coordinate if min_coordinate < 0 else 0
+        for min_coordinate in min_coordinates
+    ]
+    superior_bound = [
+        (max_coordinate - volume.shape[i] if volume.shape[i] < max_coordinate else 0)
+        for i, max_coordinate in enumerate(max_coordinates)
+    ]
 
-            cropped_volume = np.zeros((100, 100, 100), np.int16)
-            cropped_volume[
-                -inferior_bound[0] : 100 - superior_bound[0],
-                -inferior_bound[1] : 100 - superior_bound[1],
-                -inferior_bound[2] : 100 - superior_bound[2],
-            ] = crop_temp
-            return cropped_volume
+    crop_slice = tuple(
+        slice(np.maximum(0, min_coordinate), max_coordinate)
+        for min_coordinate, max_coordinate in zip(
+            min_coordinates, max_coordinates, strict=False
+        )
+    )
+    crop_temp = volume[crop_slice]
 
-        return viewer, [file_widget, canvas, dmg]
+    cropped_volume = np.zeros((100, 100, 100), np.int16)
+    cropped_volume[
+        -inferior_bound[0] : 100 - superior_bound[0],
+        -inferior_bound[1] : 100 - superior_bound[1],
+        -inferior_bound[2] : 100 - superior_bound[2],
+    ] = crop_temp
+    return cropped_volume
