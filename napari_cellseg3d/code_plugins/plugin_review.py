@@ -12,6 +12,7 @@ from magicgui.widgets import Container, FileEdit, PushButton
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
+from matplotlib.colors import ListedColormap, Normalize, PowerNorm
 from matplotlib.figure import Figure
 
 # Qt
@@ -43,6 +44,8 @@ class ReviewSession:
     dims_callback: Callable | None = None
     paint_event: Any = None
     """labels event that marks the session as modified"""
+    layer_events: list[tuple[Any, Callable]] = field(default_factory=list)
+    """(layer event, callback) pairs to disconnect when the review ends"""
     hidden: dict[Any, bool] = field(default_factory=dict)
     """other layers -> their visibility before the review"""
     locks: dict[Any, Any] = field(default_factory=dict)
@@ -392,6 +395,8 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             viewer.dims.events.current_step.disconnect(session.dims_callback)
         if session.paint_event is not None:
             session.paint_event.disconnect(self._mark_modified)
+        for emitter, callback in session.layer_events:
+            emitter.disconnect(callback)
 
         present = list(viewer.layers)
         for layer, visible in session.hidden.items():
@@ -462,27 +467,44 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
 
         with plt.style.context("dark_background"):
             canvas = FigureCanvas(Figure(figsize=(3, 15)))
-
-            xy_axes = canvas.figure.add_subplot(3, 1, 1)
             canvas.figure.suptitle("Shift-click on image for plot \n", fontsize=8)
-            xy_axes.imshow(np.zeros((100, 100), np.int16))
-            xy_axes.scatter(50, 50, s=30, c="green", alpha=0.6, marker="+")
-            xy_axes.set_xlabel("X axis")
-            xy_axes.set_ylabel("Y axis")
-            yz_axes = canvas.figure.add_subplot(3, 1, 2)
-            yz_axes.imshow(np.zeros((100, 100), np.int16))
-            yz_axes.scatter(50, 50, s=30, c="green", alpha=0.6, marker="+")
-            yz_axes.set_xlabel("Y axis")
-            yz_axes.set_ylabel("Z axis")
-            zx_axes = canvas.figure.add_subplot(3, 1, 3)
-            zx_axes.imshow(np.zeros((100, 100), np.int16))
-            zx_axes.scatter(50, 50, s=30, c="green", alpha=0.6, marker="+")
-            zx_axes.set_xlabel("X axis")
-            zx_axes.set_ylabel("Z axis")
+
+            images = []
+            for i, (xlabel, ylabel) in enumerate(
+                [("X axis", "Y axis"), ("Y axis", "Z axis"), ("X axis", "Z axis")]
+            ):
+                axes = canvas.figure.add_subplot(3, 1, i + 1)
+                images.append(
+                    axes.imshow(np.zeros((100, 100)), **layer_mpl_style(volume))
+                )
+                axes.scatter(50, 50, s=30, c="green", alpha=0.6, marker="+")
+                axes.set_xlabel(xlabel)
+                axes.set_ylabel(ylabel)
 
             canvas.figure.subplots_adjust(
                 left=0.1, bottom=0.1, right=1, top=0.95, wspace=0, hspace=0.4
             )
+
+        last_crop = {"volume": None}
+
+        def redraw(event=None):
+            """Refills the projections and copies the layer's colormap and contrast."""
+            style = layer_mpl_style(volume)
+            crop = last_crop["volume"]
+            for image, plane in zip(images, (0, 1, 2), strict=True):
+                if crop is not None:
+                    image.set_data(np.moveaxis(crop, plane, 0)[50])
+                image.set_cmap(style["cmap"])
+                image.set_norm(style["norm"])
+            canvas.draw_idle()
+
+        for emitter in (
+            volume.events.contrast_limits,
+            volume.events.gamma,
+            volume.events.colormap,
+        ):
+            emitter.connect(redraw)
+            session.layer_events.append((emitter, redraw))
 
         canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
         session.docks.append(
@@ -497,7 +519,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
                     cursor_position = np.round(viewer.cursor.position).astype(int)
                     logger.debug(f"plot @ {cursor_position}")
 
-                    cropped_volume = crop_volume_around_point(
+                    last_crop["volume"] = crop_volume_around_point(
                         [
                             cursor_position[0],
                             cursor_position[1],
@@ -506,23 +528,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
                         volume.data,
                         zoom_factor,
                     )
-
-                    xy_axes.imshow(
-                        cropped_volume[50], cmap="inferno", vmin=200, vmax=2000
-                    )
-                    yz_axes.imshow(
-                        cropped_volume.transpose(1, 0, 2)[50],
-                        cmap="inferno",
-                        vmin=200,
-                        vmax=2000,
-                    )
-                    zx_axes.imshow(
-                        cropped_volume.transpose(2, 0, 1)[50],
-                        cmap="inferno",
-                        vmin=200,
-                        vmax=2000,
-                    )
-                    canvas.draw_idle()
+                    redraw()
                 except Exception as e:
                     logger.exception(e)
 
@@ -552,6 +558,21 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         return session
 
 
+def layer_mpl_style(layer):
+    """Matplotlib `cmap` and `norm` matching how napari displays an image layer.
+
+    Uses the layer's colormap, contrast limits and gamma (napari applies gamma as
+    ((x - lo) / (hi - lo)) ** gamma, which is what PowerNorm does).
+    """
+    cmap = ListedColormap(layer.colormap.map(np.linspace(0, 1, 256)))
+    lo, hi = layer.contrast_limits
+    if layer.gamma == 1:
+        norm = Normalize(vmin=lo, vmax=hi, clip=True)
+    else:
+        norm = PowerNorm(gamma=layer.gamma, vmin=lo, vmax=hi, clip=True)
+    return {"cmap": cmap, "norm": norm}
+
+
 def crop_volume_around_point(points, data, zoom_factor):
     """Crops a 100x100x100 volume around a point, padding with zeros at the edges.
 
@@ -561,7 +582,7 @@ def crop_volume_around_point(points, data, zoom_factor):
         zoom_factor (list): list of 3 floats, the zoom factor to apply to the volume before cropping
     """
     if list(zoom_factor) != [1, 1, 1]:
-        volume = utils.resize(np.array(data, dtype=np.int16), zoom_factor)
+        volume = utils.resize(np.asarray(data, dtype=np.float32), zoom_factor)
     else:
         volume = data
 
@@ -584,7 +605,7 @@ def crop_volume_around_point(points, data, zoom_factor):
     )
     crop_temp = volume[crop_slice]
 
-    cropped_volume = np.zeros((100, 100, 100), np.int16)
+    cropped_volume = np.zeros((100, 100, 100), dtype=volume.dtype)
     cropped_volume[
         -inferior_bound[0] : 100 - superior_bound[0],
         -inferior_bound[1] : 100 - superior_bound[1],

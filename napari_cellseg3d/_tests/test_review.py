@@ -143,6 +143,38 @@ def test_anisotropy_checked_sets_layer_scale(review_setup):
     assert tuple(viewer.layers["empty labels"].scale) == pytest.approx(expected)
 
 
+def test_projection_style_follows_layer(make_napari_viewer_proxy):
+    viewer = make_napari_viewer_proxy()
+    layer = viewer.add_image(
+        np.zeros((4, 4, 4), np.float32), colormap="viridis", contrast_limits=(10, 50)
+    )
+    style = rev.layer_mpl_style(layer)
+    assert (style["norm"].vmin, style["norm"].vmax) == (10, 50)
+    assert np.allclose(style["cmap"](1.0), layer.colormap.map([1.0])[0])
+
+    layer.gamma = 0.5
+    assert rev.layer_mpl_style(layer)["norm"].gamma == 0.5
+
+
+def test_finish_disconnects_projection_redraw(review_setup):
+    viewer, widget, _ = review_setup
+    events = viewer.layers["image"].events.contrast_limits
+    n_callbacks = len(events.callbacks)
+
+    widget.run_review()
+    assert len(events.callbacks) == n_callbacks + 1
+    widget.finish_review(ask=False)
+
+    assert len(events.callbacks) == n_callbacks
+
+
+def test_crop_keeps_float_values():
+    data = np.full((20, 20, 20), 0.25, dtype=np.float32)
+    crop = rev.crop_volume_around_point([10, 10, 10], data, [1, 1, 1])
+    assert crop.dtype == np.float32
+    assert crop[50, 50, 50] == 0.25
+
+
 def test_crop_volume_around_point_pads_edges():
     data = np.ones((20, 20, 20), dtype=np.int16)
     crop = rev.crop_volume_around_point([0, 0, 0], data, [1, 1, 1])
