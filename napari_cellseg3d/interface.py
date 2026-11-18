@@ -3,6 +3,7 @@
 import contextlib
 import threading
 from functools import partial
+from pathlib import Path
 from typing import List, Optional
 from warnings import warn
 
@@ -1537,3 +1538,19 @@ def open_url(url):
         url (str): Url to be opened
     """
     QDesktopServices.openUrl(QUrl(url, QUrl.TolerantMode))
+
+
+def open_directory(path):
+    """Opens a folder in the OS file browser.
+
+    Args:
+        path (str | Path): folder to open
+
+    Returns:
+        bool: False if the folder does not exist or could not be opened.
+    """
+    path = Path(path)
+    if not path.is_dir():
+        logger.warning(f"Cannot open {path} : folder does not exist")
+        return False
+    return QDesktopServices.openUrl(QUrl.fromLocalFile(str(path.resolve())))
