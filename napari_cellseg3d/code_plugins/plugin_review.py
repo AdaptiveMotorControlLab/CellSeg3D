@@ -8,7 +8,6 @@ from typing import Any
 import matplotlib.pyplot as plt
 import napari
 import numpy as np
-from magicgui.widgets import Container, FileEdit, PushButton
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
@@ -17,7 +16,15 @@ from matplotlib.figure import Figure
 
 # Qt
 from qtpy.QtCore import QTimer
-from qtpy.QtWidgets import QLineEdit, QMessageBox, QSizePolicy
+from qtpy.QtWidgets import (
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMessageBox,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
+)
 from tifffile import imwrite
 
 # local
@@ -40,7 +47,7 @@ class ReviewSession:
     docks: list[Any] = field(default_factory=list)
     """dock widgets added for the review"""
     save_dir: Any = None
-    """magicgui FileEdit holding the save directory"""
+    """QLineEdit holding the save directory"""
     mouse_callback: Callable | None = None
     dims_callback: Callable | None = None
     paint_event: Any = None
@@ -320,7 +327,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         if session is None:
             return None
         if directory is None:
-            directory = session.save_dir.value
+            directory = session.save_dir.text()
         path = Path(directory) / "labels_reviewed.tif"
         imwrite(str(path), data=session.labels.data)
         session.modified = False
@@ -468,50 +475,63 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         volume, labels = self._review_layers()
         session = ReviewSession(volume=volume, labels=labels)
         self._focus_on_review(session)
-        viewer.scale_bar.visible = True
+        viewer.canvas.overlays.scale_bar.visible = True
 
         paint_event = labels.events.paint
         paint_event.connect(self._mark_modified)
         session.paint_event = paint_event
 
-        # save folder | Choose directory | Open directory, then Save
-        save_dir = FileEdit(
-            mode="d", label="Save labels in... ", value=Path(self.config.csv_path)
+        save_dir = QLineEdit(str(Path(self.config.csv_path)))
+        save_dir.setToolTip("Folder where labels_reviewed.tif is written")
+
+        def choose_directory():
+            chosen = ui.open_folder_dialog(save_dir, [save_dir.text()])
+            if chosen:  # empty when the dialog is cancelled
+                save_dir.setText(chosen)
+
+        choose_dir_btn = ui.Button("Choose directory", choose_directory, fixed=False)
+        open_dir_btn = ui.Button(
+            "Open directory",
+            lambda: ui.open_directory(save_dir.text()),
+            fixed=False,
         )
-        open_dir_btn = PushButton(text="Open directory")
-        open_dir_btn.tooltip = "Show the save folder in the file browser"
-        open_dir_btn.changed.connect(lambda: ui.open_directory(save_dir.value))
-        save_btn = PushButton(text="Save")
-        save_btn.changed.connect(lambda: self.save_labels())
-        exit_btn = PushButton(text="Exit review")
-        ui.set_hover_color(exit_btn.native)
-        exit_btn.tooltip = (
+        open_dir_btn.setToolTip("Show the save folder in the file browser")
+        save_btn = ui.Button("Save", lambda: self.save_labels(), fixed=False)
+        # deferred: this button's own dock is removed while finishing
+        exit_btn = ui.Button(
+            "Exit review",
+            lambda: QTimer.singleShot(0, self.finish_review),
+            fixed=False,
+        )
+        exit_btn.setToolTip(
             "Remove the review panels and restore the layers as they were "
             "(asks to save unsaved changes)"
         )
-        # deferred: this button's own dock is removed while finishing
-        exit_btn.changed.connect(lambda: QTimer.singleShot(0, self.finish_review))
-        save_widget = Container(
-            widgets=[
-                Container(widgets=[save_dir, open_dir_btn], layout="horizontal"),
-                Container(widgets=[save_btn, exit_btn], layout="horizontal"),
-            ]
-        )
+        ui.set_hover_color(exit_btn)
+
+        save_widget = QWidget()
+        save_layout = QVBoxLayout(save_widget)
+        save_layout.setContentsMargins(0, 0, 0, 0)
+        save_layout.addWidget(QLabel("Save labels in..."))
+        save_layout.addWidget(save_dir)
+        for left, right in ((choose_dir_btn, open_dir_btn), (save_btn, exit_btn)):
+            row = QHBoxLayout()
+            row.addWidget(left)
+            row.addWidget(right)
+            save_layout.addLayout(row)
 
         session.save_dir = save_dir
-        session.docks.append(
-            viewer.window.add_dock_widget(save_widget, name=" ", area="bottom")
-        )
 
+        # projections side by side, in the bottom bar
         with plt.style.context("dark_background"):
-            canvas = FigureCanvas(Figure(figsize=(3, 15)))
-            canvas.figure.suptitle("Shift-click on image for plot \n", fontsize=8)
+            canvas = FigureCanvas(Figure(figsize=(12, 3.2)))
+            canvas.figure.suptitle("Shift-click on image for plot", fontsize=8)
 
             images = []
             for i, (xlabel, ylabel) in enumerate(
                 [("X axis", "Y axis"), ("Y axis", "Z axis"), ("X axis", "Z axis")]
             ):
-                axes = canvas.figure.add_subplot(3, 1, i + 1)
+                axes = canvas.figure.add_subplot(1, 3, i + 1)
                 images.append(
                     axes.imshow(np.zeros((100, 100)), **layer_mpl_style(volume))
                 )
@@ -520,7 +540,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
                 axes.set_ylabel(ylabel)
 
             canvas.figure.subplots_adjust(
-                left=0.1, bottom=0.1, right=1, top=0.95, wspace=0, hspace=0.4
+                left=0.05, bottom=0.18, right=0.98, top=0.88, wspace=0.3
             )
 
         last_crop = {"volume": None}
@@ -544,9 +564,10 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             emitter.connect(redraw)
             session.layer_events.append((emitter, redraw))
 
-        canvas.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
+        canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        canvas.setMinimumHeight(200)
         session.docks.append(
-            viewer.window.add_dock_widget(canvas, name=" ", area="right")
+            viewer.window.add_dock_widget(canvas, name=" ", area="bottom")
         )
 
         zoom_factor = self.config.zoom_factor
@@ -581,7 +602,15 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             self.config.model_name,
             self.config.new_csv,
         )
-        session.docks.append(viewer.window.add_dock_widget(dmg, name=" ", area="left"))
+        # one left dock: slice checked / timer, then save folder, Save and Exit
+        controls = QWidget()
+        controls_layout = QVBoxLayout(controls)
+        controls_layout.addWidget(dmg)
+        controls_layout.addWidget(save_widget)
+        controls_layout.addStretch(1)
+        session.docks.append(
+            viewer.window.add_dock_widget(controls, name=" ", area="left")
+        )
 
         def update_button(axis_event):
             slice_num = axis_event.value[0]
@@ -590,9 +619,6 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
 
         viewer.dims.events.current_step.connect(update_button)
         session.dims_callback = update_button
-
-        for dock in session.docks:
-            dock._close_btn = False
         return session
 
 

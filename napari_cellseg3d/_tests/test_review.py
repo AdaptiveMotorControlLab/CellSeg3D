@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from qtpy.QtWidgets import QPushButton
 
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.code_plugins import plugin_review as rev
@@ -41,7 +42,7 @@ def test_review_stays_in_viewer(review_setup):
     assert widget.session.labels.name == "empty labels"
     assert not viewer.layers["other"].visible
     assert viewer.layers.selection.active.name == "empty labels"
-    assert len(widget.session.docks) == 3
+    assert len(widget.session.docks) == 2  # plots (bottom) + controls (left)
     assert widget.btn_start.text() == "Finish review"
 
 
@@ -58,6 +59,18 @@ def test_finish_restores_viewer(review_setup):
     assert widget.docked_widgets == []
     assert widget.btn_start.text() == "Start reviewing"
     assert not viewer.layers["empty labels"].locked
+
+
+def test_controls_share_one_dock(review_setup):
+    _, widget, _ = review_setup
+    widget.run_review()
+
+    controls = widget.session.docks[1].widget()
+    assert controls.findChild(rev.Datamanager) is not None  # checked / timer
+    labels = {b.text() for b in controls.findChildren(QPushButton)}
+    assert {"Save", "Exit review", "Choose directory", "Open directory"} <= labels
+    plots = widget.session.docks[0].widget()
+    assert isinstance(plots, rev.FigureCanvas)
 
 
 def test_finish_is_idempotent(review_setup):
@@ -94,7 +107,7 @@ def test_restart_does_not_stack_widgets(review_setup):
     widget.run_review()
     widget.run_review()  # nothing modified: finishes the first session silently
 
-    assert len(widget.session.docks) == 3
+    assert len(widget.session.docks) == 2  # plots (bottom) + controls (left)
     assert len(viewer.mouse_drag_callbacks) == callbacks_before + 1
 
 
@@ -115,7 +128,7 @@ def test_save_button_writes_to_chosen_folder(review_setup, tmp_path):
     widget.run_review()
     out = tmp_path / "chosen"
     out.mkdir()
-    widget.session.save_dir.value = out
+    widget.session.save_dir.setText(str(out))
 
     widget.save_labels()
 
