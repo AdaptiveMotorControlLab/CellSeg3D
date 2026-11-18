@@ -60,6 +60,33 @@ def test_finish_restores_viewer(review_setup):
     assert not viewer.layers["empty labels"].locked
 
 
+def test_finish_is_idempotent(review_setup):
+    viewer, widget, _ = review_setup
+    assert widget.finish_review(ask=False)  # no session: nothing to do
+
+    widget.run_review()
+    assert widget.finish_review(ask=False)
+    assert widget.finish_review(ask=False)
+
+    assert widget.session is None
+    assert viewer.layers["other"].visible
+
+
+def test_finish_survives_missing_dock_and_layer(review_setup):
+    viewer, widget, _ = review_setup
+    widget.run_review()
+    viewer.window.remove_dock_widget(widget.session.docks[0])
+    viewer.layers.remove("other")
+
+    assert widget.finish_review(ask=False)
+
+    assert widget.session is None
+    assert widget.docked_widgets == []
+    assert viewer.layers.selection.active is None or (
+        viewer.layers.selection.active.name != "other"
+    )
+
+
 def test_restart_does_not_stack_widgets(review_setup):
     viewer, widget, _ = review_setup
     callbacks_before = len(viewer.mouse_drag_callbacks)

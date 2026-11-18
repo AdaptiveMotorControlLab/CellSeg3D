@@ -67,6 +67,7 @@ default_cyan = "#8dd3c7"  # turquoise cyan (default matplotlib line color under 
 napari_grey = "#262930"  # napari background color (grey)
 napari_param_grey = "#414851"  # napari parameters menu color (lighter gray)
 napari_param_darkgrey = "#202228"  # napari default LineEdit color
+coral_red = "#FF6F61"  # hover color for buttons that end or discard something
 ###############
 # dimensions for utils ScrollArea
 UTILS_MAX_WIDTH = 300
@@ -1538,6 +1539,18 @@ def open_url(url):
         url (str): Url to be opened
     """
     QDesktopServices.openUrl(QUrl(url, QUrl.TolerantMode))
+
+
+def set_hover_color(button, color=coral_red):
+    """Makes a push button glow with `color` while hovered; other states keep the napari theme.
+
+    Args:
+        button (QPushButton): the Qt button (for a magicgui widget, pass its `.native`)
+        color (str): hover background color
+    """
+    button.setStyleSheet(
+        f"QPushButton:hover {{ background-color: {color}; color: white; }}"
+    )
 
 
 def open_directory(path):
