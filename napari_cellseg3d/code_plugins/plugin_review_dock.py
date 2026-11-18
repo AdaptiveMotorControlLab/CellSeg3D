@@ -31,11 +31,14 @@ Definition of Datamanager widget, for saving labels status in csv file
 class Datamanager(QWidget):
     """A widget with a single checkbox that allows to store the status of a slice in csv file (checked/not checked)."""
 
-    def __init__(self, parent: "napari.viewer.Viewer"):
+    def __init__(self, parent: "napari.viewer.Viewer", image_shape=None):
         """Creates the datamanager widget in the specified viewer window.
 
         Args:
             parent (napari.viewer.Viewer): napari Viewer for the widget to be displayed in
+            image_shape (tuple, optional): shape of the reviewed volume. Defaults to the shape
+                of the viewer's first layer, which is only right when the viewer holds nothing
+                but the review.
         """
         super().__init__()
 
@@ -77,7 +80,11 @@ class Datamanager(QWidget):
         self.slice_num = 0
         self.filetype = ""
         self.filename = None
-        self.image_dims = self.viewer.layers[0].data.shape
+        self.image_dims = (
+            tuple(image_shape)
+            if image_shape is not None
+            else self.viewer.layers[0].data.shape
+        )
         self.as_folder = False
         """Whether to load as folder or single file"""
 
