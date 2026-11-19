@@ -35,6 +35,17 @@ def test_save_folder():
         assert (test_path / folder_name / images_paths[i]).is_file()
 
 
+@pytest.mark.parametrize("dtype", [np.uint8, np.uint32, np.float32, np.bool_])
+def test_save_layer_keeps_dtype(tmp_path, dtype):
+    from tifffile import imread
+
+    image = (rand_gen.random((5, 5, 5)) * 100_000).astype(dtype)
+    utils.save_layer(tmp_path, "layer.tif", image)
+    saved = imread(tmp_path / "layer.tif")
+    assert saved.dtype == image.dtype
+    np.testing.assert_array_equal(saved, image)
+
+
 def test_normalize_y():
     test_array = np.array([0, 255, 127.5])
     results = utils.normalize_y(test_array)
