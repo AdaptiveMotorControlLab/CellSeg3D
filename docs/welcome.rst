@@ -100,6 +100,10 @@ and choose the correct tool to use:
     Many buttons have tooltips to help you understand what they do.
     Simply hover over them to see the tooltip.
 
+.. tip::
+    To try the plugin without your own data, download & open the small demo volume from
+    **File > Open Sample > CellSeg3D > Demo volume (c5image)**.
+
 
 Documentation contents
 --------------------------------------------
