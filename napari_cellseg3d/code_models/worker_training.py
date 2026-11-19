@@ -78,7 +78,6 @@ except (ImportError, ModuleNotFoundError):
     )
     WANDB_INSTALLED = False
 
-VERBOSE_SCHEDULER = True
 logger.debug(f"PRETRAINED WEIGHT DIR LOCATION : {PRETRAINED_WEIGHTS_DIR}")
 
 """
@@ -1403,7 +1402,6 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                     mode="min",
                     factor=factor,
                     patience=self.config.scheduler_patience,
-                    verbose=VERBOSE_SCHEDULER,
                 )
                 if provided_scheduler is None
                 else provided_scheduler
