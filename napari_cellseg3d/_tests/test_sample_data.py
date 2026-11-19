@@ -17,3 +17,4 @@ def test_c5image_open_sample(make_napari_viewer_proxy):
     viewer.open_sample("napari-cellseg3d", "c5image")
     assert viewer.layers[-1].name == "c5image"
     assert viewer.layers[-1].data.shape == (124, 86, 94)
+    assert viewer.layers[-1].colormap.name == "inferno"
