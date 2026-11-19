@@ -94,7 +94,7 @@ class ArtifactRemovalUtils(BasePluginUtils):
         return container
 
     def _remove_large(self, data, size):
-        return clear_large_objects(data, size).astype(np.uint16)
+        return clear_large_objects(data, size)
 
     def _start(self):
         utils.mkdir_from_str(self.results_path)
@@ -294,10 +294,7 @@ class AnisoUtils(BasePluginUtils):
                     f"isotropic_{layer.name}_{utils.get_date_time()}.tif",
                     isotropic_image,
                 )
-                if isinstance(layer, napari.layers.Image):
-                    isotropic_image = isotropic_image.astype(layer.data.dtype)
-                else:
-                    isotropic_image = isotropic_image.astype(np.uint16)
+                isotropic_image = isotropic_image.astype(layer.data.dtype)
                 self.layer = utils.show_result(
                     self._viewer,
                     layer,
