@@ -46,6 +46,28 @@ def test_save_layer_keeps_dtype(tmp_path, dtype):
     np.testing.assert_array_equal(saved, image)
 
 
+@pytest.mark.parametrize(
+    ("max_label", "expected"),
+    [(1, np.uint8), (300, np.uint16), (70_000, np.uint32)],
+)
+def test_save_layer_narrows_labels(tmp_path, max_label, expected):
+    from tifffile import imread
+
+    labels = np.zeros((4, 4, 4), dtype=np.int64)
+    labels[0, 0, 0] = max_label
+    utils.save_layer(tmp_path, "labels.tif", labels, labels=True)
+    saved = imread(tmp_path / "labels.tif")
+    assert saved.dtype == expected
+    np.testing.assert_array_equal(saved, labels)
+
+
+def test_narrow_labels_dtype_leaves_other_arrays():
+    floats = np.array([0.0, 2.5], dtype=np.float32)
+    negatives = np.array([-1, 5], dtype=np.int32)
+    assert utils.optimize_labels_dtype(floats).dtype == np.float32
+    assert utils.optimize_labels_dtype(negatives).dtype == np.int32
+
+
 def test_normalize_y():
     test_array = np.array([0, 255, 127.5])
     results = utils.normalize_y(test_array)

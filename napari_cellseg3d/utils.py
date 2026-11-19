@@ -54,16 +54,28 @@ def save_folder(results_path, folder_name, images, image_paths, exist_ok=False):
     LOGGER.info(f"Saved processed folder as : {results_folder}")
 
 
-def save_layer(results_path, image_name, image):
-    """Saves an image layer at the specified path.
+def optimize_labels_dtype(labels: np.ndarray) -> np.ndarray:
+    """Casts non-negative integer labels to the smallest unsigned dtype that still contains the max value."""
+    if not np.issubdtype(labels.dtype, np.integer) or labels.size == 0:
+        return labels
+    if labels.min() < 0:
+        return labels
+    return labels.astype(np.min_scalar_type(int(labels.max())), copy=False)
+
+
+def save_layer(results_path, image_name, image, labels=False):
+    """Saves an image layer at the specified path, keeping its dtype.
 
     Args:
         results_path: path to folder containing result
         image_name: image name for saving
         image: data array containing image
+        labels: if True, integer labels are saved with the smallest unsigned dtype that fits them
     """
     path = str(results_path / Path(image_name))  # TODO flexible filetype
     LOGGER.info(f"Saved as : {path}")
+    if labels:
+        image = optimize_labels_dtype(image)
     imwrite(path, image)
 
 
