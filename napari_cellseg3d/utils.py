@@ -64,8 +64,7 @@ def save_layer(results_path, image_name, image):
     """
     path = str(results_path / Path(image_name))  # TODO flexible filetype
     LOGGER.info(f"Saved as : {path}")
-    image = image.astype(np.float32)
-    imwrite(path, image, dtype="float32")
+    imwrite(path, image)
 
 
 def show_result(
