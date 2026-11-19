@@ -49,4 +49,5 @@ def c5image():
     """Small demo volume from IDR project 853 (see examples/README.md)."""
     from tifffile import imread
 
-    return [(imread(_c5image_path()), {"name": "c5image"}, "image")]
+    metadata = {"name": "c5image", "colormap": "inferno"}
+    return [(imread(_c5image_path()), metadata, "image")]
