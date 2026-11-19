@@ -24,6 +24,10 @@ contributions:
     title: Create Trainer widget
     python_name: napari_cellseg3d.plugins:Trainer
 
+  - id: napari-cellseg3d.sample_c5image
+    title: Load demo volume (c5image)
+    python_name: napari_cellseg3d._sample_data:c5image
+
 
   widgets:
   - command: napari-cellseg3d.load
@@ -40,3 +44,8 @@ contributions:
 
   - command: napari-cellseg3d.help
     display_name: Help/About...
+
+  sample_data:
+  - key: c5image
+    display_name: Demo volume (c5image)
+    command: napari-cellseg3d.sample_c5image
