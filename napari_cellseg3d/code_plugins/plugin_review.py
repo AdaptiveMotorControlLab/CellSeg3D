@@ -623,6 +623,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             self.config.filetype,
             self.config.model_name,
             self.config.new_csv,
+            slice_num=volume_slice_index(viewer, volume),
         )
         # one left dock: slice checked / timer, then save folder, Save and Exit
         controls = QWidget()
@@ -634,14 +635,27 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             viewer.window.add_dock_widget(controls, name=" ", area="left")
         )
 
-        def update_button(axis_event):
-            slice_num = axis_event.value[0]
+        def update_button(axis_event=None):
+            slice_num = volume_slice_index(viewer, volume)
             logger.debug(f"slice num is {slice_num}")
             dmg.update_dm(slice_num)
 
         viewer.dims.events.current_step.connect(update_button)
         session.dims_callback = update_button
         return session
+
+
+def volume_slice_index(viewer, layer):
+    """Index along the layer's first data axis (Z) at the viewer's current position.
+
+    The viewer can have more dimensions than the layer, e.g. after a WNet3D inference
+    adds a (classes, Z, Y, X) prediction: viewer axis 0 is then the class axis, even
+    when that layer is hidden. napari aligns layers to the trailing viewer axes and
+    `world_to_data` keeps the trailing coordinates, so leading axes are ignored and the
+    layer's own transform (scale, translate...) is applied.
+    """
+    z = layer.world_to_data(np.asarray(viewer.dims.point, dtype=float))[0]
+    return int(np.clip(np.round(z), 0, layer.data.shape[0] - 1))
 
 
 def layer_mpl_style(layer):

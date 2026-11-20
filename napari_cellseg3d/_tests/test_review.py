@@ -197,6 +197,41 @@ def test_finish_restores_selection_when_layers_were_added(review_setup):
     assert [layer.name for layer in viewer.layers.selection] == ["other"]
 
 
+def _datamanager(widget):
+    return widget.session.docks[1].widget().findChild(rev.Datamanager)
+
+
+def test_slice_ignores_extra_viewer_axes(review_setup):
+    viewer, widget, _ = review_setup
+    # like a WNet3D prediction: (classes, Z, Y, X), hidden but still adds a viewer axis
+    viewer.add_image(np.zeros((2, 8, 32, 32)), name="pred", visible=False)
+    assert viewer.dims.ndim == 4
+    viewer.dims.set_point(0, 1)  # class axis
+    viewer.dims.set_point(1, 3)  # Z of the reviewed volume
+
+    widget.run_review()
+    dmg = _datamanager(widget)
+    assert dmg.slice_num == 3
+
+    viewer.dims.set_point(1, 6)
+    assert dmg.slice_num == 6
+    viewer.dims.set_point(0, 0)  # changing class must not move the reviewed slice
+    assert dmg.slice_num == 6
+
+
+def test_slice_follows_layer_scale(review_setup):
+    viewer, widget, _ = review_setup
+    viewer.layers["image"].scale = (2, 1, 1)
+    viewer.layers["empty labels"].scale = (2, 1, 1)
+    # an unscaled layer makes the viewer's Z step 1, so step index != data index
+    viewer.add_image(np.zeros((16, 32, 32)), name="unscaled", visible=False)
+
+    widget.run_review()
+    viewer.dims.set_point(0, 10)  # world Z 10 is data slice 5
+
+    assert _datamanager(widget).slice_num == 5
+
+
 def test_review_without_labels_adds_empty_layer(review_setup):
     viewer, widget, _ = review_setup
     viewer.layers.remove("empty labels")

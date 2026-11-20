@@ -124,7 +124,7 @@ class Datamanager(QWidget):
         self.df.at[0, "time"] = str_time
         self.df.to_csv(self.csv_path)
 
-    def prepare(self, label_dir, filetype, model_type, checkbox):
+    def prepare(self, label_dir, filetype, model_type, checkbox, slice_num=None):
         """Initialize the Datamanager, which loads the csv file and updates it with the index of the current slice.
 
         Args:
@@ -132,7 +132,8 @@ class Datamanager(QWidget):
             filetype (str) : file extension
             model_type (str): model type
             checkbox (bool): create new dataset or not
-            as_folder (bool) : load as folder or as single file
+            slice_num (int, optional): current slice of the reviewed volume. Defaults to
+                the viewer's first axis, which is only correct if only review layers are present.
         """
         # label_dir = os.path.dirname(label_dir)
         logger.debug("csv path try :")
@@ -150,8 +151,9 @@ class Datamanager(QWidget):
 
         logger.debug(f"csv path : {self.csv_path}")
         logger.debug(f"Create new dataset : {checkbox}")
-        # logger.debug(self.viewer.dims.current_step[0])
-        self.update_dm(self.viewer.dims.current_step[0])
+        if slice_num is None:
+            slice_num = self.viewer.dims.current_step[0]
+        self.update_dm(slice_num)
 
     def load_csv(self, label_dir, model_type, checkbox):
         """Loads newest csv or create new csv.
