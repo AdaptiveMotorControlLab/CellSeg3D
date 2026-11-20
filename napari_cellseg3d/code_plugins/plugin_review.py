@@ -368,8 +368,14 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             )
         if labels is None:
             labels = viewer.add_labels(
-                np.zeros(self.config.image.shape, dtype=np.uint16),
+                # :ndim drops the channel axis of rgb images, as napari does
+                np.zeros(volume.data.shape[: volume.ndim], dtype=np.uint16),
                 name="labels",
+                scale=volume.scale,
+                translate=volume.translate,
+                rotate=volume.rotate,
+                shear=volume.shear,
+                affine=volume.affine,
             )
 
         # keep the scale of existing layers unless anisotropy was set explicitly

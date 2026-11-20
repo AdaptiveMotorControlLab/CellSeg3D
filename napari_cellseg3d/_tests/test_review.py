@@ -197,6 +197,25 @@ def test_review_without_labels_adds_empty_layer(review_setup):
     assert not widget.session.labels.data.any()
 
 
+def test_empty_labels_follow_image_transform(review_setup):
+    viewer, widget, _ = review_setup
+    viewer.layers.remove("empty labels")
+    image = viewer.layers["image"]
+    image.scale = (2, 1, 1)
+    image.translate = (0, 5, -3)
+    image.rotate = 30
+    assert not widget.anisotropy_widgets.enabled()
+
+    widget.run_review()
+
+    labels = widget.session.labels
+    np.testing.assert_allclose(labels.scale, image.scale)
+    np.testing.assert_allclose(labels.translate, image.translate)
+    np.testing.assert_allclose(labels.rotate, image.rotate)
+    np.testing.assert_allclose(labels.shear, image.shear)
+    np.testing.assert_allclose(labels.affine.affine_matrix, image.affine.affine_matrix)
+
+
 def test_anisotropy_unchecked_keeps_layer_scale(review_setup):
     viewer, widget, _ = review_setup
     viewer.layers["image"].scale = (2, 1, 1)
