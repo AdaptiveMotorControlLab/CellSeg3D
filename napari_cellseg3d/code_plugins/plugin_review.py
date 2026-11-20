@@ -475,7 +475,12 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         volume, labels = self._review_layers()
         session = ReviewSession(volume=volume, labels=labels)
         self._focus_on_review(session)
-        viewer.canvas.overlays.scale_bar.visible = True
+        # napari >= 0.9 moved overlays to viewer.canvas
+        canvas = getattr(viewer, "canvas", None)
+        scale_bar = (
+            canvas.overlays.scale_bar if canvas is not None else viewer.scale_bar
+        )
+        scale_bar.visible = True
 
         paint_event = labels.events.paint
         paint_event.connect(self._mark_modified)
