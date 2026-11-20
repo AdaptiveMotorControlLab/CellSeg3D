@@ -74,6 +74,28 @@ def test_controls_share_one_dock(review_setup):
     assert isinstance(plots, rev.FigureCanvas)
 
 
+def test_projection_labels_match_data():
+    # each voxel holds its own coordinates, so a section shows which axes it spans
+    z, y, x = np.indices((100, 100, 100))
+    crop = {"Z axis": z, "Y axis": y, "X axis": x}
+
+    for plane, xlabel, ylabel in rev.PROJECTIONS:
+        rows = rev.projection(crop[ylabel], plane)
+        cols = rev.projection(crop[xlabel], plane)
+        # the y-labelled axis varies down rows, the x-labelled one along columns
+        np.testing.assert_array_equal(rows[:, 0], np.arange(100))
+        np.testing.assert_array_equal(cols[0, :], np.arange(100))
+
+
+def test_figure_uses_projection_labels(review_setup):
+    _, widget, _ = review_setup
+    widget.run_review()
+
+    figure = widget.session.docks[0].widget().figure
+    labels = [(a.get_xlabel(), a.get_ylabel()) for a in figure.axes]
+    assert labels == [(xlabel, ylabel) for _, xlabel, ylabel in rev.PROJECTIONS]
+
+
 def test_finish_is_idempotent(review_setup):
     viewer, widget, _ = review_setup
     assert widget.finish_review(ask=False)  # no session: nothing to do
