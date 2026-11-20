@@ -569,11 +569,15 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             """Refills the projections and copies the layer's colormap and contrast."""
             style = layer_mpl_style(volume)
             crop = last_crop["volume"]
+            scale = np.asarray(volume.scale[-3:], dtype=float)
             for image, (plane, _, _) in zip(images, PROJECTIONS, strict=True):
                 if crop is not None:
                     image.set_data(projection(crop, plane))
                 image.set_cmap(style["cmap"])
                 image.set_norm(style["norm"])
+                # stretch to layer scale
+                rows, cols = (axis for axis in range(3) if axis != plane)
+                image.axes.set_aspect(scale[rows] / scale[cols])
             canvas.draw_idle()
 
         for emitter in (
@@ -590,26 +594,19 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             viewer.window.add_dock_widget(canvas, name=" ", area="bottom")
         )
 
-        zoom_factor = self.config.zoom_factor
-
         def update_canvas(viewer, event):
-            if "shift" in event.modifiers:
-                try:
-                    cursor_position = np.round(viewer.cursor.position).astype(int)
-                    logger.debug(f"plot @ {cursor_position}")
+            if "shift" not in event.modifiers:
+                return
+            try:
+                # world -> data: drops extra viewer axes, reverse scale/translate
+                position = np.asarray(viewer.cursor.position, dtype=float)
+                point = np.round(volume.world_to_data(position)[-3:]).astype(int)
+                logger.debug(f"plot @ {point}")
 
-                    last_crop["volume"] = crop_volume_around_point(
-                        [
-                            cursor_position[0],
-                            cursor_position[1],
-                            cursor_position[2],
-                        ],
-                        volume.data,
-                        zoom_factor,
-                    )
-                    redraw()
-                except Exception as e:
-                    logger.exception(e)
+                last_crop["volume"] = crop_volume_around_point(point, volume.data)
+                redraw()
+            except Exception as e:
+                logger.exception(e)
 
         viewer.mouse_drag_callbacks.append(update_canvas)
         session.mouse_callback = update_canvas
@@ -684,18 +681,14 @@ def layer_mpl_style(layer):
     return {"cmap": cmap, "norm": norm}
 
 
-def crop_volume_around_point(points, data, zoom_factor):
+def crop_volume_around_point(points, data):
     """Crops a 100x100x100 volume around a point, padding with zeros at the edges.
 
     Args:
-        points (list): list of 3 integers, the coordinates of the point to crop around
+        points (list): list of 3 integers, the data coordinates of the point to crop around
         data (np.ndarray): the volume to crop
-        zoom_factor (list): list of 3 floats, the zoom factor to apply to the volume before cropping
     """
-    if list(zoom_factor) != [1, 1, 1]:
-        volume = utils.resize(np.asarray(data, dtype=np.float32), zoom_factor)
-    else:
-        volume = data
+    volume = data
 
     min_coordinates = [point - 50 for point in points]
     max_coordinates = [point + 50 for point in points]

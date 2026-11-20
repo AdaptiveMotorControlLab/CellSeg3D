@@ -332,16 +332,59 @@ def test_finish_disconnects_projection_redraw(review_setup):
     assert len(events.callbacks) == n_callbacks
 
 
+class _ShiftClick:
+    modifiers = ("shift",)
+
+
+def _shift_click(viewer, widget, world_position):
+    viewer.cursor.position = world_position
+    widget.session.mouse_callback(viewer, _ShiftClick())
+    figure = widget.session.docks[0].widget().figure
+    return [np.asarray(axes.images[0].get_array()) for axes in figure.axes]
+
+
+@pytest.mark.parametrize("anisotropic", [False, True])
+def test_shift_click_plots_the_shown_slice(review_setup, anisotropic):
+    viewer, widget, _ = review_setup
+    image = viewer.layers["image"]
+    image.data = np.broadcast_to(
+        np.arange(8, dtype=np.float32)[:, None, None], (8, 32, 32)
+    ).copy()  # each voxel holds its Z index
+    widget.anisotropy_widgets.checkbox.setChecked(anisotropic)
+
+    widget.run_review()
+    scale_z = image.scale[0]
+    for z in range(8):
+        viewer.dims.set_point(0, z * scale_z)
+        xy, _, _ = _shift_click(viewer, widget, (z * scale_z, 16, 16))
+        assert _datamanager(widget).slice_num == z
+        assert xy[50, 50] == z
+
+
+def test_shift_click_ignores_extra_viewer_axes(review_setup):
+    viewer, widget, _ = review_setup
+    image = viewer.layers["image"]
+    image.data = np.broadcast_to(
+        np.arange(8, dtype=np.float32)[:, None, None], (8, 32, 32)
+    ).copy()
+    viewer.add_image(np.zeros((2, 8, 32, 32)), name="pred", visible=False)
+
+    widget.run_review()
+    xy, _, _ = _shift_click(viewer, widget, (1, 3, 16, 16))
+
+    assert xy[50, 50] == 3
+
+
 def test_crop_keeps_float_values():
     data = np.full((20, 20, 20), 0.25, dtype=np.float32)
-    crop = rev.crop_volume_around_point([10, 10, 10], data, [1, 1, 1])
+    crop = rev.crop_volume_around_point([10, 10, 10], data)
     assert crop.dtype == np.float32
     assert crop[50, 50, 50] == 0.25
 
 
 def test_crop_volume_around_point_pads_edges():
     data = np.ones((20, 20, 20), dtype=np.int16)
-    crop = rev.crop_volume_around_point([0, 0, 0], data, [1, 1, 1])
+    crop = rev.crop_volume_around_point([0, 0, 0], data)
     assert crop.shape == (100, 100, 100)
     assert crop[50:70, 50:70, 50:70].all()
     assert not crop[:50].any()
