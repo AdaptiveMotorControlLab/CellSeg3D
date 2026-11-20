@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from napari._qt.qt_main_window import Window
 from qtpy.QtWidgets import QPushButton
 
 from napari_cellseg3d import interface as ui
@@ -98,6 +99,41 @@ def test_finish_survives_missing_dock_and_layer(review_setup):
     assert viewer.layers.selection.active is None or (
         viewer.layers.selection.active.name != "other"
     )
+
+
+def test_failed_setup_restores_viewer(review_setup, monkeypatch):
+    viewer, widget, _ = review_setup
+    callbacks_before = list(viewer.mouse_drag_callbacks)
+    added_docks, removed_docks = [], []
+    original_add = Window.add_dock_widget
+    original_remove = Window.remove_dock_widget
+
+    def spy_add(self, *args, **kwargs):
+        dock = original_add(self, *args, **kwargs)
+        added_docks.append(dock)
+        return dock
+
+    def spy_remove(self, dock, *args, **kwargs):
+        removed_docks.append(dock)
+        return original_remove(self, dock, *args, **kwargs)
+
+    def broken_prepare(*args, **kwargs):
+        # by now the layers are hidden/locked, the plot dock and mouse callback installed
+        raise ValueError("malformed csv")
+
+    monkeypatch.setattr(Window, "add_dock_widget", spy_add)
+    monkeypatch.setattr(Window, "remove_dock_widget", spy_remove)
+    monkeypatch.setattr(rev.Datamanager, "prepare", broken_prepare)
+    widget.run_review()
+
+    assert widget.session is None
+    assert viewer.layers["other"].visible
+    assert not viewer.layers["image"].locked
+    assert not viewer.layers["empty labels"].locked
+    assert list(viewer.mouse_drag_callbacks) == callbacks_before
+    assert added_docks
+    assert removed_docks == added_docks
+    assert widget.btn_start.text() == "Start reviewing"
 
 
 def test_restart_does_not_stack_widgets(review_setup):

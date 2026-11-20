@@ -273,7 +273,12 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             )
             return
 
-        self.session = self.launch_review()
+        try:
+            self.session = self.launch_review()
+        except Exception as e:
+            logger.exception(f"Could not start the review : {e}")
+            self.finish_review(ask=False)
+            return
         self.btn_start.setText("Finish review")
         self.session_label.setText(f"Reviewing : {self.session.labels.name}")
         self.session_label.setVisible(True)
@@ -474,6 +479,8 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         viewer = self._viewer
         volume, labels = self._review_layers()
         session = ReviewSession(volume=volume, labels=labels)
+        # keep around in case of failure below
+        self.session = session
         self._focus_on_review(session)
         # napari >= 0.9 moved overlays to viewer.canvas
         canvas = getattr(viewer, "canvas", None)
