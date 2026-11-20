@@ -185,6 +185,18 @@ def test_open_directory(monkeypatch, tmp_path):
     assert len(opened) == 1
 
 
+def test_finish_restores_selection_when_layers_were_added(review_setup):
+    viewer, widget, _ = review_setup
+    viewer.layers.remove("empty labels")  # the review adds a new labels layer
+    viewer.layers.selection.active = viewer.layers["other"]
+
+    widget.run_review()
+    assert widget.finish_review(ask=False)
+
+    assert viewer.layers.selection.active.name == "other"
+    assert [layer.name for layer in viewer.layers.selection] == ["other"]
+
+
 def test_review_without_labels_adds_empty_layer(review_setup):
     viewer, widget, _ = review_setup
     viewer.layers.remove("empty labels")

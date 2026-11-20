@@ -59,7 +59,9 @@ class ReviewSession:
     locks: dict[Any, Any] = field(default_factory=dict)
     """review layers -> their lock state before the review"""
     selection: list[Any] = field(default_factory=list)
+    """selected layers before the review, taken before any layer is added"""
     active: Any = None
+    """active layer before the review"""
     modified: bool = False
     """True when labels changed since the last save"""
 
@@ -389,8 +391,6 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         viewer = self._viewer
         # layers may be napari proxies: compare with ==, `in` and dict keys, never `is`
         review_layers = (session.volume, session.labels)
-        session.selection = list(viewer.layers.selection)
-        session.active = viewer.layers.selection.active
 
         for layer in viewer.layers:
             if layer in review_layers:
@@ -483,8 +483,12 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
           and determine whether it should be labeled or not.
         """
         viewer = self._viewer
+        selection = list(viewer.layers.selection)
+        active = viewer.layers.selection.active
         volume, labels = self._review_layers()
-        session = ReviewSession(volume=volume, labels=labels)
+        session = ReviewSession(
+            volume=volume, labels=labels, selection=selection, active=active
+        )
         # keep around in case of failure below
         self.session = session
         self._focus_on_review(session)
