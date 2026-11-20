@@ -550,9 +550,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             canvas.figure.suptitle("Shift-click on image for plot", fontsize=8)
 
             images = []
-            for i, (xlabel, ylabel) in enumerate(
-                [("X axis", "Y axis"), ("Y axis", "Z axis"), ("X axis", "Z axis")]
-            ):
+            for i, (_, xlabel, ylabel) in enumerate(PROJECTIONS):
                 axes = canvas.figure.add_subplot(1, 3, i + 1)
                 images.append(
                     axes.imshow(np.zeros((100, 100)), **layer_mpl_style(volume))
@@ -571,9 +569,9 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             """Refills the projections and copies the layer's colormap and contrast."""
             style = layer_mpl_style(volume)
             crop = last_crop["volume"]
-            for image, plane in zip(images, (0, 1, 2), strict=True):
+            for image, (plane, _, _) in zip(images, PROJECTIONS, strict=True):
                 if crop is not None:
-                    image.set_data(np.moveaxis(crop, plane, 0)[50])
+                    image.set_data(projection(crop, plane))
                 image.set_cmap(style["cmap"])
                 image.set_norm(style["norm"])
             canvas.draw_idle()
@@ -643,6 +641,19 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         viewer.dims.events.current_step.connect(update_button)
         session.dims_callback = update_button
         return session
+
+
+PROJECTIONS = (
+    # (crop axis sliced through the centre, x label, y label) for a (Z, Y, X) crop.
+    (0, "X axis", "Y axis"),
+    (1, "X axis", "Z axis"),
+    (2, "Y axis", "Z axis"),
+)
+
+
+def projection(crop, plane):
+    """2D section of a (Z, Y, X) crop through its centre, across the axis `plane`."""
+    return np.take(crop, crop.shape[plane] // 2, axis=plane)
 
 
 def volume_slice_index(viewer, layer):
