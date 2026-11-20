@@ -10,7 +10,7 @@ dependencies:
     - imagecodecs
     - pip:
         - numpy
-        - napari>=0.4.14
+        - napari>=0.7.1
         - scikit-image>=0.19.2
         - matplotlib>=3.4.1
         - tifffile>=2022.2.9
