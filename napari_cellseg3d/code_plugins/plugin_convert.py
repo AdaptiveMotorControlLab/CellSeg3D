@@ -94,7 +94,7 @@ class ArtifactRemovalUtils(BasePluginUtils):
         return container
 
     def _remove_large(self, data, size):
-        return clear_large_objects(data, size).astype(np.uint16)
+        return clear_large_objects(data, size)
 
     def _start(self):
         utils.mkdir_from_str(self.results_path)
@@ -111,6 +111,7 @@ class ArtifactRemovalUtils(BasePluginUtils):
                     self.results_path,
                     f"artifact_removed_{layer.name}_{utils.get_date_time()}.tif",
                     removed,
+                    labels=True,
                 )
                 self.layer = utils.show_result(
                     self._viewer,
@@ -201,7 +202,7 @@ class FragmentUtils(BasePluginUtils):
         self._set_io_visibility()
         self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
 
-    def _fragment(self, crops, name):
+    def _fragment(self, crops, name, labels=False):
         dir_name = f"/{name}_fragmented_{utils.get_time_filepath()}"
         Path(self.results_path + dir_name).mkdir(parents=True, exist_ok=False)
         for i, crop in enumerate(crops):
@@ -209,6 +210,7 @@ class FragmentUtils(BasePluginUtils):
                 self.results_path + dir_name,
                 f"{name}_fragmented_{i}.tif",
                 crop,
+                labels=labels,
             )
 
     def _start(self):
@@ -216,7 +218,9 @@ class FragmentUtils(BasePluginUtils):
         if self.layer_choice.isChecked():
             layer = self.image_layer_loader.layer()
             crops = crop_3d_image(layer.data, sizes)
-            self._fragment(crops, layer.name)
+            self._fragment(
+                crops, layer.name, labels=isinstance(layer, napari.layers.Labels)
+            )
         elif self.folder_choice.isChecked():
             paths = self.images_filepaths
             for path in paths:
@@ -287,17 +291,14 @@ class AnisoUtils(BasePluginUtils):
                 layer = self.image_layer_loader.layer()
 
                 data = np.array(layer.data)
-                isotropic_image = utils.resize(data, zoom)
+                isotropic_image = utils.resize(data, zoom).astype(layer.data.dtype)
 
                 utils.save_layer(
                     self.results_path,
                     f"isotropic_{layer.name}_{utils.get_date_time()}.tif",
                     isotropic_image,
+                    labels=isinstance(layer, napari.layers.Labels),
                 )
-                if isinstance(layer, napari.layers.Image):
-                    isotropic_image = isotropic_image.astype(layer.data.dtype)
-                else:
-                    isotropic_image = isotropic_image.astype(np.uint16)
                 self.layer = utils.show_result(
                     self._viewer,
                     layer,
@@ -398,6 +399,7 @@ class RemoveSmallUtils(BasePluginUtils):
                     self.results_path,
                     f"cleared_{layer.name}_{utils.get_date_time()}.tif",
                     removed,
+                    labels=True,
                 )
                 self.layer = utils.show_result(
                     self._viewer,
@@ -483,6 +485,7 @@ class ToSemanticUtils(BasePluginUtils):
                     self.results_path,
                     f"semantic_{layer.name}_{utils.get_date_time()}.tif",
                     semantic,
+                    labels=True,
                 )
                 self.layer = utils.show_result(
                     self._viewer,
@@ -571,6 +574,7 @@ class ToInstanceUtils(BasePluginUtils):
                     self.results_path,
                     f"instance_{layer.name}_{utils.get_date_time()}.tif",
                     instance,
+                    labels=True,
                 )
                 self.layer = utils.show_result(
                     self._viewer,
