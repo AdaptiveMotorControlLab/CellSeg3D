@@ -449,6 +449,19 @@ def test_finish_prompts_when_labels_painted(
         assert widget.btn_start.text() == "Finish review"
 
 
+def test_replacing_labels_data_prompts_on_finish(review_setup, monkeypatch):
+    viewer, widget, _ = review_setup
+    widget.run_review()
+    labels = widget.session.labels
+    labels.data = np.ones_like(labels.data)  # e.g. from the console
+    assert widget.session.modified
+    offered = _answer_prompt(monkeypatch, rev.QMessageBox.Discard)
+
+    assert widget.finish_review()
+
+    assert len(offered) == 1
+
+
 def test_close_with_painted_labels_can_be_cancelled(review_setup, monkeypatch):
     viewer, widget, _ = review_setup
     viewer.window.add_dock_widget(widget)

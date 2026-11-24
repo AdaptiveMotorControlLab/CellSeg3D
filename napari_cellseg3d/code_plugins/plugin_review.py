@@ -529,6 +529,9 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         paint_event = labels.events.paint
         paint_event.connect(self._mark_modified)
         session.paint_event = paint_event
+        # data replaced outright (other widgets, the console) does not emit paint
+        labels.events.data.connect(self._mark_modified)
+        session.layer_events.append((labels.events.data, self._mark_modified))
 
         save_dir = QLineEdit(str(Path(self.config.csv_path)))
         save_dir.setToolTip("Folder where labels_reviewed.tif is written")
