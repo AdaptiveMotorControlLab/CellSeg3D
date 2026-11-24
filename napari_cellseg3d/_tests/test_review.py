@@ -1,7 +1,11 @@
+from datetime import timedelta
+
 import numpy as np
+import pandas as pd
 import pytest
 from napari._qt.qt_main_window import Window
 from qtpy.QtWidgets import QPushButton
+from tifffile import imread
 
 from napari_cellseg3d import interface as ui
 from napari_cellseg3d.code_plugins import plugin_review as rev
@@ -388,3 +392,130 @@ def test_crop_volume_around_point_pads_edges():
     assert crop.shape == (100, 100, 100)
     assert crop[50:70, 50:70, 50:70].all()
     assert not crop[:50].any()
+
+
+def _answer_prompt(monkeypatch, answer):
+    """Makes the save prompt return `answer`; returns the buttons it was offered."""
+    offered = []
+
+    def question(parent, title, text, buttons, default):
+        offered.append(buttons)
+        return answer
+
+    monkeypatch.setattr(rev.QMessageBox, "question", question)
+    return offered
+
+
+def _paint(widget):
+    widget.session.labels.paint((0, 5, 5), 7)
+    assert widget.session.modified  # painting marks the session as modified
+
+
+@pytest.mark.parametrize(
+    ("answer", "saved", "finished"),
+    [
+        (rev.QMessageBox.Save, True, True),
+        (rev.QMessageBox.Discard, False, True),
+        (rev.QMessageBox.Cancel, False, False),
+    ],
+)
+def test_finish_prompts_when_labels_painted(
+    review_setup, monkeypatch, answer, saved, finished
+):
+    viewer, widget, tmp_path = review_setup
+    widget.run_review()
+    session = widget.session
+    callbacks = list(viewer.mouse_drag_callbacks)
+    _paint(widget)
+    offered = _answer_prompt(monkeypatch, answer)
+
+    assert widget.finish_review() is finished
+
+    assert len(offered) == 1
+    out = tmp_path / "labels_reviewed.tif"
+    assert out.is_file() is saved
+    if saved:
+        assert imread(out)[0, 5, 5] == 7
+    if finished:
+        assert widget.session is None
+        assert viewer.layers["other"].visible
+    else:  # cancelled: the review goes on untouched
+        assert widget.session is session
+        assert session.modified
+        assert not viewer.layers["other"].visible
+        assert viewer.layers["empty labels"].locked
+        assert list(viewer.mouse_drag_callbacks) == callbacks
+        assert len(session.docks) == 2
+        assert widget.btn_start.text() == "Finish review"
+
+
+def test_close_with_painted_labels_can_be_cancelled(review_setup, monkeypatch):
+    viewer, widget, _ = review_setup
+    viewer.window.add_dock_widget(widget)
+    widget.run_review()
+    _paint(widget)
+    _answer_prompt(monkeypatch, rev.QMessageBox.Cancel)
+
+    widget.remove_from_viewer()
+
+    assert widget.session is not None
+    assert widget.parent() is not None  # still docked
+
+
+def test_failed_save_keeps_session(review_setup, monkeypatch):
+    viewer, widget, _ = review_setup
+    widget.run_review()
+    session = widget.session
+    _paint(widget)
+    _answer_prompt(monkeypatch, rev.QMessageBox.Save)
+
+    def broken_imwrite(*args, **kwargs):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(rev, "imwrite", broken_imwrite)
+    with pytest.raises(OSError, match="disk full"):
+        widget.finish_review()
+
+    assert widget.session is session  # can retry
+    assert session.modified
+    assert not viewer.layers["other"].visible
+
+
+def test_dock_closed_from_title_bar_finishes_review(review_setup, monkeypatch, qtbot):
+    viewer, widget, _ = review_setup
+    viewer.window.add_dock_widget(widget)
+    widget.run_review()
+    _paint(widget)
+    offered = _answer_prompt(monkeypatch, rev.QMessageBox.Discard)
+
+    # what the title-bar X ends up doing, without going through remove_from_viewer
+    viewer.window.remove_dock_widget(widget)
+    qtbot.waitUntil(lambda: widget.session is None)
+
+    assert viewer.layers["other"].visible
+    assert not viewer.layers["empty labels"].locked
+    assert len(offered) == 1
+    assert not (offered[0] & rev.QMessageBox.Cancel)  # the dock is already gone
+
+
+def test_finish_restores_hidden_review_layer(review_setup):
+    viewer, widget, _ = review_setup
+    viewer.layers["empty labels"].visible = False
+
+    widget.run_review()
+    assert viewer.layers["empty labels"].visible
+    widget.finish_review(ask=False)
+
+    assert not viewer.layers["empty labels"].visible
+    assert viewer.layers["image"].visible
+
+
+def test_finish_writes_time_spent_on_last_slice(review_setup):
+    viewer, widget, _ = review_setup
+    widget.run_review()
+    datamanager = widget.session.datamanager
+    datamanager.start_time -= timedelta(minutes=5)  # 5 min on the slice, no change
+
+    widget.finish_review(ask=False)
+
+    assert pd.read_csv(datamanager.csv_path).at[0, "time"].startswith("00:05:")

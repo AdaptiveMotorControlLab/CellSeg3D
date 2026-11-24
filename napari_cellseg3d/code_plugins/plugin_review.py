@@ -15,7 +15,7 @@ from matplotlib.colors import ListedColormap, Normalize, PowerNorm
 from matplotlib.figure import Figure
 
 # Qt
-from qtpy.QtCore import QTimer
+from qtpy.QtCore import QEvent, QTimer
 from qtpy.QtWidgets import (
     QHBoxLayout,
     QLabel,
@@ -55,7 +55,7 @@ class ReviewSession:
     layer_events: list[tuple[Any, Callable]] = field(default_factory=list)
     """(layer event, callback) pairs to disconnect when the review ends"""
     hidden: dict[Any, bool] = field(default_factory=dict)
-    """other layers -> their visibility before the review"""
+    """layers -> their visibility before the review (review layers included)"""
     locks: dict[Any, Any] = field(default_factory=dict)
     """review layers -> their lock state before the review"""
     selection: list[Any] = field(default_factory=list)
@@ -64,6 +64,8 @@ class ReviewSession:
     """active layer before the review"""
     modified: bool = False
     """True when labels changed since the last save"""
+    datamanager: Any = None
+    """Datamanager widget, set once its csv is ready; flushed when the review ends"""
 
 
 class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
@@ -285,7 +287,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         self.session_label.setText(f"Reviewing : {self.session.labels.name}")
         self.session_label.setVisible(True)
 
-    def finish_review(self, ask=True):
+    def finish_review(self, ask=True, cancellable=True):
         """Ends the review and restores the viewer as it was before.
 
         Offers to save first when the labels changed since the last save.
@@ -293,6 +295,8 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         Args:
             ask (bool): show the save prompt. If False, unsaved changes are kept in the
                 layer but not written to disk.
+            cancellable (bool): offer Cancel in the save prompt. False when the review
+                must end anyway, e.g. its dock was already closed.
 
         Returns:
             bool: False if the user cancelled, True otherwise.
@@ -301,11 +305,14 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         if session is None:
             return True
         if ask and session.modified:
+            buttons = QMessageBox.Save | QMessageBox.Discard
+            if cancellable:
+                buttons |= QMessageBox.Cancel
             choice = QMessageBox.question(
                 self,
                 "Finish review",
                 f"Save the changes to '{session.labels.name}' before finishing ?",
-                QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel,
+                buttons,
                 QMessageBox.Save,
             )
             if choice == QMessageBox.Cancel:
@@ -323,6 +330,21 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
         """Ends the review (asking to save if needed), then closes the plugin."""
         if self.finish_review():
             super().remove_from_viewer()
+
+    def event(self, event):
+        """Ends the review when the plugin's dock is closed from its title bar.
+
+        That close only takes the widget out of its dock, without calling
+        :py:meth:`remove_from_viewer`. The dock is already gone, so the save prompt
+        has no Cancel. Deferred: the dock is still being torn down here.
+        """
+        if (
+            event.type() == QEvent.ParentChange
+            and self.parent() is None
+            and self.session is not None
+        ):
+            QTimer.singleShot(0, lambda: self.finish_review(cancellable=False))
+        return super().event(event)
 
     def save_labels(self, directory=None):
         """Writes the reviewed labels to `labels_reviewed.tif`.
@@ -399,6 +421,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             layer.visible = False
 
         for layer in review_layers:
+            session.hidden[layer] = layer.visible
             layer.visible = True
             session.locks[layer] = layer.locked
             layer.locked = True  # blocks deleting the layer from the UI
@@ -457,6 +480,10 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
                 viewer.layers.selection.active = session.active
 
         attempt("selection", restore_selection)
+
+        if session.datamanager is not None:
+            # time spent on the current slice is only written on slice changes
+            attempt("timer", session.datamanager._update_time_csv)
 
         for dock in session.docks:
             attempt("dock", lambda d=dock: viewer.window.remove_dock_widget(d))
@@ -620,6 +647,7 @@ class Reviewer(BasePluginSingleImage, metaclass=ui.QWidgetSingleton):
             self.config.new_csv,
             slice_num=volume_slice_index(viewer, volume),
         )
+        session.datamanager = dmg
         # one left dock: slice checked / timer, then save folder, Save and Exit
         controls = QWidget()
         controls_layout = QVBoxLayout(controls)
