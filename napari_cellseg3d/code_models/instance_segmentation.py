@@ -429,8 +429,7 @@ def to_semantic(image, is_file_path=False):
         image = imread(image)
         # image = image.compute()
 
-    image[image >= 1] = 1
-    return image.astype(np.uint16)
+    return (image >= 1).astype(np.uint16)
 
 
 def volume_stats(volume_image):
