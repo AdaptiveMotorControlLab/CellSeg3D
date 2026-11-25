@@ -17,6 +17,7 @@ from napari_cellseg3d.code_models.instance_segmentation import (
     InstanceWidgets,
 )
 from napari_cellseg3d.code_models.model_framework import ModelFramework
+from napari_cellseg3d.code_models.models.model_WNet import WNet_
 from napari_cellseg3d.code_models.worker_inference import InferenceWorker
 from napari_cellseg3d.code_models.workers_utils import InferenceResult
 from napari_cellseg3d.code_plugins.plugin_crf import CRFParamsWidget
@@ -226,6 +227,23 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         self.save_stats_to_csv_box = ui.CheckBox("Save stats to csv", parent=self)
 
+        # WNet3D output channel selection
+        self.wnet_num_classes = config.ModelInfo.num_classes
+        self.keep_channel_choice = ui.CheckBox(
+            "Keep a single channel",
+            func=self._toggle_display_channel_choice,
+            parent=self,
+        )
+        self.channel_choice = ui.DropdownMenu(
+            [str(i) for i in range(self.wnet_num_classes)], text_label="Channel"
+        )
+        self.channel_choice.setCurrentIndex(WNet_.default_channel)
+        self.channel_choice_container = ui.combine_blocks(
+            self.channel_choice,
+            self.channel_choice.label,
+            horizontal=False,
+        )
+
         ##################
         ##################
 
@@ -247,6 +265,42 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.layer_choice.toggle()
 
         self._remove_unused()
+
+    def _is_wnet(self) -> bool:
+        return self.model_choice.currentText() == "WNet3D"
+
+    def _update_wnet_num_classes(self):
+        """Reads the number of WNet3D output classes from the custom weights, and lists them in the channel choice.
+
+        Pretrained weights select their foreground channel; custom weights keep the current channel if it still exists.
+        The option is disabled for custom weights whose number of classes cannot be read (.onnx, .pt, unreadable .pth).
+        """
+        use_custom = self.custom_weights_choice.isChecked()
+        num_classes = None
+        if use_custom and self.weights_config.path:
+            num_classes = WNet_.num_classes_from_weights(self.weights_config.path)
+        channels_known = not use_custom or num_classes is not None
+        if not channels_known:
+            self.keep_channel_choice.setChecked(False)
+        self.keep_channel_choice.setEnabled(channels_known)
+        self.wnet_num_classes = (
+            num_classes if num_classes is not None else config.ModelInfo.num_classes
+        )
+        current = self.channel_choice.currentIndex()
+        if not use_custom:
+            current = WNet_.default_channel
+        self.channel_choice.clear()
+        self.channel_choice.addItems([str(i) for i in range(self.wnet_num_classes)])
+        self.channel_choice.setCurrentIndex(
+            current if 0 <= current < self.wnet_num_classes else 0
+        )
+
+    def _toggle_display_channel_choice(self):
+        """Shows the channel options only for WNet3D, and the dropdown only when the checkbox is checked."""
+        self.keep_channel_choice.setVisible(self._is_wnet())
+        self.channel_choice_container.setVisible(
+            self._is_wnet() and self.keep_channel_choice.isChecked()
+        )
 
     def _toggle_crf_choice(self):
         if self.model_choice.currentText() == "WNet3D":
@@ -291,6 +345,16 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             "Percentage of overlap between windows to use when using sliding window"
         )
 
+        self.keep_channel_choice.setToolTip(
+            "WNet3D outputs one channel per class.\n"
+            "Keep only the chosen channel in the saved and displayed results.\n"
+            "Do not use if you are not sure of which channel to keep.\n"
+            "Unavailable for custom .onnx or .pt weights."
+        )
+        self.channel_choice.setToolTip(
+            "Output channel to keep. The number of channels is read from custom weights,\n"
+            "and is 2 for the pretrained WNet3D."
+        )
         self.keep_data_on_cpu_box.setToolTip(
             "If enabled, data will be kept on the RAM rather than the VRAM.\nCan avoid out of memory issues with CUDA"
         )
@@ -397,6 +461,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             file_extension="Weights file (*.pth *.pt *.onnx)",
         )
         self._update_weights_path(file)
+        self._update_wnet_num_classes()
 
     def _set_default_threshold(self):
         # Whenever a model is selected, set the default threshold from the model file
@@ -517,6 +582,8 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             post_proc_layout,
             [
                 self.anisotropy_wdgt,  # anisotropy
+                self.keep_channel_choice,
+                self.channel_choice_container,
                 self.thresholding_checkbox,
                 self.thresholding_slider.container,  # thresholding
                 self.use_crf,
@@ -532,6 +599,11 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.thresholding_checkbox.setChecked(True)
         self._toggle_crf_choice()
         self.model_choice.currentIndexChanged.connect(self._toggle_crf_choice)
+        self._toggle_display_channel_choice()
+        self.model_choice.currentIndexChanged.connect(
+            self._toggle_display_channel_choice
+        )
+        self.custom_weights_choice.toggled.connect(self._update_wnet_num_classes)
         self.model_choice.currentIndexChanged.connect(self._set_default_threshold)
         ModelFramework._show_io_element(
             self.save_stats_to_csv_box, self.use_instance_choice
@@ -829,6 +901,13 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             name=self.model_choice.currentText(),
             model_input_size=self.model_input_size.value(),
         )
+        if self._is_wnet():
+            self.model_info.num_classes = self.wnet_num_classes
+        keep_channel = (
+            self.channel_choice.currentIndex()
+            if self._is_wnet() and self.keep_channel_choice.isChecked()
+            else None
+        )
 
         self.weights_config.use_custom = self.custom_weights_choice.isChecked()
 
@@ -887,6 +966,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
             sliding_window_config=window_config,
             use_crf=self.use_crf.isChecked(),
             crf_config=self.crf_widgets.make_config(),
+            keep_channel=keep_channel,
         )
         return self.worker_config
 

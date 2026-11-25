@@ -3,9 +3,19 @@
 .. important:: Used for inference only. For training the base class is used.
 """
 
+import pickle
+from pathlib import Path
+from typing import Optional
+
+import torch
+
 # local
 from napari_cellseg3d.code_models.models.wnet.model import WNet_encoder
+from napari_cellseg3d.utils import LOGGER as logger
 from napari_cellseg3d.utils import remap_image
+
+NUM_CLASSES_KEY = "encoder.out_b.module.8.bias"
+"""State-dict key of the encoder's final conv bias, whose length is the number of classes."""
 
 
 class WNet_(WNet_encoder):
@@ -16,6 +26,8 @@ class WNet_(WNet_encoder):
 
     weights_file = "wnet_latest.pth"
     default_threshold = 0.6
+    default_channel = 1
+    """Foreground channel of the pretrained weights."""
 
     def __init__(
         self,
@@ -45,6 +57,24 @@ class WNet_(WNet_encoder):
         """Forward pass of the W-Net model."""
         norm_x = remap_image(x)
         return super().forward(norm_x)
+
+    @staticmethod
+    def num_classes_from_weights(weights_path) -> Optional[int]:
+        """Number of encoder output classes stored in a .pth weights file, or None if it cannot be read."""
+        if Path(weights_path).suffix != ".pth":
+            return None
+        try:
+            state_dict = torch.load(weights_path, map_location="cpu", weights_only=True)
+            return int(state_dict[NUM_CLASSES_KEY].shape[0])
+        except (
+            OSError,
+            RuntimeError,
+            KeyError,
+            AttributeError,
+            pickle.UnpicklingError,
+        ) as e:
+            logger.debug(f"Could not read number of classes from {weights_path}: {e}")
+            return None
 
     def load_state_dict(self, state_dict, strict=True):
         """Load the model state dict for inference, without the decoder weights."""

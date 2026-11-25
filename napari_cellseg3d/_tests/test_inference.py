@@ -105,3 +105,62 @@ def test_post_processing():
     assert results.shape == (2, 64, 64, 64)
 
     worker.stats_csv(np.squeeze(labels))
+
+
+def test_select_channel():
+    worker = InferenceWorker(worker_config=InferenceWorkerConfig())
+    multi = rand_gen.random((3, 4, 4, 4))
+    single = rand_gen.random((4, 4, 4))
+
+    assert worker.select_channel(multi) is multi  # keep_channel unset
+
+    warnings = []
+    worker.warn_signal.connect(warnings.append)
+
+    worker.config.keep_channel = 1
+    np.testing.assert_array_equal(worker.select_channel(multi), multi[1])
+    assert worker.select_channel(None) is None
+    assert warnings == []
+
+    assert worker.select_channel(single) is single  # no channel axis
+    assert len(warnings) == 1
+
+    worker.config.keep_channel = 3  # out of range: keep all channels
+    assert worker.select_channel(multi) is multi
+    assert worker.select_channel(multi) is multi
+    assert len(warnings) == 1  # warned once per worker
+
+    worker = InferenceWorker(worker_config=InferenceWorkerConfig(keep_channel=3))
+    worker.warn_signal.connect(warnings.append)
+    assert worker.select_channel(multi) is multi
+    assert len(warnings) == 2
+    assert "3 channels" in warnings[-1]
+
+
+def test_inference_on_folder_keep_channel():
+    config = InferenceWorkerConfig(keep_channel=1)
+    config.images_filepaths = [str(Path(__file__).resolve().parent / "res/test.tif")]
+
+    class two_channels:
+        @staticmethod
+        def eval():
+            return True
+
+        def __call__(self, x):
+            x = torch.Tensor(x)
+            return torch.cat([x, 1 - x], dim=-4)  # (N, 2, H, W, D)
+
+    class identity:
+        def __call__(self, x):
+            return torch.Tensor(x)
+
+    worker = InferenceWorker(worker_config=config)
+    worker.aniso_transform = identity()
+    image = torch.Tensor(rand_gen.random(size=(1, 1, 8, 8, 8)))
+    res = worker.inference_on_folder(
+        {"image": image},
+        0,
+        model=two_channels(),
+        post_process_transforms=identity(),
+    )
+    assert res.semantic_segmentation.shape == (8, 8, 8)
