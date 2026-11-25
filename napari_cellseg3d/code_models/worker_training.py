@@ -78,7 +78,6 @@ except (ImportError, ModuleNotFoundError):
     )
     WANDB_INSTALLED = False
 
-VERBOSE_SCHEDULER = True
 logger.debug(f"PRETRAINED WEIGHT DIR LOCATION : {PRETRAINED_WEIGHTS_DIR}")
 
 """
@@ -134,6 +133,22 @@ class TrainingWorkerBase(GeneratorWorker):
     def warn(self, warning):
         """Sends a warning to main thread."""
         self.warn_signal.emit(warning)
+
+    def _make_dataloader(self, dataset, batch_size, shuffle=False, **kwargs):
+        """Creates a DataLoader with optional persistent workers.
+
+        Shuffling is skipped for iterable datasets (e.g. PatchDataset).
+        """
+        shuffle = shuffle and not isinstance(dataset, torch.utils.data.IterableDataset)
+        num_workers = self.config.num_workers
+        return DataLoader(
+            dataset,
+            batch_size=batch_size,
+            shuffle=shuffle,
+            num_workers=num_workers,
+            persistent_workers=num_workers > 0,
+            **kwargs,
+        )
 
     def raise_error(self, exception, msg):
         """Sends an error to main thread."""
@@ -335,40 +350,21 @@ class WNetTrainingWorker(TrainingWorkerBase):
             (self.data_shape, dataset) = self.get_dataset(train_transforms)
 
         logger.debug(f"Data shape : {self.data_shape}")
-        try:
-            self.dataloader = DataLoader(
-                dataset,
-                batch_size=self.config.batch_size,
-                shuffle=True,
-                num_workers=self.config.num_workers,
-                collate_fn=pad_list_data_collate,
-            )
-        except ValueError:
-            self.dataloader = DataLoader(
-                dataset,
-                batch_size=self.config.batch_size,
-                num_workers=self.config.num_workers,
-                collate_fn=pad_list_data_collate,
-            )
+        self.dataloader = self._make_dataloader(
+            dataset,
+            self.config.batch_size,
+            shuffle=True,
+            collate_fn=pad_list_data_collate,
+        )
 
         if self.config.eval_volume_dict is not None:
             eval_dataset = self.get_dataset_eval(self.config.eval_volume_dict)
             logger.debug(f"Eval batch size : {self.config.eval_batch_size}")
-            try:
-                self.eval_dataloader = DataLoader(
-                    eval_dataset,
-                    batch_size=self.config.eval_batch_size,
-                    shuffle=False,
-                    num_workers=self.config.num_workers,
-                    collate_fn=pad_list_data_collate,
-                )
-            except ValueError:
-                self.eval_dataloader = DataLoader(
-                    eval_dataset,
-                    batch_size=self.config.eval_batch_size,
-                    num_workers=self.config.num_workers,
-                    collate_fn=pad_list_data_collate,
-                )
+            self.eval_dataloader = self._make_dataloader(
+                eval_dataset,
+                self.config.eval_batch_size,
+                collate_fn=pad_list_data_collate,
+            )
         else:
             self.eval_dataloader = None
         return self.dataloader, self.eval_dataloader, self.data_shape
@@ -1361,26 +1357,14 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                     data=self.val_files, transform=load_whole_images
                 )
             logger.debug("Dataloader")
-            try:
-                train_loader = DataLoader(
-                    train_dataset,
-                    batch_size=self.config.batch_size,
-                    shuffle=True,
-                    num_workers=self.config.num_workers,
-                    collate_fn=pad_list_data_collate,
-                )
-            except ValueError:
-                train_loader = DataLoader(
-                    train_dataset,
-                    batch_size=self.config.batch_size,
-                    num_workers=self.config.num_workers,
-                    collate_fn=pad_list_data_collate,
-                )
-
-            validation_loader = DataLoader(
-                validation_dataset,
-                batch_size=self.config.batch_size,
-                num_workers=self.config.num_workers,
+            train_loader = self._make_dataloader(
+                train_dataset,
+                self.config.batch_size,
+                shuffle=True,
+                collate_fn=pad_list_data_collate,
+            )
+            validation_loader = self._make_dataloader(
+                validation_dataset, self.config.batch_size
             )
             logger.debug("\nDone")
 
@@ -1403,7 +1387,6 @@ class SupervisedTrainingWorker(TrainingWorkerBase):
                     mode="min",
                     factor=factor,
                     patience=self.config.scheduler_patience,
-                    verbose=VERBOSE_SCHEDULER,
                 )
                 if provided_scheduler is None
                 else provided_scheduler
