@@ -36,7 +36,7 @@ dependencies = [
   "itk",
   "matplotlib>=3.4.1",
   "monai[einops,nibabel,tifffile]>=0.9",
-  "napari[all]>=0.4.14",
+  "napari[all]>=0.7.1",
   "numpy",
   # "nibabel",
   #    "pillow",
