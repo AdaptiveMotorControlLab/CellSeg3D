@@ -21,6 +21,7 @@ config = WNetTrainingWorkerConfig(
     eval_volume_dict=c.create_eval_dataset_dict(Path("eval_images"), Path("eval_labels")),  # or None
 )
 
+Path(config.results_path_folder).mkdir(parents=True, exist_ok=True)
 worker = c.get_colab_worker(worker_config=config, wandb_config=WandBConfig(mode="disabled"))
 for _report in worker.train():
     pass
