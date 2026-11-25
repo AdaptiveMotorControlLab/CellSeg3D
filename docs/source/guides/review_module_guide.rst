@@ -42,10 +42,10 @@ Launching the review process
 
 4. **Beginning the labeling:**
     Press **`Start reviewing`** once you are ready to start the review process.
+    Press **`Finish review`** or **`Exit review`** to end it; you will be asked whether to save any unsaved changes.
 
-.. warning::
-    Starting a review session opens a new window and closes the current one.
-    Make sure you have saved your work before starting the review session.
+.. note::
+    The review runs in the current window. Other layers are hidden, and the image and labels layers cannot be deleted until the review ends.
 
 Interface & functionalities
 ---------------------------
@@ -60,9 +60,9 @@ Once you have launched the labeling process, you will have access to the followi
 .. hlist::
    :columns: 1
 
-   * A dialog to choose where to save the verified and/or corrected annotations, and a button to save the labels. They will be using the provided file format.
-   * A button to update the status of the slice in the csv file (in this case : checked/not checked)
-   * A graph with projections in the x-y, y-z and x-z planes, to allow the reviewer to better understand the context of the volume and decide whether the image should be labeled or not. Use **shift-click** anywhere on the image or label layer to update the plot to the location being reviewed.
+   * A dialog to choose where to save the verified and/or corrected annotations, a button to open that folder, and a button to save the labels. They will be using the provided file format.
+   * A button to update the status of the slice in the csv file (in this case : checked/not checked), and a checkbox to pause the timer
+   * A graph with projections in the x-y, y-z and x-z planes, at the bottom of the window, to allow the reviewer to better understand the context of the volume and decide whether the image should be labeled or not. Use **shift-click** anywhere on the image or label layer to update the plot to the location being reviewed.
 
 To recap, you can check your labels, correct them, save them and keep track of which slices have been checked or not.
 

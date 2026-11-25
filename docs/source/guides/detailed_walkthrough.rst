@@ -254,6 +254,7 @@ Once you finish reviewing, press the **Not checked** button to switch the status
 **checked** and save the time spent in the csv file.
 
 once satisfied with your review, press the **Save** button to record your work.
+Press **Exit review** to end the review; other layers are shown again.
 
 Analysis : Jupyter notebooks
 *********************************
