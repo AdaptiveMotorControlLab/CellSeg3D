@@ -1,0 +1,53 @@
+cff-version: 1.2.0
+message: "If you use CellSeg3D, please cite the eLife article below."
+title: "CellSeg3D"
+abstract: "napari plugin and Python package for self-supervised and supervised 3D cell segmentation in fluorescence microscopy."
+type: software
+license: MIT
+repository-code: "https://github.com/AdaptiveMotorControlLab/CellSeg3D"
+authors:
+  - given-names: Cyril
+    family-names: Achard
+  - given-names: Maxime
+    family-names: Vidal
+  - given-names: Mackenzie Weygandt
+    family-names: Mathis
+keywords:
+  - napari
+  - self-supervised learning
+  - 3D segmentation
+  - fluorescence microscopy
+preferred-citation:
+  type: article
+  title: "CellSeg3D, Self-supervised 3D cell segmentation for fluorescence microscopy"
+  authors:
+    - given-names: Cyril
+      family-names: Achard
+    - given-names: Timokleia
+      family-names: Kousi
+    - given-names: Markus
+      family-names: Frey
+    - given-names: Maxime
+      family-names: Vidal
+    - given-names: Yves
+      family-names: Paychere
+    - given-names: Colin
+      family-names: Hofmann
+    - given-names: Asim
+      family-names: Iqbal
+    - given-names: Sebastien B
+      family-names: Hausmann
+    - given-names: Stéphane
+      family-names: Pagès
+    - given-names: Mackenzie Weygandt
+      family-names: Mathis
+  journal: eLife
+  publisher:
+    name: "eLife Sciences Publications, Ltd"
+  volume: 13
+  start: RP99848
+  year: 2025
+  month: 6
+  issn: 2050-084X
+  doi: 10.7554/eLife.99848
+  url: "https://doi.org/10.7554/eLife.99848"
