@@ -34,7 +34,7 @@ dependencies = [
   #    "imageio-ffmpeg>=0.4.5",
   "imagecodecs>=2023.3.16",
   "itk",
-  "matplotlib>=3.4.1",
+  "matplotlib>=3.5",
   "monai[einops,nibabel,tifffile]>=0.9",
   "napari[all]>=0.7.1",
   "numpy",

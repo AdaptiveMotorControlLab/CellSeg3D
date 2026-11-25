@@ -12,7 +12,7 @@ dependencies:
         - numpy
         - napari>=0.7.1
         - scikit-image>=0.19.2
-        - matplotlib>=3.4.1
+        - matplotlib>=3.5
         - tifffile>=2022.2.9
         - torch>=1.11
         - monai[nibabel, einops]>=0.9.0
