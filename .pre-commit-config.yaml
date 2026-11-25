@@ -21,8 +21,16 @@ repos:
     rev: 1.0.0
     hooks:
       - id: mdformat
+        exclude: ^api-docs/
         additional_dependencies:
           - mdformat-myst
+      - id: mdformat
+        name: mdformat (api-docs)
+        files: ^api-docs/
+        # keep mkdocs-autorefs [label][identifier] links unescaped
+        args: [--ignore-missing-references]
+        additional_dependencies:
+          - mdformat-mkdocs==5.3.0
 
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: v2.21.2

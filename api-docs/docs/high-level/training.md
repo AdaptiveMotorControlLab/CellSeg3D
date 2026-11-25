@@ -33,18 +33,18 @@ for _report in worker.train():
 
 ::: napari_cellseg3d.dev_scripts.colab_training.create_eval_dataset_dict
 
-- \[`WNetTrainingWorkerConfig`\]\[napari_cellseg3d.config.WNetTrainingWorkerConfig\]: WNet3D hyperparameters and data.
-- \[`WNetTrainingWorker`\]\[napari_cellseg3d.code_models.worker_training.WNetTrainingWorker\]: `train()` is a generator yielding a `TrainingReport` per epoch and per validation.
+- [`WNetTrainingWorkerConfig`][napari_cellseg3d.config.WNetTrainingWorkerConfig]: WNet3D hyperparameters and data.
+- [`WNetTrainingWorker`][napari_cellseg3d.code_models.worker_training.WNetTrainingWorker]: `train()` is a generator yielding a `TrainingReport` per epoch and per validation.
 
 ## Supervised models
 
 Supervised models (SegResNet, SwinUNetR, …) use the same pattern with their own config and worker:
 
-- \[`SupervisedTrainingWorkerConfig`\][napari_cellseg3d.config.SupervisedTrainingWorkerConfig]
-- \[`SupervisedTrainingWorker`\][napari_cellseg3d.code_models.worker_training.SupervisedTrainingWorker]
+- [`SupervisedTrainingWorkerConfig`][napari_cellseg3d.config.SupervisedTrainingWorkerConfig]
+- [`SupervisedTrainingWorker`][napari_cellseg3d.code_models.worker_training.SupervisedTrainingWorker]
 
 ## Shared configuration
 
-- \[`TrainingWorkerConfig`\]\[napari_cellseg3d.config.TrainingWorkerConfig\]: fields common to all training configs.
-- \[`WeightsInfo`\]\[napari_cellseg3d.config.WeightsInfo\]: pretrained or custom weights.
-- \[`WandBConfig`\]\[napari_cellseg3d.config.WandBConfig\]: Weights & Biases logging.
+- [`TrainingWorkerConfig`][napari_cellseg3d.config.TrainingWorkerConfig]: fields common to all training configs.
+- [`WeightsInfo`][napari_cellseg3d.config.WeightsInfo]: pretrained or custom weights.
+- [`WandBConfig`][napari_cellseg3d.config.WandBConfig]: Weights & Biases logging.

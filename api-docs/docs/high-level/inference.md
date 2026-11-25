@@ -31,8 +31,8 @@ For WNet3D, pass `results[0].semantic_segmentation[1]` to `post_processing`.
 
 ## Configuration and worker
 
-- \[`InferenceWorkerConfig`\]\[napari_cellseg3d.config.InferenceWorkerConfig\]: device, model, weights, sliding window and post-processing settings.
-- \[`ModelInfo`\]\[napari_cellseg3d.config.ModelInfo\]: model name, input size and number of classes.
-- \[`SlidingWindowConfig`\]\[napari_cellseg3d.config.SlidingWindowConfig\]: window size and overlap.
-- \[`InferenceResult`\]\[napari_cellseg3d.code_models.workers_utils.InferenceResult\]: what `inference_on_images` returns, one per image.
-- \[`InferenceWorker`\]\[napari_cellseg3d.code_models.worker_inference.InferenceWorker\]: the worker `inference_on_images` runs.
+- [`InferenceWorkerConfig`][napari_cellseg3d.config.InferenceWorkerConfig]: device, model, weights, sliding window and post-processing settings.
+- [`ModelInfo`][napari_cellseg3d.config.ModelInfo]: model name, input size and number of classes.
+- [`SlidingWindowConfig`][napari_cellseg3d.config.SlidingWindowConfig]: window size and overlap.
+- [`InferenceResult`][napari_cellseg3d.code_models.workers_utils.InferenceResult]: what `inference_on_images` returns, one per image.
+- [`InferenceWorker`][napari_cellseg3d.code_models.worker_inference.InferenceWorker]: the worker `inference_on_images` runs.
