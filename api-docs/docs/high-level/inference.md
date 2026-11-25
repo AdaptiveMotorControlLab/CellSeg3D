@@ -9,7 +9,7 @@ from napari_cellseg3d.dev_scripts import remote_inference as cs3d
 image = imread("examples/c5image.tif")
 
 config = cs3d.CONFIG  # InferenceWorkerConfig with defaults for a single volume
-config.model_info = ModelInfo(name="SwinUNetR", model_input_size=[64, 64, 64], num_classes=2)
+config.model_info = ModelInfo(name="SwinUNetR", model_input_size=64, num_classes=2)
 
 results = cs3d.inference_on_images(image, config=config)
 
