@@ -6,10 +6,29 @@ on:
       - main
     tags:
       - "v*"
+    # not evaluated for tag pushes, so releases always test and deploy
+    paths:
+      - "napari_cellseg3d/**"
+      - "examples/**"
+      - "pyproject.toml"
+      - "tox.ini"
+      - "MANIFEST.in"
+      - ".github/workflows/test_and_deploy.yml"
   pull_request:
     branches:
       - main
+    paths:
+      - "napari_cellseg3d/**"
+      - "examples/**"
+      - "pyproject.toml"
+      - "tox.ini"
+      - "MANIFEST.in"
+      - ".github/workflows/test_and_deploy.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test:
