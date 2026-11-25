@@ -107,6 +107,7 @@ class InferenceWorker(GeneratorWorker):
         self.error_signal = self._signals.error_signal
 
         self.config = worker_config
+        self._keep_channel_warned = False
 
         """These attributes are all arguments of :py:func:~inference, please see that for reference"""
 
@@ -169,6 +170,8 @@ class InferenceWorker(GeneratorWorker):
         self.log("Parameters summary :")
 
         self.log(f"Model is : {config.model_info.name}")
+        if config.keep_channel is not None:
+            self.log(f"Keeping only channel {config.keep_channel}")
         if config.post_process_config.thresholding.enabled:
             self.log(
                 f"Thresholding is enabled at {config.post_process_config.thresholding.threshold_value}"
@@ -644,6 +647,8 @@ class InferenceWorker(GeneratorWorker):
             logger.debug(
                 f"Output shape {out.shape[-3:]} does not match input shape {inputs_shape_corrected[-3:]} on HWD dims even after rotation"
             )
+        out_all_channels = out
+        out = self.select_channel(out)
         self.save_image(out, i=i)
         instance_labels, stats = self.get_instance_result(out, i=i)
         if self.config.use_crf:
@@ -651,7 +656,7 @@ class InferenceWorker(GeneratorWorker):
             try:
                 crf_results = self.run_crf(
                     crf_in,
-                    out,
+                    out_all_channels,
                     aniso_transform=self.aniso_transform,
                     image_id=i,
                 )
@@ -675,6 +680,32 @@ class InferenceWorker(GeneratorWorker):
             i=i,
         )
 
+    def select_channel(self, array):
+        """Keeps only channel :py:attr:`config.keep_channel` of a (C, H, W, D) array.
+
+        Returned unchanged if ``keep_channel`` is unset, the array has no channel axis,
+        or the channel does not exist; the latter two warn once per worker.
+        """
+        channel = self.config.keep_channel
+        if channel is None or array is None:
+            return array
+        if len(array.shape) != 4:
+            self._warn_channel_once(
+                f"Channel {channel} requested but the output has no channel axis (shape {array.shape}); keeping the output as is"
+            )
+            return array
+        if not 0 <= channel < array.shape[0]:
+            self._warn_channel_once(
+                f"Channel {channel} requested but the output has {array.shape[0]} channels; keeping all channels"
+            )
+            return array
+        return array[channel]
+
+    def _warn_channel_once(self, message):
+        if not self._keep_channel_warned:
+            self._keep_channel_warned = True
+            self.warn(message)
+
     def run_crf(self, image, labels, aniso_transform, image_id=0):
         """Runs CRF on the image and labels."""
         try:
@@ -691,6 +722,7 @@ class InferenceWorker(GeneratorWorker):
             crf_results = crf_with_config(
                 image, labels, config=self.config.crf_config, log=self.log
             )
+            crf_results = self.select_channel(crf_results)
             self.save_image(
                 crf_results,
                 i=image_id,
@@ -739,6 +771,8 @@ class InferenceWorker(GeneratorWorker):
             logger.debug(
                 f"Output shape {out.shape[-3:]} does not match input shape {layer_shape_corrected[-3:]} on HWD dims even after rotation"
             )
+        out_all_channels = out
+        out = self.select_channel(out)
         self.save_image(out, from_layer=True)
 
         instance_labels, stats = self.get_instance_result(
@@ -746,7 +780,7 @@ class InferenceWorker(GeneratorWorker):
         )
 
         crf_results = (
-            self.run_crf(image, out, aniso_transform=self.aniso_transform)
+            self.run_crf(image, out_all_channels, aniso_transform=self.aniso_transform)
             if self.config.use_crf
             else None
         )
@@ -818,10 +852,12 @@ class InferenceWorker(GeneratorWorker):
                 model = ONNXModelWrapper(weights_config.path)
             else:  # assume is .pth
                 self.log("Instantiating model...")
+                model_kwargs = {}
+                if model_name == "WNet3D":
+                    model_kwargs["out_channels"] = self.config.model_info.num_classes
                 model = model_class(
                     input_img_size=[dims, dims, dims],
-                    # device=self.config.device,
-                    # num_classes=self.config.model_info.num_classes,
+                    **model_kwargs,
                 )
                 try:
                     model = model.to(self.config.device)

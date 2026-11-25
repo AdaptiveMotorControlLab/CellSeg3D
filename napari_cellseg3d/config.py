@@ -261,6 +261,7 @@ class InferenceWorkerConfig:
         sliding_window_config (SlidingWindowConfig): sliding window config
         images_filepaths (str): path to images to infer
         layer (napari.layers.Layer): napari layer to infer on
+        keep_channel (Optional[int]): index of the single output channel to keep for multi-channel models (WNet3D); None keeps all channels
     """
 
     device: str = "cpu"
@@ -279,6 +280,7 @@ class InferenceWorkerConfig:
 
     images_filepaths: List[str] = None
     layer: napari.layers.Layer = None
+    keep_channel: Optional[int] = None
 
 
 ####################

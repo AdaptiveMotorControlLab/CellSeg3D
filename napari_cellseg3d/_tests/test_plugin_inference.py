@@ -91,3 +91,49 @@ def test_inference(make_napari_viewer_proxy, qtbot):
     #     widget.worker.start()
 
     assert widget.on_finish()
+
+
+def test_keep_channel_choice(make_napari_viewer_proxy, tmp_path):
+    import torch
+
+    from napari_cellseg3d import interface as ui
+    from napari_cellseg3d.code_models.models.wnet.model import WNet
+
+    # fresh widget, not the singleton instance closed by test_inference
+    ui.QWidgetSingleton._instances.pop(Inferer, None)
+    viewer = make_napari_viewer_proxy()
+    widget = Inferer(viewer)
+
+    widget.model_choice.setCurrentText("SegResNet")
+    assert widget.keep_channel_choice.isHidden()
+    assert widget._set_worker_config().keep_channel is None
+
+    widget.model_choice.setCurrentText("WNet3D")
+    assert not widget.keep_channel_choice.isHidden()
+    assert widget.channel_choice_container.isHidden()
+    assert widget.channel_choice.count() == 2
+
+    widget.keep_channel_choice.setChecked(True)
+    assert not widget.channel_choice_container.isHidden()
+    widget.channel_choice.setCurrentIndex(1)
+    worker_config = widget._set_worker_config()
+    assert worker_config.keep_channel == 1
+    assert worker_config.model_info.num_classes == 2
+
+    weights = tmp_path / "wnet_3_classes.pth"
+    torch.save(WNet(num_classes=3).state_dict(), weights)
+    widget.weights_config.path = str(weights)
+    widget.custom_weights_choice.setChecked(True)
+    assert widget.channel_choice.count() == 3
+    assert widget.channel_choice.currentIndex() == 1  # kept when still valid
+    widget.channel_choice.setCurrentIndex(2)
+    worker_config = widget._set_worker_config()
+    assert worker_config.keep_channel == 2
+    assert worker_config.model_info.num_classes == 3
+
+    widget.custom_weights_choice.setChecked(False)
+    assert widget.channel_choice.count() == 2
+    assert widget.channel_choice.currentIndex() == 0  # 2 no longer exists
+
+    widget.keep_channel_choice.setChecked(False)
+    assert widget._set_worker_config().keep_channel is None
