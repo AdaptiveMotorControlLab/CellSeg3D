@@ -131,7 +131,16 @@ def test_keep_channel_choice(make_napari_viewer_proxy, tmp_path):
     assert worker_config.keep_channel == 2
     assert worker_config.model_info.num_classes == 3
 
+    widget.weights_config.path = str(tmp_path / "wnet.onnx")
+    widget._update_wnet_num_classes()
+    assert not widget.keep_channel_choice.isEnabled()
+    assert not widget.keep_channel_choice.isChecked()
+    assert widget.channel_choice_container.isHidden()
+    assert widget._set_worker_config().keep_channel is None
+
     widget.custom_weights_choice.setChecked(False)
+    assert widget.keep_channel_choice.isEnabled()
+    widget.keep_channel_choice.setChecked(True)
     assert widget.channel_choice.count() == 2
     assert widget.channel_choice.currentIndex() == 1  # pretrained foreground
 

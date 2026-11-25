@@ -273,11 +273,16 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         """Reads the number of WNet3D output classes from the custom weights, and lists them in the channel choice.
 
         Pretrained weights select their foreground channel; custom weights keep the current channel if it still exists.
+        The option is disabled for custom weights whose number of classes cannot be read (.onnx, .pt, unreadable .pth).
         """
         use_custom = self.custom_weights_choice.isChecked()
         num_classes = None
         if use_custom and self.weights_config.path:
             num_classes = WNet_.num_classes_from_weights(self.weights_config.path)
+        channels_known = not use_custom or num_classes is not None
+        if not channels_known:
+            self.keep_channel_choice.setChecked(False)
+        self.keep_channel_choice.setEnabled(channels_known)
         self.wnet_num_classes = (
             num_classes if num_classes is not None else config.ModelInfo.num_classes
         )
@@ -343,7 +348,8 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.keep_channel_choice.setToolTip(
             "WNet3D outputs one channel per class.\n"
             "Keep only the chosen channel in the saved and displayed results.\n"
-            "Do not use if you are not sure of which channel to keep."
+            "Do not use if you are not sure of which channel to keep.\n"
+            "Unavailable for custom .onnx or .pt weights."
         )
         self.channel_choice.setToolTip(
             "Output channel to keep. The number of channels is read from custom weights,\n"
