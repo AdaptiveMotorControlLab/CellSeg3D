@@ -26,6 +26,8 @@ class WNet_(WNet_encoder):
 
     weights_file = "wnet_latest.pth"
     default_threshold = 0.6
+    default_channel = 1
+    """Foreground channel of the pretrained weights."""
 
     def __init__(
         self,

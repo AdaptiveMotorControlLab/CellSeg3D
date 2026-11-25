@@ -115,7 +115,7 @@ def test_keep_channel_choice(make_napari_viewer_proxy, tmp_path):
 
     widget.keep_channel_choice.setChecked(True)
     assert not widget.channel_choice_container.isHidden()
-    widget.channel_choice.setCurrentIndex(1)
+    assert widget.channel_choice.currentIndex() == 1  # pretrained foreground
     worker_config = widget._set_worker_config()
     assert worker_config.keep_channel == 1
     assert worker_config.model_info.num_classes == 2
@@ -133,7 +133,7 @@ def test_keep_channel_choice(make_napari_viewer_proxy, tmp_path):
 
     widget.custom_weights_choice.setChecked(False)
     assert widget.channel_choice.count() == 2
-    assert widget.channel_choice.currentIndex() == 0  # 2 no longer exists
+    assert widget.channel_choice.currentIndex() == 1  # pretrained foreground
 
     widget.keep_channel_choice.setChecked(False)
     assert widget._set_worker_config().keep_channel is None

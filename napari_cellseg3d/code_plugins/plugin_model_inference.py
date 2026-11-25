@@ -237,6 +237,7 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         self.channel_choice = ui.DropdownMenu(
             [str(i) for i in range(self.wnet_num_classes)], text_label="Channel"
         )
+        self.channel_choice.setCurrentIndex(WNet_.default_channel)
         self.channel_choice_container = ui.combine_blocks(
             self.channel_choice,
             self.channel_choice.label,
@@ -269,14 +270,20 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
         return self.model_choice.currentText() == "WNet3D"
 
     def _update_wnet_num_classes(self):
-        """Reads the number of WNet3D output classes from the custom weights, and lists them in the channel choice."""
+        """Reads the number of WNet3D output classes from the custom weights, and lists them in the channel choice.
+
+        Pretrained weights select their foreground channel; custom weights keep the current channel if it still exists.
+        """
+        use_custom = self.custom_weights_choice.isChecked()
         num_classes = None
-        if self.custom_weights_choice.isChecked() and self.weights_config.path:
+        if use_custom and self.weights_config.path:
             num_classes = WNet_.num_classes_from_weights(self.weights_config.path)
         self.wnet_num_classes = (
             num_classes if num_classes is not None else config.ModelInfo.num_classes
         )
         current = self.channel_choice.currentIndex()
+        if not use_custom:
+            current = WNet_.default_channel
         self.channel_choice.clear()
         self.channel_choice.addItems([str(i) for i in range(self.wnet_num_classes)])
         self.channel_choice.setCurrentIndex(
