@@ -9,7 +9,7 @@ on:
       - "api-docs/**"
       - "napari_cellseg3d/**"
       - "pyproject.toml"
-      - ".github/workflows/docs.yml"
+      - ".github/workflows/build_docs.yml"
   pull_request:
     branches:
       - main
@@ -18,7 +18,7 @@ on:
       - "api-docs/**"
       - "napari_cellseg3d/**"
       - "pyproject.toml"
-      - ".github/workflows/docs.yml"
+      - ".github/workflows/build_docs.yml"
   workflow_dispatch:
 
 permissions:
