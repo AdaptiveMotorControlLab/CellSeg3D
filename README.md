@@ -66,9 +66,18 @@ F1-score is computed from the Intersection over Union (IoU) with ground truth la
 
 Read the [article here !](https://elifesciences.org/articles/99848)
 
-### **New version: v0.2.4**
+### **New version: v0.2.5**
+
+- v0.2.5:
+
+  - Review plugin reworked: reviews run in the current viewer, and can be finished or exited
+  - Improved dtype logic when saving labels
+  - WNet3D inference: QoL option to keep a single channel
+  - Demo volume is now available under **File > Open Sample > CellSeg3D**
+  - Several fixes for recent PyTorch and Qt
 
 - v0.2.4:
+
   - Python 3.10-12 support added
   - Several fixes to deprecation errors on newer Python versions
   - Upgraded packaging to use only pyproject.toml
