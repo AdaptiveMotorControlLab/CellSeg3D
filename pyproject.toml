@@ -62,7 +62,7 @@ email = "mackenzie@post.harvard.edu"
 napari-cellseg3d = "napari_cellseg3d:napari.yaml"
 [project.optional-dependencies]
 api-docs = [
-  "mkdocs>=1.6",
+  "mkdocs>=1.6,<2",
   "mkdocs-api-autonav>=0.4",
   "mkdocs-autorefs>=1.4",
   "mkdocs-material>=9.5",
