@@ -3553,7 +3553,7 @@ requires-dist = [
     { name = "imagecodecs", specifier = ">=2023.3.16" },
     { name = "itk" },
     { name = "jupyter-book", marker = "extra == 'docs'", specifier = "<2" },
-    { name = "matplotlib", specifier = ">=3.4.1" },
+    { name = "matplotlib", specifier = ">=3.5" },
     { name = "monai", extras = ["einops", "nibabel", "tifffile"], specifier = ">=0.9" },
     { name = "napari", extras = ["all"], specifier = ">=0.7.1" },
     { name = "napari", extras = ["pyqt6"], marker = "extra == 'pyqt6'" },
