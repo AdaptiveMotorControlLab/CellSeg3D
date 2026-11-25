@@ -335,7 +335,8 @@ class Inferer(ModelFramework, metaclass=ui.QWidgetSingleton):
 
         self.keep_channel_choice.setToolTip(
             "WNet3D outputs one channel per class.\n"
-            "Keep only the chosen channel in the saved and displayed results."
+            "Keep only the chosen channel in the saved and displayed results.\n"
+            "Do not use if you are not sure of which channel to keep."
         )
         self.channel_choice.setToolTip(
             "Output channel to keep. The number of channels is read from custom weights,\n"
