@@ -12,6 +12,7 @@ from qtpy.QtGui import QIcon, QPixmap
 from qtpy.QtWidgets import QVBoxLayout, QWidget
 
 # local
+from napari_cellseg3d import __version__
 from napari_cellseg3d import interface as ui
 
 
@@ -44,7 +45,7 @@ class Helper(QWidget, metaclass=ui.QWidgetSingleton):
         self.logo_label.setToolTip("Open Github page")
 
         self.info_label = ui.make_label(
-            f"You are using napari-cellseg3d v.{'0.2.2'}\n\n"
+            f"You are using napari-cellseg3d v{__version__}\n\n"
             f"Plugin for cell segmentation developed\n"
             f"by the Mathis Lab of Adaptive Motor Control\n\n"
             f"Code by :\nCyril Achard\nMaxime Vidal\nJessy Lauer\nMackenzie Mathis\n"
