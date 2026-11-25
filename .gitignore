@@ -103,7 +103,6 @@ venv/
 /napari_cellseg3d/code_models/models/dataset/
 /napari_cellseg3d/code_models/models/saved_weights/
 /docs/source/logo/old_logo/
-/docs/source/code/_autosummary/
 /reqs/
 /loss_plots/
 /wandb/
@@ -114,7 +113,6 @@ notebooks/full_plot.html
 notebooks/instance_test.ipynb
 *.prof
 /docs/_build/
-/docs/source/code/_autosummary/*.rst
 cov.syspath.txt
 napari_cellseg3d/dev_scripts/wandb
 wandb/
