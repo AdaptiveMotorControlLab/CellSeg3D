@@ -36,5 +36,5 @@ Pairs below the threshold will be displayed on the viewer for verification, grou
 Source code
 -------------------------------------------------
 
-* :doc:`../code/plugin_base`
-* :doc:`../code/plugin_metrics`
+* `napari_cellseg3d.code_plugins.plugin_base <https://adaptivemotorcontrollab.github.io/CellSeg3D/api/reference/napari_cellseg3d/code_plugins/plugin_base/>`__
+* `napari_cellseg3d.code_plugins.plugin_metrics <https://adaptivemotorcontrollab.github.io/CellSeg3D/api/reference/napari_cellseg3d/code_plugins/plugin_metrics/>`__

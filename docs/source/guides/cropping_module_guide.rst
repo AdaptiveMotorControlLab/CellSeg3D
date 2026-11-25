@@ -79,5 +79,5 @@ Saving your cropped volume
 Source code
 -------------------------------------------------
 
-* :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_crop`
-* :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_base`
+* `napari_cellseg3d.code_plugins.plugin_crop <https://adaptivemotorcontrollab.github.io/CellSeg3D/api/reference/napari_cellseg3d/code_plugins/plugin_crop/>`__
+* `napari_cellseg3d.code_plugins.plugin_base <https://adaptivemotorcontrollab.github.io/CellSeg3D/api/reference/napari_cellseg3d/code_plugins/plugin_base/>`__

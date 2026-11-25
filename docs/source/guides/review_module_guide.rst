@@ -73,6 +73,6 @@ To recap, you can check your labels, correct them, save them and keep track of w
 Source code
 -------------------------------------------------
 
-* :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_review`
-* :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_review_dock`
-* :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_base`
+* `napari_cellseg3d.code_plugins.plugin_review <https://adaptivemotorcontrollab.github.io/CellSeg3D/api/reference/napari_cellseg3d/code_plugins/plugin_review/>`__
+* `napari_cellseg3d.code_plugins.plugin_review_dock <https://adaptivemotorcontrollab.github.io/CellSeg3D/api/reference/napari_cellseg3d/code_plugins/plugin_review_dock/>`__
+* `napari_cellseg3d.code_plugins.plugin_base <https://adaptivemotorcontrollab.github.io/CellSeg3D/api/reference/napari_cellseg3d/code_plugins/plugin_base/>`__

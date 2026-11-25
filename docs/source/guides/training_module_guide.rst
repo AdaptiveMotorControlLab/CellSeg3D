@@ -240,6 +240,6 @@ You can find them under **CellSeg3D {MODEL NAME}** on your project page.
 
 Source code
 ==============================================
-* :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_model_training`
-* :doc:`../code/_autosummary/napari_cellseg3d.code_models.worker_training`
-* :doc:`../code/_autosummary/napari_cellseg3d.code_models.models`
+* `napari_cellseg3d.code_plugins.plugin_model_training <https://adaptivemotorcontrollab.github.io/CellSeg3D/api/reference/napari_cellseg3d/code_plugins/plugin_model_training/>`__
+* `napari_cellseg3d.code_models.worker_training <https://adaptivemotorcontrollab.github.io/CellSeg3D/api/reference/napari_cellseg3d/code_models/worker_training/>`__
+* `napari_cellseg3d.code_models.models <https://adaptivemotorcontrollab.github.io/CellSeg3D/api/reference/napari_cellseg3d/code_models/models/>`__
