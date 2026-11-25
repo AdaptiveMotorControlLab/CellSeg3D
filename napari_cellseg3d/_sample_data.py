@@ -1,10 +1,12 @@
 """Sample data contributed to napari's File > Open Sample menu."""
 
 import hashlib
+import logging
 import urllib.request
 from pathlib import Path
 
-from napari_cellseg3d.utils import LOGGER as logger
+# same logger as napari_cellseg3d.utils.LOGGER, without importing torch and monai
+logger = logging.getLogger("napari_cellseg3d.utils")
 
 C5IMAGE_NAME = "c5image.tif"
 C5IMAGE_REPO_FILE = Path(__file__).parents[1] / "examples" / C5IMAGE_NAME
