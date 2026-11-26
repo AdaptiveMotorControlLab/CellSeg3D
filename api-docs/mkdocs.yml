@@ -1,0 +1,96 @@
+site_name: CellSeg3D API Reference
+site_description: API reference for napari-cellseg3d
+site_url: https://adaptivemotorcontrollab.github.io/CellSeg3D/api/
+site_dir: "../docs/_build/html/api"
+
+repo_name: AdaptiveMotorControlLab/CellSeg3D
+repo_url: https://github.com/AdaptiveMotorControlLab/CellSeg3D
+
+theme:
+  name: material
+  logo: assets/logo.png
+  favicon: assets/logo.png
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - content.code.copy
+    - navigation.indexes
+    - navigation.tabs
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - toc.follow
+
+plugins:
+  - search
+  - autorefs
+  - api-autonav:
+      modules:
+        - "../napari_cellseg3d"
+      exclude:
+        - "napari_cellseg3d._tests"
+        - "napari_cellseg3d._version"
+        - "napari_cellseg3d.dev_scripts"
+        - "napari_cellseg3d.res"
+        - "napari_cellseg3d.setup"
+      nav_section_title: "API Reference"
+      api_root_uri: "reference"
+      exclude_private: true
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [".."]
+          options:
+            docstring_style: google
+            docstring_options:
+              warn_missing_types: false
+            docstring_section_style: table
+            show_root_heading: true
+            show_symbol_type_heading: true
+            show_signature_annotations: true
+            separate_signature: true
+            summary: true
+          inventories:
+            - url: https://docs.python.org/3/objects.inv
+              domains: [py, std]
+            - url: https://numpy.org/doc/stable/objects.inv
+            - url: https://pytorch.org/docs/stable/objects.inv
+            - url: https://napari.org/stable/objects.inv
+
+extra_css:
+  - assets/stylesheets/cellseg3d.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+extra:
+  social:
+    - icon: material/book-open-variant
+      link: https://adaptivemotorcontrollab.github.io/CellSeg3D/
+      name: User documentation
+
+nav:
+  - Home: index.md
+  - High-level API:
+      - high-level/index.md
+      - Inference: high-level/inference.md
+      - Training: high-level/training.md
+  - API Reference

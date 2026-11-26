@@ -20,4 +20,5 @@ parts:
       - file: source/guides/custom_model_template.rst
   - caption : Code
     chapters:
-      - file: source/code/api.rst
+      - title: API reference
+        url: https://adaptivemotorcontrollab.github.io/CellSeg3D/api/

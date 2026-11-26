@@ -184,6 +184,6 @@ Please see :ref:`training_wnet` for more details on how to train your own model.
 
 Source code
 --------------------------------
-* :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_model_inference`
-* :doc:`../code/_autosummary/napari_cellseg3d.code_models.worker_inference`
-* :doc:`../code/_autosummary/napari_cellseg3d.code_models.models`
+* `napari_cellseg3d.code_plugins.plugin_model_inference <https://adaptivemotorcontrollab.github.io/CellSeg3D/api/reference/napari_cellseg3d/code_plugins/plugin_model_inference/>`__
+* `napari_cellseg3d.code_models.worker_inference <https://adaptivemotorcontrollab.github.io/CellSeg3D/api/reference/napari_cellseg3d/code_models/worker_inference/>`__
+* `napari_cellseg3d.code_models.models <https://adaptivemotorcontrollab.github.io/CellSeg3D/api/reference/napari_cellseg3d/code_models/models/>`__

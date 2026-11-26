@@ -1,0 +1,57 @@
+/* CellSeg3D palette: napari greys (napari_cellseg3d/interface.py) + logo purple/magenta */
+
+:root {
+  --cs-napari-grey: #262930;
+  --cs-napari-darkgrey: #202228;
+  --cs-napari-param-grey: #414851;
+  --cs-purple: #5b3aa8;
+  --cs-purple-light: #a48be0;
+  --cs-magenta: #b0306a;
+  --cs-magenta-light: #e0609a;
+}
+
+[data-md-color-primary="custom"] {
+  --md-primary-fg-color: var(--cs-napari-grey);
+  --md-primary-fg-color--light: var(--cs-napari-param-grey);
+  --md-primary-fg-color--dark: var(--cs-napari-darkgrey);
+  --md-primary-bg-color: #ffffff;
+  --md-primary-bg-color--light: #ffffffb3;
+}
+
+[data-md-color-accent="custom"] {
+  --md-accent-fg-color: var(--cs-magenta);
+  --md-accent-fg-color--transparent: #b0306a1a;
+}
+
+[data-md-color-scheme="default"] {
+  --md-typeset-a-color: var(--cs-purple);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color: var(--cs-napari-grey);
+  --md-default-bg-color--light: #262930b3;
+  --md-code-bg-color: var(--cs-napari-darkgrey);
+  --md-typeset-a-color: var(--cs-purple-light);
+  --md-accent-fg-color: var(--cs-magenta-light);
+  --md-accent-fg-color--transparent: #e0609a1a;
+}
+
+[data-md-color-scheme="slate"][data-md-color-primary="custom"] {
+  --md-primary-fg-color: var(--cs-napari-darkgrey);
+}
+
+/* The logo is a detailed disc: use the full header height */
+.md-header__button.md-logo {
+  margin: 0;
+  padding: 0.2rem;
+}
+
+.md-header__button.md-logo img {
+  height: 2.6rem;
+}
+
+/* Landing page logo */
+.md-typeset img.cs-hero-logo {
+  display: block;
+  margin: 1rem 0 2rem;
+}

@@ -70,7 +70,7 @@ Break down large images into smaller cubes, optimal for training.
     You may install it by using the command ``pip install pydensecrf@git+https://github.com/lucasb-eyer/pydensecrf.git#egg=master``.
 
 | Refines semantic predictions by pairing them with the original image.
-| For a list of parameters, see the :doc:`CRF API page<../code/_autosummary/napari_cellseg3d.code_models.crf>`.
+| For a list of parameters, see the `CRF API page <https://adaptivemotorcontrollab.github.io/CellSeg3D/api/reference/napari_cellseg3d/code_models/crf/>`__.
 
 9. Labels statistics
 ------------------------------------------------
@@ -119,8 +119,8 @@ Global metrics :
 Source code
 ___________
 
-* :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_convert`
-* :doc:`../code/_autosummary/napari_cellseg3d.code_plugins.plugin_crf`
+* `napari_cellseg3d.code_plugins.plugin_convert <https://adaptivemotorcontrollab.github.io/CellSeg3D/api/reference/napari_cellseg3d/code_plugins/plugin_convert/>`__
+* `napari_cellseg3d.code_plugins.plugin_crf <https://adaptivemotorcontrollab.github.io/CellSeg3D/api/reference/napari_cellseg3d/code_plugins/plugin_crf/>`__
 
 
 .. links
